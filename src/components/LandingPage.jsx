@@ -46,6 +46,7 @@ const LandingPage = () => {
     }
   ];
 
+  // Added Abuja and Benin to the array below
   const cities = [
     {
       name: "Lagos",
@@ -56,6 +57,16 @@ const LandingPage = () => {
       name: "Port Harcourt",
       areas: "GRA • Trans Amadi • Old GRA • Diobu",
       venues: "40+ venues"
+    },
+    {
+      name: "Abuja",
+      areas: "Wuse • Garki • Maitama • Asokoro",
+      venues: "50+ venues"
+    },
+    {
+      name: "Benin",
+      areas: "Oredo • Ikpoba Hill • GRA • Ugbowo",
+      venues: "30+ venues"
     }
   ];
 
