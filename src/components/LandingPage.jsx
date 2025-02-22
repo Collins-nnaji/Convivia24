@@ -1,19 +1,21 @@
-// src/components/LandingPage.jsx
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Store, Clock, Activity,
-  Smartphone, Truck, CheckCircle, MapPin,
-  Calendar, Star, Users
+  Star, PartyPopper,
+  Heart, Crown, CheckCircle, MapPin,
+  Calendar, Users, Music, Wine, 
+  GlassWater
 } from 'lucide-react';
 import InvestorSection from './InvestorSection';
 import EventsSection from './EventsSection';
+import EntertainmentSection from './EntertainmentSection';
 import AppPreview from './AppPreview';
 
 const LandingPage = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [showInvestorSection, setShowInvestorSection] = useState(false);
   const [showEventsSection, setShowEventsSection] = useState(false);
+  const [showEntertainmentSection, setShowEntertainmentSection] = useState(false);
 
   useEffect(() => {
     const link = document.createElement('link');
@@ -23,74 +25,125 @@ const LandingPage = () => {
     setIsLoaded(true);
   }, []);
 
-  const workflowSteps = [
+  const celebrationTypes = [
     {
-      icon: <Smartphone size={32} color="#DC2626" />,
-      title: "Place Your Order",
-      description: "Use our mobile app or web platform to easily place orders anytime, anywhere"
+      icon: <Crown size={32} className="text-red-600" />,
+      title: "Traditional Ceremonies",
+      description: "Custom packages for traditional weddings and cultural celebrations",
+      features: ["Palm wine service", "Traditional servers", "Cultural presentations"]
     },
     {
-      icon: <Activity size={32} color="#DC2626" />,
-      title: "Real-Time Confirmation",
-      description: "Get instant confirmation and track your order status live"
+      icon: <Heart size={32} className="text-red-600" />,
+      title: "Wedding Services",
+      description: "Complete beverage solutions for the perfect wedding celebration",
+      features: ["Premium drink selection", "Professional service", "Custom packages"]
     },
     {
-      icon: <Truck size={32} color="#DC2626" />,
-      title: "Swift Delivery",
-      description: "Receive your order within 2 hours through our optimized delivery network"
+      icon: <Star size={32} className="text-red-600" />,
+      title: "Corporate Events",
+      description: "Sophisticated beverage services for corporate functions",
+      features: ["High-end spirits", "Branded experiences", "Full-service bars"]
     },
     {
-      icon: <CheckCircle size={32} color="#DC2626" />,
-      title: "Inventory Updates",
-      description: "Your stock levels automatically update in our system"
+      icon: <PartyPopper size={32} className="text-red-600" />,
+      title: "Private Celebrations",
+      description: "Personalized service for birthdays and special moments",
+      features: ["Custom cocktails", "Party supplies", "Event staffing"]
     }
   ];
 
-  // Added Abuja and Benin to the array below
+  const celebrationSteps = [
+    {
+      icon: <Calendar size={32} color="#DC2626" />,
+      title: "Plan Your Celebration",
+      description: "Choose from our range of celebration packages and customization options"
+    },
+    {
+      icon: <Wine size={32} color="#DC2626" />,
+      title: "Select Your Package",
+      description: "Customize your beverage selection for any type of celebration"
+    },
+    {
+      icon: <CheckCircle size={32} color="#DC2626" />,
+      title: "Instant Confirmation",
+      description: "Get immediate confirmation and dedicated event support"
+    },
+    {
+      icon: <PartyPopper size={32} color="#DC2626" />,
+      title: "Celebrate!",
+      description: "Enjoy your event with our premium beverage service"
+    }
+  ];
+
   const cities = [
     {
       name: "Lagos",
       areas: "Victoria Island • Lekki • Ikoyi • Surulere • Ikeja",
+      events: "Traditional & Modern Celebrations",
       venues: "75+ venues"
     },
     {
       name: "Port Harcourt",
       areas: "GRA • Trans Amadi • Old GRA • Diobu",
+      events: "Cultural Events & Weddings",
       venues: "40+ venues"
     },
     {
       name: "Abuja",
       areas: "Wuse • Garki • Maitama • Asokoro",
+      events: "Corporate & Social Events",
       venues: "50+ venues"
     },
     {
       name: "Benin",
       areas: "Oredo • Ikpoba Hill • GRA • Ugbowo",
+      events: "Traditional Ceremonies",
       venues: "30+ venues"
     }
   ];
 
   const features = [
     {
-      icon: <Star size={24} />,
-      title: "Smart Order Management",
-      description: "Automated inventory tracking and one-click reordering"
+      icon: <Crown size={24} />,
+      title: "Cultural Expertise",
+      description: "Specialized service for traditional ceremonies and cultural celebrations"
     },
     {
-      icon: <Calendar size={24} />,
-      title: "Event Integration",
-      description: "Plan stock levels based on upcoming events and peak times"
+      icon: <Heart size={24} />,
+      title: "Wedding Packages",
+      description: "Complete beverage solutions for wedding ceremonies and receptions"
     },
     {
-      icon: <Users size={24} />,
-      title: "Customer Insights",
-      description: "Understand consumption patterns and optimize inventory"
+      icon: <Music size={24} />,
+      title: "Entertainment Services",
+      description: "Book DJs, MCs, and Live Bands for your celebration"
+    }
+  ];
+
+  const venues = [
+    {
+      name: "Royal Palm Hall",
+      type: "Wedding Venue",
+      capacity: "500-1000",
+      features: ["Full Bar Service", "Garden Space", "Valet Parking"]
+    },
+    {
+      name: "The Glass House",
+      type: "Corporate Events",
+      capacity: "200-400",
+      features: ["Premium Bar", "AV Equipment", "Catering Kitchen"]
+    },
+    {
+      name: "Cultural Center",
+      type: "Traditional Ceremonies",
+      capacity: "300-600",
+      features: ["Traditional Setup", "Multiple Halls", "Outdoor Space"]
     }
   ];
 
   return (
     <div className="min-h-screen bg-white text-black overflow-hidden" style={{ fontFamily: 'Raleway, sans-serif' }}>
-      {/* Existing Hero Section */}
+      {/* Hero Section */}
       <div className="relative z-10 bg-gradient-to-b from-black to-red-900 text-white">
         <header className="container mx-auto px-4 py-16 flex flex-col items-center">
           {/* Logo */}
@@ -117,10 +170,10 @@ const LandingPage = () => {
               textShadow: '0 2px 4px rgba(0,0,0,0.2)'
             }}
           >
-            Smart Beverage
+            Your Celebration
             <br />
             <span className="bg-gradient-to-r from-red-500 to-white bg-clip-text text-transparent">
-              Distribution Platform
+              Partner
             </span>
           </motion.h1>
 
@@ -131,8 +184,8 @@ const LandingPage = () => {
             transition={{ duration: 0.8, delay: 0.6 }}
             className="text-xl md:text-2xl text-center text-gray-300 max-w-3xl font-light mb-6"
           >
-            Connecting Nigerian bars, clubs, and restaurants with beverage suppliers through 
-            an intelligent digital platform that streamlines ordering, delivery, and inventory management.
+            Premium beverage service for all your celebrations - from traditional ceremonies 
+            to modern events, weddings to corporate gatherings.
           </motion.p>
 
           {/* Key Features */}
@@ -143,13 +196,13 @@ const LandingPage = () => {
             className="flex flex-wrap justify-center gap-4 mb-12 text-sm text-gray-300"
           >
             <div className="flex items-center gap-2">
-              <Clock size={16} /> 2-Hour Delivery
+              <Crown size={16} /> Traditional Ceremonies
             </div>
             <div className="flex items-center gap-2">
-              <Store size={16} /> 115+ Partner Venues
+              <Heart size={16} /> Wedding Services
             </div>
             <div className="flex items-center gap-2">
-              <Activity size={16} /> Real-time Tracking
+              <Music size={16} /> Entertainment
             </div>
           </motion.div>
 
@@ -164,7 +217,7 @@ const LandingPage = () => {
               onClick={() => setShowEventsSection(true)}
               className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full transition-colors"
             >
-              Explore Events
+              Plan Your Celebration
             </button>
             <button 
               onClick={() => setShowInvestorSection(true)}
@@ -175,41 +228,107 @@ const LandingPage = () => {
           </motion.div>
         </header>
       </div>
+{/* Rotating Logo Section */}
+<div className="bg-white py-20">
+  <motion.div
+    initial={{ opacity: 0, scale: 0.9 }}
+    animate={{ opacity: isLoaded ? 1 : 0, scale: isLoaded ? 1 : 0.9 }}
+    transition={{ duration: 1, delay: 0.9 }}
+    className="container mx-auto px-4"
+  >
+    <div className="w-full max-w-md mx-auto">
+      <motion.img
+        src="/Logo2.png"
+        alt="Convivia24 Platform"
+        className="w-full h-auto"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+      />
+    </div>
+  </motion.div>
+</div>
+      {/* Celebration Types Section */}
+      <section className="py-20 bg-gradient-to-b from-white to-gray-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-4xl font-bold text-center mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
+            Celebration Services
+          </h2>
+          <p className="text-center text-gray-600 mb-16 max-w-2xl mx-auto">
+            Expertly curated beverage services for every type of celebration
+          </p>
 
-      {/* Rotating Logo Section */}
-      <div className="bg-white py-20">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: isLoaded ? 1 : 0, scale: isLoaded ? 1 : 0.9 }}
-          transition={{ duration: 1, delay: 0.9 }}
-          className="container mx-auto px-4"
-        >
-          <div className="w-full max-w-md mx-auto">
-            <motion.img
-              src="/Logo2.png"
-              alt="Convivia24 Platform"
-              className="w-full h-auto"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {celebrationTypes.map((type, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 20 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
+              >
+                <div className="p-6">
+                  <div className="bg-red-50 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                    {type.icon}
+                  </div>
+                  <h3 className="text-xl font-bold mb-3">{type.title}</h3>
+                  <p className="text-gray-600 mb-4">{type.description}</p>
+                  <ul className="space-y-2">
+                    {type.features.map((feature, fIndex) => (
+                      <li key={fIndex} className="flex items-center text-sm text-gray-500">
+                        <GlassWater size={16} className="mr-2 text-red-600" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </motion.div>
+            ))}
           </div>
-        </motion.div>
-      </div>
+        </div>
+      </section>
+
+      {/* Entertainment CTA */}
+      <section className="py-16 bg-gradient-to-r from-red-900 to-black text-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 20 }}
+              transition={{ duration: 0.8 }}
+            >
+              <h2 className="text-4xl font-bold mb-6" style={{ fontFamily: 'Playfair Display, serif' }}>
+                Complete Your Celebration
+              </h2>
+              <p className="text-xl text-gray-300 mb-8">
+                Book professional DJs, Hype Men, and Live Bands for your event
+              </p>
+              <div className="flex justify-center gap-6">
+                <button 
+                  onClick={() => setShowEntertainmentSection(true)}
+                  className="bg-white text-red-600 px-8 py-4 rounded-full font-bold hover:bg-gray-100 transition-all transform hover:scale-105 flex items-center"
+                >
+                  <Music className="mr-2" /> Book Entertainment
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
 
       {/* How It Works Section */}
       <section className="py-20 bg-gradient-to-b from-white to-gray-50">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
-            How Convivia24 Works
+            Your Celebration Journey
           </h2>
           <p className="text-center text-gray-600 mb-16 max-w-2xl mx-auto">
-            Experience seamless beverage ordering and delivery in just a few steps
+            We make celebrating special moments seamless and memorable
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
             <div className="hidden md:block absolute top-1/2 left-0 right-0 h-0.5 bg-red-200" />
             
-            {workflowSteps.map((step, index) => (
+            {celebrationSteps.map((step, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
@@ -233,14 +352,55 @@ const LandingPage = () => {
       {/* App Preview Section */}
       <AppPreview />
 
+      {/* Venues Section */}
+      <section className="py-20 bg-black text-white">
+        <div className="container mx-auto px-4">
+          <h2 className="text-4xl font-bold text-center mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
+            Premium Venues
+          </h2>
+          <p className="text-center text-gray-400 mb-16 max-w-2xl mx-auto">
+            Discover perfect spaces for your celebrations
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {venues.map((venue, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y:20 }}
+                animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 20 }}
+                transition={{ duration: 0.8, delay: 0.3 + index * 0.2 }}
+                className="bg-gray-900 rounded-lg overflow-hidden"
+              >
+                <div className="p-6">
+                  <h3 className="text-xl font-bold mb-2">{venue.name}</h3>
+                  <div className="flex items-center text-red-500 mb-4">
+                    <Users className="mr-2" size={16} />
+                    <span>{venue.capacity} guests</span>
+                  </div>
+                  <p className="text-gray-400 text-sm mb-4">{venue.type}</p>
+                  <ul className="space-y-2">
+                    {venue.features.map((feature, fIndex) => (
+                      <li key={fIndex} className="flex items-center text-gray-400 text-sm">
+                        <CheckCircle size={14} className="mr-2 text-red-500" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Service Areas */}
       <section className="py-20 bg-black text-white">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
-            Currently Serving
+            Celebration Destinations
           </h2>
           <p className="text-center text-gray-400 mb-16 max-w-2xl mx-auto">
-            Starting with Nigeria's major business hubs, with plans for nationwide expansion
+            Creating memorable celebrations across Nigeria's major cities
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -257,7 +417,11 @@ const LandingPage = () => {
                   <h3 className="text-2xl font-bold ml-2">{city.name}</h3>
                 </div>
                 <p className="text-gray-400 mb-2">{city.areas}</p>
-                <p className="text-red-500 font-semibold">{city.venues}</p>
+                <p className="text-gray-400 mb-2">{city.events}</p>
+                <p className="text-red-500 font-semibold flex items-center">
+                  <Star size={16} className="mr-2" />
+                  {city.venues}
+                </p>
               </motion.div>
             ))}
           </div>
@@ -268,7 +432,7 @@ const LandingPage = () => {
       <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-16" style={{ fontFamily: 'Playfair Display, serif' }}>
-            Platform Features
+            Premium Services
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {features.map((feature, index) => (
@@ -277,15 +441,43 @@ const LandingPage = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 20 }}
                 transition={{ duration: 0.8, delay: 0.3 + index * 0.2 }}
-                className="bg-white p-6 rounded-xl shadow-lg border border-gray-100"
+                className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 hover:shadow-2xl transition-shadow"
               >
-                <div className="bg-red-50 p-4 rounded-full inline-block mb-4">
+                <div className="bg-red-50 p-4 rounded-full inline-block mb-6">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
+                <h3 className="text-xl font-bold mb-4">{feature.title}</h3>
+                <p className="text-gray-600 leading-relaxed">{feature.description}</p>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* App Download Section */}
+      <section className="py-24 bg-gradient-to-b from-gray-900 to-black text-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 20 }}
+              transition={{ duration: 0.8 }}
+            >
+              <h2 className="text-5xl font-bold mb-8" style={{ fontFamily: 'Playfair Display, serif' }}>
+                Download Our App
+              </h2>
+              <p className="text-xl text-gray-300 mb-10 leading-relaxed">
+                Plan your celebrations, manage bookings, and track your orders all in one place
+              </p>
+              <div className="flex justify-center gap-6">
+                <button className="bg-white text-black px-8 py-4 rounded-full font-bold hover:bg-gray-100 transition-all transform hover:scale-105 flex items-center">
+                  <Star className="mr-2" size={20} /> App Store
+                </button>
+                <button className="bg-white text-black px-8 py-4 rounded-full font-bold hover:bg-gray-100 transition-all transform hover:scale-105 flex items-center">
+                  <Star className="mr-2" size={20} /> Play Store
+                </button>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -298,6 +490,10 @@ const LandingPage = () => {
       <EventsSection 
         isOpen={showEventsSection} 
         onClose={() => setShowEventsSection(false)} 
+      />
+      <EntertainmentSection 
+        isOpen={showEntertainmentSection} 
+        onClose={() => setShowEntertainmentSection(false)} 
       />
     </div>
   );

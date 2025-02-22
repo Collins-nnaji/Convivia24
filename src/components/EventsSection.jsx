@@ -1,9 +1,9 @@
-// src/components/EventsSection.jsx
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Star, X, Clock, Calendar,
-  MapPin, Users, Music
+  MapPin, Users,  Heart,
+  Crown, PartyPopper, GlassWater
 } from 'lucide-react';
 
 const EventsSection = ({ isOpen, onClose }) => {
@@ -12,56 +12,69 @@ const EventsSection = ({ isOpen, onClose }) => {
   const events = [
     {
       id: 1,
-      title: "Saturday Night Live",
-      venue: "Club Lagos",
-      time: "10 PM - 4 AM",
-      date: "This Saturday",
-      price: "₦5,000",
-      category: "club",
+      title: "Royal Wedding Showcase",
+      venue: "Landmark Event Center",
+      time: "11 AM - 8 PM",
+      date: "Next Saturday",
+      price: "₦15,000",
+      category: "wedding",
       image: "/event-thumbnails/event1.jpg",
-      attendees: 250,
-      description: "Experience the best of Lagos nightlife with amazing music and premium drinks."
+      attendees: 350,
+      description: "Experience the perfect wedding celebration with premium drink selections and expert service."
     },
     {
       id: 2,
-      title: "Afrobeats Night",
-      venue: "Sky Lounge",
-      time: "9 PM - 3 AM",
-      date: "Friday",
-      price: "₦3,000",
-      category: "music",
+      title: "Cultural Festival",
+      venue: "Freedom Park",
+      time: "12 PM - 10 PM",
+      date: "Sunday",
+      price: "₦8,000",
+      category: "cultural",
       image: "/event-thumbnails/event2.jpg",
-      attendees: 180,
-      description: "A night of pure Afrobeats vibes with Lagos' top DJs."
+      attendees: 500,
+      description: "A celebration of Nigerian traditions with special palm wine and traditional drink ceremonies."
     },
     {
       id: 3,
-      title: "Lagos Party Mix",
-      venue: "Cubana",
-      time: "8 PM - 3 AM",
+      title: "Corporate Gala Night",
+      venue: "Oriental Hotel",
+      time: "6 PM - 11 PM",
       date: "Next Friday",
-      price: "₦4,000",
-      category: "party",
+      price: "₦25,000",
+      category: "corporate",
       image: "/event-thumbnails/event3.jpg",
-      attendees: 300,
-      description: "The biggest party in Lagos with special guest performances."
+      attendees: 200,
+      description: "An elegant evening of networking with premium champagne and cocktail service."
+    },
+    {
+      id: 4,
+      title: "Birthday Extravaganza",
+      venue: "Sky Lounge",
+      time: "7 PM - 2 AM",
+      date: "Saturday",
+      price: "₦10,000",
+      category: "party",
+      image: "/event-thumbnails/event4.jpg",
+      attendees: 150,
+      description: "Celebrate in style with customized drink packages and professional bartending."
     }
   ];
 
   const categories = [
-    { id: 'all', label: 'All Events', icon: <Calendar size={18} /> },
-    { id: 'club', label: 'Club Nights', icon: <Music size={18} /> },
-    { id: 'music', label: 'Live Music', icon: <Star size={18} /> },
-    { id: 'party', label: 'Special Events', icon: <Users size={18} /> }
+    { id: 'all', label: 'All Celebrations', icon: <Calendar size={18} /> },
+    { id: 'wedding', label: 'Weddings', icon: <Heart size={18} /> },
+    { id: 'cultural', label: 'Cultural Events', icon: <Crown size={18} /> },
+    { id: 'corporate', label: 'Corporate Events', icon: <Users size={18} /> },
+    { id: 'party', label: 'Private Parties', icon: <PartyPopper size={18} /> }
   ];
 
   const featuredEvent = {
-    title: "Weekend Festival",
-    venue: "Multiple Venues",
-    date: "This Weekend",
+    title: "Grand Wedding Expo 2024",
+    venue: "Eko Convention Center",
+    date: "Next Weekend",
     image: "/featured-event.jpg",
-    attendees: 1000,
-    description: "Lagos' biggest weekend festival featuring multiple venues and top artists."
+    attendees: 2000,
+    description: "Lagos' premier wedding exhibition featuring luxury beverage services, traditional ceremonies, and modern celebrations."
   };
 
   const filteredEvents = activeCategory === 'all' 
@@ -90,7 +103,7 @@ const EventsSection = ({ isOpen, onClose }) => {
               {/* Header */}
               <div className="flex justify-between items-center mb-8">
                 <h2 className="text-3xl font-bold" style={{ fontFamily: 'Playfair Display, serif' }}>
-                  Lagos Nightlife
+                  Upcoming Celebrations
                 </h2>
                 <button 
                   onClick={onClose}
@@ -130,7 +143,7 @@ const EventsSection = ({ isOpen, onClose }) => {
                     </div>
                     <div className="flex items-center">
                       <Users size={16} className="mr-1" />
-                      {featuredEvent.attendees}+ Attending
+                      {featuredEvent.attendees}+ Expected
                     </div>
                   </div>
                 </div>
@@ -155,7 +168,7 @@ const EventsSection = ({ isOpen, onClose }) => {
               </div>
 
               {/* Event Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
                 {filteredEvents.map((event, index) => (
                   <motion.div
                     key={event.id}
@@ -208,15 +221,42 @@ const EventsSection = ({ isOpen, onClose }) => {
                 ))}
               </div>
 
+              {/* Services Showcase */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                {[
+                  {
+                    icon: <GlassWater size={24} />,
+                    title: "Premium Bar Service",
+                    description: "Professional bartenders and premium drink selections"
+                  },
+                  {
+                    icon: <Crown size={24} />,
+                    title: "Traditional Ceremonies",
+                    description: "Specialized service for cultural celebrations"
+                  },
+                  {
+                    icon: <PartyPopper size={24} />,
+                    title: "Custom Packages",
+                    description: "Tailored beverage solutions for any celebration"
+                  }
+                ].map((service, index) => (
+                  <div key={index} className="bg-gray-900 p-6 rounded-xl">
+                    <div className="text-red-500 mb-4">{service.icon}</div>
+                    <h3 className="text-xl font-bold mb-2">{service.title}</h3>
+                    <p className="text-gray-400">{service.description}</p>
+                  </div>
+                ))}
+              </div>
+
               {/* Download App CTA */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-gradient-to-r from-red-600 to-red-900 rounded-xl p-8 text-center"
               >
-                <h3 className="text-2xl font-bold mb-4">Never Miss an Event</h3>
+                <h3 className="text-2xl font-bold mb-4">Plan Your Perfect Celebration</h3>
                 <p className="text-gray-200 mb-6">
-                  Download the Convivia24 app to get real-time updates about events and exclusive offers.
+                  Download the Convivia24 app to start planning your next event with our premium beverage services.
                 </p>
                 <button className="bg-white text-red-600 px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition-colors">
                   Download App
