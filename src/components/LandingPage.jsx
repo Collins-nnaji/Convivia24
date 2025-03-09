@@ -20,7 +20,6 @@ const LandingPage = () => {
   const [showEventsSection, setShowEventsSection] = useState(false);
   const [showEntertainmentSection, setShowEntertainmentSection] = useState(false);
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
 
   useEffect(() => {
     const link = document.createElement('link');
