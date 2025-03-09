@@ -10,12 +10,17 @@ import InvestorSection from './InvestorSection';
 import EventsSection from './EventsSection';
 import EntertainmentSection from './EntertainmentSection';
 import AppPreview from './AppPreview';
+import AboutSection from './AboutSection';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const LandingPage = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [showInvestorSection, setShowInvestorSection] = useState(false);
   const [showEventsSection, setShowEventsSection] = useState(false);
   const [showEntertainmentSection, setShowEntertainmentSection] = useState(false);
+  const navigate = useNavigate();
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     const link = document.createElement('link');
@@ -151,11 +156,12 @@ const LandingPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 20 }}
             transition={{ duration: 0.8 }}
+            className="mb-8"
           >
             <img 
               src="/convivia24logo.png" 
               alt="Convivia24 Logo" 
-              className="w-48 mb-8"
+              className="w-48 mx-auto"
             />
           </motion.div>
 
@@ -214,7 +220,7 @@ const LandingPage = () => {
             className="flex flex-wrap justify-center gap-4"
           >
             <button
-              onClick={() => setShowEventsSection(true)}
+              onClick={() => navigate('/events')}
               className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full transition-colors"
             >
               Plan Your Celebration
@@ -225,36 +231,27 @@ const LandingPage = () => {
             >
               Investor Overview
             </button>
+            <button 
+              onClick={() => navigate('/community')}
+              className="bg-transparent border-2 border-white hover:bg-white hover:text-red-600 text-white font-bold py-3 px-8 rounded-full transition-colors"
+            >
+              Join Our Community
+            </button>
           </motion.div>
         </header>
       </div>
-{/* Rotating Logo Section */}
-<div className="bg-white py-20">
-  <motion.div
-    initial={{ opacity: 0, scale: 0.9 }}
-    animate={{ opacity: isLoaded ? 1 : 0, scale: isLoaded ? 1 : 0.9 }}
-    transition={{ duration: 1, delay: 0.9 }}
-    className="container mx-auto px-4"
-  >
-    <div className="w-full max-w-md mx-auto">
-      <motion.img
-        src="/Logo2.png"
-        alt="Convivia24 Platform"
-        className="w-full h-auto"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-      />
-    </div>
-  </motion.div>
-</div>
+
+      {/* About Section */}
+      <AboutSection />
+
       {/* Celebration Types Section */}
-      <section className="py-20 bg-gradient-to-b from-white to-gray-50">
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
             Celebration Services
           </h2>
           <p className="text-center text-gray-600 mb-16 max-w-2xl mx-auto">
-            Expertly curated beverage services for every type of celebration
+            From intimate gatherings to grand celebrations, we provide tailored beverage solutions for every occasion
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -262,9 +259,10 @@ const LandingPage = () => {
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
+                viewport={{ once: true }}
+                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300"
               >
                 <div className="p-6">
                   <div className="bg-red-50 w-16 h-16 rounded-full flex items-center justify-center mb-6">
@@ -281,11 +279,40 @@ const LandingPage = () => {
                     ))}
                   </ul>
                 </div>
+                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+                  <button 
+                    onClick={() => navigate('/events')}
+                    className="text-red-600 font-semibold flex items-center hover:text-red-700 transition-colors"
+                  >
+                    Learn More
+                    <Calendar size={16} className="ml-2" />
+                  </button>
+                </div>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
+
+      {/* Rotating Logo Section */}
+      <div className="bg-white py-20">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: isLoaded ? 1 : 0, scale: isLoaded ? 1 : 0.9 }}
+          transition={{ duration: 1, delay: 0.9 }}
+          className="container mx-auto px-4"
+        >
+          <div className="w-full max-w-md mx-auto">
+            <motion.img
+              src="/Logo2.png"
+              alt="Convivia24 Platform"
+              className="w-full h-auto"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+            />
+          </div>
+        </motion.div>
+      </div>
 
       {/* Entertainment CTA */}
       <section className="py-16 bg-gradient-to-r from-red-900 to-black text-white">
