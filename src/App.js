@@ -9,6 +9,7 @@ import CommunityDetail from './pages/CommunityDetail';
 import EventDetail from './pages/EventDetail';
 import CreateCommunity from './pages/CreateCommunity';
 import Events from './pages/Events';
+import PlanCelebration from './pages/PlanCelebration';
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
@@ -44,6 +45,7 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
+              <Route path="/plan-celebration" element={<PlanCelebration />} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </Layout>

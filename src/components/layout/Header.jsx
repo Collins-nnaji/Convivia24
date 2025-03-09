@@ -64,7 +64,7 @@ const Header = () => {
               Events
             </Link>
             <Link 
-              to="/events" 
+              to="/plan-celebration" 
               className={`text-sm font-medium hover:text-red-300 transition-colors flex items-center`}
             >
               <Calendar className="h-4 w-4 mr-1" />
@@ -173,7 +173,7 @@ const Header = () => {
                 Events
               </Link>
               <Link 
-                to="/events" 
+                to="/plan-celebration" 
                 className={`text-sm font-medium hover:text-red-300 transition-colors flex items-center`}
                 onClick={() => setIsMenuOpen(false)}
               >
