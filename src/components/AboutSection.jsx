@@ -5,15 +5,21 @@ import {
   Users, 
   Globe, 
   Calendar,
-  Heart
+  Heart,
+  MapPin
 } from 'lucide-react';
 
 const AboutSection = () => {
   const stats = [
-    { icon: <Users className="h-6 w-6 text-red-600" />, value: "10,000+", label: "Celebrations Served" },
-    { icon: <Calendar className="h-6 w-6 text-red-600" />, value: "500+", label: "Events Monthly" },
-    { icon: <Globe className="h-6 w-6 text-red-600" />, value: "20+", label: "Cities Covered" },
+    { icon: <Users className="h-6 w-6 text-red-600" />, value: "15,000+", label: "Community Members" },
+    { icon: <Calendar className="h-6 w-6 text-red-600" />, value: "750+", label: "Events Monthly" },
+    { icon: <Globe className="h-6 w-6 text-red-600" />, value: "25+", label: "Cities Covered" },
     { icon: <Heart className="h-6 w-6 text-red-600" />, value: "98%", label: "Client Satisfaction" }
+  ];
+
+  const locations = [
+    { country: "Nigeria", cities: "Lagos, Abuja, Port Harcourt, Benin, Enugu, Ibadan", flagEmoji: "🇳🇬" },
+    { country: "United Kingdom", cities: "London, Manchester, Birmingham, Leeds, Liverpool", flagEmoji: "🇬🇧" }
   ];
 
   return (
@@ -54,21 +60,34 @@ const AboutSection = () => {
               <div className="bg-red-600 h-1 w-20 mb-6"></div>
               
               <p className="text-gray-700 mb-6 leading-relaxed">
-                Convivia24 is Nigeria's premier celebration service provider, specializing in beverage services for all types of events. 
-                From traditional ceremonies to modern celebrations, we bring expertise, quality, and cultural understanding to every event.
+                Convivia24 is a comprehensive celebration platform that brings together communities, event services, and entertainment options in one place. We help you organize, plan, and execute memorable celebrations that honor your cultural heritage while embracing modern conveniences.
               </p>
               
               <p className="text-gray-700 mb-8 leading-relaxed">
-                Founded in 2020, we've quickly grown to become the trusted partner for thousands of celebrations across Nigeria. 
-                Our mission is to elevate every celebration with exceptional service, authentic cultural experiences, and premium beverage options.
+                Our platform connects you with local communities and groups that share your interests and celebration styles. Whether you're planning a traditional ceremony, a modern wedding, or a corporate event, Convivia24 provides the tools, resources, and connections you need to make it exceptional.
               </p>
               
               <div className="flex items-center mb-8">
                 <Award className="h-10 w-10 text-red-600 mr-4" />
                 <div>
-                  <h3 className="font-bold text-lg">Award-Winning Service</h3>
-                  <p className="text-gray-600">Recognized for excellence in event services</p>
+                  <h3 className="font-bold text-lg">Location-Based Services</h3>
+                  <p className="text-gray-600">Tailored content and services for each region we serve</p>
                 </div>
+              </div>
+              
+              <div className="mb-8 space-y-4">
+                {locations.map((location, index) => (
+                  <div key={index} className="bg-white p-4 rounded-lg shadow border-l-4 border-red-600">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-2xl">{location.flagEmoji}</span>
+                      <h3 className="font-bold">{location.country}</h3>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <MapPin className="h-4 w-4 text-red-600 mt-1 flex-shrink-0" />
+                      <p className="text-sm text-gray-600">{location.cities}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
