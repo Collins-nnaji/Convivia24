@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Star, Filter, Search, ChevronDown, ArrowRight, Clock, Users, Calendar, MapPin, Phone, Mail, Globe } from 'lucide-react';
+import { Star, Filter, Search, ChevronDown, ArrowRight, Clock, Users, Calendar, MapPin, MessageCircle, Award, TrendingUp, Zap, CheckCircle2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Providers = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -8,6 +9,11 @@ const Providers = () => {
   const [sortOption, setSortOption] = useState('popularity');
   const [isLoaded, setIsLoaded] = useState(false);
   const [visibleItems, setVisibleItems] = useState(8);
+  const [showFilters, setShowFilters] = useState(false);
+  const [priceRange, setPriceRange] = useState([0, 1000]);
+  const [selectedFeatures, setSelectedFeatures] = useState([]);
+  const [selectedServiceType, setSelectedServiceType] = useState('all');
+  const [sortBy, setSortBy] = useState('popularity');
   
   // Animation hooks
   const [activeItemIndex, setActiveItemIndex] = useState(null);
@@ -19,101 +25,168 @@ const Providers = () => {
     }, 500);
   }, []);
   
-  // Sample provider data
+  // Sample provider data with service-specific details
   const providers = [
     {
       id: 1,
-      name: 'Elite Catering Services',
-      category: 'catering',
+      name: 'EventPro AI',
+      category: 'event_planner',
+      serviceType: 'planning',
       location: 'Lagos, Nigeria',
-      image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTJ8fHZlbnVlfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60',
-      rating: 4.8,
+      image: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8ZXZlbnQlMjBwbGFubmluZ3xlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60',
+      rating: 4.9,
       price: '₦50,000 - ₦200,000',
-      capacity: '50-500',
-      features: ['Custom Menus', 'Staff Service', 'Equipment Rental', 'Special Dietary Options'],
-      openingHours: '8:00 AM - 10:00 PM',
-      eventsCompleted: 150,
-      popularity: 95,
-      contact: {
-        phone: '+234 123 456 7890',
-        email: 'info@elitecatering.com',
-        website: 'www.elitecatering.com'
+      serviceDetails: {
+        maxEventsPerMonth: 20,
+        planningTime: '2-6 months',
+        teamSize: '5-10',
+        specialties: ['Corporate Events', 'Weddings', 'Conferences'],
+        eventTypes: ['Corporate', 'Wedding', 'Conference', 'Birthday', 'Social'],
+        experience: '5+ years',
+        languages: ['English', 'Yoruba', 'Igbo'],
+        certifications: ['Event Management Professional', 'AI Event Planning']
+      },
+      features: ['AI Planning', 'Budget Optimization', 'Vendor Matching', 'Real-time Updates'],
+      openingHours: '24/7',
+      eventsCompleted: 250,
+      popularity: 98,
+      aiFeatures: {
+        smartPlanning: true,
+        budgetOptimization: true,
+        vendorMatching: true,
+        realTimeUpdates: true,
+        guestManagement: true,
+        timelineOptimization: true
       }
     },
     {
       id: 2,
-      name: 'Premium Event Decorators',
-      category: 'decoration',
+      name: 'Smart Catering Solutions',
+      category: 'catering',
+      serviceType: 'food',
       location: 'London, UK',
-      image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTJ8fHZlbnVlfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60',
-      rating: 4.9,
-      price: '£500 - £2,000',
-      capacity: 'Any Size',
-      features: ['Theme Design', 'Custom Props', 'Lighting', 'Floral Arrangements'],
-      openingHours: '9:00 AM - 8:00 PM',
-      eventsCompleted: 200,
-      popularity: 92,
-      contact: {
-        phone: '+44 20 7123 4567',
-        email: 'info@premiumdecorators.com',
-        website: 'www.premiumdecorators.com'
+      image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTJ8fGNhdGVyaW5nfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60',
+      rating: 4.8,
+      price: '£500 - £5,000',
+      serviceDetails: {
+        maxGuests: 500,
+        cuisineTypes: ['International', 'Local', 'Fusion'],
+        dietaryOptions: ['Vegetarian', 'Vegan', 'Halal', 'Kosher'],
+        serviceStyle: ['Buffet', 'Plated', 'Family Style'],
+        equipment: ['Full Kitchen Setup', 'Serving Staff', 'Tableware'],
+        minimumNotice: '2 weeks',
+        delivery: true,
+        setupTime: '2-4 hours'
+      },
+      features: ['AI Menu Planning', 'Dietary Optimization', 'Smart Inventory', 'Real-time Tracking'],
+      openingHours: '24/7',
+      eventsCompleted: 180,
+      popularity: 95,
+      aiFeatures: {
+        smartPlanning: true,
+        menuOptimization: true,
+        inventoryManagement: true,
+        realTimeTracking: true,
+        dietaryPlanning: true,
+        wasteReduction: true
       }
     },
     {
       id: 3,
-      name: 'Sound & Light Solutions',
+      name: 'AI Entertainment Hub',
       category: 'entertainment',
+      serviceType: 'entertainment',
       location: 'Lagos, Nigeria',
-      image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTJ8fHZlbnVlfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60',
+      image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTJ8fGVudGVydGFpbm1lbnR8ZW58MHx8MHx8fA%3D%3D&auto=format&fit=crop&w=500&q=60',
       rating: 4.7,
       price: '₦30,000 - ₦150,000',
-      capacity: 'Any Size',
-      features: ['Professional DJs', 'Sound Systems', 'Lighting Effects', 'Stage Setup'],
-      openingHours: '10:00 AM - 11:00 PM',
-      eventsCompleted: 180,
-      popularity: 88,
-      contact: {
-        phone: '+234 987 654 3210',
-        email: 'info@soundandlight.com',
-        website: 'www.soundandlight.com'
+      serviceDetails: {
+        entertainmentTypes: ['Live Music', 'DJ', 'Dance', 'Comedy', 'Games'],
+        equipment: ['Sound System', 'Lighting', 'Stage', 'Microphones'],
+        maxDuration: '8 hours',
+        setupTime: '1-2 hours',
+        genres: ['Pop', 'Hip Hop', 'Traditional', 'Jazz'],
+        languages: ['English', 'Yoruba', 'Pidgin'],
+        minimumNotice: '1 week'
+      },
+      features: ['AI DJ Selection', 'Music Optimization', 'Crowd Analytics', 'Real-time Adjustments'],
+      openingHours: '24/7',
+      eventsCompleted: 150,
+      popularity: 92,
+      aiFeatures: {
+        smartPlanning: true,
+        musicOptimization: true,
+        crowdAnalytics: true,
+        realTimeAdjustments: true,
+        playlistOptimization: true,
+        moodAnalysis: true
       }
     },
     {
       id: 4,
-      name: 'Luxury Beverage Services',
-      category: 'beverages',
-      location: 'Manchester, UK',
+      name: 'Luxury Venue Solutions',
+      category: 'venues',
+      serviceType: 'venue',
+      location: 'Lagos, Nigeria',
       image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTJ8fHZlbnVlfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60',
-      rating: 4.5,
-      price: '£300 - £1,500',
-      capacity: '50-300',
-      features: ['Bar Service', 'Wine Selection', 'Cocktail Bar', 'Non-Alcoholic Options'],
-      openingHours: '11:00 AM - 12:00 AM',
-      eventsCompleted: 120,
-      popularity: 85,
-      contact: {
-        phone: '+44 161 123 4567',
-        email: 'info@luxurybeverages.com',
-        website: 'www.luxurybeverages.com'
+      rating: 4.9,
+      price: '₦100,000 - ₦500,000',
+      serviceDetails: {
+        capacity: {
+          indoor: 500,
+          outdoor: 1000,
+          total: 1500
+        },
+        spaces: ['Main Hall', 'Conference Rooms', 'Outdoor Garden', 'VIP Lounge'],
+        amenities: ['Parking', 'Security', 'Catering Kitchen', 'Stage', 'Sound System'],
+        setupTime: '4-6 hours',
+        minimumNotice: '1 month',
+        accessibility: ['Wheelchair Access', 'Elevator', 'Ramps'],
+        additionalServices: ['Catering', 'Security', 'Cleaning']
+      },
+      features: ['Indoor & Outdoor', 'Parking', 'Security', 'Catering'],
+      openingHours: '24/7',
+      eventsCompleted: 300,
+      popularity: 97,
+      aiFeatures: {
+        smartPlanning: true,
+        venueMatching: true,
+        capacityOptimization: true,
+        realTimeAvailability: true,
+        layoutOptimization: true,
+        trafficFlow: true
       }
     },
     {
       id: 5,
-      name: 'Professional Photography',
+      name: 'Elite Photography',
       category: 'photography',
-      location: 'Abuja, Nigeria',
-      image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTJ8fHZlbnVlfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60',
-      rating: 4.6,
-      price: '₦40,000 - ₦180,000',
-      capacity: 'Any Size',
-      features: ['Event Coverage', 'Photo Booth', 'Video Recording', 'Online Gallery'],
-      openingHours: '8:00 AM - 8:00 PM',
-      eventsCompleted: 160,
-      popularity: 87,
-      contact: {
-        phone: '+234 555 123 4567',
-        email: 'info@prophotography.com',
-        website: 'www.prophotography.com'
+      serviceType: 'photography',
+      location: 'London, UK',
+      image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTJ8fHBob3RvZ3JhcGh5fGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60',
+      rating: 4.8,
+      price: '£200 - £2,000',
+      serviceDetails: {
+        coverage: ['Wedding', 'Corporate', 'Portrait', 'Drone'],
+        equipment: ['Professional Cameras', 'Drones', 'Lighting', 'Backdrops'],
+        deliveryTime: '1-2 weeks',
+        photoCount: '200-500',
+        formats: ['Digital', 'Print', 'Album'],
+        teamSize: '2-4',
+        languages: ['English', 'French', 'Spanish'],
+        minimumNotice: '2 weeks'
+      },
+      features: ['Wedding', 'Corporate', 'Portrait', 'Drone'],
+      openingHours: '24/7',
+      eventsCompleted: 200,
+      popularity: 96,
+      aiFeatures: {
+        smartPlanning: true,
+        photoOptimization: true,
+        instantDelivery: true,
+        styleMatching: true,
+        faceDetection: true,
+        autoEditing: true
       }
     },
     {
@@ -192,24 +265,41 @@ const Providers = () => {
   const filteredProviders = providers.filter(provider => {
     const matchesSearch = provider.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                          provider.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || provider.category === selectedCategory;
+    const matchesLocation = selectedCategory === 'all' || 
+                          (selectedCategory === 'nigeria' && provider.location.includes('Nigeria')) ||
+                          (selectedCategory === 'uk' && provider.location.includes('UK'));
     const matchesRating = provider.rating >= ratingFilter;
+    const matchesServiceType = selectedServiceType === 'all' || provider.serviceType === selectedServiceType;
+    const matchesPrice = true; // Temporarily disable price filtering
+    const matchesFeatures = selectedFeatures.length === 0 || 
+                           (provider.features && selectedFeatures.every(feature => provider.features.includes(feature)));
     
-    return matchesSearch && matchesCategory && matchesRating;
+    return matchesSearch && matchesLocation && matchesRating && matchesServiceType && matchesPrice && matchesFeatures;
   });
   
-  // Sort providers based on selection
-  const sortedProviders = [...filteredProviders].sort((a, b) => {
-    switch (sortOption) {
-      case 'rating':
-        return b.rating - a.rating;
-      case 'events':
-        return b.eventsCompleted - a.eventsCompleted;
-      case 'popularity':
-        return b.popularity - a.popularity;
-      default:
-        return b.rating - a.rating;
+  // Group providers by category
+  const groupedProviders = filteredProviders.reduce((acc, provider) => {
+    const category = provider.category || 'other';
+    if (!acc[category]) {
+      acc[category] = [];
     }
+    acc[category].push(provider);
+    return acc;
+  }, {});
+
+  // Sort providers within each category
+  Object.keys(groupedProviders).forEach(category => {
+    groupedProviders[category].sort((a, b) => {
+      switch (sortBy) {
+        case 'rating':
+          return b.rating - a.rating;
+        case 'price':
+          return parseFloat(a.price.replace(/[^0-9.-]+/g, '')) - parseFloat(b.price.replace(/[^0-9.-]+/g, ''));
+        case 'popularity':
+        default:
+          return b.popularity - a.popularity;
+      }
+    });
   });
   
   const handleLoadMore = () => {
@@ -217,219 +307,303 @@ const Providers = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-red-700 to-red-900 text-white py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold mb-4">Event Service Providers</h1>
-          <p className="text-xl mb-8">Find trusted professionals for your event needs</p>
-          
-          {/* Search bar */}
+    <div className="min-h-screen bg-[#0A0A0A] text-white">
+      {/* Hero Section */}
+      <div className="relative h-[60vh] overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#FF0000]/20 to-transparent" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.1)_1px,_transparent_1px)] bg-[length:20px_20px] [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
+        <div className="relative max-w-7xl mx-auto px-4 h-full flex flex-col justify-center">
+          <h1 className="text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-300">
+            Event Service Marketplace
+          </h1>
+          <p className="text-xl text-gray-300 mb-8 max-w-2xl">
+            Connect with AI-powered event service providers. Find the perfect match for your event needs.
+          </p>
           <div className="relative max-w-3xl">
             <input
               type="text"
-              placeholder="Search for providers or services..."
-              className="w-full px-5 py-3 rounded-full bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-500 pl-12"
+              placeholder="Search for providers, services, or locations..."
+              className="w-full px-6 py-4 rounded-xl bg-white/5 backdrop-blur-xl border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF0000] pl-12"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <Search className="absolute left-4 top-3.5 text-gray-500" size={20} />
+            <Search className="absolute left-4 top-4 text-gray-400" size={20} />
           </div>
         </div>
       </div>
-      
-      <div className="container mx-auto px-4 py-8">
-        {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm p-4 mb-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-gray-700 font-medium">Filter By:</span>
-              
-              {/* Category Filter */}
-              <div className="relative">
-                <select
-                  className={`appearance-none bg-gray-100 rounded-full px-4 py-2 pr-8 focus:outline-none ${
-                    selectedCategory !== 'all'
-                      ? 'bg-gradient-to-r from-red-700 to-red-900 text-white' 
-                      : 'bg-white text-gray-800 hover:bg-gray-100'
-                  }`}
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                >
-                  {categories.map(category => (
-                    <option key={category.id} value={category.id}>{category.name}</option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-              </div>
-              
-              {/* Rating Filter */}
-              <div className="relative">
-                <select
-                  className="appearance-none bg-gray-100 rounded-full px-4 py-2 pr-8 focus:outline-none"
-                  value={ratingFilter}
-                  onChange={(e) => setRatingFilter(Number(e.target.value))}
-                >
-                  <option value="0">All Ratings</option>
-                  <option value="4.5">4.5+</option>
-                  <option value="4">4.0+</option>
-                  <option value="3.5">3.5+</option>
-                </select>
-                <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-              </div>
-            </div>
-            
-            {/* Sort Options */}
-            <div className="flex items-center gap-2">
-              <span className="text-gray-700 font-medium">Sort By:</span>
-              <div className="relative">
-                <select
-                  className="appearance-none bg-gray-100 rounded-full px-4 py-2 pr-8 focus:outline-none"
-                  value={sortOption}
-                  onChange={(e) => setSortOption(e.target.value)}
-                >
-                  <option value="popularity">Popularity</option>
-                  <option value="rating">Rating</option>
-                  <option value="events">Events Completed</option>
-                </select>
-                <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-              </div>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-12">
+        {/* Featured Providers Section */}
+        <div className="mb-16">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-bold text-white">Featured Providers</h2>
+            <div className="flex items-center gap-2 text-[#FF0000]">
+              <Calendar className="w-4 h-4" />
+              <span className="text-sm">Updated Weekly</span>
             </div>
           </div>
-        </div>
-        
-        {/* Providers Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {isLoaded ? (
-            sortedProviders.slice(0, visibleItems).map((provider, index) => (
-              <div
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {providers.slice(0, 3).map((provider, index) => (
+              <motion.div
                 key={provider.id}
-                className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="group relative"
               >
-                <div className="relative">
-                  <img 
-                    src={provider.image} 
-                    alt={provider.name} 
-                    className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute top-2 right-2 bg-white px-2 py-1 rounded-full text-sm font-medium flex items-center">
-                    <Star className="h-4 w-4 text-yellow-500 mr-1" fill="currentColor" />
-                    {provider.rating}
-                  </div>
-                </div>
-                
-                <div className="p-4">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-bold text-lg text-gray-800 mb-1">{provider.name}</h3>
-                      <div className="flex items-center text-gray-600 mb-2">
+                <div className="absolute inset-0 bg-[#FF0000]/10 rounded-xl blur-xl group-hover:blur-2xl transition-all duration-300" />
+                <div className="relative bg-white/5 backdrop-blur-xl rounded-xl overflow-hidden border border-white/10">
+                  <div className="aspect-[4/3] relative overflow-hidden">
+                    <img
+                      src={provider.image}
+                      alt={provider.name}
+                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    <div className="absolute bottom-4 left-4 right-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-xl font-bold text-white">{provider.name}</h3>
+                        <div className="flex items-center bg-white/10 px-3 py-1 rounded-full text-sm">
+                          <Star className="h-4 w-4 text-[#FF0000] mr-1" fill="currentColor" />
+                          {provider.rating}
+                        </div>
+                      </div>
+                      <div className="flex items-center text-white/80 mt-2">
                         <MapPin className="h-4 w-4 mr-1" />
                         <span className="text-sm">{provider.location}</span>
                       </div>
                     </div>
-                    <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">
-                      {provider.category.charAt(0).toUpperCase() + provider.category.slice(1)}
-                    </span>
                   </div>
-                  
-                  <div className="flex items-center text-gray-600 mb-2">
-                    <Calendar className="h-4 w-4 mr-1" />
-                    <span className="text-sm">{provider.eventsCompleted} Events Completed</span>
-                  </div>
-                  
-                  <div className="flex items-center text-gray-600 mb-2">
-                    <Clock className="h-4 w-4 mr-1" />
-                    <span className="text-sm">{provider.openingHours}</span>
-                  </div>
-                  
-                  <div className="flex items-center text-gray-600 mb-3">
-                    <Users className="h-4 w-4 mr-1" />
-                    <span className="text-sm">Capacity: {provider.capacity}</span>
-                  </div>
-                  
-                  <div className="mb-4">
-                    <div className="text-gray-800 font-medium mb-1">Price Range:</div>
-                    <div className="text-red-600 font-medium">{provider.price}</div>
-                  </div>
-                  
-                  <div className="mb-4">
-                    <div className="text-gray-800 font-medium mb-1">Features:</div>
-                    <div className="flex flex-wrap gap-1">
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center text-sm text-white/60">
+                        <Clock className="h-4 w-4 mr-1" />
+                        {provider.openingHours}
+                      </div>
+                      <div className="text-[#FF0000] font-medium">{provider.price}</div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
                       {provider.features.slice(0, 3).map((feature, i) => (
-                        <span key={i} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+                        <span
+                          key={i}
+                          className="px-3 py-1 bg-white/5 text-white/80 text-xs rounded-full"
+                        >
                           {feature}
                         </span>
                       ))}
-                      {provider.features.length > 3 && (
-                        <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
-                          +{provider.features.length - 3} more
-                        </span>
-                      )}
                     </div>
                   </div>
-                  
-                  <div className="mb-4">
-                    <div className="text-gray-800 font-medium mb-1">Contact:</div>
-                    <div className="flex items-center text-gray-600 mb-1">
-                      <Phone className="h-4 w-4 mr-1" />
-                      <span className="text-sm">{provider.contact.phone}</span>
-                    </div>
-                    <div className="flex items-center text-gray-600 mb-1">
-                      <Mail className="h-4 w-4 mr-1" />
-                      <span className="text-sm">{provider.contact.email}</span>
-                    </div>
-                    <div className="flex items-center text-gray-600">
-                      <Globe className="h-4 w-4 mr-1" />
-                      <span className="text-sm">{provider.contact.website}</span>
-                    </div>
-                  </div>
-                  
-                  <button className="w-full py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center">
-                    Contact Provider
-                    <ArrowRight className="h-4 w-4 ml-1" />
-                  </button>
                 </div>
-              </div>
-            ))
-          ) : (
-            // Loading skeletons
-            Array.from({ length: 8 }).map((_, index) => (
-              <div key={index} className="bg-white rounded-xl overflow-hidden shadow-sm">
-                <div className="w-full h-48 bg-gray-200 animate-pulse"></div>
-                <div className="p-4">
-                  <div className="h-6 bg-gray-200 rounded animate-pulse mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded animate-pulse mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded animate-pulse mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded animate-pulse mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded animate-pulse mb-4"></div>
-                  <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
-                </div>
-              </div>
-            ))
-          )}
+              </motion.div>
+            ))}
+          </div>
         </div>
-        
-        {/* Load More Button */}
-        {isLoaded && sortedProviders.length > visibleItems && (
-          <div className="mt-8 text-center">
-            <button
-              onClick={handleLoadMore}
-              className="px-6 py-3 bg-white border border-red-600 text-red-600 rounded-full hover:bg-red-50 transition-colors"
+
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold text-white">All Providers</h2>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-full text-sm text-gray-300 hover:text-white transition-all duration-300"
+          >
+            <Filter className="h-4 w-4" />
+            {showFilters ? 'Hide Filters' : 'Show Filters'}
+          </button>
+        </div>
+
+        {/* Enhanced Filters Panel */}
+        <AnimatePresence>
+          {showFilters && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-6 mb-12 overflow-hidden"
             >
-              Load More Providers
-            </button>
-          </div>
-        )}
-        
-        {sortedProviders.length === 0 && (
-          <div className="text-center py-16">
-            <div className="text-gray-400 mb-4">
-              <Search className="h-12 w-12 mx-auto" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Price Range Filter */}
+                <div>
+                  <label className="block text-gray-300 font-medium mb-2">Price Range</label>
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="number"
+                      value={priceRange[0]}
+                      onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
+                      className="w-full px-4 py-2 bg-white/5 rounded-lg text-white border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#FF0000]"
+                      placeholder="Min"
+                    />
+                    <span className="text-gray-400">-</span>
+                    <input
+                      type="number"
+                      value={priceRange[1]}
+                      onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
+                      className="w-full px-4 py-2 bg-white/5 rounded-lg text-white border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#FF0000]"
+                      placeholder="Max"
+                    />
+                  </div>
+                </div>
+
+                {/* Features Filter */}
+                <div>
+                  <label className="block text-gray-300 font-medium mb-2">Features</label>
+                  <div className="flex flex-wrap gap-2">
+                    {['AI Planning', 'Budget Optimization', 'Vendor Matching', 'Real-time Updates'].map((feature) => (
+                      <button
+                        key={feature}
+                        onClick={() => {
+                          setSelectedFeatures(prev =>
+                            prev.includes(feature)
+                              ? prev.filter(f => f !== feature)
+                              : [...prev, feature]
+                          );
+                        }}
+                        className={`px-3 py-1 rounded-full text-sm ${
+                          selectedFeatures.includes(feature)
+                            ? 'bg-[#FF0000] text-white'
+                            : 'bg-white/5 text-gray-300 hover:bg-white/10'
+                        }`}
+                      >
+                        {feature}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Location Filter */}
+                <div>
+                  <label className="block text-gray-300 font-medium mb-2">Location</label>
+                  <select
+                    className="w-full px-4 py-2 bg-white/5 rounded-lg text-white border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#FF0000]"
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                  >
+                    <option value="all">All Locations</option>
+                    <option value="nigeria">Nigeria</option>
+                    <option value="uk">United Kingdom</option>
+                  </select>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Providers Grid */}
+        <div className="space-y-12">
+          {Object.entries(groupedProviders).map(([category, categoryProviders]) => (
+            <div key={category} className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-2xl font-bold text-white capitalize">
+                  {category.replace('_', ' ')}
+                </h3>
+                <div className="flex items-center gap-4">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="px-4 py-2 bg-white/5 rounded-lg text-white border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#FF0000]"
+                  >
+                    <option value="popularity">Popularity</option>
+                    <option value="rating">Rating</option>
+                    <option value="price">Price</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-6">
+                {categoryProviders.map((provider) => (
+                  <motion.div
+                    key={provider.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-6 hover:border-[#FF0000]/50 transition-all duration-300"
+                  >
+                    <div className="flex flex-col md:flex-row justify-between gap-6">
+                      {/* Provider Info */}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-4 mb-4">
+                          <h3 className="text-xl font-semibold text-white">{provider.name}</h3>
+                          <div className="flex items-center gap-1">
+                            <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                            <span className="text-white/80">{provider.rating}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 text-white/60 mb-4">
+                          <MapPin className="w-4 h-4" />
+                          <span>{provider.location}</span>
+                        </div>
+
+                        {/* Service Details */}
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                          <div className="bg-white/5 rounded-lg p-3">
+                            <div className="text-sm text-white/60 mb-1">Operating Hours</div>
+                            <div className="text-white">{provider.openingHours}</div>
+                          </div>
+                          <div className="bg-white/5 rounded-lg p-3">
+                            <div className="text-sm text-white/60 mb-1">Capacity</div>
+                            <div className="text-white">
+                              {provider.serviceDetails?.capacity?.total || provider.capacity || 'N/A'}
+                            </div>
+                          </div>
+                          <div className="bg-white/5 rounded-lg p-3">
+                            <div className="text-sm text-white/60 mb-1">Price Range</div>
+                            <div className="text-white">{provider.price}</div>
+                          </div>
+                        </div>
+
+                        {/* Features */}
+                        <div className="mb-4">
+                          <div className="text-sm text-white/60 mb-2">Features</div>
+                          <div className="flex flex-wrap gap-2">
+                            {provider.features?.map((feature, index) => (
+                              <span
+                                key={index}
+                                className="px-3 py-1 bg-[#FF0000]/10 text-[#FF0000] rounded-full text-sm"
+                              >
+                                {feature}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Business Metrics */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div className="bg-white/5 rounded-lg p-3 text-center">
+                            <div className="text-2xl font-bold text-white mb-1">{provider.eventsCompleted}</div>
+                            <div className="text-sm text-white/60">Events Completed</div>
+                          </div>
+                          <div className="bg-white/5 rounded-lg p-3 text-center">
+                            <div className="text-2xl font-bold text-white mb-1">{provider.popularity}%</div>
+                            <div className="text-sm text-white/60">Popularity</div>
+                          </div>
+                          <div className="bg-white/5 rounded-lg p-3 text-center">
+                            <div className="text-2xl font-bold text-white mb-1">{provider.rating}</div>
+                            <div className="text-sm text-white/60">Rating</div>
+                          </div>
+                          <div className="bg-white/5 rounded-lg p-3 text-center">
+                            <div className="text-2xl font-bold text-white mb-1">{provider.reviews || 'N/A'}</div>
+                            <div className="text-sm text-white/60">Reviews</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex flex-col gap-3">
+                        <button className="px-6 py-2 bg-[#FF0000] text-white rounded-lg hover:bg-[#FF0000]/90 transition-colors">
+                          View Profile
+                        </button>
+                        <button className="px-6 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors">
+                          Message
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-gray-700 mb-2">No providers found</h3>
-            <p className="text-gray-500">Try adjusting your filters or search criteria</p>
-          </div>
-        )}
+          ))}
+        </div>
       </div>
     </div>
   );
