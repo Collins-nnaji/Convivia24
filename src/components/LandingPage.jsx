@@ -9,7 +9,7 @@ import {
 import InvestorSection from './InvestorSection';
 import EventsSection from './EventsSection';
 import AboutSection from './AboutSection';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import BrandSpotlightSection from './BrandSpotlightSection';
 
@@ -572,48 +572,6 @@ const LandingPage = () => {
       </div>
       </section>
 
-      {/* Community Groups Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
-            Celebration Communities
-          </h2>
-          <p className="text-center text-gray-600 mb-16 max-w-2xl mx-auto">
-            Connect with dedicated communities for every type of celebration
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {communityGroups.map((group, index) => (
-  <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300"
-              >
-                <div className="p-6">
-                  <div className="bg-red-50 w-16 h-16 rounded-full flex items-center justify-center mb-6">
-                    {group.icon}
-                  </div>
-                  <h3 className="text-xl font-bold mb-3">{group.title}</h3>
-                  <p className="text-gray-600 mb-4">{group.description}</p>
-                </div>
-                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
-            <button
-                    onClick={() => navigate('/social')}
-                    className="text-red-600 font-semibold flex items-center hover:text-red-700 transition-colors"
-                  >
-                    Explore Groups
-                    <Users size={16} className="ml-2" />
-            </button>
-    </div>
-  </motion.div>
-            ))}
-          </div>
-</div>
-      </section>
-
       {/* Celebration Types Section */}
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
@@ -701,7 +659,7 @@ const LandingPage = () => {
               </p>
               <div className="flex justify-center gap-6">
                 <button 
-                  onClick={() => navigate('/entertainment')}
+                  onClick={() => navigate('/providers')}
                   className="bg-white text-red-600 px-8 py-4 rounded-full font-bold hover:bg-gray-100 transition-all transform hover:scale-105 flex items-center"
                 >
                   <Wine className="mr-2" /> Discover Entertainment
@@ -794,7 +752,7 @@ const LandingPage = () => {
           <div className="max-w-4xl mx-auto text-center">
             <motion.div
               initial={{ y: 20, opacity: 0 }}
-              whileInView={{ y: 0, opacity: 1 }}
+              animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 20 }}
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
             >
@@ -804,14 +762,14 @@ const LandingPage = () => {
               </p>
               
               <div className="flex flex-wrap justify-center gap-4">
-                <button className="bg-white text-red-700 hover:bg-gray-100 px-8 py-4 rounded-full font-medium shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1">
+                <Link to="/events" className="bg-white text-red-700 hover:bg-gray-100 px-8 py-4 rounded-full font-medium shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1">
                   Plan Your Celebration
-                </button>
-                <button className="bg-transparent border-2 border-white hover:bg-white/10 px-8 py-4 rounded-full font-medium transition-all transform hover:-translate-y-1">
+                </Link>
+                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="bg-transparent border-2 border-white hover:bg-white/10 px-8 py-4 rounded-full font-medium transition-all transform hover:-translate-y-1">
                   Join Our Community
-                </button>
-                </div>
-              </motion.div>
+                </a>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
