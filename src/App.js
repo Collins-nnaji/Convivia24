@@ -5,7 +5,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Events from './pages/Events';
 import Hotspots from './pages/Hotspots';
-import Providers from './pages/Providers';
+import Experiences from './pages/Experiences';
 import Layout from './components/layout/Layout';
 import { AuthProvider } from './context/AuthContext';
 import { CommunityProvider } from './context/CommunityContext';
@@ -22,7 +22,7 @@ function App() {
               <Route path="/signup" element={<Signup />} />
               <Route path="/events" element={<Events />} />
               <Route path="/hotspots" element={<Hotspots />} />
-              <Route path="/providers" element={<Providers />} />
+              <Route path="/experiences" element={<Experiences />} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </Layout>

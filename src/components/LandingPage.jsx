@@ -4,7 +4,7 @@ import {
   Star, PartyPopper,
   Heart, Crown, CheckCircle, MapPin,
   Calendar, Users, Wine, 
-  GlassWater, Globe, Building, Gift, Sparkles, Utensils, Clock
+  GlassWater, Globe, Building, Gift, Sparkles, Utensils, Clock, Coffee, Mountain, MessageCircle
 } from 'lucide-react';
 import InvestorSection from './InvestorSection';
 import EventsSection from './EventsSection';
@@ -125,117 +125,103 @@ const LandingPage = () => {
 
   const communityGroups = [
     {
-      icon: <Users size={32} color="#DC2626" />,
-      title: "Cultural Communities",
-      description: "Connect with groups that celebrate and preserve cultural traditions"
+      name: "Lagos Coffee Enthusiasts",
+      category: "Social & Lifestyle",
+      members: "325 members",
+      description: "A vibrant community of coffee lovers who meet weekly to share brewing techniques and meaningful conversations.",
+      image: "https://images.unsplash.com/photo-1517231925375-bf2cb42917a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
     },
     {
-      icon: <Building size={32} color="#DC2626" />,
-      title: "Venue Networks",
-      description: "Access exclusive venue partnerships through community membership"
+      name: "London Photography Walks",
+      category: "Photography",
+      members: "187 members",
+      description: "Photographers of all skill levels exploring London's hidden gems together and building lasting friendships.",
+      image: "https://images.unsplash.com/photo-1452587925148-ce544e77262d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
     },
     {
-      icon: <Gift size={32} color="#DC2626" />,
-      title: "Service Providers",
-      description: "Find trusted service providers vetted by community members"
-    },
-    {
-      icon: <Globe size={32} color="#DC2626" />,
-      title: "Global Connections",
-      description: "Connect with diaspora communities for international celebrations"
+      name: "Abuja Hikers Network",
+      category: "Outdoors",
+      members: "312 members",
+      description: "Adventure seekers connecting on weekly hikes, forming bonds through shared experiences in nature.",
+      image: "https://images.unsplash.com/photo-1551632811-561732d1e306?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
     }
   ];
 
-  const nigerianCities = [
-    {
-      name: "Lagos",
-      areas: "Victoria Island • Lekki • Ikoyi • Surulere • Ikeja",
-      events: "Traditional & Modern Celebrations",
-      venues: "75+ venues"
-    },
-    {
-      name: "Port Harcourt",
-      areas: "GRA • Trans Amadi • Old GRA • Diobu",
-      events: "Cultural Events & Weddings",
-      venues: "40+ venues"
-    },
-    {
-      name: "Abuja",
-      areas: "Wuse • Garki • Maitama • Asokoro",
-      events: "Corporate & Social Events",
-      venues: "50+ venues"
-    },
-    {
-      name: "Benin",
-      areas: "Oredo • Ikpoba Hill • GRA • Ugbowo",
-      events: "Traditional Ceremonies",
-      venues: "30+ venues"
-    }
-  ];
-
-  const ukCities = [
-    {
-      name: "London",
-      areas: "Central • North • East • South • West",
-      events: "Multicultural Celebrations",
-      venues: "100+ venues"
-    },
-    {
-      name: "Manchester",
-      areas: "City Centre • Northern Quarter • Salford",
-      events: "Urban & Contemporary Events",
-      venues: "45+ venues"
-    },
-    {
-      name: "Birmingham",
-      areas: "City Centre • Jewellery Quarter • Edgbaston",
-      events: "Diverse Cultural Celebrations",
-      venues: "55+ venues"
-    },
-    {
-      name: "Leeds",
-      areas: "City Centre • Chapel Allerton • Headingley",
-      events: "Modern & Traditional Events",
-      venues: "35+ venues"
-    }
-  ];
+  const cityData = {
+    "Nigeria": [
+      {
+        name: "Lagos",
+        members: "2,450+"
+      },
+      {
+        name: "Port Harcourt",
+        members: "1,250+"
+      },
+      {
+        name: "Abuja", 
+        members: "1,850+"
+      },
+      {
+        name: "Benin",
+        members: "950+"
+      }
+    ],
+    "United Kingdom": [
+      {
+        name: "London",
+        members: "3,200+"
+      },
+      {
+        name: "Manchester",
+        members: "1,700+"
+      },
+      {
+        name: "Birmingham",
+        members: "1,450+"
+      },
+      {
+        name: "Leeds",
+        members: "1,100+"
+      }
+    ]
+  };
 
   const features = [
     {
-      icon: <Crown size={24} />,
-      title: "Cultural Expertise",
-      description: "Connect with communities that specialize in traditional ceremonies and cultural celebrations"
+      icon: <Users size={24} />,
+      title: "Connect with Like-Minded People",
+      description: "Find people who share your interests, hobbies, and passions within your local area"
     },
     {
       icon: <Heart size={24} />,
-      title: "Community Networks",
-      description: "Join groups dedicated to different types of celebrations and events"
+      title: "Discover Popular Hotspots",
+      description: "Explore favorite local hangouts where community members meet and socialize"
     },
     {
-      icon: <Wine size={24} />,
-      title: "Entertainment Services",
-      description: "Find the perfect entertainment through community recommendations"
+      icon: <MessageCircle size={24} />,
+      title: "Meaningful Conversations",
+      description: "Create connections that go beyond digital interaction through real-world meetups"
     }
   ];
 
   const testimonials = [
     {
       name: "David Okonkwo",
-      role: "Community Leader",
-      image: "/images/testimonials/person1.jpg",
-      quote: "Convivia24 transformed how our community celebrates festivals. We connected with vendors, planned logistics, and created an unforgettable experience for over 500 attendees!"
+      role: "Community Member",
+      image: "https://randomuser.me/api/portraits/men/54.jpg",
+      quote: "I moved to Lagos last year and didn't know anyone. Through this platform, I've met incredible people who share my love for jazz music. I now have a whole new social circle!"
     },
     {
       name: "Sarah Thompson",
-      role: "Event Organizer",
-      image: "/images/testimonials/person2.jpg",
-      quote: "The AI-powered planning tools saved us countless hours. We received venue recommendations we hadn't even considered, and the budget calculator was spot-on for our corporate retreat."
+      role: "Social Butterfly",
+      image: "https://randomuser.me/api/portraits/women/45.jpg",
+      quote: "The hotspot feature is brilliant! I discovered a local café where photographers gather every Tuesday. I've improved my skills and made amazing friends at the same time."
     },
     {
       name: "Chinedu Eze",
-      role: "Wedding Planner",
-      image: "/images/testimonials/person3.jpg",
-      quote: "The vendor connections through Convivia24 made planning my client's destination wedding in Lagos seamless, despite us being based in London. Exceptional service!"
+      role: "Working Professional",
+      image: "https://randomuser.me/api/portraits/men/33.jpg",
+      quote: "As someone who works remotely, I was feeling isolated. Now I have a community of other remote workers I meet with regularly. It's changed my social life completely!"
     }
   ];
 
@@ -296,7 +282,7 @@ const LandingPage = () => {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="text-xl text-gray-300 mb-8"
             >
-              Your all-in-one platform for planning unforgettable events. Find venues, book services, arrange beverages, and create perfect celebrations, all in one place.
+              Your all-in-one platform for meeting and connecting with people. Find like-minded individuals, chat with them, and meet up at popular hotspots for meaningful conversations.
           </motion.p>
 
             <motion.div
@@ -306,13 +292,13 @@ const LandingPage = () => {
               className="flex flex-wrap gap-4"
             >
               <button 
-                onClick={() => navigate('/events')}
+                onClick={() => navigate('/experiences')}
                 className="px-6 py-3 bg-gradient-to-r from-red-700 to-red-900 text-white font-semibold rounded-lg hover:from-red-800 hover:to-red-950 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
               >
-                Find Venues & Services
+                Connect with People
               </button>
               <button 
-                onClick={() => navigate('/social')}
+                onClick={() => navigate('/hotspots')}
                 className="px-6 py-3 bg-white/10 backdrop-blur-sm text-white border border-white/30 font-semibold rounded-lg hover:bg-white/20 transition-all duration-300"
               >
                 Explore Hotspots
@@ -337,7 +323,7 @@ const LandingPage = () => {
                 ))}
               </div>
               <div className="text-white/90 text-sm">
-                Joined by <span className="font-semibold">10,000+</span> celebration planners
+                Joined by <span className="font-semibold">10,000+</span> people looking to connect
               </div>
             </motion.div>
           </div>
@@ -367,20 +353,20 @@ const LandingPage = () => {
         </motion.div>
       </section>
       
-      {/* Featured Venues Section */}
+      {/* Featured Hotspots Section */}
       <section className="py-20 bg-gradient-to-b from-white to-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
-              Featured Venues & Services
+              Popular Hotspots & Communities
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Discover our hand-picked selection of premium venues and exclusive services for your next celebration.
+              Discover vibrant places to meet new people and join active communities that share your interests.
             </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Featured Venue 1 */}
+            {/* Featured Hotspot 1 */}
           <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -391,7 +377,7 @@ const LandingPage = () => {
               <div className="relative h-64 overflow-hidden">
                 <img 
                   src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTJ8fHZlbnVlfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60" 
-                  alt="The Grand Ballroom" 
+                  alt="Brew Café Social Hub" 
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
@@ -400,10 +386,10 @@ const LandingPage = () => {
                     <MapPin size={16} />
                     <span className="text-sm">Lagos, Nigeria</span>
                   </div>
-                  <h3 className="text-xl font-bold text-white">The Grand Ballroom</h3>
+                  <h3 className="text-xl font-bold text-white">Brew Café Social Hub</h3>
                 </div>
                 <div className="absolute top-4 right-4 bg-red-600 text-white text-xs px-2 py-1 rounded-full">
-                  Featured
+                  Popular
                 </div>
               </div>
               <div className="p-6">
@@ -416,12 +402,12 @@ const LandingPage = () => {
                   <span className="text-sm text-gray-500">4.8 (120 reviews)</span>
                 </div>
                 <p className="text-gray-600 mb-4">
-                  Luxury ballroom perfect for weddings and corporate events, with stunning chandeliers and state-of-the-art facilities.
+                  A vibrant café where book lovers, digital nomads, and coffee enthusiasts meet to connect and share ideas daily.
                 </p>
                 <div className="flex flex-wrap gap-2 mb-4">
-                  <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">Capacity: 200-500</span>
-                  <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">Catering Available</span>
-                  <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">Sound System</span>
+                  <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">Active Community</span>
+                  <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">Quiet Spaces</span>
+                  <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">Wi-Fi</span>
                 </div>
                 <button className="w-full py-3 bg-gradient-to-r from-red-700 to-red-900 text-white rounded-lg hover:from-red-800 hover:to-red-950 transition-colors">
                   View Details
@@ -429,7 +415,7 @@ const LandingPage = () => {
               </div>
             </motion.div>
             
-            {/* Featured Venue 2 */}
+            {/* Featured Hotspot 2 */}
             <motion.div 
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -440,7 +426,7 @@ const LandingPage = () => {
               <div className="relative h-64 overflow-hidden">
                 <img 
                   src="https://images.unsplash.com/photo-1513278974582-3e1b4a4fa5e5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80" 
-                  alt="Garden Oasis" 
+                  alt="Highland Trekkers Club" 
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
@@ -449,10 +435,10 @@ const LandingPage = () => {
                     <MapPin size={16} />
                     <span className="text-sm">Abuja, Nigeria</span>
                   </div>
-                  <h3 className="text-xl font-bold text-white">Garden Oasis</h3>
+                  <h3 className="text-xl font-bold text-white">Highland Trekkers Club</h3>
                 </div>
                 <div className="absolute top-4 right-4 bg-green-600 text-white text-xs px-2 py-1 rounded-full">
-                  New
+                  Trending
                 </div>
               </div>
               <div className="p-6">
@@ -466,12 +452,12 @@ const LandingPage = () => {
                   <span className="text-sm text-gray-500">4.5 (86 reviews)</span>
                 </div>
                 <p className="text-gray-600 mb-4">
-                  Beautiful outdoor venue with lush gardens and a covered pavilion, perfect for garden weddings and daytime events.
+                  A community for outdoor enthusiasts to connect, plan adventures, and meet like-minded nature lovers weekly.
                 </p>
                 <div className="flex flex-wrap gap-2 mb-4">
-                  <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">Capacity: 100-300</span>
+                  <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">Weekly Meetups</span>
                   <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">Outdoor</span>
-                  <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">Parking</span>
+                  <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">Active</span>
                 </div>
                 <button className="w-full py-3 bg-gradient-to-r from-red-700 to-red-900 text-white rounded-lg hover:from-red-800 hover:to-red-950 transition-colors">
                   View Details
@@ -479,7 +465,7 @@ const LandingPage = () => {
               </div>
             </motion.div>
             
-            {/* Featured Service */}
+            {/* Featured Community */}
             <motion.div 
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -490,16 +476,16 @@ const LandingPage = () => {
               <div className="relative h-64 overflow-hidden">
                 <img 
                   src="https://images.unsplash.com/photo-1556035511-3168381ea4d4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1374&q=80" 
-                  alt="Premium Catering" 
+                  alt="Lagos Book Club" 
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
                 <div className="absolute bottom-4 left-4 right-4">
                   <div className="flex items-center gap-2 text-white mb-1">
-                    <Utensils size={16} />
-                    <span className="text-sm">Service Provider</span>
+                    <Users size={16} />
+                    <span className="text-sm">Active Community</span>
                   </div>
-                  <h3 className="text-xl font-bold text-white">Premium Catering</h3>
+                  <h3 className="text-xl font-bold text-white">Lagos Book Club</h3>
                 </div>
                 <div className="absolute top-4 right-4 bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
                   Top Rated
@@ -515,15 +501,15 @@ const LandingPage = () => {
                   <span className="text-sm text-gray-500">4.9 (148 reviews)</span>
                 </div>
                 <p className="text-gray-600 mb-4">
-                  Luxury catering service offering bespoke menus for all types of events, with professional staff and exceptional presentation.
+                  A thriving community of book lovers who meet monthly for discussions and build lasting friendships over literature.
                 </p>
                 <div className="flex flex-wrap gap-2 mb-4">
-                  <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">International Cuisine</span>
-                  <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">Custom Menus</span>
-                  <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">Staffing Included</span>
+                  <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">240+ Members</span>
+                  <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">Monthly Meetings</span>
+                  <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">All Welcome</span>
                 </div>
                 <button className="w-full py-3 bg-gradient-to-r from-red-700 to-red-900 text-white rounded-lg hover:from-red-800 hover:to-red-950 transition-colors">
-                  View Details
+                  Join Community
                 </button>
               </div>
             </motion.div>
@@ -531,7 +517,7 @@ const LandingPage = () => {
           
           <div className="text-center mt-12">
             <button className="px-8 py-3 border-2 border-red-700 text-red-700 rounded-lg hover:bg-red-50 font-medium transition-colors">
-              View All Venues & Services
+              View All Hotspots & Communities
             </button>
           </div>
         </div>
@@ -572,77 +558,177 @@ const LandingPage = () => {
       </div>
       </section>
 
-      {/* Celebration Types Section */}
+      {/* Celebration Types Section - Update to Social Connection Features */}
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
-            Celebration Services
+            Connect Your Way
           </h2>
           <p className="text-center text-gray-600 mb-16 max-w-2xl mx-auto">
-            From intimate gatherings to grand celebrations, connect with communities for every occasion
+            Discover multiple ways to meet and connect with interesting people around you
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {celebrationTypes.map((type, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300"
-              >
-                <div className="p-6">
-                  <div className="bg-red-50 w-16 h-16 rounded-full flex items-center justify-center mb-6">
-                    {type.icon}
-                  </div>
-                  <h3 className="text-xl font-bold mb-3">{type.title}</h3>
-                  <p className="text-gray-600 mb-4">{type.description}</p>
-                  <ul className="space-y-2">
-                    {type.features.map((feature, fIndex) => (
-                      <li key={fIndex} className="flex items-center text-sm text-gray-500">
-                        <CheckCircle size={16} className="mr-2 text-red-600" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              viewport={{ once: true }}
+              className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300"
+            >
+              <div className="p-6">
+                <div className="bg-red-50 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                  <Coffee size={32} className="text-red-600" />
                 </div>
-                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
-                  <button 
-                    onClick={() => navigate('/events')}
-                    className="text-red-600 font-semibold flex items-center hover:text-red-700 transition-colors"
-                  >
-                    Learn More
-                    <Calendar size={16} className="ml-2" />
-                  </button>
+                <h3 className="text-xl font-bold mb-3">Coffee Meetups</h3>
+                <p className="text-gray-600 mb-4">Connect with others over casual coffee chats in local cafés and hotspots</p>
+                <ul className="space-y-2">
+                  <li className="flex items-center text-sm text-gray-500">
+                    <CheckCircle size={16} className="mr-2 text-red-600" />
+                    Quick 30-minute connections
+                  </li>
+                  <li className="flex items-center text-sm text-gray-500">
+                    <CheckCircle size={16} className="mr-2 text-red-600" />
+                    Perfect for busy professionals
+                  </li>
+                  <li className="flex items-center text-sm text-gray-500">
+                    <CheckCircle size={16} className="mr-2 text-red-600" />
+                    Low-pressure social setting
+                  </li>
+                </ul>
+              </div>
+              <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+                <button 
+                  onClick={() => navigate('/experiences')}
+                  className="text-red-600 font-semibold flex items-center hover:text-red-700 transition-colors"
+                >
+                  Find Coffee Buddies
+                  <Coffee size={16} className="ml-2" />
+                </button>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300"
+            >
+              <div className="p-6">
+                <div className="bg-red-50 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                  <Users size={32} className="text-red-600" />
                 </div>
-              </motion.div>
-            ))}
+                <h3 className="text-xl font-bold mb-3">Interest Groups</h3>
+                <p className="text-gray-600 mb-4">Join communities of people who share your specific passions and hobbies</p>
+                <ul className="space-y-2">
+                  <li className="flex items-center text-sm text-gray-500">
+                    <CheckCircle size={16} className="mr-2 text-red-600" />
+                    Book clubs, photography, fitness
+                  </li>
+                  <li className="flex items-center text-sm text-gray-500">
+                    <CheckCircle size={16} className="mr-2 text-red-600" />
+                    Regular scheduled meetups
+                  </li>
+                  <li className="flex items-center text-sm text-gray-500">
+                    <CheckCircle size={16} className="mr-2 text-red-600" />
+                    Skill sharing opportunities
+                  </li>
+                </ul>
+              </div>
+              <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+                <button 
+                  onClick={() => navigate('/experiences')}
+                  className="text-red-600 font-semibold flex items-center hover:text-red-700 transition-colors"
+                >
+                  Explore Groups
+                  <Users size={16} className="ml-2" />
+                </button>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              viewport={{ once: true }}
+              className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300"
+            >
+              <div className="p-6">
+                <div className="bg-red-50 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                  <Mountain size={32} className="text-red-600" />
+                </div>
+                <h3 className="text-xl font-bold mb-3">Adventure Buddies</h3>
+                <p className="text-gray-600 mb-4">Find companions for outdoor activities and weekend adventures</p>
+                <ul className="space-y-2">
+                  <li className="flex items-center text-sm text-gray-500">
+                    <CheckCircle size={16} className="mr-2 text-red-600" />
+                    Hiking, cycling, urban exploring
+                  </li>
+                  <li className="flex items-center text-sm text-gray-500">
+                    <CheckCircle size={16} className="mr-2 text-red-600" />
+                    Group adventures for safety
+                  </li>
+                  <li className="flex items-center text-sm text-gray-500">
+                    <CheckCircle size={16} className="mr-2 text-red-600" />
+                    Discover hidden local gems
+                  </li>
+                </ul>
+              </div>
+              <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+                <button 
+                  onClick={() => navigate('/experiences')}
+                  className="text-red-600 font-semibold flex items-center hover:text-red-700 transition-colors"
+                >
+                  Find Adventures
+                  <Mountain size={16} className="ml-2" />
+                </button>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              viewport={{ once: true }}
+              className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300"
+            >
+              <div className="p-6">
+                <div className="bg-red-50 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                  <MessageCircle size={32} className="text-red-600" />
+                </div>
+                <h3 className="text-xl font-bold mb-3">Conversation Circles</h3>
+                <p className="text-gray-600 mb-4">Join facilitated discussions on topics that matter to you</p>
+                <ul className="space-y-2">
+                  <li className="flex items-center text-sm text-gray-500">
+                    <CheckCircle size={16} className="mr-2 text-red-600" />
+                    Thought-provoking discussions
+                  </li>
+                  <li className="flex items-center text-sm text-gray-500">
+                    <CheckCircle size={16} className="mr-2 text-red-600" />
+                    Cultural and intellectual exchange
+                  </li>
+                  <li className="flex items-center text-sm text-gray-500">
+                    <CheckCircle size={16} className="mr-2 text-red-600" />
+                    Diverse perspectives welcome
+                  </li>
+                </ul>
+              </div>
+              <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+                <button 
+                  onClick={() => navigate('/experiences')}
+                  className="text-red-600 font-semibold flex items-center hover:text-red-700 transition-colors"
+                >
+                  Join Discussions
+                  <MessageCircle size={16} className="ml-2" />
+                </button>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Rotating Logo Section */}
-      <div className="bg-white py-20">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: isLoaded ? 1 : 0, scale: isLoaded ? 1 : 0.9 }}
-          transition={{ duration: 1, delay: 0.9 }}
-          className="container mx-auto px-4"
-        >
-          <div className="w-full max-w-md mx-auto">
-            <motion.img
-              src="/Logo2.png"
-              alt="Convivia24 Platform"
-              className="w-full h-auto"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-            />
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Entertainment CTA */}
+      {/* Entertainment CTA - Updated for social connection */}
       <section className="py-16 bg-gradient-to-r from-red-900 to-black text-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
@@ -652,17 +738,17 @@ const LandingPage = () => {
               transition={{ duration: 0.8 }}
             >
               <h2 className="text-4xl font-bold mb-6" style={{ fontFamily: 'Playfair Display, serif' }}>
-                Complete Your Celebration
+                Enrich Your Social Life
               </h2>
               <p className="text-xl text-gray-300 mb-8">
-                Order drinks, book caterers, arrange entertainment, and more - all through our trusted service providers
+                Connect with interesting people, discover vibrant hotspots, and build meaningful relationships in your city
               </p>
               <div className="flex justify-center gap-6">
                 <button 
-                  onClick={() => navigate('/providers')}
+                  onClick={() => navigate('/experiences')}
                   className="bg-white text-red-600 px-8 py-4 rounded-full font-bold hover:bg-gray-100 transition-all transform hover:scale-105 flex items-center"
                 >
-                  <Wine className="mr-2" /> Discover Entertainment
+                  <Users size={20} className="mr-2" /> Connect With People
                 </button>
               </div>
             </motion.div>
@@ -746,7 +832,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Call to Action Section */}
+      {/* Call to Action Section - Updated for social platform */}
       <section className="py-16 bg-gradient-to-r from-red-700 to-red-900 text-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
@@ -756,18 +842,52 @@ const LandingPage = () => {
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Create Your Next Memorable Celebration?</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Expand Your Social Circle?</h2>
               <p className="text-xl text-gray-200 mb-10">
-                Join our community of celebration planners and cultural groups to create experiences that bring people together.
+                Join our community of like-minded individuals looking to create authentic connections and lasting friendships.
               </p>
               
               <div className="flex flex-wrap justify-center gap-4">
-                <Link to="/events" className="bg-white text-red-700 hover:bg-gray-100 px-8 py-4 rounded-full font-medium shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1">
-                  Plan Your Celebration
+                <Link to="/experiences" className="bg-white text-red-700 hover:bg-gray-100 px-8 py-4 rounded-full font-medium shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1">
+                  Browse Profiles
                 </Link>
-                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="bg-transparent border-2 border-white hover:bg-white/10 px-8 py-4 rounded-full font-medium transition-all transform hover:-translate-y-1">
-                  Join Our Community
-                </a>
+                <Link to="/signup" className="bg-transparent border-2 border-white hover:bg-white/10 px-8 py-4 rounded-full font-medium transition-all transform hover:-translate-y-1">
+                  Create Your Profile
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA Section - Updated for social connection */}
+      <section className="py-24 bg-gradient-to-b from-red-900 to-black text-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 20 }}
+              transition={{ duration: 0.8 }}
+            >
+              <h2 className="text-5xl font-bold mb-8" style={{ fontFamily: 'Playfair Display, serif' }}>
+                Start Making Real Connections Today
+              </h2>
+              <p className="text-xl text-gray-300 mb-10 leading-relaxed">
+                Join thousands of people who are breaking out of digital isolation and building meaningful real-world relationships
+              </p>
+              <div className="flex justify-center gap-6">
+                <button 
+                  onClick={() => navigate('/signup')}
+                  className="bg-white text-red-600 px-8 py-4 rounded-full font-bold hover:bg-gray-100 transition-all transform hover:scale-105"
+                >
+                  Sign Up Now
+                </button>
+                <button 
+                  onClick={() => navigate('/experiences')}
+                  className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full font-bold hover:bg-white/10 transition-all"
+                >
+                  Explore Connections
+                </button>
               </div>
             </motion.div>
           </div>
@@ -798,14 +918,14 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Service Areas */}
+      {/* Service Areas - Updated for Community Hubs */}
       <section className="py-20 bg-black text-white">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
-            Celebration Destinations
+            Active Communities
           </h2>
           <p className="text-center text-gray-400 mb-8 max-w-2xl mx-auto">
-            Discover communities across our service areas
+            Discover thriving social scenes in our most active locations
           </p>
 
           <div className="flex justify-center gap-6 mb-12">
@@ -832,7 +952,7 @@ const LandingPage = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {(selectedLocation === 'nigeria' ? nigerianCities : ukCities).map((city, index) => (
+            {(selectedLocation === 'nigeria' ? cityData["Nigeria"] : cityData["United Kingdom"]).map((city, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
@@ -844,11 +964,10 @@ const LandingPage = () => {
                   <MapPin size={24} color="#DC2626" />
                   <h3 className="text-2xl font-bold ml-2">{city.name}</h3>
                 </div>
-                <p className="text-gray-400 mb-2">{city.areas}</p>
-                <p className="text-gray-400 mb-2">{city.events}</p>
+                <p className="text-gray-400 mb-4">Popular areas for connections and meetups</p>
                 <p className="text-red-500 font-semibold flex items-center">
                   <Users size={16} className="mr-2" />
-                  {city.venues}
+                  {city.members} active members
                 </p>
               </motion.div>
             ))}
@@ -878,40 +997,6 @@ const LandingPage = () => {
                 <p className="text-gray-600 leading-relaxed">{feature.description}</p>
               </motion.div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA Section */}
-      <section className="py-24 bg-gradient-to-b from-red-900 to-black text-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 20 }}
-              transition={{ duration: 0.8 }}
-            >
-              <h2 className="text-5xl font-bold mb-8" style={{ fontFamily: 'Playfair Display, serif' }}>
-                Start Planning Your Perfect Celebration
-              </h2>
-              <p className="text-xl text-gray-300 mb-10 leading-relaxed">
-                Join thousands of people who trust us to make their special moments extraordinary
-              </p>
-              <div className="flex justify-center gap-6">
-                <button 
-                  onClick={() => navigate('/signup')}
-                  className="bg-white text-red-600 px-8 py-4 rounded-full font-bold hover:bg-gray-100 transition-all transform hover:scale-105"
-                >
-                  Sign Up Now
-                </button>
-                <button 
-                  onClick={() => navigate('/login')}
-                  className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full font-bold hover:bg-white/10 transition-all"
-                >
-                  Log In
-                </button>
-              </div>
-            </motion.div>
           </div>
         </div>
       </section>

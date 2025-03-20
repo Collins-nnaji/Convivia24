@@ -54,7 +54,7 @@ const Header = () => {
     { path: '/', label: 'Home', icon: <Home size={16} /> },
     { path: '/events', label: 'Events', icon: <Calendar size={16} /> },
     { path: '/hotspots', label: 'Hotspots', icon: <Users size={16} /> },
-    { path: '/providers', label: 'Providers', icon: <MessageCircle size={16} /> },
+    { path: '/experiences', label: 'Connect', icon: <Heart size={16} /> },
   ];
 
   return (
