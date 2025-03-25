@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Menu, X, User, LogOut, ChevronDown, 
   Calendar, Music, Heart, Crown, 
-  Bell, Search, Home, Users, MessageCircle
+  Bell, Search, Home, Users, MessageCircle, Sparkles
 } from 'lucide-react';
 
 const Header = () => {
@@ -120,6 +120,25 @@ const Header = () => {
                 </Link>
               </motion.div>
             ))}
+            
+            {/* ConviviaPass Special Link */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : -10 }}
+              transition={{ duration: 0.3, delay: 0.5 }}
+            >
+              <Link 
+                to="/conviviapass" 
+                className={`text-sm font-medium px-3 py-2 rounded-full flex items-center gap-1.5 transition-all ${
+                  isActive('/conviviapass')
+                    ? 'bg-gradient-to-r from-red-600 to-purple-600 text-white shadow-lg shadow-purple-700/20' 
+                    : 'bg-gradient-to-r from-red-600/20 to-purple-600/20 text-white hover:from-red-600/30 hover:to-purple-600/30'
+                }`}
+              >
+                <Sparkles size={16} className="text-yellow-300" />
+                ConviviaPass
+              </Link>
+            </motion.div>
           </nav>
 
           {/* User Menu (Desktop) */}
@@ -269,6 +288,20 @@ const Header = () => {
                       {item.label}
                     </Link>
                   ))}
+
+                  {/* ConviviaPass Link in Mobile Menu */}
+                  <Link 
+                    to="/conviviapass" 
+                    className={`text-sm font-medium py-2 px-4 rounded-lg flex items-center gap-3 transition-colors ${
+                      isActive('/conviviapass')
+                        ? 'bg-gradient-to-r from-red-600 to-purple-600 text-white' 
+                        : 'bg-gradient-to-r from-red-600/20 to-purple-600/20 text-white hover:from-red-600/30 hover:to-purple-600/30'
+                    }`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Sparkles className="h-4 w-4 text-yellow-300" />
+                    ConviviaPass
+                  </Link>
 
                   {currentUser ? (
                     <>
