@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { 
   MapPin, ArrowRight, CheckCircle, Heart, 
   Users2, Sparkles, Search, Plus, BellRing, 
   Zap, Menu, User, X, MessageSquare, Globe,
-  Filter, Calendar
+  Filter, Calendar, Home, Map
 } from 'lucide-react';
 
 // Import custom components

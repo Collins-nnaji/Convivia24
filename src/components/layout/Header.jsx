@@ -110,8 +110,7 @@ const Header = () => {
                 <Link 
                   to={item.path} 
                   className={`text-sm font-medium px-3 py-2 rounded-full flex items-center gap-1.5 transition-all ${
-                    (item.path === '/' && isActive(item.path)) || 
-                    (item.path !== '/' && location.pathname === item.path)
+                    location.pathname === item.path
                       ? 'bg-red-600/20 text-white' 
                       : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
                   }`}
@@ -279,7 +278,7 @@ const Header = () => {
                       key={item.path}
                       to={item.path} 
                       className={`text-sm font-medium py-2 px-4 rounded-lg flex items-center gap-3 transition-colors ${
-                        (item.path === '/' ? isActive(item.path) : location.pathname.includes(item.path.substring(1)))
+                        location.pathname === item.path
                           ? 'bg-red-600/20 text-white' 
                           : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                       }`}
