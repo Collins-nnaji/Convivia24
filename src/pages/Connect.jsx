@@ -532,7 +532,13 @@ const Connect = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="min-h-screen bg-gradient-to-b from-blue-900 via-indigo-900 to-purple-900 text-white"
+    >
       <div className="container mx-auto px-4 py-8">
         {/* Page Header */}
         <div className="mb-6 flex justify-between items-center">
@@ -566,7 +572,7 @@ const Connect = () => {
         onClose={() => setIsModalOpen(false)}
         person={selectedPerson}
       />
-    </div>
+    </motion.div>
   );
 };
 

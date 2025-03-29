@@ -921,150 +921,199 @@ const Hotspots = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-black to-[#1A1A1A] text-white pb-20">
-      {/* Top Spotlight Section */}
-      <motion.section 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
-        className="py-8 md:py-16 px-4 md:px-8 max-w-7xl mx-auto"
-      >
-        <motion.h2 
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="text-3xl md:text-4xl font-bold mb-2 text-center"
-        >
-          Top Spotlight
-        </motion.h2>
-        <motion.p 
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="text-center text-white/70 mb-10 max-w-2xl mx-auto"
-        >
-          Discover our most popular and highly-rated venues
-        </motion.p>
-        
-        <div className="relative">
-          {topHotspots.length > 0 && (
-            <div className="flex flex-col md:flex-row gap-6">
-              {topHotspots.slice(0, 3).map((hotspot, index) => (
-                <motion.div 
-                  key={index}
-                  initial={{ opacity: 0, y: 50 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ 
-                    delay: index * 0.2,
-                    duration: 0.7,
-                    type: "spring"
-                  }}
-                  whileHover={{ y: -10, transition: { duration: 0.3 } }}
-                  className="bg-black/40 backdrop-blur-lg rounded-xl border border-white/10 overflow-hidden relative"
-                >
-                  <div className="relative h-60 overflow-hidden">
-                    <motion.img 
-                      src={hotspot.image} 
-                      alt={hotspot.name}
-                      className="w-full h-full object-cover"
-                      whileHover={{ scale: 1.05 }}
-                      transition={{ duration: 0.5 }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent"></div>
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <motion.h3 
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: index * 0.2 + 0.3 }}
-                        className="text-xl font-bold text-white mb-1"
-                      >
-                        {hotspot.name}
-                      </motion.h3>
-                      <motion.div 
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: index * 0.2 + 0.4 }}
-                        className="flex items-center gap-2 text-white/90 text-sm"
-                      >
-                        <MapPin className="h-4 w-4 text-[#FF0000]" />
-                        <span>{hotspot.location}</span>
-                      </motion.div>
-                    </div>
-                    <motion.div 
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.2 + 0.5 }}
-                      className="absolute top-4 right-4 bg-[#FF0000] text-white px-2 py-1 rounded-full text-sm font-medium"
-                    >
-                      {hotspot.rating} <Star className="inline-block h-3 w-3 ml-0.5 mb-0.5 fill-current" />
-                    </motion.div>
-                  </div>
-                  <div className="p-4">
-                    <motion.div
-                      initial={{ y: 20, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: index * 0.2 + 0.5 }}
-                      className="flex justify-center mt-2"
-                    >
-                      <motion.button
-                        whileHover={{ scale: 1.05, backgroundColor: "#CC0000" }}
-                        whileTap={{ scale: 0.95 }}
-                        className="px-5 py-2 bg-[#FF0000] hover:bg-[#FF0000]/90 text-white rounded-full text-sm font-medium flex items-center gap-2 transition-colors duration-300"
-                      >
-                        Explore Venue
-                        <ArrowRight className="h-4 w-4" />
-                      </motion.button>
-                    </motion.div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          )}
-        </div>
-      </motion.section>
+  // Page transition
+  const pageVariants = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 }
+  };
 
-      {/* Discover Categories Section */}
-      <motion.section 
-        initial={{ opacity: 0 }}
-        animate={{ 
-          opacity: 1,
-          y: scrollY > 100 ? 0 : 20,
-        }}
-        transition={{ duration: 0.6 }}
-        className="py-8 px-4 md:px-8 max-w-7xl mx-auto"
-      >
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="flex flex-col md:flex-row justify-between items-center mb-8"
-        >
+  return (
+    <motion.div 
+      className="min-h-screen bg-gradient-to-b from-black via-[#0A0A0A] to-[#121212] text-white pb-20"
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      variants={pageVariants}
+      transition={{ duration: 0.3 }}
+    >
+      {/* Top Spotlight Section */}
+      <section className="py-12 px-4 md:px-8 max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row items-center justify-between mb-8">
           <div>
-            <motion.h2 
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              className="text-3xl md:text-4xl font-bold mb-2"
-            >
-              Discover Hotspots
-            </motion.h2>
-            <motion.p 
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-white/70"
-            >
-              Browse popular venues in your area
-            </motion.p>
+            <h2 className="text-3xl md:text-4xl font-bold mb-2">Top Spotlight</h2>
+            <p className="text-white/70">Featured venues you'll love</p>
           </div>
           
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex items-center gap-4 mt-4 md:mt-0"
-          >
+          <div className="flex items-center gap-3 mt-4 md:mt-0">
+            <button
+              onClick={() => handleManualNavigation(currentTopSpot === 0 ? topHotspots.length - 1 : currentTopSpot - 1)}
+              className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors duration-300"
+              aria-label="Previous slide"
+            >
+              <ChevronLeft className="h-5 w-5 text-white" />
+            </button>
+            <button
+              onClick={() => handleManualNavigation((currentTopSpot + 1) % topHotspots.length)}
+              className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors duration-300"
+              aria-label="Next slide"
+            >
+              <ChevronRight className="h-5 w-5 text-white" />
+            </button>
+          </div>
+        </div>
+        
+        <div className="relative h-[600px] overflow-hidden rounded-2xl">
+          <div className="absolute inset-0 overflow-hidden">
+            <motion.div
+              className="flex h-full"
+              animate={spotlightControls}
+              style={{ width: `${topHotspots.length * 100}%` }}
+            >
+              {topHotspots.map((hotspot, idx) => (
+                <div
+                  key={idx}
+                  className="relative h-full w-full"
+                  style={{ flex: `0 0 ${100 / topHotspots.length}%` }}
+                >
+                  <div className="relative h-full overflow-hidden rounded-xl">
+                    {/* Background Image with Parallax Effect */}
+                    <motion.div
+                      animate={{ 
+                        scale: currentTopSpot === idx ? 1.1 : 1,
+                        translateX: currentTopSpot === idx ? '2%' : '0%'
+                      }}
+                      transition={{ duration: 6, ease: 'easeInOut' }}
+                      className="absolute inset-0"
+                    >
+                      <img
+                        src={hotspot.image}
+                        alt={hotspot.name}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+                    </motion.div>
+                    
+                    {/* Content */}
+                    <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-12">
+                      <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ 
+                          opacity: currentTopSpot === idx ? 1 : 0,
+                          y: currentTopSpot === idx ? 0 : 30
+                        }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                        className="max-w-3xl"
+                      >
+                        <div className="mb-3 flex items-center gap-2">
+                          <span className="bg-[#FF0000] text-white text-xs font-bold px-3 py-1 rounded-full">FEATURED</span>
+                          <span className="bg-white/20 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full">{hotspot.type}</span>
+                        </div>
+                        
+                        <h3 className="text-3xl md:text-5xl font-bold mb-3">{hotspot.name}</h3>
+                        
+                        <div className="flex items-center gap-4 mb-3 text-sm md:text-base">
+                          <div className="flex items-center gap-1.5">
+                            <MapPin className="h-4 w-4 text-[#FF0000]" />
+                            <span>{hotspot.location}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                            <span>{hotspot.rating} Rating</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Clock className="h-4 w-4 text-[#FF0000]" />
+                            <span>{hotspot.openingHours}</span>
+                          </div>
+                        </div>
+                        
+                        <p className="text-white/80 mb-6 max-w-2xl">{hotspot.description}</p>
+                        
+                        <div className="flex flex-wrap gap-3 mb-6">
+                          {hotspot.features.map((feature, idx) => (
+                            <motion.span 
+                              key={idx}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.1 * idx + 0.5 }}
+                              className="bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm text-white/90"
+                            >
+                              {feature}
+                            </motion.span>
+                          ))}
+                        </div>
+                        
+                        <div className="flex flex-col sm:flex-row gap-4">
+                          <motion.button 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.8 }}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="px-6 py-3 bg-gradient-to-r from-[#FF0000] to-red-700 hover:from-[#FF0000]/90 hover:to-red-700/90 text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-colors"
+                          >
+                            View Details
+                            <ArrowRight className="h-4 w-4" />
+                          </motion.button>
+                          <motion.button 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.9 }}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-colors"
+                          >
+                            Save for Later
+                            <Heart className="h-4 w-4" />
+                          </motion.button>
+                        </div>
+                      </motion.div>
+                    </div>
+                  </div>
+
+                  {/* Promo Tag */}
+                  <motion.div 
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ 
+                      opacity: currentTopSpot === idx ? 1 : 0,
+                      x: currentTopSpot === idx ? 0 : 20
+                    }}
+                    transition={{ delay: 0.3 }}
+                    className="absolute top-6 right-6 bg-gradient-to-r from-[#FF0000] to-red-700 px-4 py-2 rounded-full flex items-center gap-2"
+                  >
+                    <Award className="h-4 w-4 text-white" />
+                    <span className="text-white font-bold text-sm">{hotspot.promoMessage || 'Top Pick'}</span>
+                  </motion.div>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+          
+          {/* Carousel Controls */}
+          <div className="absolute bottom-6 right-6 flex items-center gap-3">
+            {topHotspots.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleManualNavigation(idx)}
+                className={`h-2.5 rounded-full transition-all duration-300 ${
+                  currentTopSpot === idx ? 'w-8 bg-[#FF0000]' : 'w-2.5 bg-white/30'
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+      
+      {/* Discover Categories Section */}
+      <section className="py-8 px-4 md:px-8 max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+          <div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-2">Discover Hotspots</h2>
+            <p className="text-white/70">Browse popular venues in your area</p>
+          </div>
+          
+          <div className="flex items-center gap-4 mt-4 md:mt-0">
             <div className="relative flex items-center">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/40 h-4 w-4" />
               <input
@@ -1076,37 +1125,20 @@ const Hotspots = () => {
               />
             </div>
             
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <button
               onClick={() => setShowFilters(!showFilters)}
               className="bg-white/10 text-white p-2 rounded-full hover:bg-white/20 transition-colors duration-300"
             >
               <SlidersHorizontal className="h-5 w-5" />
-            </motion.button>
-          </motion.div>
-        </motion.div>
+            </button>
+          </div>
+        </div>
         
         {/* Category Filters */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 mb-10"
-        >
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 mb-10">
           {moodCategories.map((category, index) => (
-            <motion.button
+            <button
               key={category.id}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.05 + 0.3 }}
-              whileHover={{ 
-                y: -5, 
-                backgroundColor: category.id === selectedCategory 
-                  ? 'rgba(255, 0, 0, 0.8)' 
-                  : 'rgba(255, 255, 255, 0.2)' 
-              }}
-              whileTap={{ scale: 0.95 }}
               onClick={() => setSelectedCategory(category.id)}
               className={`p-3 rounded-xl flex flex-col items-center justify-center text-center transition-all duration-300 ${
                 category.id === selectedCategory
@@ -1116,37 +1148,22 @@ const Hotspots = () => {
             >
               {category.icon}
               <span className="mt-2 text-sm">{category.name}</span>
-            </motion.button>
+            </button>
           ))}
-        </motion.div>
+        </div>
         
         {/* Hotspots Listing */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ 
-            opacity: 1,
-            scale: scrollY > 300 ? 1 : 0.98
-          }}
-          transition={{ duration: 0.7 }}
-          className="grid grid-cols-1 gap-8"
-        >
+        <div className="grid grid-cols-1 gap-8">
           {sortedHotspots.length > 0 ? (
             sortedHotspots.map((hotspot, index) => (
               <HotspotCard key={index} hotspot={hotspot} index={index} />
             ))
           ) : (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              className="text-center py-16"
-            >
+            <div className="text-center py-16">
               <SearchX className="h-16 w-16 mx-auto text-white/40 mb-4" />
               <h3 className="text-2xl font-bold mb-2">No venues found</h3>
               <p className="text-white/70 mb-6">Try adjusting your search or filters</p>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 onClick={() => {
                   setSearchQuery('');
                   setSelectedCategory('all');
@@ -1158,12 +1175,12 @@ const Hotspots = () => {
               >
                 <RefreshCw className="h-4 w-4" />
                 Reset Filters
-              </motion.button>
-            </motion.div>
+              </button>
+            </div>
           )}
-        </motion.div>
-      </motion.section>
-    </div>
+        </div>
+      </section>
+    </motion.div>
   );
 };
 

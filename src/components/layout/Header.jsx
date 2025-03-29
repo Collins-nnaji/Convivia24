@@ -47,7 +47,10 @@ const Header = () => {
   };
 
   const isActive = (path) => {
-    return location.pathname === path;
+    if (path === '/') {
+      return location.pathname === '/';
+    }
+    return location.pathname.startsWith(path);
   };
 
   const navItems = [

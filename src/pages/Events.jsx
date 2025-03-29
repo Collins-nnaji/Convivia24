@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useAnimation, useScroll, useTransform } from 'framer-motion';
 import { Calendar, MapPin, Users, Star, Filter, ChevronDown, Search, ArrowRight, Clock, CheckCircle, ClipboardList, Music, Cake, Heart, Award, Wine, Utensils, Palette, X, TrendingUp, ThumbsUp, Globe, Sparkles, Ticket, CalendarPlus, User, Percent, Crown, Download, ListChecks, Building2, User2, Gift, Store, CalendarClock, Webhook, Camera, Shield } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -562,7 +562,13 @@ const Events = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-black text-white">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-black text-white"
+    >
       {/* Header */}
       <div className="relative overflow-hidden">
         {/* Background with animated particles */}
@@ -1299,7 +1305,7 @@ const Events = () => {
           scrollbar-width: none;
         }
       `}</style>
-    </div>
+    </motion.div>
   );
 };
 
