@@ -133,20 +133,20 @@ const Connect = () => {
                   exit={{ height: 0, opacity: 0 }}
                   className="mb-4 lg:hidden"
                 >
-                  <div className="flex items-center bg-white rounded-full border border-gray-200 p-1 shadow-sm">
-                    <Search className="ml-3 text-blue-500" size={18} />
+                  <div className="flex items-center bg-black/30 backdrop-blur-sm rounded-full border border-white/10 p-1 shadow-sm">
+                    <Search className="ml-3 text-red-500" size={18} />
                     <input
                       type="text"
                       placeholder="Search people, interests, locations..."
-                      className="w-full py-2 px-3 bg-transparent border-none focus:ring-0 text-gray-800"
+                      className="w-full py-2 px-3 bg-transparent border-none focus:ring-0 text-white placeholder:text-gray-400"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
                     <button 
                       onClick={() => setOpenSearchBar(false)}
-                      className="p-2 mr-1 rounded-full hover:bg-gray-100"
+                      className="p-2 mr-1 rounded-full hover:bg-gray-800"
                     >
-                      <X size={18} className="text-gray-500" />
+                      <X size={18} className="text-gray-400" />
                     </button>
                   </div>
                 </motion.div>
@@ -178,9 +178,9 @@ const Connect = () => {
             {/* Search Results Summary - Desktop Only */}
             <div className="hidden lg:flex justify-between items-center mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-2xl shadow-sm border border-blue-100">
               <div className="flex items-center">
-                <Users2 className="mr-2 text-blue-500" size={20} />
-                <p className="text-gray-700 text-sm">
-                  <span className="font-semibold text-blue-600">{filteredPeople.length}</span> people matching your criteria
+                <Users2 className="mr-2 text-red-500" size={20} />
+                <p className="text-white text-sm">
+                  <span className="font-semibold text-red-400">{filteredPeople.length}</span> people matching your criteria
                 </p>
               </div>
               <div className="flex gap-2">
@@ -197,8 +197,8 @@ const Connect = () => {
                 onClick={() => setSelectedCategory('all')}
                 className={`mr-2 px-4 py-1.5 rounded-full text-sm font-medium ${
                   selectedCategory === 'all' 
-                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md' 
-                    : 'bg-white text-gray-700 border border-gray-200'
+                    ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-md' 
+                    : 'bg-black/30 text-white border border-white/10'
                 }`}
               >
                 All
@@ -209,8 +209,8 @@ const Connect = () => {
                   onClick={() => setSelectedCategory(interest.id)}
                   className={`mr-2 px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap ${
                     selectedCategory === interest.id
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md' 
-                      : 'bg-white text-gray-700 border border-gray-200'
+                      ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-md' 
+                      : 'bg-black/30 text-white border border-white/10'
                   }`}
                 >
                   {interest.name}
@@ -219,30 +219,30 @@ const Connect = () => {
             </div>
 
             {/* Mobile Actions Bar */}
-            <div className="lg:hidden sticky top-20 z-30 flex justify-between items-center mb-4 bg-white shadow-md rounded-xl py-2 px-4 border-b border-gray-200">
+            <div className="lg:hidden sticky top-20 z-30 flex justify-between items-center mb-4 bg-black/50 backdrop-blur-md shadow-md rounded-xl py-2 px-4 border border-white/10">
               <div className="flex items-center">
                 <motion.button 
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setShowMobileNav(!showMobileNav)}
-                  className="p-2 rounded-full hover:bg-gray-100 mr-2"
+                  className="p-2 rounded-full hover:bg-gray-800 mr-2"
                 >
-                  <Menu size={20} className="text-gray-700" />
+                  <Menu size={20} className="text-gray-300" />
                 </motion.button>
                 <button
                   onClick={() => setOpenSearchBar(!openSearchBar)}
-                  className="flex items-center gap-2 py-1.5 px-3 bg-gray-100 rounded-full text-sm text-gray-700"
+                  className="flex items-center gap-2 py-1.5 px-3 bg-gray-800 rounded-full text-sm text-gray-300"
                 >
-                  <Search size={16} className="text-gray-500" />
-                  <span className="text-gray-500">Search</span>
+                  <Search size={16} className="text-gray-400" />
+                  <span className="text-gray-400">Search</span>
                 </button>
               </div>
               <div>
                 <motion.button 
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setShowFilters(!showFilters)}
-                  className="p-2 rounded-full hover:bg-gray-100"
+                  className="p-2 rounded-full hover:bg-gray-800"
                 >
-                  <Filter size={20} className="text-gray-700" />
+                  <Filter size={20} className="text-gray-300" />
                 </motion.button>
               </div>
             </div>
@@ -256,12 +256,12 @@ const Connect = () => {
                   exit={{ height: 0, opacity: 0 }}
                   className="lg:hidden mb-6"
                 >
-                  <div className="bg-white rounded-xl shadow-md p-4 border border-gray-200">
+                  <div className="bg-black/50 backdrop-blur-md rounded-xl shadow-md p-4 border border-white/10">
                     <div className="flex justify-between items-center mb-4">
-                      <h3 className="font-medium text-gray-800">Filters</h3>
+                      <h3 className="font-medium text-white">Filters</h3>
                       <button 
                         onClick={() => setShowFilters(false)}
-                        className="text-gray-500 hover:text-gray-700"
+                        className="text-gray-400 hover:text-white"
                       >
                         <X size={20} />
                       </button>
@@ -269,7 +269,7 @@ const Connect = () => {
                     
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                        <label className="block text-sm font-medium text-white mb-1">Location</label>
                         <input
                           type="text"
                           placeholder="Enter city or country"
@@ -280,7 +280,7 @@ const Connect = () => {
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Interests</label>
+                        <label className="block text-sm font-medium text-white mb-1">Interests</label>
                         <div className="flex flex-wrap gap-2">
                           {interests.slice(0, 6).map(interest => (
                             <button 
@@ -288,8 +288,8 @@ const Connect = () => {
                               onClick={() => setSelectedCategory(interest.id === selectedCategory ? 'all' : interest.id)}
                               className={`px-3 py-1 rounded-full text-xs font-medium ${
                                 selectedCategory === interest.id
-                                  ? 'bg-blue-100 text-blue-700 border border-blue-200' 
-                                  : 'bg-gray-100 text-gray-700 border border-gray-200'
+                                  ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-md' 
+                                  : 'bg-gray-800 text-white border border-white/10'
                               }`}
                             >
                               {interest.name}
@@ -339,7 +339,7 @@ const Connect = () => {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: isLoaded ? 1 : 0 }}
-                className="bg-white rounded-xl shadow-sm p-8 text-center border border-gray-200 mb-8"
+                className="bg-black/30 backdrop-blur-md rounded-xl shadow-sm p-8 text-center border border-white/10 mb-8"
               >
                 <div className="flex flex-col items-center justify-center">
                   <motion.div 
@@ -378,7 +378,7 @@ const Connect = () => {
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={() => setVisibleItems(prev => prev + 6)}
-                  className="px-6 py-3 bg-white hover:bg-gray-50 text-blue-600 font-medium rounded-xl shadow-sm border border-gray-200 flex items-center gap-2 transition-colors"
+                  className="px-6 py-3 bg-black/50 hover:bg-black/70 text-red-500 font-medium rounded-xl shadow-sm border border-white/10 flex items-center gap-2 transition-colors"
                 >
                   Load more people
                   <ArrowRight size={18} />
@@ -394,21 +394,21 @@ const Connect = () => {
             {/* Communities List */}
             <div className="mb-4 lg:mb-6">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                <div className="bg-white rounded-full border border-gray-200 p-1 shadow-sm flex items-center flex-1">
-                  <Search className="ml-3 text-blue-500" size={18} />
+                <div className="bg-black/30 backdrop-blur-sm rounded-full border border-white/10 p-1 shadow-sm flex items-center flex-1">
+                  <Search className="ml-3 text-red-500" size={18} />
                   <input
                     type="text"
                     placeholder="Search communities..."
-                    className="w-full py-2 px-3 bg-transparent border-none focus:ring-0 text-gray-800"
+                    className="w-full py-2 px-3 bg-transparent border-none focus:ring-0 text-white placeholder:text-gray-400"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                   {searchQuery && (
                     <button 
                       onClick={() => setSearchQuery('')}
-                      className="p-2 mr-1 rounded-full hover:bg-gray-100"
+                      className="p-2 mr-1 rounded-full hover:bg-gray-800"
                     >
-                      <X size={18} className="text-gray-500" />
+                      <X size={18} className="text-gray-400" />
                     </button>
                   )}
                 </div>
@@ -418,8 +418,8 @@ const Connect = () => {
                     onClick={() => setCommunityFilter('all')}
                     className={`mr-2 px-4 py-2 rounded-full text-sm font-medium ${
                       communityFilter === 'all' 
-                        ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md' 
-                        : 'bg-white text-gray-700 border border-gray-200'
+                        ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-md' 
+                        : 'bg-black/30 text-white border border-white/10'
                     }`}
                   >
                     All
@@ -430,8 +430,8 @@ const Connect = () => {
                       onClick={() => setCommunityFilter(interest.id)}
                       className={`mr-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${
                         communityFilter === interest.id
-                          ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md' 
-                          : 'bg-white text-gray-700 border border-gray-200'
+                          ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-md' 
+                          : 'bg-black/30 text-white border border-white/10'
                       }`}
                     >
                       {interest.name}
@@ -462,7 +462,7 @@ const Connect = () => {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: isLoaded ? 1 : 0 }}
-                className="bg-white rounded-xl shadow-sm p-8 text-center border border-gray-200 mb-8"
+                className="bg-black/30 backdrop-blur-md rounded-xl shadow-sm p-8 text-center border border-white/10 mb-8"
               >
                 <div className="flex flex-col items-center justify-center">
                   <motion.div 
@@ -500,7 +500,7 @@ const Connect = () => {
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={() => setVisibleItems(prev => prev + 6)}
-                  className="px-6 py-3 bg-white hover:bg-gray-50 text-blue-600 font-medium rounded-xl shadow-sm border border-gray-200 flex items-center gap-2 transition-colors"
+                  className="px-6 py-3 bg-black/50 hover:bg-black/70 text-red-500 font-medium rounded-xl shadow-sm border border-white/10 flex items-center gap-2 transition-colors"
                 >
                   Load more communities
                   <ArrowRight size={18} />
@@ -537,14 +537,14 @@ const Connect = () => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
-      className="min-h-screen bg-gradient-to-b from-blue-900 via-indigo-900 to-purple-900 text-white"
+      className="min-h-screen bg-gradient-to-b from-black via-[#0A0A0A] to-[#121212] text-white"
     >
       <div className="container mx-auto px-4 py-8">
         {/* Page Header */}
         <div className="mb-6 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Connect</h1>
-            <p className="text-gray-500">Find people and communities with similar interests</p>
+            <h1 className="text-2xl font-bold text-white">Connect</h1>
+            <p className="text-gray-400">Find people and communities with similar interests</p>
           </div>
           <motion.button 
             whileHover={{ scale: 1.05 }}

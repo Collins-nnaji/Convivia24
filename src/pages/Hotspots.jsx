@@ -340,13 +340,17 @@ const Hotspots = () => {
   // Top 3 hotspots scroll interval
   useEffect(() => {
     let interval;
+    
     if (isAutoScrolling) {
       interval = setInterval(() => {
-        setCurrentTopSpot(prev => (prev + 1) % 3);
-      }, 5000);
+        setCurrentTopSpot(prev => (prev + 1) % topHotspots.length);
+      }, 5000); // Change slide every 5 seconds
     }
-    return () => clearInterval(interval);
-  }, [isAutoScrolling]);
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isAutoScrolling, topHotspots.length]);
   
   // Animations for spotlight sections
   const spotlightControls = useAnimation();
@@ -354,7 +358,7 @@ const Hotspots = () => {
   useEffect(() => {
     spotlightControls.start({
       x: -currentTopSpot * 100 + '%',
-      transition: { type: 'spring', stiffness: 300, damping: 30 }
+      transition: { type: 'spring', stiffness: 200, damping: 25 }
     });
   }, [currentTopSpot, spotlightControls]);
   
@@ -363,12 +367,15 @@ const Hotspots = () => {
     setIsAutoScrolling(false);
     setCurrentTopSpot(index);
     
+    // Clear any existing timeout
+    if (window.autoScrollTimer) {
+      clearTimeout(window.autoScrollTimer);
+    }
+    
     // Resume auto-scrolling after 15 seconds of inactivity
-    const autoScrollTimer = setTimeout(() => {
+    window.autoScrollTimer = setTimeout(() => {
       setIsAutoScrolling(true);
     }, 15000);
-    
-    return () => clearTimeout(autoScrollTimer);
   };
 
   // Sample hotspots data with detailed information
@@ -547,7 +554,7 @@ const Hotspots = () => {
       category: 'beach',
       type: 'Beach Club',
       location: 'Epe, Lagos',
-      image: 'https://images.unsplash.com/photo-1601042879364-f3947d3f9f16?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTF8fGJlYWNoJTIwY2x1YnxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60',
+      image: 'https://images.unsplash.com/photo-1583296736576-466073c257f0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTB8fGJlYWNoJTIwY2x1YnxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=1000&q=80',
       rating: 4.7,
       price: '₦3,500 - ₦25,000',
       description: 'Exclusive beach club with water sports and beach parties',
