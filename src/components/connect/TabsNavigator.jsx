@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Zap, Clock, Users, Bell } from 'lucide-react';
+import { Sparkles, Zap, Clock, Users, Bell, Globe } from 'lucide-react';
 
 const TabsNavigator = ({ activeTab, setActiveTab }) => {
   return (
@@ -25,6 +25,12 @@ const TabsNavigator = ({ activeTab, setActiveTab }) => {
           label="Active Now"
         />
         <TabButton 
+          active={activeTab === 'communities'} 
+          onClick={() => setActiveTab('communities')}
+          icon={<Globe size={18} />}
+          label="Communities"
+        />
+        <TabButton 
           active={activeTab === 'connections'} 
           onClick={() => setActiveTab('connections')}
           icon={<Users size={18} />}
@@ -43,11 +49,12 @@ const TabsNavigator = ({ activeTab, setActiveTab }) => {
           className="absolute bottom-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300"
           style={{ 
             left: `${activeTab === 'suggested' ? 0 : 
-                  activeTab === 'new' ? 20 : 
-                  activeTab === 'active' ? 40 : 
-                  activeTab === 'connections' ? 60 : 
-                  80}%`, 
-            width: '20%'
+                  activeTab === 'new' ? 16.67 : 
+                  activeTab === 'active' ? 33.33 : 
+                  activeTab === 'communities' ? 50 :
+                  activeTab === 'connections' ? 66.67 : 
+                  83.33}%`, 
+            width: '16.67%'
           }}
         />
       </div>
@@ -58,7 +65,7 @@ const TabsNavigator = ({ activeTab, setActiveTab }) => {
 const TabButton = ({ active, onClick, icon, label, badge = null }) => (
   <motion.button
     onClick={onClick}
-    className={`flex-1 min-w-[110px] py-3 px-3 text-sm font-medium whitespace-nowrap transition-colors ${
+    className={`flex-1 min-w-[100px] py-3 px-2 text-sm font-medium whitespace-nowrap transition-colors ${
       active
         ? 'text-blue-600 bg-gradient-to-b from-blue-50/60 to-white'
         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'

@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { 
   MapPin, ArrowRight, CheckCircle, Heart, 
   Users2, Sparkles, Search, Plus, BellRing, 
-  Zap, Menu, User, X, MessageSquare
+  Zap, Menu, User, X, MessageSquare, Globe,
+  Filter, Calendar
 } from 'lucide-react';
 
 // Import custom components
@@ -13,10 +14,11 @@ import FilterPanel from '../components/connect/FilterPanel';
 import TabsNavigator from '../components/connect/TabsNavigator';
 import ConnectionsList from '../components/connect/ConnectionsList';
 import ConnectionRequestModal from '../components/connect/ConnectionRequestModal';
+import CommunityCard from '../components/connect/CommunityCard';
 
 // Import mock data
 import { 
-  interests, hotspots, people, 
+  interests, hotspots, people, communities,
   connectionRequests, pendingRequests, activeConnections 
 } from '../components/connect/MockData';
 
@@ -34,6 +36,7 @@ const Experiences = () => {
   const [activeHotspot, setActiveHotspot] = useState('all');
   const [showMobileNav, setShowMobileNav] = useState(false);
   const [openSearchBar, setOpenSearchBar] = useState(false);
+  const [communityFilter, setCommunityFilter] = useState('all');
   
   // Added state for connection modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,6 +52,11 @@ const Experiences = () => {
     const person = people.find(p => p.id === personId);
     setSelectedPerson(person);
     setIsModalOpen(true);
+  };
+
+  const handleJoinCommunity = (communityId) => {
+    console.log(`Joining community with id: ${communityId}`);
+    // Implementation would go here
   };
 
   const filteredPeople = useMemo(() => {
@@ -87,6 +95,26 @@ const Experiences = () => {
       return 0;
     });
   }, [searchQuery, selectedCategory, location, activeHotspot, ageRange, activeTab]);
+
+  const filteredCommunities = useMemo(() => {
+    return communities.filter(community => {
+      const matchesSearch = 
+        !searchQuery ||
+        community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        community.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        community.category.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesCategory = 
+        communityFilter === 'all' || 
+        community.interests.includes(communityFilter);
+      
+      const matchesLocation = 
+        !location || 
+        community.location.toLowerCase().includes(location.toLowerCase());
+      
+      return matchesSearch && matchesCategory && matchesLocation;
+    });
+  }, [searchQuery, communityFilter, location]);
 
   // Render appropriate content based on active tab
   const renderTabContent = () => {
@@ -226,6 +254,269 @@ const Experiences = () => {
                 </button>
               </div>
             )}
+          </>
+        );
+
+      case 'communities':
+        return (
+          <>
+            {/* Communities Header */}
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-1 flex items-center gap-2">
+                  <Globe size={24} className="text-blue-600" />
+                  Communities
+                </h2>
+                <p className="text-gray-600">
+                  Join groups of like-minded individuals who share your interests
+                </p>
+              </div>
+              
+              <div className="flex flex-wrap gap-3">
+                <div className="relative">
+                  <div className="flex items-center bg-gray-100 rounded-full pr-3 shadow-inner">
+                    <input 
+                      type="text" 
+                      placeholder="Search communities..."
+                      className="py-2 pl-4 pr-10 bg-transparent border-none focus:ring-0 text-gray-700 text-sm rounded-full"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    <Search size={16} className="text-gray-500" />
+                  </div>
+                </div>
+                
+                <button 
+                  className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-700"
+                  onClick={() => setShowFilters(!showFilters)}
+                >
+                  <Filter size={20} />
+                </button>
+                
+                <button className="px-4 py-2 bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors font-medium flex items-center gap-1">
+                  <Plus size={18} />
+                  Create Community
+                </button>
+              </div>
+            </div>
+            
+            {/* Communities Filters */}
+            <AnimatePresence>
+              {showFilters && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="mb-6 bg-gray-50 rounded-xl p-4 border border-gray-200"
+                >
+                  <div className="flex flex-wrap gap-4">
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-2">Filter by interest</label>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => setCommunityFilter('all')}
+                          className={`px-3 py-1.5 rounded-full text-sm ${
+                            communityFilter === 'all'
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-white text-gray-700 border border-gray-200'
+                          }`}
+                        >
+                          All
+                        </button>
+                        {interests.slice(0, 8).map(interest => (
+                          <button
+                            key={interest.id}
+                            onClick={() => setCommunityFilter(interest.id)}
+                            className={`px-3 py-1.5 rounded-full text-sm ${
+                              communityFilter === interest.id
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-white text-gray-700 border border-gray-200'
+                            }`}
+                          >
+                            {interest.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-2">Location</label>
+                      <div className="flex items-center bg-white rounded-md border border-gray-200 px-3 py-1.5 w-64">
+                        <MapPin size={16} className="text-gray-500 mr-2" />
+                        <input
+                          type="text"
+                          placeholder="Filter by location..."
+                          className="border-none bg-transparent p-0 focus:ring-0 text-sm flex-1"
+                          value={location}
+                          onChange={(e) => setLocation(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            
+            {/* Location/Interest Summary */}
+            {(communityFilter !== 'all' || location) && (
+              <div className="flex items-center gap-2 bg-blue-50 rounded-lg p-3 mb-6 border border-blue-100">
+                <Sparkles size={18} className="text-blue-600" />
+                <p className="text-sm text-gray-700">
+                  {communityFilter !== 'all' && (
+                    <span>
+                      Showing communities focused on <span className="font-semibold">{
+                        interests.find(i => i.id === communityFilter)?.name
+                      }</span>
+                    </span>
+                  )}
+                  {communityFilter !== 'all' && location && <span> in </span>}
+                  {location && (
+                    <span>
+                      <span className="font-semibold">{location}</span>
+                    </span>
+                  )}
+                </p>
+                <button 
+                  onClick={() => {
+                    setCommunityFilter('all');
+                    setLocation('');
+                  }}
+                  className="ml-auto text-blue-600 hover:text-blue-800 text-sm"
+                >
+                  Clear filters
+                </button>
+              </div>
+            )}
+            
+            {/* Communities Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredCommunities.map((community, index) => (
+                <motion.div
+                  key={community.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                >
+                  <CommunityCard 
+                    community={community}
+                    onJoin={handleJoinCommunity}
+                  />
+                </motion.div>
+              ))}
+              
+              {/* Create Community Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: filteredCommunities.length * 0.05 }}
+                className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100 shadow-sm flex flex-col items-center justify-center min-h-[400px] h-full"
+              >
+                <div className="w-20 h-20 rounded-full bg-white shadow-md flex items-center justify-center mb-6">
+                  <Plus size={30} className="text-blue-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3 text-center">Create a Community</h3>
+                <p className="text-gray-600 mb-6 text-center max-w-xs">
+                  Start your own community based on your interests and connect with like-minded people
+                </p>
+                <button className="px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl shadow-md font-medium transition-colors">
+                  Get Started
+                </button>
+              </motion.div>
+            </div>
+            
+            {/* Featured Events in Communities */}
+            <div className="mt-12 mb-8">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold text-gray-900 flex items-center">
+                  <Calendar className="mr-2 text-blue-600" size={20} />
+                  Upcoming Community Events
+                </h3>
+                <button className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm font-medium">
+                  View all events
+                  <ArrowRight size={16} />
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-all">
+                  <div className="h-36 bg-gradient-to-r from-blue-400 to-purple-500 relative">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Calendar size={40} className="text-white" />
+                    </div>
+                    <div className="absolute top-3 right-3 bg-white/20 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
+                      Jun 15
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <div className="text-xs text-blue-600 font-medium">Lagos Coffee Enthusiasts</div>
+                    <h3 className="font-bold mb-1">Coffee Brewing Workshop</h3>
+                    <p className="text-gray-600 text-sm mb-3">Learn expert brewing techniques from professional baristas</p>
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center text-xs text-gray-500">
+                        <MapPin size={12} className="mr-1" />
+                        The Brew Café
+                      </div>
+                      <div className="flex items-center text-xs text-gray-500">
+                        <Users2 size={12} className="mr-1" />
+                        24 attending
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-all">
+                  <div className="h-36 bg-gradient-to-r from-green-400 to-teal-500 relative">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Calendar size={40} className="text-white" />
+                    </div>
+                    <div className="absolute top-3 right-3 bg-white/20 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
+                      Jun 18
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <div className="text-xs text-green-600 font-medium">Abuja Hikers Network</div>
+                    <h3 className="font-bold mb-1">Weekend Hiking Trip</h3>
+                    <p className="text-gray-600 text-sm mb-3">Group hike through the scenic trails outside Abuja</p>
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center text-xs text-gray-500">
+                        <MapPin size={12} className="mr-1" />
+                        Highland Trekkers Club
+                      </div>
+                      <div className="flex items-center text-xs text-gray-500">
+                        <Users2 size={12} className="mr-1" />
+                        18 attending
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-all">
+                  <div className="h-36 bg-gradient-to-r from-purple-400 to-pink-500 relative">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Calendar size={40} className="text-white" />
+                    </div>
+                    <div className="absolute top-3 right-3 bg-white/20 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
+                      Jun 20
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <div className="text-xs text-purple-600 font-medium">London Photography Walks</div>
+                    <h3 className="font-bold mb-1">Urban Photography Session</h3>
+                    <p className="text-gray-600 text-sm mb-3">Capture the essence of East London with fellow photographers</p>
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center text-xs text-gray-500">
+                        <MapPin size={12} className="mr-1" />
+                        Brick Lane Gallery
+                      </div>
+                      <div className="flex items-center text-xs text-gray-500">
+                        <Users2 size={12} className="mr-1" />
+                        15 attending
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </>
         );
       

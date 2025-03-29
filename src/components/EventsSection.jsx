@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Star, X, Clock, Calendar,
-  MapPin, Users,  Heart,
-  Crown, PartyPopper, GlassWater
+  MapPin, Users, Heart,
+  Crown, PartyPopper, GlassWater,
+  Sparkles, FileDown, PhoneCall, Search, 
+  Wine, CheckCircle, ChevronRight,
+  Webhook, Gift, Cake, ShoppingBag, Bot
 } from 'lucide-react';
 
 const EventsSection = ({ isOpen, onClose }) => {
@@ -68,14 +71,28 @@ const EventsSection = ({ isOpen, onClose }) => {
     { id: 'party', label: 'Private Parties', icon: <PartyPopper size={18} /> }
   ];
 
-  const featuredEvent = {
-    title: "Grand Wedding Expo 2024",
-    venue: "Eko Convention Center",
-    date: "Next Weekend",
-    image: "/featured-event.jpg",
-    attendees: 2000,
-    description: "Lagos' premier wedding exhibition featuring luxury beverage services, traditional ceremonies, and modern celebrations."
-  };
+  const planningSteps = [
+    {
+      icon: <Cake size={24} className="text-red-400" />,
+      title: "Define Your Celebration",
+      description: "Choose your event type, guest count, and desired atmosphere"
+    },
+    {
+      icon: <Calendar size={24} className="text-red-400" />,
+      title: "Set Your Date & Budget",
+      description: "Select your ideal date and determine your celebration budget"
+    },
+    {
+      icon: <Bot size={24} className="text-red-400" />,
+      title: "AI-Powered Recommendations",
+      description: "Our AI scours the internet for the perfect venues and vendors"
+    },
+    {
+      icon: <ShoppingBag size={24} className="text-red-400" />,
+      title: "Curated Shopping List",
+      description: "Get personalized recommendations for everything you need"
+    }
+  ];
 
   const filteredEvents = activeCategory === 'all' 
     ? events 
@@ -103,7 +120,7 @@ const EventsSection = ({ isOpen, onClose }) => {
               {/* Header */}
               <div className="flex justify-between items-center mb-8">
                 <h2 className="text-3xl font-bold" style={{ fontFamily: 'Playfair Display, serif' }}>
-                  Upcoming Celebrations
+                  Plan Your Perfect Celebration
                 </h2>
                 <button 
                   onClick={onClose}
@@ -113,41 +130,71 @@ const EventsSection = ({ isOpen, onClose }) => {
                 </button>
               </div>
 
-              {/* Featured Event */}
+              {/* Enhanced Hero Section for Celebration Planning */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="relative rounded-xl overflow-hidden mb-12 h-96"
+                className="relative rounded-xl overflow-hidden mb-12"
               >
-                <img 
-                  src={featuredEvent.image}
-                  alt="Featured Event"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-8">
-                  <div className="flex items-center text-red-500 mb-2">
-                    <Star size={20} className="mr-2" />
-                    <span>Featured Event</span>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
+                  {/* Visual banner - takes 7/12 columns on large screens */}
+                  <div className="lg:col-span-7 relative h-80 lg:h-auto">
+                    <img 
+                      src="https://images.unsplash.com/photo-1511795409834-432f7b1d6b74?ixlib=rb-4.0.3&auto=format&fit=crop&q=80"
+                      alt="Celebration Planning"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent" />
+                    <div className="absolute top-8 left-8 max-w-md">
+                      <div className="inline-block px-3 py-1 bg-red-600/80 backdrop-blur-sm rounded-full text-sm mb-4">
+                        <span className="flex items-center gap-2">
+                          <Sparkles size={16} />
+                          Your Ultimate Celebration Planner
+                        </span>
+                      </div>
+                      <h3 className="text-3xl lg:text-4xl font-bold mb-3">Create Unforgettable Moments</h3>
+                      <p className="text-white/80 text-base">From intimate gatherings to grand celebrations, we help you plan every detail.</p>
+                    </div>
                   </div>
-                  <h3 className="text-4xl font-bold mb-2">{featuredEvent.title}</h3>
-                  <p className="text-gray-300 mb-4 max-w-2xl">{featuredEvent.description}</p>
-                  <div className="flex flex-wrap gap-4 text-sm">
-                    <div className="flex items-center">
-                      <Clock size={16} className="mr-1" />
-                      {featuredEvent.date}
-                    </div>
-                    <div className="flex items-center">
-                      <MapPin size={16} className="mr-1" />
-                      {featuredEvent.venue}
-                    </div>
-                    <div className="flex items-center">
-                      <Users size={16} className="mr-1" />
-                      {featuredEvent.attendees}+ Expected
+                  
+                  {/* Planning steps - takes 5/12 columns on large screens */}
+                  <div className="lg:col-span-5 bg-gradient-to-r from-gray-900 to-black p-8">
+                    <h4 className="text-xl font-semibold mb-6">How It Works</h4>
+                    <div className="space-y-6">
+                      {planningSteps.map((step, index) => (
+                        <div key={index} className="flex gap-4 items-start">
+                          <div className="w-10 h-10 rounded-full bg-red-600/20 flex items-center justify-center flex-shrink-0">
+                            {step.icon}
+                          </div>
+                          <div>
+                            <h5 className="font-medium text-lg mb-1">{step.title}</h5>
+                            <p className="text-gray-400 text-sm">{step.description}</p>
+                          </div>
+                        </div>
+                      ))}
+                      <button className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white py-3 px-6 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors mt-4">
+                        Start Planning Now <ChevronRight size={18} />
+                      </button>
                     </div>
                   </div>
                 </div>
               </motion.div>
+
+              {/* AI-Powered Assistant Banner */}
+              <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-xl p-6 mb-10">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                    <Webhook size={24} className="text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-lg font-bold mb-1">AI-Powered Celebration Assistant</h4>
+                    <p className="text-gray-300 text-sm">Our AI agents search the entire internet to find and recommend the best vendors, venues, and supplies based on verified reviews and your preferences.</p>
+                  </div>
+                  <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors">
+                    Try Now
+                  </button>
+                </div>
+              </div>
 
               {/* Category Filters */}
               <div className="flex gap-4 mb-8 overflow-x-auto pb-4">
@@ -221,47 +268,85 @@ const EventsSection = ({ isOpen, onClose }) => {
                 ))}
               </div>
 
-              {/* Services Showcase */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-                {[
-                  {
-                    icon: <GlassWater size={24} />,
-                    title: "Premium Bar Service",
-                    description: "Professional bartenders and premium drink selections"
-                  },
-                  {
-                    icon: <Crown size={24} />,
-                    title: "Traditional Ceremonies",
-                    description: "Specialized service for cultural celebrations"
-                  },
-                  {
-                    icon: <PartyPopper size={24} />,
-                    title: "Custom Packages",
-                    description: "Tailored beverage solutions for any celebration"
-                  }
-                ].map((service, index) => (
-                  <div key={index} className="bg-gray-900 p-6 rounded-xl">
-                    <div className="text-red-500 mb-4">{service.icon}</div>
-                    <h3 className="text-xl font-bold mb-2">{service.title}</h3>
-                    <p className="text-gray-400">{service.description}</p>
+              {/* Planning Tools Section */}
+              <div className="mb-12">
+                <h3 className="text-2xl font-bold mb-6" style={{ fontFamily: 'Playfair Display, serif' }}>
+                  Planning Tools
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  {/* Event Planning Guide */}
+                  <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl overflow-hidden">
+                    <div className="p-6">
+                      <FileDown size={28} className="text-red-500 mb-4" />
+                      <h4 className="text-xl font-bold mb-2">Event Planning Guide</h4>
+                      <p className="text-gray-400 mb-6">Step-by-step instructions to plan your perfect event</p>
+                      <p className="text-gray-300 text-sm mb-6">
+                        Our comprehensive guide covers everything from budgeting to vendor selection, ensuring your event is memorable and stress-free.
+                      </p>
+                      <button className="flex items-center gap-2 text-red-400 font-medium hover:text-red-300 transition-colors">
+                        Download Guide <ChevronRight size={16} />
+                      </button>
+                    </div>
                   </div>
-                ))}
+                  
+                  {/* Event Consultation */}
+                  <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl overflow-hidden">
+                    <div className="p-6">
+                      <PhoneCall size={28} className="text-red-500 mb-4" />
+                      <h4 className="text-xl font-bold mb-2">Event Consultation</h4>
+                      <p className="text-gray-400 mb-6">Speak with our experienced event planners</p>
+                      <p className="text-gray-300 text-sm mb-6">
+                        Get personalized advice from our expert team who can help you choose the perfect venue, theme, and vendors for your specific event needs.
+                      </p>
+                      <button className="flex items-center gap-2 text-red-400 font-medium hover:text-red-300 transition-colors">
+                        Schedule Consultation <ChevronRight size={16} />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* AI Shopping Assistant */}
+                  <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl overflow-hidden">
+                    <div className="p-6">
+                      <Bot size={28} className="text-red-500 mb-4" />
+                      <h4 className="text-xl font-bold mb-2">AI Shopping Assistant</h4>
+                      <p className="text-gray-400 mb-6">Find everything you need for your celebration</p>
+                      <p className="text-gray-300 text-sm mb-6">
+                        Our AI assistant searches the internet to find the best-reviewed products and services for your celebration, creating a custom shopping list.
+                      </p>
+                      <button className="flex items-center gap-2 text-red-400 font-medium hover:text-red-300 transition-colors">
+                        Start Shopping <ChevronRight size={16} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              {/* Download App CTA */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-gradient-to-r from-red-600 to-red-900 rounded-xl p-8 text-center"
-              >
-                <h3 className="text-2xl font-bold mb-4">Plan Your Perfect Celebration</h3>
-                <p className="text-gray-200 mb-6">
-                  Download the Convivia24 app to start planning your next event with our premium beverage services.
-                </p>
-                <button className="bg-white text-red-600 px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition-colors">
-                  Download App
+              {/* Mini Convivia Pass Section */}
+              <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-4 mb-8">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-lg bg-yellow-500/20 p-2">
+                    <Crown size={20} className="text-yellow-500" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-sm font-bold">Convivia Pass</h4>
+                    <p className="text-xs text-gray-400">Unlock premium celebration benefits and exclusive discounts</p>
+                  </div>
+                  <button className="text-xs bg-transparent border border-yellow-500 text-yellow-500 px-3 py-1 rounded-lg hover:bg-yellow-500/10 transition-colors">
+                    Learn More
+                  </button>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex justify-center">
+                <button
+                  onClick={onClose}
+                  className="px-6 py-3 border border-white/20 rounded-full text-gray-300 hover:bg-white/10 transition-colors"
+                >
+                  Close
                 </button>
-              </motion.div>
+              </div>
             </div>
           </motion.div>
         </motion.div>

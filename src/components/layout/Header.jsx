@@ -54,7 +54,7 @@ const Header = () => {
     { path: '/', label: 'Home', icon: <Home size={16} /> },
     { path: '/events', label: 'Events', icon: <Calendar size={16} /> },
     { path: '/hotspots', label: 'Hotspots', icon: <Users size={16} /> },
-    { path: '/experiences', label: 'Connect', icon: <Heart size={16} /> },
+    { path: '/connect', label: 'Connect', icon: <Heart size={16} /> },
   ];
 
   return (
@@ -110,7 +110,8 @@ const Header = () => {
                 <Link 
                   to={item.path} 
                   className={`text-sm font-medium px-3 py-2 rounded-full flex items-center gap-1.5 transition-all ${
-                    (item.path === '/' ? isActive(item.path) : location.pathname.includes(item.path.substring(1)))
+                    (item.path === '/' && isActive(item.path)) || 
+                    (item.path !== '/' && location.pathname === item.path)
                       ? 'bg-red-600/20 text-white' 
                       : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
                   }`}

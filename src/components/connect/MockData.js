@@ -19,6 +19,93 @@ export const interests = [
   { id: 'social', name: 'Coffee Chats', icon: <Coffee size={24} /> }
 ];
 
+export const communities = [
+  {
+    id: 1,
+    name: "Lagos Coffee Enthusiasts",
+    category: "Social & Lifestyle",
+    members: 325,
+    description: "A vibrant community of coffee lovers who meet weekly to share brewing techniques and meaningful conversations.",
+    image: "https://images.unsplash.com/photo-1517231925375-bf2cb42917a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    location: "Lagos, Nigeria",
+    meetingFrequency: "Weekly",
+    interests: ["coffee", "social", "food"],
+    featuredHotspot: "The Brew Café",
+    upcomingEvents: 3,
+    created: "March 2023"
+  },
+  {
+    id: 2,
+    name: "London Photography Walks",
+    category: "Photography",
+    members: 187,
+    description: "Photographers of all skill levels exploring London's hidden gems together and building lasting friendships.",
+    image: "https://images.unsplash.com/photo-1452587925148-ce544e77262d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    location: "London, UK",
+    meetingFrequency: "Bi-weekly",
+    interests: ["photography", "outdoor", "culture"],
+    featuredHotspot: "Brick Lane Gallery",
+    upcomingEvents: 2,
+    created: "January 2023"
+  },
+  {
+    id: 3,
+    name: "Abuja Hikers Network",
+    category: "Outdoors",
+    members: 312,
+    description: "Adventure seekers connecting on weekly hikes, forming bonds through shared experiences in nature.",
+    image: "https://images.unsplash.com/photo-1551632811-561732d1e306?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    location: "Abuja, Nigeria",
+    meetingFrequency: "Weekly",
+    interests: ["outdoor", "fitness", "social"],
+    featuredHotspot: "Highland Trekkers Club",
+    upcomingEvents: 4,
+    created: "April 2023"
+  },
+  {
+    id: 4,
+    name: "Manchester Book Club",
+    category: "Books & Reading",
+    members: 156,
+    description: "Book lovers gathering monthly to discuss literature classics and modern bestsellers in a friendly atmosphere.",
+    image: "https://images.unsplash.com/photo-1532012197267-da84d127e765?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    location: "Manchester, UK",
+    meetingFrequency: "Monthly",
+    interests: ["books", "culture", "social"],
+    featuredHotspot: "The Brew Café",
+    upcomingEvents: 1,
+    created: "February 2023"
+  },
+  {
+    id: 5,
+    name: "Lagos Culinary Explorers",
+    category: "Food & Drinks",
+    members: 220,
+    description: "Food enthusiasts discovering authentic cuisines and sharing cooking tips while making connections.",
+    image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    location: "Lagos, Nigeria",
+    meetingFrequency: "Bi-weekly",
+    interests: ["food", "culture", "social"],
+    featuredHotspot: "Victoria Island Bistro",
+    upcomingEvents: 2,
+    created: "May 2023"
+  },
+  {
+    id: 6,
+    name: "London Jazz Appreciation",
+    category: "Music",
+    members: 143,
+    description: "Jazz lovers meeting regularly to enjoy live performances and discuss music in a relaxed environment.",
+    image: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    location: "London, UK",
+    meetingFrequency: "Weekly",
+    interests: ["music", "culture", "social"],
+    featuredHotspot: "Jazz Corner",
+    upcomingEvents: 5,
+    created: "January 2023"
+  }
+];
+
 export const hotspots = [
   { id: 'all', name: 'All Locations' },
   { id: 'brew', name: 'The Brew Café' },

@@ -4,7 +4,7 @@ import {
   Star, PartyPopper,
   Heart, Crown, CheckCircle, MapPin,
   Calendar, Users, Wine, 
-  GlassWater, Globe, Building, Gift, Sparkles, Utensils, Clock, Coffee, Mountain, MessageCircle
+  GlassWater, Globe, Building, Gift, Sparkles, Utensils, Clock, Coffee, Mountain, MessageCircle, ChevronDown
 } from 'lucide-react';
 import InvestorSection from './InvestorSection';
 import EventsSection from './EventsSection';
@@ -266,24 +266,36 @@ const LandingPage = () => {
         
         <div className="container mx-auto px-4 relative z-20">
           <div className="max-w-3xl">
-          <motion.h1
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: isLoaded ? 1 : 0, scale: isLoaded ? 1 : 0.9 }}
+              transition={{ duration: 0.5 }}
+              className="inline-block mb-3 py-1 px-3 bg-gradient-to-r from-red-500/30 to-red-700/30 rounded-full backdrop-blur-sm"
+            >
+              <span className="text-white/90 text-sm font-medium flex items-center">
+                <PartyPopper size={14} className="mr-1.5" /> 
+                Experience Celebrations Like Never Before
+              </span>
+            </motion.div>
+
+            <motion.h1
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 30 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-4xl md:text-6xl font-bold text-white mb-6" 
+              className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight" 
               style={{ fontFamily: 'Playfair Display, serif' }}
             >
-              Connecting People Through Celebrations
-          </motion.h1>
+              Connecting People <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-300">Through Celebrations</span>
+            </motion.h1>
 
-          <motion.p
+            <motion.p
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 30 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="text-xl text-gray-300 mb-8"
+              className="text-xl md:text-2xl text-gray-300 mb-10 max-w-2xl"
             >
-              Your all-in-one platform for meeting and connecting with people. Find like-minded individuals, chat with them, and meet up at popular hotspots for meaningful conversations.
-          </motion.p>
+              Your all-in-one platform for meeting and connecting with people who share your interests and passions.
+            </motion.p>
 
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -293,27 +305,29 @@ const LandingPage = () => {
             >
               <button 
                 onClick={() => navigate('/experiences')}
-                className="px-6 py-3 bg-gradient-to-r from-red-700 to-red-900 text-white font-semibold rounded-lg hover:from-red-800 hover:to-red-950 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                className="px-8 py-4 text-base md:text-lg bg-gradient-to-r from-red-600 to-red-800 text-white font-semibold rounded-lg hover:from-red-700 hover:to-red-900 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2"
               >
+                <Heart size={20} />
                 Connect with People
               </button>
               <button 
                 onClick={() => navigate('/hotspots')}
-                className="px-6 py-3 bg-white/10 backdrop-blur-sm text-white border border-white/30 font-semibold rounded-lg hover:bg-white/20 transition-all duration-300"
+                className="px-8 py-4 text-base md:text-lg bg-white/10 backdrop-blur-sm text-white border border-white/30 font-semibold rounded-lg hover:bg-white/20 transition-all duration-300 flex items-center gap-2"
               >
+                <MapPin size={20} />
                 Explore Hotspots
               </button>
             </motion.div>
             
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: isLoaded ? 1 : 0 }}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: isLoaded ? 1 : 0 }}
               transition={{ duration: 1, delay: 1 }}
-              className="flex items-center gap-6 mt-12"
+              className="flex items-center gap-6 mt-12 bg-white/5 backdrop-blur-md p-4 rounded-lg border border-white/10"
             >
-              <div className="flex -space-x-2">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="w-8 h-8 rounded-full border-2 border-white overflow-hidden">
+              <div className="flex -space-x-4">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="w-10 h-10 rounded-full border-2 border-white overflow-hidden shadow-lg">
                     <img 
                       src={`https://randomuser.me/api/portraits/${i % 2 === 0 ? 'women' : 'men'}/${i + 20}.jpg`}
                       alt="User"
@@ -322,8 +336,8 @@ const LandingPage = () => {
                   </div>
                 ))}
               </div>
-              <div className="text-white/90 text-sm">
-                Joined by <span className="font-semibold">10,000+</span> people looking to connect
+              <div className="text-white text-sm md:text-base">
+                <span className="font-bold text-xl text-red-400">10,000+</span> people already finding meaningful connections
               </div>
             </motion.div>
           </div>
@@ -363,15 +377,21 @@ const LandingPage = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
             >
-              <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
+              <div className="mx-auto w-16 h-1 bg-gradient-to-r from-red-500 to-red-700 mb-6 rounded-full"></div>
+              <h2 className="text-4xl md:text-5xl font-bold mb-6" style={{ fontFamily: 'Playfair Display, serif' }}>
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-600 to-red-800">
                   Discover Vibrant Hotspots
                 </span>
               </h2>
-              <p className="text-gray-600 max-w-2xl mx-auto text-lg">
+              <p className="text-gray-600 max-w-2xl mx-auto text-lg mb-6">
                 Explore carefully curated venues and communities where meaningful connections happen naturally.
               </p>
             </motion.div>
+            <div className="flex justify-center gap-2 mt-6">
+              <span className="w-2 h-2 rounded-full bg-red-500"></span>
+              <span className="w-2 h-2 rounded-full bg-red-300"></span>
+              <span className="w-2 h-2 rounded-full bg-red-300"></span>
+            </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -381,8 +401,8 @@ const LandingPage = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              whileHover={{ y: -8 }}
-              className="bg-white rounded-2xl shadow-lg overflow-hidden group hover:shadow-xl transition-all duration-500"
+              whileHover={{ y: -10 }}
+              className="bg-white rounded-2xl shadow-xl overflow-hidden group hover:shadow-2xl transition-all duration-500 border border-gray-100"
             >
               <div className="relative h-64 overflow-hidden">
                 <img 
@@ -390,7 +410,10 @@ const LandingPage = () => {
                   alt="Brew Café Social Hub" 
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent group-hover:opacity-80 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+                <div className="absolute top-4 right-4">
+                  <span className="bg-red-600 text-white text-xs px-3 py-1 rounded-full">Popular</span>
+                </div>
                 <div className="absolute bottom-4 left-4 right-4">
                   <div className="flex items-center gap-2 text-white mb-1">
                     <MapPin size={16} />
@@ -398,244 +421,243 @@ const LandingPage = () => {
                   </div>
                   <h3 className="text-xl font-bold text-white">Brew Café Social Hub</h3>
                 </div>
-                <div className="absolute top-4 right-4 bg-gradient-to-r from-red-600 to-red-700 text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-lg">
-                  Top Rated
-                </div>
               </div>
-              <div className="p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="flex">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star key={star} size={16} className="text-yellow-400 fill-yellow-400" />
-                    ))}
+              <div className="p-5">
+                <div className="flex justify-between items-center mb-3">
+                  <div className="flex items-center gap-1">
+                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                    <Star className="h-4 w-4 text-gray-300 fill-current" />
+                    <span className="text-sm text-gray-500 ml-1">4.2</span>
                   </div>
-                  <span className="text-sm text-gray-500">4.8 (120 reviews)</span>
+                  <span className="text-xs text-gray-500">42 active members</span>
                 </div>
-                <p className="text-gray-600 mb-4">
-                  A vibrant café where book lovers, digital nomads, and coffee enthusiasts meet to connect and share ideas daily.
-                </p>
-                <div className="flex flex-wrap gap-2 mb-6">
-                  <span className="text-xs bg-red-50 text-red-700 px-3 py-1 rounded-full font-medium">Active Community</span>
-                  <span className="text-xs bg-red-50 text-red-700 px-3 py-1 rounded-full font-medium">Quiet Spaces</span>
-                  <span className="text-xs bg-red-50 text-red-700 px-3 py-1 rounded-full font-medium">Wi-Fi</span>
+                <p className="text-gray-600 mb-4">A vibrant café where entrepreneurs and creatives connect over specialty coffee and ideas.</p>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Coffee</span>
+                  <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Networking</span>
+                  <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Cozy</span>
                 </div>
-                <Link to="/hotspots" className="w-full py-3 bg-gradient-to-r from-red-600 to-red-800 text-white rounded-lg hover:from-red-700 hover:to-red-900 transition-colors flex items-center justify-center gap-2 shadow-md">
-                  <Globe size={18} />
-                  Explore This Hotspot
-                </Link>
+                <button className="text-red-600 hover:text-red-800 text-sm font-medium flex items-center gap-1 transition-colors group-hover:font-semibold">
+                  View Hotspot <ChevronDown className="h-4 w-4 -rotate-90" />
+                </button>
               </div>
             </motion.div>
-            
+
             {/* Featured Hotspot 2 */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              whileHover={{ y: -8 }}
-              className="bg-white rounded-2xl shadow-lg overflow-hidden group hover:shadow-xl transition-all duration-500"
+              whileHover={{ y: -10 }}
+              className="bg-white rounded-2xl shadow-xl overflow-hidden group hover:shadow-2xl transition-all duration-500 border border-gray-100"
             >
               <div className="relative h-64 overflow-hidden">
                 <img 
-                  src="https://images.unsplash.com/photo-1513278974582-3e1b4a4fa5e5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80" 
-                  alt="Highland Trekkers Club" 
+                  src="https://images.unsplash.com/photo-1517457373958-b7bdd4587205?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60" 
+                  alt="Skyline Lounge" 
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent group-hover:opacity-80 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+                <div className="absolute top-4 right-4">
+                  <span className="bg-purple-600 text-white text-xs px-3 py-1 rounded-full">Premium</span>
+                </div>
                 <div className="absolute bottom-4 left-4 right-4">
                   <div className="flex items-center gap-2 text-white mb-1">
                     <MapPin size={16} />
-                    <span className="text-sm">Abuja, Nigeria</span>
+                    <span className="text-sm">London, UK</span>
                   </div>
-                  <h3 className="text-xl font-bold text-white">Highland Trekkers Club</h3>
-                </div>
-                <div className="absolute top-4 right-4 bg-gradient-to-r from-green-500 to-green-600 text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-lg">
-                  Trending
+                  <h3 className="text-xl font-bold text-white">Skyline Lounge</h3>
                 </div>
               </div>
-              <div className="p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="flex">
-                    {[1, 2, 3, 4].map((star) => (
-                      <Star key={star} size={16} className="text-yellow-400 fill-yellow-400" />
-                    ))}
-                    <Star size={16} className="text-yellow-400" />
+              <div className="p-5">
+                <div className="flex justify-between items-center mb-3">
+                  <div className="flex items-center gap-1">
+                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                    <span className="text-sm text-gray-500 ml-1">4.9</span>
                   </div>
-                  <span className="text-sm text-gray-500">4.5 (86 reviews)</span>
+                  <span className="text-xs text-gray-500">67 active members</span>
                 </div>
-                <p className="text-gray-600 mb-4">
-                  A community for outdoor enthusiasts to connect, plan adventures, and meet like-minded nature lovers weekly.
-                </p>
-                <div className="flex flex-wrap gap-2 mb-6">
-                  <span className="text-xs bg-green-50 text-green-700 px-3 py-1 rounded-full font-medium">Weekly Meetups</span>
-                  <span className="text-xs bg-green-50 text-green-700 px-3 py-1 rounded-full font-medium">Outdoor</span>
-                  <span className="text-xs bg-green-50 text-green-700 px-3 py-1 rounded-full font-medium">Active</span>
+                <p className="text-gray-600 mb-4">Luxurious rooftop venue perfect for professional networking and upscale social events.</p>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Rooftop</span>
+                  <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Cocktails</span>
+                  <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Luxury</span>
                 </div>
-                <Link to="/hotspots" className="w-full py-3 bg-gradient-to-r from-red-600 to-red-800 text-white rounded-lg hover:from-red-700 hover:to-red-900 transition-colors flex items-center justify-center gap-2 shadow-md">
-                  <Globe size={18} />
-                  Explore This Hotspot
-                </Link>
+                <button className="text-red-600 hover:text-red-800 text-sm font-medium flex items-center gap-1 transition-colors group-hover:font-semibold">
+                  View Hotspot <ChevronDown className="h-4 w-4 -rotate-90" />
+                </button>
               </div>
             </motion.div>
-            
-            {/* Featured Community */}
-            <motion.div 
+
+            {/* Featured Hotspot 3 */}
+            <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              whileHover={{ y: -8 }}
-              className="bg-white rounded-2xl shadow-lg overflow-hidden group hover:shadow-xl transition-all duration-500"
+              whileHover={{ y: -10 }}
+              className="bg-white rounded-2xl shadow-xl overflow-hidden group hover:shadow-2xl transition-all duration-500 border border-gray-100"
             >
               <div className="relative h-64 overflow-hidden">
                 <img 
-                  src="https://images.unsplash.com/photo-1556035511-3168381ea4d4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1374&q=80" 
-                  alt="Lagos Book Club" 
+                  src="https://images.unsplash.com/photo-1528495612343-9ca9f4a4de28?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60" 
+                  alt="Cultural Haven" 
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent group-hover:opacity-80 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+                <div className="absolute top-4 right-4">
+                  <span className="bg-green-600 text-white text-xs px-3 py-1 rounded-full">New</span>
+                </div>
                 <div className="absolute bottom-4 left-4 right-4">
                   <div className="flex items-center gap-2 text-white mb-1">
-                    <Users size={16} />
-                    <span className="text-sm">Active Community</span>
+                    <MapPin size={16} />
+                    <span className="text-sm">Port Harcourt, Nigeria</span>
                   </div>
-                  <h3 className="text-xl font-bold text-white">Lagos Book Club</h3>
-                </div>
-                <div className="absolute top-4 right-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-lg">
-                  Featured Group
+                  <h3 className="text-xl font-bold text-white">Cultural Haven</h3>
                 </div>
               </div>
-              <div className="p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="flex">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star key={star} size={16} className="text-yellow-400 fill-yellow-400" />
-                    ))}
+              <div className="p-5">
+                <div className="flex justify-between items-center mb-3">
+                  <div className="flex items-center gap-1">
+                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                    <Star className="h-4 w-4 text-gray-300 fill-current" />
+                    <span className="text-sm text-gray-500 ml-1">4.3</span>
                   </div>
-                  <span className="text-sm text-gray-500">4.9 (148 reviews)</span>
+                  <span className="text-xs text-gray-500">35 active members</span>
                 </div>
-                <p className="text-gray-600 mb-4">
-                  A thriving community of book lovers who meet monthly for discussions and build lasting friendships over literature.
-                </p>
-                <div className="flex flex-wrap gap-2 mb-6">
-                  <span className="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full font-medium">240+ Members</span>
-                  <span className="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full font-medium">Monthly Meetings</span>
-                  <span className="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full font-medium">All Welcome</span>
+                <p className="text-gray-600 mb-4">A cultural center where art enthusiasts and creative minds share passions and projects.</p>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Art</span>
+                  <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Culture</span>
+                  <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Creative</span>
                 </div>
-                <Link to="/experiences" className="w-full py-3 bg-gradient-to-r from-red-600 to-red-800 text-white rounded-lg hover:from-red-700 hover:to-red-900 transition-colors flex items-center justify-center gap-2 shadow-md">
-                  <Users size={18} />
-                  Join Community
-                </Link>
+                <button className="text-red-600 hover:text-red-800 text-sm font-medium flex items-center gap-1 transition-colors group-hover:font-semibold">
+                  View Hotspot <ChevronDown className="h-4 w-4 -rotate-90" />
+                </button>
               </div>
             </motion.div>
           </div>
           
-          <div className="text-center mt-16">
-            <Link to="/hotspots">
-              <motion.button 
-                whileHover={{ scale: 1.05 }} 
-                whileTap={{ scale: 0.95 }}
-                className="px-8 py-4 bg-white border-2 border-red-600 text-red-600 rounded-xl hover:bg-red-50 font-semibold transition-colors shadow-md inline-flex items-center gap-2"
-              >
-                Explore All Hotspots & Communities
-                <Globe size={20} />
-              </motion.button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section id="stats-section" className="py-24 bg-gradient-to-b from-red-900/5 to-white relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute top-0 left-0 w-full h-full">
-          <div className="absolute -top-20 -right-20 w-64 h-64 bg-red-500/5 rounded-full"></div>
-          <div className="absolute bottom-10 left-10 w-80 h-80 bg-red-500/5 rounded-full"></div>
-        </div>
-        
-        <div className="container mx-auto px-4 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-600 to-red-800">
-                Our Growing Community
-              </span>
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-              Join thousands of people who are making meaningful connections across Nigeria and the UK
-            </p>
-          </motion.div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="bg-white p-8 rounded-2xl shadow-lg border border-red-100 hover:shadow-xl transition-all duration-300"
-            >
-              <h3 className="text-4xl md:text-5xl font-bold text-red-600 mb-2 flex items-center justify-center">
-                <AnimatedCounter end={15000} />+
-              </h3>
-              <p className="text-gray-500 text-center">Community Members</p>
-            </motion.div>
-            
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="bg-white p-8 rounded-2xl shadow-lg border border-red-100 hover:shadow-xl transition-all duration-300"
-            >
-              <h3 className="text-4xl md:text-5xl font-bold text-red-600 mb-2 flex items-center justify-center">
-                <AnimatedCounter end={750} />+
-              </h3>
-              <p className="text-gray-500 text-center">Events Monthly</p>
-            </motion.div>
-            
-            <motion.div 
+          <div className="text-center mt-12">
+            <motion.button
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="bg-white p-8 rounded-2xl shadow-lg border border-red-100 hover:shadow-xl transition-all duration-300"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-8 py-3 bg-white text-red-600 border border-red-600 rounded-full font-medium hover:bg-red-50 transition-colors"
+              onClick={() => navigate('/hotspots')}
             >
-              <h3 className="text-4xl md:text-5xl font-bold text-red-600 mb-2 flex items-center justify-center">
-                <AnimatedCounter end={98} />%
-              </h3>
-              <p className="text-gray-500 text-center">Client Satisfaction</p>
-            </motion.div>
-            
-            <motion.div 
+              View All Hotspots
+            </motion.button>
+          </div>
+        </div>
+      </section>
+
+      {/* Statistics Section */}
+      <section id="stats-section" className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="bg-gradient-to-r from-red-600 to-red-800 rounded-3xl overflow-hidden shadow-2xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+                className="p-10 text-center text-white border-b md:border-b-0 md:border-r border-white/20"
+              >
+                <div className="text-5xl font-bold mb-2">
+                  <AnimatedCounter end={10000} /> +
+                </div>
+                <p className="text-white/80 text-lg">Active Users</p>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="p-10 text-center text-white border-b md:border-b-0 md:border-r border-white/20"
+              >
+                <div className="text-5xl font-bold mb-2">
+                  <AnimatedCounter end={2500} /> +
+                </div>
+                <p className="text-white/80 text-lg">Events Hosted</p>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="p-10 text-center text-white border-b lg:border-b-0 lg:border-r border-white/20"
+              >
+                <div className="text-5xl font-bold mb-2">
+                  <AnimatedCounter end={800} /> +
+                </div>
+                <p className="text-white/80 text-lg">Verified Venues</p>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="p-10 text-center text-white"
+              >
+                <div className="text-5xl font-bold mb-2">
+                  <AnimatedCounter end={350} /> +
+                </div>
+                <p className="text-white/80 text-lg">Communities</p>
+              </motion.div>
+            </div>
+          </div>
+          
+          <div className="mt-16 mx-auto max-w-4xl text-center">
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="bg-white p-8 rounded-2xl shadow-lg border border-red-100 hover:shadow-xl transition-all duration-300"
+              transition={{ duration: 0.5 }}
             >
-              <h3 className="text-4xl md:text-5xl font-bold text-red-600 mb-2 flex items-center justify-center">
-                <AnimatedCounter end={25} />+
-              </h3>
-              <p className="text-gray-500 text-center">Cities Covered</p>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-800" style={{ fontFamily: 'Playfair Display, serif' }}>
+                Experience the power of <span className="text-red-600">connection</span>
+              </h2>
+              <p className="text-gray-600 max-w-3xl mx-auto text-lg mb-8">
+                Our platform is designed to bring people together through shared experiences, in-person events, and vibrant communities. We're building a world where meaningful connections happen naturally.
+              </p>
+              
+              <div className="flex justify-center gap-4 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-green-500" />
+                  <span className="text-gray-700">No Subscription Required</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-green-500" />
+                  <span className="text-gray-700">Real In-Person Events</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-green-500" />
+                  <span className="text-gray-700">Diverse Communities</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-green-500" />
+                  <span className="text-gray-700">Verified Users</span>
+                </div>
+              </div>
             </motion.div>
-          </div>
-          
-          <div className="mt-16 text-center">
-            <Link to="/conviviapass">
-              <motion.button 
-                whileHover={{ scale: 1.05 }} 
-                whileTap={{ scale: 0.95 }}
-                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-red-600 to-red-800 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
-              >
-                <Sparkles size={20} className="text-yellow-300" />
-                Join ConviviaPass for Premium Benefits
-              </motion.button>
-            </Link>
           </div>
         </div>
       </section>
@@ -845,121 +867,138 @@ const LandingPage = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-24 bg-gradient-to-b from-white to-gray-50 relative overflow-hidden">
-        {/* Background decorations */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-20 left-0 w-64 h-64 bg-red-100 rounded-full blur-3xl opacity-50"></div>
-          <div className="absolute bottom-10 right-0 w-80 h-80 bg-red-50 rounded-full blur-3xl opacity-70"></div>
-        </div>
-        
-        <div className="container mx-auto px-4 relative z-10">
+      <section className="py-24 bg-gray-50">
+        <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              whileInView={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.5 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
             >
-              <h2 className="text-4xl md:text-5xl font-bold mb-6" style={{ fontFamily: 'Playfair Display, serif' }}>
+              <div className="mx-auto w-16 h-1 bg-gradient-to-r from-red-500 to-red-700 mb-6 rounded-full"></div>
+              <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-600 to-red-800">
                   What Our Community Says
                 </span>
               </h2>
               <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-                Hear from people who have found meaningful connections and experiences through Convivia24
+                Real stories from real people who've found meaningful connections
               </p>
             </motion.div>
           </div>
           
           <div className="relative max-w-5xl mx-auto">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeSlide}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.5 }}
-                className="bg-white rounded-2xl shadow-xl overflow-hidden"
-              >
-                <div className="grid grid-cols-1 md:grid-cols-12">
-                  {/* Image Column */}
-                  <div className="md:col-span-5 relative h-64 md:h-auto">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent md:bg-none z-10"></div>
-                    <img 
-                      src="https://images.unsplash.com/photo-1544027993-37dbfe43562a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80" 
-                      alt="People connecting" 
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute top-4 left-4 md:top-8 md:left-8 bg-gradient-to-r from-red-600 to-red-700 text-white text-xs px-4 py-2 rounded-full shadow-lg z-20">
-                      Real Stories
+            <div className="absolute top-5 -left-8 w-20 h-20 bg-red-100 rounded-full opacity-50 filter blur-xl"></div>
+            <div className="absolute bottom-5 -right-8 w-20 h-20 bg-red-200 rounded-full opacity-50 filter blur-xl"></div>
+            
+            <div className="relative">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeSlide}
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.5 }}
+                  className="bg-white rounded-3xl shadow-xl p-8 md:p-10 border border-gray-100"
+                >
+                  <div className="flex flex-col md:flex-row gap-8 items-center">
+                    <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-red-100 overflow-hidden flex-shrink-0">
+                      <img 
+                        src={testimonials[activeSlide].image} 
+                        alt={testimonials[activeSlide].name} 
+                        className="w-full h-full object-cover"
+                      />
                     </div>
-                  </div>
-                  
-                  {/* Content Column */}
-                  <div className="md:col-span-7 p-6 md:p-10 flex flex-col justify-center">
-                    <div className="mb-6 text-red-600">
-                      <div className="flex">
+                    <div className="flex-1">
+                      <div className="flex mb-4">
                         {[1, 2, 3, 4, 5].map((star) => (
-                          <Star key={star} size={20} className="fill-yellow-400 text-yellow-400" />
+                          <Star key={star} size={20} className="text-yellow-400 fill-current" />
                         ))}
                       </div>
-                    </div>
-                    
-                    <blockquote className="text-xl md:text-2xl text-gray-700 italic mb-8 leading-relaxed">
-                      "{testimonials[activeSlide].quote}"
-                    </blockquote>
-                    
-                    <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-red-100">
-                        <img 
-                          src={testimonials[activeSlide].image} 
-                          alt={testimonials[activeSlide].name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = 'https://via.placeholder.com/150?text=Person';
-                          }}
-                        />
-                      </div>
+                      <blockquote className="text-gray-700 text-lg md:text-xl italic mb-6 leading-relaxed">
+                        "{testimonials[activeSlide].quote}"
+                      </blockquote>
                       <div>
-                        <h4 className="font-bold text-gray-900">{testimonials[activeSlide].name}</h4>
-                        <p className="text-gray-500">{testimonials[activeSlide].role}</p>
+                        <h4 className="font-bold text-xl text-gray-900">{testimonials[activeSlide].name}</h4>
+                        <p className="text-red-600">{testimonials[activeSlide].role}</p>
                       </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-            
-            <div className="flex justify-center mt-10 gap-4">
-              {testimonials.map((_, index) => (
-                <motion.button
-                  key={index}
-                  onClick={() => setActiveSlide(index)}
-                  whileHover={{ scale: 1.2 }}
-                  whileTap={{ scale: 0.9 }}
-                  className={`w-3 h-3 rounded-full transition-all ${
-                    activeSlide === index 
-                      ? 'bg-gradient-to-r from-red-600 to-red-700 w-10' 
-                      : 'bg-gray-300'
-                  }`}
-                  aria-label={`Go to testimonial ${index + 1}`}
-                ></motion.button>
-              ))}
+                </motion.div>
+              </AnimatePresence>
+              
+              <div className="mt-8 flex justify-center gap-3">
+                {testimonials.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setActiveSlide(index)}
+                    className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                      activeSlide === index ? 'bg-red-600 w-6' : 'bg-gray-300'
+                    }`}
+                    aria-label={`Go to testimonial ${index + 1}`}
+                  />
+                ))}
+              </div>
             </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* Call to Action */}
+      <section className="py-20 relative overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-r from-red-800/90 to-red-900/90 z-10"></div>
+          <img 
+            src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1740&q=80" 
+            alt="People Celebrating" 
+            className="w-full h-full object-cover"
+          />
+        </div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="text-4xl md:text-5xl font-bold text-white mb-6" 
+              style={{ fontFamily: 'Playfair Display, serif' }}
+            >
+              Ready to Connect and <span className="text-yellow-300">Celebrate Together?</span>
+            </motion.h2>
             
-            <div className="mt-12 text-center">
-              <Link to="/experiences">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-white border-2 border-red-600 text-red-600 rounded-xl hover:bg-red-50 font-medium transition-colors shadow-md"
-                >
-                  Join Our Community
-                  <Users size={20} />
-                </motion.button>
-              </Link>
-            </div>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="text-xl text-white/90 mb-10 max-w-2xl mx-auto"
+            >
+              Join thousands of people creating meaningful connections through shared experiences and celebrations
+            </motion.p>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="flex flex-col md:flex-row justify-center gap-4"
+            >
+              <button 
+                onClick={() => navigate('/signup')}
+                className="px-8 py-4 bg-white text-red-800 text-lg font-bold rounded-xl hover:bg-gray-100 transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              >
+                Create Your Account
+              </button>
+              <button 
+                onClick={() => navigate('/experiences')}
+                className="px-8 py-4 bg-transparent border-2 border-white text-white text-lg font-bold rounded-xl hover:bg-white/10 transition-colors"
+              >
+                Explore Experiences
+              </button>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -1037,92 +1076,6 @@ const LandingPage = () => {
               <Globe size={20} />
             </motion.button>
           </motion.div>
-        </div>
-      </section>
-
-      {/* Update Active Communities section */}
-      <section className="py-24 bg-gray-900 text-white">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
-              Active Communities
-            </h2>
-            <p className="text-gray-400 mb-8 max-w-2xl mx-auto text-lg">
-              Discover thriving social scenes in our most active locations
-            </p>
-          </motion.div>
-
-          <div className="flex justify-center gap-6 mb-12">
-            <motion.button
-              onClick={() => setSelectedLocation('nigeria')}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={`flex items-center gap-2 px-6 py-3 rounded-lg text-lg ${
-                selectedLocation === 'nigeria' 
-                  ? 'bg-gradient-to-r from-red-600 to-red-700 text-white' 
-                  : 'bg-gray-800 text-white hover:bg-gray-700'
-              }`}
-            >
-              <span className="text-xl">🇳🇬</span> Nigeria
-            </motion.button>
-            <motion.button
-              onClick={() => setSelectedLocation('uk')}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={`flex items-center gap-2 px-6 py-3 rounded-lg text-lg ${
-                selectedLocation === 'uk' 
-                  ? 'bg-gradient-to-r from-red-600 to-red-700 text-white' 
-                  : 'bg-gray-800 text-white hover:bg-gray-700'
-              }`}
-            >
-              <span className="text-xl">🇬🇧</span> United Kingdom
-            </motion.button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {(selectedLocation === 'nigeria' ? cityData["Nigeria"] : cityData["United Kingdom"]).map((city, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.1 * index }}
-                whileHover={{ y: -10 }}
-                className="bg-gray-800 p-6 rounded-xl hover:bg-gray-750 transition-all duration-300 shadow-md"
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-red-600/20 flex items-center justify-center">
-                    <MapPin size={20} className="text-red-500" />
-                  </div>
-                  <h3 className="text-xl font-bold">{city.name}</h3>
-                </div>
-                <p className="text-gray-400 mb-4 text-sm">Popular areas for connections and meetups</p>
-                <div className="flex items-center gap-2 text-red-400 font-medium">
-                  <Users size={16} />
-                  <span>{city.members}</span>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-          
-          <div className="text-center mt-12">
-            <Link to="/experiences">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-red-600 to-red-800 text-white rounded-xl font-semibold shadow-lg"
-              >
-                Find Communities Near You
-                <Globe size={18} />
-              </motion.button>
-            </Link>
-          </div>
         </div>
       </section>
 
