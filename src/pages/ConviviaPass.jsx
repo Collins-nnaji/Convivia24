@@ -181,7 +181,7 @@ const ConviviaPass = () => {
             
             <div className="md:w-1/2 max-w-md mx-auto perspective-1000">
               {/* Enhanced Membership Card with Flip Effect */}
-              <motion.div 
+              <motion.div
                 className="relative w-full h-64 cursor-pointer"
                 onClick={() => setIsFlipped(!isFlipped)}
                 initial={{ opacity: 0 }}
@@ -194,21 +194,21 @@ const ConviviaPass = () => {
                 }}>
                   {/* Front of the Card */}
                   <div className="absolute w-full h-full backface-hidden rounded-2xl overflow-hidden shadow-2xl shadow-purple-900/50">
-                    {/* Card Background */}
+                  {/* Card Background */}
                     <div className={`absolute inset-0 bg-gradient-to-br ${
                       membershipTier === 'standard' ? 'from-blue-600 to-indigo-800' :
                       membershipTier === 'premium' ? 'from-[#FF0000] to-purple-800' :
                       'from-amber-400 to-amber-700'
                     }`}>
-                      {/* Background Pattern */}
-                      <div className="absolute inset-0 opacity-30">
-                        <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1)_0%,rgba(0,0,0,0)_60%)]"></div>
-                        <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-white/10 filter blur-3xl"></div>
-                      </div>
-                      
+                    {/* Background Pattern */}
+                    <div className="absolute inset-0 opacity-30">
+                      <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1)_0%,rgba(0,0,0,0)_60%)]"></div>
+                      <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-white/10 filter blur-3xl"></div>
+                    </div>
+                    
                       {/* Membership Badge */}
-                      <div className="absolute top-6 right-6">
-                        <div className="flex space-x-1">
+                    <div className="absolute top-6 right-6">
+                      <div className="flex space-x-1">
                           {membershipTier === 'vip' && (
                             <div className="h-8 w-8 rounded-full bg-yellow-300 flex items-center justify-center">
                               <Crown className="h-5 w-5 text-amber-800" />
@@ -224,59 +224,59 @@ const ConviviaPass = () => {
                               <Star className="h-5 w-5 text-white" />
                             </div>
                           )}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Card Content */}
-                    <div className="relative p-6 h-full flex flex-col justify-between">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="text-xl font-bold text-white">ConviviaPass</h3>
-                          <p className="text-white/70 text-sm capitalize">{membershipTier} Member</p>
-                        </div>
-                        <div className="rounded-full bg-white/20 backdrop-blur-xl p-2">
-                          <Sparkles className="h-6 w-6 text-white" />
-                        </div>
-                      </div>
-                      
-                      <div className="pt-4">
-                        {/* Barcode/Card Number */}
-                        <div className="mb-4">
-                          <div className="bg-white/10 backdrop-blur-xl p-3 rounded-lg">
-                            <div className="flex justify-between items-center">
-                              <div className="flex space-x-1">
-                                {Array.from({ length: 8 }).map((_, i) => (
-                                  <div key={i} className={`h-8 w-${Math.random() > 0.5 ? '0.5' : '1'} bg-white/80`}></div>
-                                ))}
-                              </div>
-                              <div className="text-white/80 text-xs">
-                                {[...Array(4)].map((_, i) => (
-                                  <span key={i}>{Math.floor(1000 + Math.random() * 9000)} </span>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="flex justify-between">
-                          <div>
-                            <p className="text-white/60 text-xs mb-1">MEMBER NAME</p>
-                            <p className="text-white font-medium">JOHN SMITH</p>
-                          </div>
-                          <div>
-                            <p className="text-white/60 text-xs mb-1">MEMBERSHIP</p>
-                            <p className="text-white font-medium uppercase">{membershipTier}</p>
-                          </div>
-                          <div>
-                            <p className="text-white/60 text-xs mb-1">VALID THROUGH</p>
-                            <p className="text-white font-medium">12/26</p>
-                          </div>
-                        </div>
                       </div>
                     </div>
                   </div>
                   
+                  {/* Card Content */}
+                  <div className="relative p-6 h-full flex flex-col justify-between">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-xl font-bold text-white">ConviviaPass</h3>
+                          <p className="text-white/70 text-sm capitalize">{membershipTier} Member</p>
+                      </div>
+                      <div className="rounded-full bg-white/20 backdrop-blur-xl p-2">
+                        <Sparkles className="h-6 w-6 text-white" />
+                      </div>
+                    </div>
+                    
+                    <div className="pt-4">
+                      {/* Barcode/Card Number */}
+                      <div className="mb-4">
+                        <div className="bg-white/10 backdrop-blur-xl p-3 rounded-lg">
+                          <div className="flex justify-between items-center">
+                            <div className="flex space-x-1">
+                                {Array.from({ length: 8 }).map((_, i) => (
+                                  <div key={i} className={`h-8 w-${Math.random() > 0.5 ? '0.5' : '1'} bg-white/80`}></div>
+                                ))}
+                            </div>
+                            <div className="text-white/80 text-xs">
+                                {[...Array(4)].map((_, i) => (
+                                  <span key={i}>{Math.floor(1000 + Math.random() * 9000)} </span>
+                                ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-between">
+                        <div>
+                          <p className="text-white/60 text-xs mb-1">MEMBER NAME</p>
+                          <p className="text-white font-medium">JOHN SMITH</p>
+                        </div>
+                        <div>
+                          <p className="text-white/60 text-xs mb-1">MEMBERSHIP</p>
+                            <p className="text-white font-medium uppercase">{membershipTier}</p>
+                        </div>
+                        <div>
+                          <p className="text-white/60 text-xs mb-1">VALID THROUGH</p>
+                          <p className="text-white font-medium">12/26</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
                   {/* Back of the Card */}
                   <div className="absolute w-full h-full backface-hidden rounded-2xl overflow-hidden shadow-2xl shadow-purple-900/50" style={{ transform: 'rotateY(180deg)' }}>
                     {/* Card Background */}
@@ -734,12 +734,12 @@ const ConviviaPass = () => {
               type: "Beach Club"
             }
           ].map((venue, index) => (
-            <motion.div
+          <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+            whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
-              viewport={{ once: true }}
+            viewport={{ once: true }}
               className="group bg-black/40 backdrop-blur-sm rounded-xl overflow-hidden border border-white/10 hover:border-red-500/30 transition-all duration-300"
             >
               <div className="h-48 relative overflow-hidden">
@@ -831,7 +831,7 @@ const ConviviaPass = () => {
           </div>
         </div>
       </div>
-      
+          
       {/* Tier Comparison Modal */}
       <AnimatePresence>
         {showTierModal && (
@@ -925,7 +925,7 @@ const ConviviaPass = () => {
                 >
                   Upgrade Now
                 </button>
-              </div>
+            </div>
             </motion.div>
           </motion.div>
         )}

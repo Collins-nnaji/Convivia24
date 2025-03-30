@@ -48,7 +48,8 @@ import {
   Medal,
   SlidersHorizontal,
   SearchX,
-  RefreshCw
+  RefreshCw,
+  ThumbsUp
 } from 'lucide-react';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 
@@ -262,7 +263,6 @@ const Hotspots = () => {
   const [selectedFeatures, setSelectedFeatures] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState('all');
   const [sortBy, setSortBy] = useState('popularity');
-  const [currentTopSpot, setCurrentTopSpot] = useState(0);
   const [showSpotlightDetails, setShowSpotlightDetails] = useState(false);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
   
@@ -337,47 +337,6 @@ const Hotspots = () => {
   const spotlightRef = useRef(null);
   const scrollControlsRef = useRef(null);
   
-  // Top 3 hotspots scroll interval
-  useEffect(() => {
-    let interval;
-    
-    if (isAutoScrolling) {
-      interval = setInterval(() => {
-        setCurrentTopSpot(prev => (prev + 1) % topHotspots.length);
-      }, 5000); // Change slide every 5 seconds
-    }
-    
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isAutoScrolling, topHotspots.length]);
-  
-  // Animations for spotlight sections
-  const spotlightControls = useAnimation();
-  
-  useEffect(() => {
-    spotlightControls.start({
-      x: -currentTopSpot * 100 + '%',
-      transition: { type: 'spring', stiffness: 200, damping: 25 }
-    });
-  }, [currentTopSpot, spotlightControls]);
-  
-  // Pause auto-scroll when user interacts with spotlight
-  const handleManualNavigation = (index) => {
-    setIsAutoScrolling(false);
-    setCurrentTopSpot(index);
-    
-    // Clear any existing timeout
-    if (window.autoScrollTimer) {
-      clearTimeout(window.autoScrollTimer);
-    }
-    
-    // Resume auto-scrolling after 15 seconds of inactivity
-    window.autoScrollTimer = setTimeout(() => {
-      setIsAutoScrolling(true);
-    }, 15000);
-  };
-
   // Sample hotspots data with detailed information
   const hotspots = [
     {
@@ -844,20 +803,38 @@ const Hotspots = () => {
     }
   ];
   
-  // Top 3 hotspots for spotlight section
-  const topHotspots = [...hotspots]
-    .sort((a, b) => b.popularity - a.popularity)
-    .slice(0, 3)
-    .map((spot, index) => ({
-      ...spot,
-      rank: index + 1,
-      // Custom promotional messages for each top spot
-      promoMessage: index === 0 
-        ? "Lagos' #1 Nightlife Destination" 
-        : index === 1 
-        ? "Most Popular New Venue"
-        : "Best Value Experience"
-    }));
+  // First, find and update the top hotspots section
+  // Define a single featured hotspot instead of an array
+  const featuredHotspot = {
+    id: 1,
+    name: 'The Grand Lounge',
+    type: 'Premium Nightclub',
+    location: 'Victoria Island, Lagos',
+    rating: 4.9,
+    image: 'https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1430&q=80',
+    description: 'Experience the ultimate luxury nightclub with world-class DJs, premium drinks, and a vibrant atmosphere that creates unforgettable nights. The Grand Lounge sets the standard for nightlife excellence in Lagos.',
+    features: ['Live DJs', 'VIP Areas', 'Premium Bar', 'Elite Crowd', 'Exclusive Events', 'Bottle Service'],
+    promoMessage: 'Featured Hotspot',
+    openingHours: '10:00 PM - 4:00 AM',
+    popularity: 98,
+    reviews: [
+      {
+        user: 'John Doe',
+        rating: 5,
+        comment: 'Best nightclub in Lagos! Amazing atmosphere and great music.'
+      },
+      {
+        user: 'Jane Smith',
+        rating: 4,
+        comment: 'Great VIP service but drinks are a bit expensive.'
+      }
+    ],
+    contact: {
+      phone: '+234 777 123 4567',
+      email: 'info@grandlounge.com',
+      website: 'www.grandlounge.com'
+    }
+  };
 
   // Add mood categories
   const moodCategories = [
@@ -888,6 +865,20 @@ const Hotspots = () => {
       icon: <Sun className="w-6 h-6" />,
       description: 'Beach clubs and waterfront spots',
       color: 'from-yellow-500 to-orange-500'
+    },
+    {
+      id: 'nightclub',
+      name: 'Nightclubs',
+      icon: <Music className="w-6 h-6" />,
+      description: 'Premier nightlife venues',
+      color: 'from-purple-500 to-pink-500'
+    },
+    {
+      id: 'restaurant',
+      name: 'Dining',
+      icon: <Utensils className="w-6 h-6" />,
+      description: 'Top restaurants and eateries',
+      color: 'from-emerald-500 to-teal-500'
     }
   ];
 
@@ -936,7 +927,7 @@ const Hotspots = () => {
   };
 
   return (
-    <motion.div 
+    <motion.div
       className="min-h-screen bg-gradient-to-b from-black via-[#0A0A0A] to-[#121212] text-white pb-20"
       initial="initial"
       animate="animate"
@@ -944,171 +935,169 @@ const Hotspots = () => {
       variants={pageVariants}
       transition={{ duration: 0.3 }}
     >
-      {/* Top Spotlight Section */}
+      {/* Top Spotlight Section - Static Featured Hotspot */}
       <section className="py-12 px-4 md:px-8 max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row items-center justify-between mb-8">
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-2">Top Spotlight</h2>
-            <p className="text-white/70">Featured venues you'll love</p>
+            <h2 className="text-3xl md:text-4xl font-bold mb-2">Featured Hotspot</h2>
+            <p className="text-white/70">Our top recommended venue this week</p>
           </div>
           
           <div className="flex items-center gap-3 mt-4 md:mt-0">
-            <button
-              onClick={() => handleManualNavigation(currentTopSpot === 0 ? topHotspots.length - 1 : currentTopSpot - 1)}
-              className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors duration-300"
-              aria-label="Previous slide"
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-4 py-2 rounded-lg bg-red-600 text-white flex items-center gap-2"
             >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
-            <button
-              onClick={() => handleManualNavigation((currentTopSpot + 1) % topHotspots.length)}
-              className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors duration-300"
-              aria-label="Next slide"
-            >
-              <ChevronRight className="h-5 w-5 text-white" />
-            </button>
+              View Details
+              <ArrowRight className="h-4 w-4" />
+            </motion.button>
           </div>
         </div>
         
         <div className="relative h-[600px] overflow-hidden rounded-2xl">
           <div className="absolute inset-0 overflow-hidden">
             <motion.div
-              className="flex h-full"
-              animate={spotlightControls}
-              style={{ width: `${topHotspots.length * 100}%` }}
+              className="relative h-full w-full"
+              initial={{ scale: 1 }}
+              animate={{ 
+                scale: [1, 1.03, 1],
+              }}
+              transition={{ duration: 15, repeat: Infinity, repeatType: "reverse" }}
             >
-              {topHotspots.map((hotspot, idx) => (
-                <div
-                  key={idx}
-                  className="relative h-full w-full"
-                  style={{ flex: `0 0 ${100 / topHotspots.length}%` }}
+              {/* Background Image with Parallax Effect */}
+              <motion.div
+                className="absolute inset-0"
+                animate={{ 
+                  scale: [1.03, 1, 1.03],
+                }}
+                transition={{ duration: 20, ease: 'easeInOut', repeat: Infinity, repeatType: "reverse" }}
+              >
+                <img
+                  src={featuredHotspot.image}
+                  alt={featuredHotspot.name}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+              </motion.div>
+              
+              {/* Content */}
+              <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-12">
+                <motion.div 
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                  className="max-w-3xl"
                 >
-                  <div className="relative h-full overflow-hidden rounded-xl">
-                    {/* Background Image with Parallax Effect */}
-                    <motion.div
-                      animate={{ 
-                        scale: currentTopSpot === idx ? 1.1 : 1,
-                        translateX: currentTopSpot === idx ? '2%' : '0%'
-                      }}
-                      transition={{ duration: 6, ease: 'easeInOut' }}
-                      className="absolute inset-0"
-                    >
-                      <img
-                        src={hotspot.image}
-                        alt={hotspot.name}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
-                    </motion.div>
-                    
-                    {/* Content */}
-                    <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-12">
-                      <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ 
-                          opacity: currentTopSpot === idx ? 1 : 0,
-                          y: currentTopSpot === idx ? 0 : 30
-                        }}
-                        transition={{ duration: 0.5, delay: 0.2 }}
-                        className="max-w-3xl"
-                      >
-                        <div className="mb-3 flex items-center gap-2">
-                          <span className="bg-[#FF0000] text-white text-xs font-bold px-3 py-1 rounded-full">FEATURED</span>
-                          <span className="bg-white/20 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full">{hotspot.type}</span>
-                        </div>
-                        
-                        <h3 className="text-3xl md:text-5xl font-bold mb-3">{hotspot.name}</h3>
-                        
-                        <div className="flex items-center gap-4 mb-3 text-sm md:text-base">
-                          <div className="flex items-center gap-1.5">
-                            <MapPin className="h-4 w-4 text-[#FF0000]" />
-                            <span>{hotspot.location}</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                            <span>{hotspot.rating} Rating</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <Clock className="h-4 w-4 text-[#FF0000]" />
-                            <span>{hotspot.openingHours}</span>
-                          </div>
-                        </div>
-                        
-                        <p className="text-white/80 mb-6 max-w-2xl">{hotspot.description}</p>
-                        
-                        <div className="flex flex-wrap gap-3 mb-6">
-                          {hotspot.features.map((feature, idx) => (
-                            <motion.span 
-                              key={idx}
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: 0.1 * idx + 0.5 }}
-                              className="bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm text-white/90"
-                            >
-                              {feature}
-                            </motion.span>
-                          ))}
-                        </div>
-                        
-                        <div className="flex flex-col sm:flex-row gap-4">
-                          <motion.button 
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.8 }}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="px-6 py-3 bg-gradient-to-r from-[#FF0000] to-red-700 hover:from-[#FF0000]/90 hover:to-red-700/90 text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-colors"
-                          >
-                            View Details
-                            <ArrowRight className="h-4 w-4" />
-                          </motion.button>
-                          <motion.button 
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.9 }}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-colors"
-                          >
-                            Save for Later
-                            <Heart className="h-4 w-4" />
-                          </motion.button>
-                        </div>
-                      </motion.div>
+                  <div className="mb-3 flex items-center gap-2">
+                    <span className="bg-[#FF0000] text-white text-xs font-bold px-3 py-1 rounded-full">FEATURED</span>
+                    <span className="bg-white/20 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full">{featuredHotspot.type}</span>
+                  </div>
+                  
+                  <h3 className="text-3xl md:text-5xl font-bold mb-3">{featuredHotspot.name}</h3>
+                  
+                  <div className="flex flex-wrap items-center gap-4 mb-3 text-sm md:text-base">
+                    <div className="flex items-center gap-1.5">
+                      <MapPin className="h-4 w-4 text-[#FF0000]" />
+                      <span>{featuredHotspot.location}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                      <span>{featuredHotspot.rating} Rating</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="h-4 w-4 text-[#FF0000]" />
+                      <span>{featuredHotspot.openingHours}</span>
                     </div>
                   </div>
-
-                  {/* Promo Tag */}
-                  <motion.div 
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ 
-                      opacity: currentTopSpot === idx ? 1 : 0,
-                      x: currentTopSpot === idx ? 0 : 20
-                    }}
-                    transition={{ delay: 0.3 }}
-                    className="absolute top-6 right-6 bg-gradient-to-r from-[#FF0000] to-red-700 px-4 py-2 rounded-full flex items-center gap-2"
-                  >
-                    <Award className="h-4 w-4 text-white" />
-                    <span className="text-white font-bold text-sm">{hotspot.promoMessage || 'Top Pick'}</span>
-                  </motion.div>
-                </div>
-              ))}
+                  
+                  <p className="text-white/80 mb-6 max-w-2xl">{featuredHotspot.description}</p>
+                  
+                  <div className="flex flex-wrap gap-3 mb-6">
+                    {featuredHotspot.features.map((feature, idx) => (
+                      <motion.span 
+                        key={idx}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 * idx + 0.5 }}
+                        className="bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm text-white/90"
+                      >
+                        {feature}
+                      </motion.span>
+                    ))}
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <motion.button 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.8 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="px-6 py-3 bg-gradient-to-r from-[#FF0000] to-red-700 hover:from-[#FF0000]/90 hover:to-red-700/90 text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-colors"
+                    >
+                      View Details
+                      <ArrowRight className="h-4 w-4" />
+                    </motion.button>
+                    <motion.button 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.9 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-colors"
+                    >
+                      Save for Later
+                      <Heart className="h-4 w-4" />
+                    </motion.button>
+                  </div>
+                </motion.div>
+              </div>
             </motion.div>
           </div>
           
-          {/* Carousel Controls */}
-          <div className="absolute bottom-6 right-6 flex items-center gap-3">
-            {topHotspots.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleManualNavigation(idx)}
-                className={`h-2.5 rounded-full transition-all duration-300 ${
-                  currentTopSpot === idx ? 'w-8 bg-[#FF0000]' : 'w-2.5 bg-white/30'
-                }`}
-                aria-label={`Go to slide ${idx + 1}`}
-              />
-            ))}
-          </div>
+          {/* Promo Tag */}
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            className="absolute top-6 right-6 bg-gradient-to-r from-[#FF0000] to-red-700 px-4 py-2 rounded-full flex items-center gap-2"
+          >
+            <Award className="h-4 w-4 text-white" />
+            <span className="text-white font-bold text-sm">{featuredHotspot.promoMessage}</span>
+          </motion.div>
+          
+          {/* Quick Info Icons */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="absolute left-6 top-6 flex flex-col gap-3"
+          >
+            <motion.div 
+              initial={{ x: -20 }}
+              animate={{ x: 0 }}
+              transition={{ delay: 0.4 }}
+              className="bg-black/40 backdrop-blur-sm p-2 rounded-full flex items-center justify-center"
+            >
+              <ThumbsUp className="h-5 w-5 text-green-400" />
+            </motion.div>
+            <motion.div 
+              initial={{ x: -20 }}
+              animate={{ x: 0 }}
+              transition={{ delay: 0.5 }}
+              className="bg-black/40 backdrop-blur-sm p-2 rounded-full flex items-center justify-center"
+            >
+              <Star className="h-5 w-5 text-yellow-400" />
+            </motion.div>
+            <motion.div 
+              initial={{ x: -20 }}
+              animate={{ x: 0 }}
+              transition={{ delay: 0.6 }}
+              className="bg-black/40 backdrop-blur-sm p-2 rounded-full flex items-center justify-center"
+            >
+              <Users className="h-5 w-5 text-blue-400" />
+            </motion.div>
+          </motion.div>
         </div>
       </section>
       
@@ -1132,7 +1121,7 @@ const Hotspots = () => {
               />
             </div>
             
-            <button
+            <button 
               onClick={() => setShowFilters(!showFilters)}
               className="bg-white/10 text-white p-2 rounded-full hover:bg-white/20 transition-colors duration-300"
             >

@@ -5,7 +5,8 @@ import {
   MapPin, ArrowRight, CheckCircle, Heart, 
   Users2, Sparkles, Search, Plus, BellRing, 
   Zap, Menu, User, X, MessageSquare, Globe,
-  Filter, Calendar, Home, Map
+  Filter, Calendar, Home, Map, Settings,
+  Bell, UserPlus, ChevronRight, MessagesSquare
 } from 'lucide-react';
 
 // Import custom components
@@ -41,6 +42,9 @@ const Connect = () => {
   // Added state for connection modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState(null);
+  const [notifications, setNotifications] = useState(3);
+  const [showNotificationPanel, setShowNotificationPanel] = useState(false);
+  const [showQRCode, setShowQRCode] = useState(false);
 
   useEffect(() => {
     setTimeout(() => {
@@ -537,25 +541,222 @@ const Connect = () => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
-      className="min-h-screen bg-gradient-to-b from-black via-[#0A0A0A] to-[#121212] text-white"
+      className="min-h-screen bg-gradient-to-b from-black via-[#0A0A0A] to-[#121212] text-white pb-20 relative"
     >
-      <div className="container mx-auto px-4 py-8">
-        {/* Page Header */}
-        <div className="mb-6 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Connect</h1>
-            <p className="text-gray-400">Find people and communities with similar interests</p>
+      {/* Mobile App Header */}
+      <div className="sticky top-0 z-30 bg-black/80 backdrop-blur-md border-b border-white/10">
+        <div className="container mx-auto">
+          <div className="flex justify-between items-center p-4">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowMobileNav(!showMobileNav)}
+                className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-all"
+              >
+                <Menu className="h-5 w-5 text-white" />
+              </button>
+              <h1 className="text-lg font-bold text-white">Connect</h1>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setOpenSearchBar(!openSearchBar)}
+                className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-all"
+              >
+                <Search className="h-5 w-5 text-white" />
+              </button>
+              
+              <div className="relative">
+                <button
+                  onClick={() => setShowNotificationPanel(!showNotificationPanel)}
+                  className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-all"
+                >
+                  <Bell className="h-5 w-5 text-white" />
+                  {notifications > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">{notifications}</span>
+                  )}
+                </button>
+                
+                <AnimatePresence>
+                  {showNotificationPanel && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute right-0 mt-2 w-72 bg-gray-900 rounded-xl border border-white/10 shadow-lg shadow-black/30 z-40"
+                    >
+                      <div className="p-3 border-b border-white/10">
+                        <div className="flex justify-between items-center">
+                          <h3 className="font-medium text-white">Notifications</h3>
+                          <button className="text-xs text-blue-400">Mark all as read</button>
+                        </div>
+                      </div>
+                      <div className="max-h-96 overflow-y-auto">
+                        {[...Array(3)].map((_, i) => (
+                          <div key={i} className="p-3 border-b border-white/5 hover:bg-white/5 transition-colors flex gap-3 items-start">
+                            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+                              {i === 0 ? <UserPlus size={14} /> : i === 1 ? <Heart size={14} /> : <MessagesSquare size={14} />}
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm text-white">
+                                {i === 0 ? 'Sarah connected with you' : i === 1 ? 'Michael liked your post' : 'New message from David'}
+                              </p>
+                              <p className="text-xs text-gray-400">Just now</p>
+                            </div>
+                            <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="p-2 text-center">
+                        <button className="text-sm text-blue-400 hover:text-blue-300 transition-colors">View all notifications</button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+              
+              <button
+                onClick={() => setShowQRCode(!showQRCode)}
+                className="ml-2 flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-medium rounded-full"
+              >
+                <UserPlus className="h-3.5 w-3.5" />
+                <span>Connect</span>
+              </button>
+            </div>
           </div>
-          <motion.button 
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="hidden lg:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl shadow-sm transition-colors"
-          >
-            <Plus size={16} />
-            <span className="font-medium">Create</span>
-          </motion.button>
         </div>
-        
+      </div>
+      
+      {/* Mobile Nav Sidebar */}
+      <AnimatePresence>
+        {showMobileNav && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowMobileNav(false)}
+              className="fixed inset-0 bg-black/70 z-40"
+            />
+            
+            <motion.div
+              initial={{ x: -300 }}
+              animate={{ x: 0 }}
+              exit={{ x: -300 }}
+              className="fixed top-0 left-0 h-full w-72 bg-gray-900 z-50 shadow-xl"
+            >
+              <div className="p-5 border-b border-white/10">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600">
+                    <img 
+                      src="https://randomuser.me/api/portraits/women/44.jpg" 
+                      alt="Profile" 
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <p className="font-medium text-white">Jessica Williams</p>
+                    <p className="text-sm text-green-500">Active</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="p-2">
+                <button className="flex items-center gap-3 p-3 w-full text-left rounded-lg hover:bg-white/5">
+                  <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                    <User className="h-4 w-4 text-blue-400" />
+                  </div>
+                  <span className="text-white">Profile</span>
+                </button>
+                
+                <button className="flex items-center gap-3 p-3 w-full text-left rounded-lg hover:bg-white/5">
+                  <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                    <MessagesSquare className="h-4 w-4 text-purple-400" />
+                  </div>
+                  <span className="text-white">Messages</span>
+                  <span className="ml-auto bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">2</span>
+                </button>
+                
+                <button className="flex items-center gap-3 p-3 w-full text-left rounded-lg hover:bg-white/5">
+                  <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                    <UserPlus className="h-4 w-4 text-green-400" />
+                  </div>
+                  <span className="text-white">Connections</span>
+                </button>
+                
+                <button className="flex items-center gap-3 p-3 w-full text-left rounded-lg hover:bg-white/5">
+                  <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                    <Calendar className="h-4 w-4 text-yellow-400" />
+                  </div>
+                  <span className="text-white">Events</span>
+                </button>
+                
+                <button className="flex items-center gap-3 p-3 w-full text-left rounded-lg hover:bg-white/5">
+                  <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                    <Settings className="h-4 w-4 text-gray-400" />
+                  </div>
+                  <span className="text-white">Settings</span>
+                </button>
+              </div>
+              
+              <div className="absolute bottom-0 w-full p-5 border-t border-white/10">
+                <button className="w-full p-3 bg-white/10 hover:bg-white/15 rounded-lg text-white text-center">
+                  Sign Out
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+      
+      {/* QR Code Modal for Connections */}
+      <AnimatePresence>
+        {showQRCode && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setShowQRCode(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-gray-900 rounded-2xl p-6 max-w-sm w-full border border-white/10 shadow-xl"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="text-center mb-4">
+                <h3 className="text-xl font-bold text-white mb-1">Quick Connect</h3>
+                <p className="text-gray-400 text-sm">Scan this code to connect instantly</p>
+              </div>
+              
+              <div className="bg-white p-4 rounded-xl mb-4">
+                <div className="aspect-square w-full bg-[url('https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=ConviviaUserID123')] bg-center bg-no-repeat bg-contain">
+                </div>
+              </div>
+              
+              <div className="mb-4">
+                <p className="text-center text-white font-bold">Jessica Williams</p>
+                <p className="text-center text-gray-400 text-sm">@jessica.w</p>
+              </div>
+              
+              <div className="flex flex-col gap-2">
+                <button className="w-full p-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg text-white font-medium">
+                  Share Profile
+                </button>
+                <button 
+                  onClick={() => setShowQRCode(false)}
+                  className="w-full p-3 bg-white/10 hover:bg-white/15 rounded-lg text-white"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      <div className="container mx-auto px-4 pt-4 pb-20">
         {/* Tabs Navigator */}
         <TabsNavigator 
           activeTab={activeTab}
@@ -564,6 +765,47 @@ const Connect = () => {
         
         {/* Main Content - Shows based on active tab */}
         {renderTabContent()}
+      </div>
+      
+      {/* Mobile Navigation Bar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-gray-900/90 backdrop-blur-lg border-t border-white/10 z-30">
+        <div className="flex justify-around items-center h-16">
+          <button className="flex flex-col items-center justify-center text-white/60 hover:text-white transition-colors">
+            <Home className="h-5 w-5" />
+            <span className="text-xs mt-1">Home</span>
+          </button>
+          
+          <button className="flex flex-col items-center justify-center text-white/60 hover:text-white transition-colors">
+            <Globe className="h-5 w-5" />
+            <span className="text-xs mt-1">Discover</span>
+          </button>
+          
+          <button className="flex flex-col items-center justify-center -mt-5 relative">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-full p-3 shadow-lg">
+              <Plus className="h-6 w-6 text-white" />
+            </div>
+            <span className="text-xs mt-1 text-white/60">Create</span>
+          </button>
+          
+          <button className="flex flex-col items-center justify-center text-white hover:text-white transition-colors">
+            <div className="relative">
+              <MessagesSquare className="h-5 w-5" />
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-3.5 h-3.5 flex items-center justify-center rounded-full">2</span>
+            </div>
+            <span className="text-xs mt-1">Messages</span>
+          </button>
+          
+          <button className="flex flex-col items-center justify-center text-white/60 hover:text-white transition-colors">
+            <div className="relative rounded-full overflow-hidden h-5 w-5">
+              <img 
+                src="https://randomuser.me/api/portraits/women/44.jpg" 
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <span className="text-xs mt-1">Profile</span>
+          </button>
+        </div>
       </div>
       
       {/* Connection Request Modal */}

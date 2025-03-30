@@ -6,6 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 // Event card component with enhanced animations
 const EventCard = ({ event, index }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const navigate = useNavigate();
   
   return (
     <motion.div
@@ -113,6 +114,7 @@ const EventCard = ({ event, index }) => {
               backgroundColor: "#CC0000" 
             }}
             whileTap={{ scale: 0.95 }}
+            onClick={() => navigate(`/event/${event.id}`)}
             className="bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-4 py-2 rounded-full flex items-center gap-1.5"
           >
             <span>Get Tickets</span>
@@ -129,146 +131,61 @@ const EventCard = ({ event, index }) => {
   );
 };
 
-// Venue card component with enhanced animations
+// VenueCard component for displaying venues
 const VenueCard = ({ venue, index }) => {
-  const [isHovered, setIsHovered] = useState(false);
-  
   return (
     <motion.div
-      initial={{ opacity: 0, y: 50 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ 
-        duration: 0.6,
-        delay: index * 0.1,
-        type: "spring",
-        stiffness: 100
-      }}
-      whileHover={{ 
-        y: -10,
-        transition: { duration: 0.3 }
-      }}
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
-      className="bg-white/5 backdrop-blur-sm rounded-xl overflow-hidden border border-white/10 shadow-xl hover:border-red-500/30 transition-all duration-300"
+      transition={{ duration: 0.4, delay: index * 0.1 }}
+      className="bg-gradient-to-br from-black/40 to-gray-900/20 border border-white/10 hover:border-blue-500/30 rounded-xl overflow-hidden transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 group"
     >
       <div className="relative h-48 overflow-hidden">
-        <motion.img 
+        <img 
           src={venue.image} 
           alt={venue.name}
-          className="w-full h-full object-cover"
-          animate={{ 
-            scale: isHovered ? 1.05 : 1
-          }}
-          transition={{ duration: 0.4 }}
+          className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
         />
-        <motion.div 
-          className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"
-          animate={{
-            opacity: isHovered ? 0.8 : 0.6
-          }}
-          transition={{ duration: 0.3 }}
-        />
-        <motion.div 
-          initial={{ x: -10, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ delay: index * 0.1 + 0.3 }}
-          className="absolute top-3 left-3 bg-red-500/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-white"
-        >
-          {venue.type.charAt(0).toUpperCase() + venue.type.slice(1)}
-        </motion.div>
-        <motion.div 
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: index * 0.1 + 0.4 }}
-          className="absolute top-3 right-3 flex items-center gap-1 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium text-white"
-        >
-          <span>{venue.rating}</span>
-          <Star className="h-3 w-3 text-yellow-400 fill-current" />
-        </motion.div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-60"></div>
+        <div className="absolute bottom-3 left-3 flex items-center gap-1.5">
+          <div className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full font-medium">
+            {venue.type}
+          </div>
+          <div className="bg-black/50 backdrop-blur-sm text-white text-xs px-2 py-0.5 rounded-full">
+            {venue.price ? venue.price : 'Contact for pricing'}
+          </div>
+        </div>
+        <div className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm rounded-full flex items-center gap-0.5 px-1.5 py-0.5">
+          <Star className="h-3 w-3 text-yellow-500 fill-current" />
+          <span className="text-white text-xs font-medium">{venue.rating}</span>
+        </div>
       </div>
       
-      <div className="p-5">
-        <motion.h3 
-          initial={{ y: 10, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: index * 0.1 + 0.1 }}
-          className="text-xl font-bold text-white mb-2"
-        >
-          {venue.name}
-        </motion.h3>
-        
-        <motion.div 
-          initial={{ y: 10, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: index * 0.1 + 0.2 }}
-          className="flex items-center gap-2 text-white/70 text-sm mb-2"
-        >
-          <MapPin className="h-4 w-4 text-red-400" />
-          <span>{venue.location}</span>
-        </motion.div>
-        
-        <motion.div 
-          initial={{ y: 10, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: index * 0.1 + 0.3 }}
-          className="flex items-center gap-2 text-white/70 text-sm mb-2"
-        >
-          <Users className="h-4 w-4 text-red-400" />
-          <span>{venue.capacity}</span>
-        </motion.div>
-        
-        <motion.div 
-          initial={{ y: 10, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: index * 0.1 + 0.4 }}
-          className="flex items-center gap-2 text-white/70 text-sm mb-4"
-        >
-          <Ticket className="h-4 w-4 text-red-400" />
-          <span>{venue.price}</span>
-        </motion.div>
-        
-        {/* Features Tags */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          {venue.features.map((feature, idx) => (
-            <motion.span 
-              key={idx}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.05 + idx * 0.05 + 0.5 }}
-              whileHover={{ 
-                scale: 1.1, 
-                backgroundColor: "rgba(255, 0, 0, 0.2)"
-              }}
-              className="bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full text-xs text-white/90"
-            >
-              {feature}
-            </motion.span>
-          ))}
+      <div className="p-4">
+        <h3 className="text-lg font-semibold text-white mb-1 truncate">{venue.name}</h3>
+        <div className="flex items-center gap-1.5 text-gray-400 text-sm mb-2">
+          <MapPin className="h-3.5 w-3.5 text-blue-400" />
+          <span className="truncate">{venue.location}</span>
         </div>
+        <p className="text-white/70 text-sm mb-4 line-clamp-2">{venue.description || `${venue.name} is a ${venue.type} venue located in ${venue.location} with a rating of ${venue.rating}.`}</p>
         
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.1 + 0.7 }}
-          className="flex justify-end pt-3 border-t border-white/10"
-        >
-          <motion.button
-            whileHover={{ 
-              scale: 1.05, 
-              backgroundColor: "#CC0000" 
-            }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-4 py-2 rounded-full flex items-center gap-1.5"
-          >
-            <span>View Details</span>
-            <motion.div
-              animate={{ x: isHovered ? 3 : 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <ArrowRight className="h-3.5 w-3.5" />
-            </motion.div>
-          </motion.button>
-        </motion.div>
+        <div className="flex items-center justify-between pt-2 border-t border-white/10">
+          <div className="flex gap-2">
+            {venue.features && venue.features.slice(0, 3).map((feature, idx) => (
+              <span key={idx} className="text-xs text-white/70 bg-white/5 px-2 py-1 rounded">
+                {feature}
+              </span>
+            ))}
+            {(!venue.features || venue.features.length === 0) && (
+              <span className="text-xs text-white/70 bg-white/5 px-2 py-1 rounded">
+                {venue.capacity || 'Flexible Capacity'}
+              </span>
+            )}
+          </div>
+          <button className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1 transition-colors">
+            View <ArrowRight className="h-3 w-3" />
+          </button>
+        </div>
       </div>
     </motion.div>
   );
@@ -286,9 +203,6 @@ const Events = () => {
   const [visibleItems, setVisibleItems] = useState(6);
   const [showPlanningForm, setShowPlanningForm] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
-  
-  // Add missing state for visible events
-  const [visibleEvents, setVisibleEvents] = useState([]);
   
   // Animation hooks
   const [activeItemIndex, setActiveItemIndex] = useState(null);
@@ -428,85 +342,6 @@ const Events = () => {
     }
   ];
 
-  // Mock upcoming events data
-  const eventsData = [
-    {
-      id: 1,
-      name: "Annual Tech Conference 2024",
-      date: "June 15, 2024",
-      time: "9:00 AM - 6:00 PM",
-      location: "Lagos, Nigeria",
-      venue: "Ocean View Resort",
-      category: "Conference",
-      organizer: "TechNigeria Association",
-      image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80"
-    },
-    {
-      id: 2,
-      name: "Summer Music Festival",
-      date: "July 5-7, 2024",
-      time: "4:00 PM - 11:00 PM",
-      location: "London, UK",
-      venue: "Riverside Park",
-      category: "Entertainment",
-      organizer: "UK Music Productions",
-      image: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80"
-    },
-    {
-      id: 3,
-      name: "International Food Festival",
-      date: "May 20-22, 2024",
-      time: "12:00 PM - 10:00 PM",
-      location: "Abuja, Nigeria",
-      venue: "Central City Square",
-      category: "Food & Drink",
-      organizer: "Global Tastes Nigeria",
-      image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=687&q=80"
-    },
-    {
-      id: 4,
-      name: "Business Leadership Summit",
-      date: "June 8, 2024",
-      time: "8:30 AM - 4:30 PM",
-      location: "Manchester, UK",
-      venue: "The Royal Garden Conference Center",
-      category: "Business",
-      organizer: "UK Business Network",
-      image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1632&q=80"
-    },
-    {
-      id: 5,
-      name: "Wedding Expo 2024",
-      date: "May 18-19, 2024",
-      time: "10:00 AM - 8:00 PM",
-      location: "Lagos, Nigeria",
-      venue: "The Grand Ballroom",
-      category: "Exhibition",
-      organizer: "Wedding Planners Association",
-      image: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80"
-    },
-    {
-      id: 6,
-      name: "Charity Gala Dinner",
-      date: "July 20, 2024",
-      time: "7:00 PM - 11:00 PM",
-      location: "London, UK",
-      venue: "Central City Hall",
-      category: "Charity",
-      organizer: "UK Children's Foundation",
-      image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?ixlib=rb-4.0.3&auto=format&fit=crop&w=1169&q=80"
-    }
-  ];
-  
-  // Event categories with icons
-  const eventCategories = [
-    { id: 'all', name: 'All Events', icon: <Calendar size={20} /> },
-    { id: 'wedding', name: 'Weddings', icon: <Heart size={20} /> },
-    { id: 'corporate', name: 'Corporate', icon: <ClipboardList size={20} /> },
-    { id: 'birthday', name: 'Birthday', icon: <Cake size={20} /> },
-    { id: 'cultural', name: 'Cultural', icon: <Award size={20} /> },
-  ];
-
   // Filter venues based on search query, location, rating, and type
   const filteredVenues = venuesData.filter(venue => {
     const matchesSearch = venue.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -519,23 +354,6 @@ const Events = () => {
     
     return matchesSearch && matchesLocation && matchesRating && matchesType;
   });
-  
-  // Filter events based on search query, location and type
-  const filteredEvents = eventsData.filter(event => {
-    const matchesSearch = event.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         event.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesLocation = selectedLocation === 'all' || 
-                          (selectedLocation === 'nigeria' && event.location.includes('Nigeria')) ||
-                          (selectedLocation === 'uk' && event.location.includes('UK'));
-    const matchesType = eventType === 'all' || event.type === eventType;
-    
-    return matchesSearch && matchesLocation && matchesType;
-  });
-  
-  // Update visibleEvents when filteredEvents changes
-  useEffect(() => {
-    setVisibleEvents(filteredEvents.slice(0, visibleItems));
-  }, [filteredEvents, visibleItems]);
   
   // Sort venues based on selection
   const sortedVenues = [...filteredVenues].sort((a, b) => {
@@ -552,13 +370,21 @@ const Events = () => {
   const handleLoadMore = () => {
     const newVisibleItems = visibleItems + 3;
     setVisibleItems(newVisibleItems);
-    setVisibleEvents(filteredEvents.slice(0, newVisibleItems));
   };
 
   // Tabs configuration
   const tabs = [
     { id: 'plan', label: 'Plan Your Celebrations', icon: <Calendar className="h-4 w-4" /> },
     { id: 'vendors', label: 'Vendors', icon: <Store className="h-4 w-4" /> },
+  ];
+  
+  // Venue categories with icons (replacement for removed eventCategories)
+  const venueCategories = [
+    { id: 'all', name: 'All Venues', icon: <Building2 size={20} /> },
+    { id: 'wedding', name: 'Wedding Venues', icon: <Heart size={20} /> },
+    { id: 'corporate', name: 'Corporate Venues', icon: <ClipboardList size={20} /> },
+    { id: 'birthday', name: 'Birthday Venues', icon: <Cake size={20} /> },
+    { id: 'cultural', name: 'Cultural Venues', icon: <Award size={20} /> },
   ];
 
   return (
@@ -569,7 +395,7 @@ const Events = () => {
       transition={{ duration: 0.3 }}
       className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-black text-white"
     >
-      {/* Header */}
+      {/* Header with dual-purpose headline */}
       <div className="relative overflow-hidden">
         {/* Background with animated particles */}
         <div className="absolute inset-0 z-0">
@@ -610,135 +436,145 @@ const Events = () => {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.05)_1px,_transparent_1px)] bg-[length:20px_20px] z-0" />
         </div>
         
-        <div className="relative z-10 py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="relative z-10 pt-12 pb-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="flex flex-col items-center"
+            transition={{ duration: 0.5 }}
+            className="text-center mb-6"
           >
             <motion.h1 
-              className="text-5xl md:text-6xl font-bold mb-4 text-center bg-clip-text text-transparent bg-gradient-to-r from-white via-red-500 to-white"
+              className="text-4xl md:text-5xl font-bold mb-4 text-center bg-clip-text text-transparent bg-gradient-to-r from-white via-red-500 to-white"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
             >
-              Ready to Bring People Together?
+              Create Extraordinary Moments
             </motion.h1>
             <motion.p 
-              className="text-xl text-white/80 mb-8 text-center max-w-3xl"
+              className="text-lg text-white/80 text-center max-w-2xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              Create unforgettable celebration experiences that connect people through shared moments
+              Two powerful ways to bring people together through shared celebrations
             </motion.p>
-            
-            {/* Planning Steps */}
-            <motion.div
-              className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10 w-full max-w-4xl"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
+          </motion.div>
+          
+          {/* Country Selector - Kept at the top for both sections */}
+          <motion.div 
+            className="flex justify-center gap-3 mb-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <button
+              onClick={() => setSelectedLocation('all')}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm transition-all duration-300 ${
+                selectedLocation === 'all' 
+                  ? 'bg-red-600 text-white font-medium' 
+                  : 'bg-white/10 text-white/80 hover:bg-white/20'
+              }`}
             >
-              {[
-                {
-                  icon: <Cake className="h-6 w-6 text-red-400" />,
-                  title: "Define Event",
-                  desc: "Choose type & guest count"
-                },
-                {
-                  icon: <Calendar className="h-6 w-6 text-red-400" />,
-                  title: "Set Date & Budget",
-                  desc: "Plan your timeline"
-                },
-                {
-                  icon: <Webhook className="h-6 w-6 text-red-400" />,
-                  title: "AI Recommendations",
-                  desc: "Get personalized options"
-                },
-                {
-                  icon: <Sparkles className="h-6 w-6 text-red-400" />,
-                  title: "Create Memories",
-                  desc: "Enjoy your celebration"
-                }
-              ].map((step, index) => (
-                <motion.div 
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.3 + (index * 0.1) }}
-                  className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl p-4 flex flex-col items-center text-center hover:bg-white/15 hover:border-red-500/30 transition-all duration-300"
-                >
-                  <div className="w-12 h-12 bg-gradient-to-br from-red-600/20 to-purple-600/20 rounded-full flex items-center justify-center mb-3">
-                    {step.icon}
-                  </div>
-                  <h3 className="text-white font-medium mb-1">{step.title}</h3>
-                  <p className="text-white/60 text-sm">{step.desc}</p>
-                </motion.div>
-              ))}
-            </motion.div>
-            
-            {/* CTA Button */}
-            <motion.button
-              onClick={() => setShowPlanningForm(true)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.7 }}
-              className="px-8 py-4 bg-gradient-to-r from-red-600 to-purple-600 hover:from-red-700 hover:to-purple-700 text-white text-lg font-medium rounded-full shadow-lg shadow-red-900/30 flex items-center gap-2 transform transition-all duration-300"
+              <Globe className="w-4 h-4" />
+              All Locations
+            </button>
+            <button
+              onClick={() => setSelectedLocation('nigeria')}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm transition-all duration-300 ${
+                selectedLocation === 'nigeria' 
+                  ? 'bg-red-600 text-white font-medium' 
+                  : 'bg-white/10 text-white/80 hover:bg-white/20'
+              }`}
             >
-              Start Planning Now
-              <ArrowRight className="h-5 w-5" />
-            </motion.button>
-            
-            {/* Country Selector */}
-            <motion.div 
-              className="flex justify-center gap-3 mt-10 mb-8"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.8 }}
+              <span className="text-base">🇳🇬</span> Nigeria
+            </button>
+            <button
+              onClick={() => setSelectedLocation('uk')}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm transition-all duration-300 ${
+                selectedLocation === 'uk' 
+                  ? 'bg-red-600 text-white font-medium' 
+                  : 'bg-white/10 text-white/80 hover:bg-white/20'
+              }`}
             >
-              <button
-                onClick={() => setSelectedLocation('all')}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm transition-all duration-300 ${
-                  selectedLocation === 'all' 
-                    ? 'bg-red-600 text-white font-medium' 
-                    : 'bg-white/10 text-white/80 hover:bg-white/20'
-                }`}
-              >
-                <Globe className="w-4 h-4" />
-                All Locations
-              </button>
-              <button
-                onClick={() => setSelectedLocation('nigeria')}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm transition-all duration-300 ${
-                  selectedLocation === 'nigeria' 
-                    ? 'bg-red-600 text-white font-medium' 
-                    : 'bg-white/10 text-white/80 hover:bg-white/20'
-                }`}
-              >
-                <span className="text-base">🇳🇬</span> Nigeria
-              </button>
-              <button
-                onClick={() => setSelectedLocation('uk')}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm transition-all duration-300 ${
-                  selectedLocation === 'uk' 
-                    ? 'bg-red-600 text-white font-medium' 
-                    : 'bg-white/10 text-white/80 hover:bg-white/20'
-                }`}
-              >
-                <span className="text-base">🇬🇧</span> United Kingdom
-              </button>
-            </motion.div>
+              <span className="text-base">🇬🇧</span> United Kingdom
+            </button>
           </motion.div>
         </div>
       </div>
       
-      {/* Tab Navigation */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
-        <div className="flex flex-wrap items-center gap-2">
+      {/* Split Screen Layout - Two Distinct Features */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          {/* Introduction Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="md:col-span-3 bg-gradient-to-br from-gray-900/80 to-gray-800/60 backdrop-blur-md border border-white/10 rounded-xl p-6 mb-4"
+          >
+            <h2 className="text-xl md:text-2xl font-bold mb-2 text-center">Explore Our Event Services</h2>
+            <p className="text-white/70 text-center mb-0">From initial concept to final execution, we provide tools to make your celebrations truly extraordinary</p>
+          </motion.div>
+          
+          {/* Feature Cards - 3 column layout */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="bg-gradient-to-br from-blue-700/10 to-blue-900/10 backdrop-blur-md border border-white/10 rounded-xl p-6 hover:border-blue-500/30 transition-all duration-300"
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <div className="bg-blue-600/20 p-2 rounded-lg">
+                <Calendar className="h-6 w-6 text-blue-400" />
+              </div>
+              <h3 className="font-bold text-lg">Event Planning</h3>
+            </div>
+            <p className="text-white/70 text-sm mb-0">Our AI-powered planning tools create personalized event timelines and recommendations based on your preferences.</p>
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="bg-gradient-to-br from-red-700/10 to-red-900/10 backdrop-blur-md border border-white/10 rounded-xl p-6 hover:border-red-500/30 transition-all duration-300"
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <div className="bg-red-600/20 p-2 rounded-lg">
+                <Store className="h-6 w-6 text-red-400" />
+              </div>
+              <h3 className="font-bold text-lg">Vendor Matching</h3>
+            </div>
+            <p className="text-white/70 text-sm mb-0">Connect with top-rated vendors across categories like catering, decor, photography, and entertainment.</p>
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="bg-gradient-to-br from-purple-700/10 to-purple-900/10 backdrop-blur-md border border-white/10 rounded-xl p-6 hover:border-purple-500/30 transition-all duration-300"
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <div className="bg-purple-600/20 p-2 rounded-lg">
+                <Webhook className="h-6 w-6 text-purple-400" />
+              </div>
+              <h3 className="font-bold text-lg">AI Assistance</h3>
+            </div>
+            <p className="text-white/70 text-sm mb-0">Leverage our AI to analyze thousands of options and provide suggestions tailored to your specific requirements.</p>
+          </motion.div>
+        </div>
+      </div>
+      
+      {/* Subtle Divider */}
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="border-t border-white/10 mb-12"></div>
+      </div>
+      
+      {/* Category Filters Section */}
+      <div id="feature-sections" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+        {/* Tab Navigation - Keep this for detailed view switching */}
+        <div className="flex flex-wrap items-center gap-2 mb-8">
           {tabs.map((tab) => (
             <motion.button
               key={tab.id}
@@ -747,386 +583,544 @@ const Events = () => {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 ${
                 activeTab === tab.id 
-                  ? 'bg-gradient-to-r from-red-600 to-purple-600 text-white shadow-lg shadow-purple-700/20' 
-                  : 'bg-white/10 text-white hover:bg-white/20'
+                  ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-md shadow-red-900/30 border border-red-400/30' 
+                  : 'bg-white/10 text-white/80 hover:bg-white/20 border border-white/10'
               }`}
             >
               {tab.icon}
-              {tab.label}
+              <span>{tab.label}</span>
+              {activeTab === tab.id && <CheckCircle className="h-4 w-4 ml-1.5 text-white" />}
             </motion.button>
           ))}
-        </div>
-      </div>
-      
-      {/* Filter Panel */}
-      <AnimatePresence>
-        {showFilters && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="bg-black/40 backdrop-blur-lg border-b border-white/10"
+          
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => setShowFilters(!showFilters)}
+            className={`ml-auto flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 ${
+              showFilters 
+                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md shadow-purple-900/30 border border-purple-400/30' 
+                : 'bg-white/10 text-white/80 hover:bg-white/20 border border-white/10'
+            }`}
           >
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-white/70 mb-2">
-                    Event Type
-                  </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {eventCategories.map(category => (
-                      <motion.button
-                        key={category.id}
-                        whileHover={{ y: -2 }}
-                        whileTap={{ y: 0 }}
-                        onClick={() => setEventType(category.id)}
-                        className={`px-3 py-2 rounded-lg text-sm flex items-center gap-1.5 ${
-                          eventType === category.id 
-                            ? 'bg-red-600 text-white' 
-                            : 'bg-white/10 text-white/70 hover:bg-white/20'
-                        }`}
-                      >
-                        {category.icon}
-                        <span>{category.name}</span>
-                      </motion.button>
-                    ))}
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-white/70 mb-2">
-                    Rating
-                  </label>
-                  <div className="px-2">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-white/60">Minimum Rating</span>
-                      <span className="text-sm font-medium text-white">{ratingFilter.toFixed(1)}+</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="5"
-                      step="0.1"
-                      value={ratingFilter}
-                      onChange={(e) => setRatingFilter(parseFloat(e.target.value))}
-                      className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-red-600"
-                    />
-                    <div className="flex justify-between mt-1">
-                      <span className="text-xs text-white/40">0</span>
-                      <span className="text-xs text-white/40">5.0</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-white/70 mb-2">
-                    Sort By
-                  </label>
-                  <select
-                    value={sortOption}
-                    onChange={(e) => setSortOption(e.target.value)}
-                    className="w-full appearance-none px-4 py-2.5 bg-white/10 hover:bg-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-1 focus:ring-red-500 transition-all duration-300"
-                  >
-                    <option value="popularity" className="bg-gray-800 text-white">Popularity</option>
-                    <option value="rating" className="bg-gray-800 text-white">Rating (High to Low)</option>
-                    <option value="capacity" className="bg-gray-800 text-white">Capacity (High to Low)</option>
-                  </select>
-                </div>
-              </div>
-              
-              <div className="flex justify-end mt-6">
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => {
-                    setRatingFilter(0);
-                    setEventType('all');
-                    setSortOption('popularity');
-                  }}
-                  className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg text-sm transition-all duration-300 mr-3"
-                >
-                  Reset Filters
-                </motion.button>
-                
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => setShowFilters(false)}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-all duration-300"
-                >
-                  Apply Filters
-                </motion.button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      
-      {/* Category Filters - Animated */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="flex overflow-x-auto scrollbar-hide py-4 gap-2 mb-8 snap-x"
-        >
-          {eventCategories.map((category, index) => (
-            <motion.button
-              key={category.id}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.05 + 0.3 }}
-              whileHover={{ y: -5, backgroundColor: category.id === eventType ? 'rgba(239, 68, 68, 0.8)' : 'rgba(255, 255, 255, 0.2)' }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setEventType(category.id)}
-              className={`py-2 px-4 rounded-full flex items-center gap-2 whitespace-nowrap transition-all duration-300 snap-start ${
-                category.id === eventType
-                  ? 'bg-red-500 text-white'
-                  : 'bg-white/10 text-white/80 hover:bg-white/20'
-              }`}
+            <Filter className="h-4 w-4" />
+            <span>Filters</span>
+            <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+          </motion.button>
+        </div>
+        
+        {/* Filter Panel */}
+        <AnimatePresence>
+          {showFilters && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="bg-black/40 backdrop-blur-lg border border-white/10 rounded-xl mb-6 shadow-lg"
             >
-              {category.icon}
-              <span>{category.name}</span>
-            </motion.button>
-          ))}
-        </motion.div>
+              <div className="py-6 px-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-white/70 mb-2">
+                      Venue Type
+                    </label>
+                    <div className="grid grid-cols-1 gap-2">
+                      {venueCategories.map(category => (
+                        <motion.button
+                          key={category.id}
+                          onClick={() => setEventType(category.id)}
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.97 }}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-300 ${
+                            eventType === category.id 
+                              ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-md shadow-red-900/30' 
+                              : 'bg-white/10 text-white/70 hover:bg-white/20'
+                          }`}
+                        >
+                          {category.icon}
+                          <span>{category.name}</span>
+                          {eventType === category.id && <CheckCircle className="h-4 w-4 ml-auto text-white" />}
+                        </motion.button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-white/70 mb-2">
+                      Rating
+                    </label>
+                    <div className="px-2 bg-white/5 p-4 rounded-lg border border-white/10">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-white/60">Minimum Rating</span>
+                        <span className="text-sm font-medium text-white bg-red-600/20 px-2 py-1 rounded-full">{ratingFilter.toFixed(1)}+</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="5"
+                        step="0.1"
+                        value={ratingFilter}
+                        onChange={(e) => setRatingFilter(parseFloat(e.target.value))}
+                        className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-red-600"
+                      />
+                      <div className="flex justify-between mt-1">
+                        <span className="text-xs text-white/40">0</span>
+                        <span className="text-xs text-white/40">5.0</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-white/70 mb-2">
+                      Sort By
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={sortOption}
+                        onChange={(e) => setSortOption(e.target.value)}
+                        className="w-full appearance-none px-4 py-3 bg-white/10 hover:bg-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300"
+                      >
+                        <option value="popularity" className="bg-gray-800 text-white">Popularity</option>
+                        <option value="rating" className="bg-gray-800 text-white">Rating (High to Low)</option>
+                        <option value="capacity" className="bg-gray-800 text-white">Capacity (High to Low)</option>
+                      </select>
+                      <ChevronDown className="absolute right-3 top-3.5 h-4 w-4 text-white/50 pointer-events-none" />
+                    </div>
+                    <div className="mt-3 bg-white/5 p-3 rounded-lg border border-white/10">
+                      <p className="text-xs text-white/60">
+                        Current sort: <span className="text-white font-medium">
+                          {sortOption === 'popularity' ? 'Most Popular First' : 
+                           sortOption === 'rating' ? 'Highest Rated First' : 
+                           'Largest Capacity First'}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end mt-6 border-t border-white/10 pt-4">
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => {
+                      setRatingFilter(0);
+                      setEventType('all');
+                      setSortOption('popularity');
+                    }}
+                    className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg text-sm transition-all duration-300 mr-3 border border-white/10"
+                  >
+                    Reset Filters
+                  </motion.button>
+                  
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => setShowFilters(false)}
+                    className="px-6 py-2.5 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white rounded-lg text-sm font-medium transition-all duration-300 shadow-md shadow-red-900/30"
+                  >
+                    Apply Filters
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
       
-      {/* Content Based on Tab */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+      {/* Detailed Content Based on Selected Tab */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <AnimatePresence mode="wait">
           {activeTab === 'plan' && (
-            <motion.div 
+            <motion.div
               key="plan"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.3 }}
             >
-              {/* Upcoming Events Section */}
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="mb-12"
-              >
+              {/* AI-Powered Event Planner Section */}
+              <div className="mb-16">
                 <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
-                  className="flex justify-between items-center mb-6"
+                  className="bg-gradient-to-br from-black/60 to-red-900/30 backdrop-blur-md border border-white/10 rounded-2xl p-8 mb-12"
                 >
-                  <h2 className="text-2xl font-bold">Upcoming Events</h2>
-                  
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="flex items-center gap-2 text-white/70 hover:text-white cursor-pointer"
-                  >
-                    <span className="text-sm">View All</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </motion.div>
+                  <div className="flex items-start gap-6 flex-col md:flex-row">
+                    <div className="bg-gradient-to-br from-blue-600/20 to-purple-600/20 p-4 rounded-xl">
+                      <Webhook className="h-14 w-14 text-blue-500" />
+                    </div>
+                    
+                    <div className="flex-1">
+                      <h3 className="text-2xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">AI-Powered Event Recommendation</h3>
+                      <p className="text-white/80 mb-6">Our AI analyzes thousands of venues, vendor reviews, and successful events to provide personalized recommendations tailored to your specific needs and preferences.</p>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Star className="h-5 w-5 text-yellow-400" />
+                            <span className="font-medium">Review Analysis</span>
+                          </div>
+                          <p className="text-white/70 text-sm">Processes authentic reviews to identify the best-rated venues and vendors</p>
+                        </div>
+                        
+                        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Users className="h-5 w-5 text-green-400" />
+                            <span className="font-medium">Guest Satisfaction</span>
+                          </div>
+                          <p className="text-white/70 text-sm">Learns from past events to maximize guest experiences and satisfaction</p>
+                        </div>
+                        
+                        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Percent className="h-5 w-5 text-red-400" />
+                            <span className="font-medium">Budget Optimization</span>
+                          </div>
+                          <p className="text-white/70 text-sm">Helps maximize value within your budget by suggesting optimal combinations</p>
+                        </div>
+                      </div>
+                      
+                      <button
+                        onClick={() => setShowPlanningForm(true)}
+                        className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-xl flex items-center gap-2 transition-all"
+                      >
+                        Get AI Recommendations
+                        <Sparkles className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            </motion.div>
+          )}
+          
+          {activeTab === 'vendors' && (
+            <motion.div
+              key="vendors"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              {/* Vendors Section */}
+              <div className="mb-16">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="bg-gradient-to-br from-black/60 to-red-900/30 backdrop-blur-md border border-white/10 rounded-2xl p-8 mb-12"
+                >
+                  <div className="flex items-start gap-6 flex-col md:flex-row">
+                    <div className="bg-gradient-to-br from-red-600/20 to-orange-600/20 p-4 rounded-xl">
+                      <Store className="h-14 w-14 text-red-500" />
+                    </div>
+                    
+                    <div className="flex-1">
+                      <h3 className="text-2xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-red-400 to-orange-400">AI Vendor Matchmaking</h3>
+                      <p className="text-white/80 mb-6">Let our AI assistant match you with the perfect vendors based on your event details, style preferences, and budget requirements.</p>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Utensils className="h-5 w-5 text-red-400" />
+                            <span className="font-medium">Catering</span>
+                          </div>
+                          <p className="text-white/70 text-sm">Find top-rated catering services that match your cuisine preferences</p>
+                        </div>
+                        
+                        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Palette className="h-5 w-5 text-orange-400" />
+                            <span className="font-medium">Decoration</span>
+                          </div>
+                          <p className="text-white/70 text-sm">Discover decorators who can bring your vision to life with style</p>
+                        </div>
+                        
+                        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Music className="h-5 w-5 text-yellow-400" />
+                            <span className="font-medium">Entertainment</span>
+                          </div>
+                          <p className="text-white/70 text-sm">Connect with performers and DJs to create the perfect atmosphere</p>
+                        </div>
+                      </div>
+                      
+                      {/* Enhanced Vendor Search Form with AI-compatible data attributes */}
+                      <div className="bg-black/30 rounded-xl p-6 border border-white/10 mb-6">
+                        <h4 className="text-lg font-semibold mb-4">
+                          <div className="flex items-center gap-2">
+                            <Search className="h-5 w-5 text-red-400" />
+                            <span>AI-Enhanced Vendor Search</span>
+                          </div>
+                        </h4>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                          <div>
+                            <label className="block text-sm text-white/70 mb-2">Vendor Type</label>
+                            <select 
+                              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-red-500 text-white backdrop-blur-sm"
+                              data-ai-field="vendor_type"
+                            >
+                              <option value="all" className="bg-gray-800 text-white">All Categories</option>
+                              <option value="catering" className="bg-gray-800 text-white">Catering</option>
+                              <option value="decor" className="bg-gray-800 text-white">Decor & Design</option>
+                              <option value="photo_video" className="bg-gray-800 text-white">Photography & Video</option>
+                              <option value="entertainment" className="bg-gray-800 text-white">Entertainment</option>
+                              <option value="rental" className="bg-gray-800 text-white">Rental & Equipment</option>
+                            </select>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm text-white/70 mb-2">Location</label>
+                            <select 
+                              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-red-500 text-white backdrop-blur-sm"
+                              data-ai-field="location"
+                            >
+                              <option value="all" className="bg-gray-800 text-white">All Locations</option>
+                              <option value="lagos" className="bg-gray-800 text-white">Lagos, Nigeria</option>
+                              <option value="abuja" className="bg-gray-800 text-white">Abuja, Nigeria</option>
+                              <option value="london" className="bg-gray-800 text-white">London, UK</option>
+                              <option value="manchester" className="bg-gray-800 text-white">Manchester, UK</option>
+                            </select>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm text-white/70 mb-2">Budget Range</label>
+                            <select 
+                              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-red-500 text-white backdrop-blur-sm"
+                              data-ai-field="budget_range"
+                            >
+                              <option value="any" className="bg-gray-800 text-white">Any Budget</option>
+                              <option value="low_naira" className="bg-gray-800 text-white">₦100,000 - ₦500,000</option>
+                              <option value="medium_naira" className="bg-gray-800 text-white">₦500,000 - ₦1,000,000</option>
+                              <option value="high_naira" className="bg-gray-800 text-white">₦1,000,000+</option>
+                              <option value="low_gbp" className="bg-gray-800 text-white">£500 - £2,000</option>
+                              <option value="high_gbp" className="bg-gray-800 text-white">£2,000+</option>
+                            </select>
+                          </div>
+                        </div>
+                        
+                        {/* Advanced Filters Section */}
+                        <motion.div 
+                          className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4"
+                        >
+                          <div>
+                            <label className="block text-sm text-white/70 mb-2">Minimum Rating</label>
+                            <div className="flex items-center">
+                              <select 
+                                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-red-500 text-white backdrop-blur-sm"
+                                data-ai-field="min_rating"
+                              >
+                                <option value="0" className="bg-gray-800 text-white">Any Rating</option>
+                                <option value="3" className="bg-gray-800 text-white">3+ Stars</option>
+                                <option value="4" className="bg-gray-800 text-white">4+ Stars</option>
+                                <option value="4.5" className="bg-gray-800 text-white">4.5+ Stars</option>
+                              </select>
+                              <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 -ml-8 pointer-events-none" />
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm text-white/70 mb-2">Availability</label>
+                            <input 
+                              type="date" 
+                              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-red-500 text-white backdrop-blur-sm"
+                              data-ai-field="availability_date"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm text-white/70 mb-2">Sort Results By</label>
+                            <select 
+                              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-red-500 text-white backdrop-blur-sm"
+                              data-ai-field="sort_by"
+                            >
+                              <option value="relevance" className="bg-gray-800 text-white">Relevance</option>
+                              <option value="highest_rated" className="bg-gray-800 text-white">Highest Rated</option>
+                              <option value="most_reviewed" className="bg-gray-800 text-white">Most Reviewed</option>
+                              <option value="price_low" className="bg-gray-800 text-white">Price: Low to High</option>
+                              <option value="price_high" className="bg-gray-800 text-white">Price: High to Low</option>
+                            </select>
+                          </div>
+                        </motion.div>
+                        
+                        <div className="flex gap-3">
+                          <div className="flex-1 relative">
+                            <input
+                              type="text"
+                              placeholder="Search by vendor name, service or keyword..."
+                              className="w-full px-4 py-3 pl-10 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-white backdrop-blur-sm"
+                              data-ai-field="search_query"
+                            />
+                            <Search className="absolute left-3 top-3.5 h-5 w-5 text-white/50" />
+                          </div>
+                          
+                          <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            className="px-6 py-3 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-medium rounded-lg flex items-center justify-center gap-2"
+                            data-ai-action="search_vendors"
+                          >
+                            Search
+                            <Search className="h-4 w-4" />
+                          </motion.button>
+                        </div>
+                      </div>
+                      
+                      {/* AI Vendor Matchmaking with Structured Data for AI Integration */}
+                      <div className="bg-gradient-to-br from-black/50 to-purple-900/10 backdrop-blur-md border border-white/10 rounded-xl p-6 mb-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="bg-gradient-to-br from-purple-600/20 to-indigo-600/20 p-3 rounded-full">
+                            <Webhook className="h-6 w-6 text-purple-400" />
+                          </div>
+                          <h4 className="text-xl font-semibold">AI Vendor Matchmaking</h4>
+                        </div>
+                        
+                        <p className="text-white/70 mb-4">
+                          Skip the search and let our AI assistant find the perfect vendors for your event. 
+                          We'll analyze your requirements and match you with vendors who best fit your needs.
+                        </p>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                          <div className="flex items-start gap-3 bg-white/5 p-3 rounded-lg">
+                            <CheckCircle className="h-5 w-5 text-green-400 mt-0.5" />
+                            <div>
+                              <p className="text-white font-medium">Personalized Matching</p>
+                              <p className="text-white/60 text-sm">Our AI understands your specific event needs</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start gap-3 bg-white/5 p-3 rounded-lg">
+                            <Star className="h-5 w-5 text-yellow-400 mt-0.5" />
+                            <div>
+                              <p className="text-white font-medium">Quality Verified</p>
+                              <p className="text-white/60 text-sm">All vendors are vetted and reviewed</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start gap-3 bg-white/5 p-3 rounded-lg">
+                            <Calendar className="h-5 w-5 text-blue-400 mt-0.5" />
+                            <div>
+                              <p className="text-white font-medium">Availability Checked</p>
+                              <p className="text-white/60 text-sm">Only see vendors available on your date</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start gap-3 bg-white/5 p-3 rounded-lg">
+                            <Percent className="h-5 w-5 text-red-400 mt-0.5" />
+                            <div>
+                              <p className="text-white font-medium">Budget Optimized</p>
+                              <p className="text-white/60 text-sm">Find the best value within your price range</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex justify-end mt-4">
+                          <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            className="px-8 py-3.5 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-medium rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-red-900/20"
+                            data-ai-action="filter_vendors"
+                          >
+                            Apply Filters
+                            <Filter className="h-4 w-4 ml-1" />
+                          </motion.button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </motion.div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {visibleEvents.map((event, index) => (
-                    <EventCard key={event.id} event={event} index={index} />
-                  ))}
-                </div>
-                
-                {visibleEvents.length < filteredEvents.length && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.5 }}
-                    className="flex justify-center mt-8"
-                  >
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={handleLoadMore}
-                      className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-full text-sm font-medium flex items-center gap-2"
-                    >
-                      Load More Events
-                      <ChevronDown className="h-4 w-4" />
-                    </motion.button>
-                  </motion.div>
-                )}
-              </motion.div>
-              
-              {/* Popular Venues Section */}
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                className="mb-16"
-              >
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="flex justify-between items-center mb-6"
-                >
-                  <h2 className="text-2xl font-bold">Popular Venues</h2>
+                {/* Top Vendors Categories with Improved Structure for AI Parsing */}
+                <div className="mb-12">
+                  <h3 className="text-2xl font-bold mb-6">Top Vendor Categories</h3>
                   
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="flex items-center gap-2 text-white/70 hover:text-white cursor-pointer"
-                  >
-                    <span className="text-sm">Explore All</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </motion.div>
-                </motion.div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {sortedVenues.slice(0, 6).map((venue, index) => (
-                    <VenueCard key={venue.id} venue={venue} index={index} />
-                  ))}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[
+                      {
+                        id: "catering",
+                        icon: <Utensils className="h-8 w-8 text-red-400" />,
+                        title: "Catering",
+                        description: "Premium food services",
+                        avg_rating: 4.8,
+                        price_range: "₦200,000-₦2,000,000",
+                        vendor_count: 48
+                      },
+                      {
+                        id: "photography",
+                        icon: <Camera className="h-8 w-8 text-orange-400" />,
+                        title: "Photography",
+                        description: "Expert photographers",
+                        avg_rating: 4.7,
+                        price_range: "₦150,000-₦800,000",
+                        vendor_count: 35
+                      },
+                      {
+                        id: "entertainment",
+                        icon: <Music className="h-8 w-8 text-yellow-400" />,
+                        title: "Entertainment",
+                        description: "DJs and performers",
+                        avg_rating: 4.6,
+                        price_range: "₦100,000-₦1,500,000",
+                        vendor_count: 52
+                      },
+                      {
+                        id: "decoration",
+                        icon: <Palette className="h-8 w-8 text-green-400" />,
+                        title: "Decoration",
+                        description: "Creative design services",
+                        avg_rating: 4.9,
+                        price_range: "₦250,000-₦3,000,000",
+                        vendor_count: 41
+                      }
+                    ].map((category, idx) => (
+                      <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: idx * 0.1 }}
+                        whileHover={{ y: -5 }}
+                        className="bg-gradient-to-br from-black/60 to-red-900/10 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:border-red-500/30 transition-all"
+                        data-vendor-category={category.id}
+                        data-average-rating={category.avg_rating}
+                        data-price-range={category.price_range}
+                        data-vendor-count={category.vendor_count}
+                      >
+                        <div className="bg-gradient-to-br from-red-600/10 to-black/50 p-3 rounded-xl inline-block mb-3">
+                          {category.icon}
+                        </div>
+                        <h4 className="text-xl font-bold mb-2">{category.title}</h4>
+                        <p className="text-white/70 mb-2">{category.description}</p>
+                        
+                        <div className="flex items-center gap-2 mb-4">
+                          <div className="flex items-center">
+                            <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                            <span className="text-white/80 text-sm ml-1">{category.avg_rating}</span>
+                          </div>
+                          <span className="text-white/40">•</span>
+                          <span className="text-white/80 text-sm">{category.vendor_count} vendors</span>
+                        </div>
+                        
+                        <button 
+                          className="text-red-400 hover:text-red-300 flex items-center gap-1.5 transition-colors"
+                          data-ai-action="browse_category"
+                          data-category={category.id}
+                        >
+                          Browse vendors <ArrowRight className="h-3.5 w-3.5" />
+                        </button>
+                      </motion.div>
+                    ))}
+                  </div>
                 </div>
-              </motion.div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
       
       {/* Planning Form Modal */}
-      <AnimatePresence>
-        {showPlanningForm && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-700"
-            >
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-2xl font-bold text-white">Plan Your Event</h3>
-                  <button 
-                    onClick={() => setShowPlanningForm(false)}
-                    className="text-gray-400 hover:text-white"
-                  >
-                    <X className="h-6 w-6" />
-                  </button>
-                </div>
-                
-                <form className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-white mb-1">
-                      Event Type
-                    </label>
-                    <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 text-gray-800 bg-white">
-                      <option>Wedding</option>
-                      <option>Birthday</option>
-                      <option>Corporate Event</option>
-                      <option>Cultural Celebration</option>
-                    </select>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-white mb-1">
-                        Date
-                      </label>
-                      <input 
-                        type="date" 
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 text-gray-800 bg-white"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-white mb-1">
-                        Expected Guests
-                      </label>
-                      <input 
-                        type="number" 
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 text-gray-800 bg-white"
-                        placeholder="Number of guests"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-white mb-1">
-                      Location
-                    </label>
-                    <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 text-gray-800 bg-white">
-                      <option>Lagos, Nigeria</option>
-                      <option>Abuja, Nigeria</option>
-                      <option>London, UK</option>
-                      <option>Manchester, UK</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-white mb-1">
-                      Services Needed
-                    </label>
-                    <div className="space-y-2 text-white">
-                      <label className="flex items-center">
-                        <input type="checkbox" className="rounded text-red-600" />
-                        <span className="ml-2">Venue</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input type="checkbox" className="rounded text-red-600" />
-                        <span className="ml-2">Catering</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input type="checkbox" className="rounded text-red-600" />
-                        <span className="ml-2">Drinks & Beverages</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input type="checkbox" className="rounded text-red-600" />
-                        <span className="ml-2">Decoration</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input type="checkbox" className="rounded text-red-600" />
-                        <span className="ml-2">Entertainment</span>
-                      </label>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-white mb-1">
-                      Additional Notes
-                    </label>
-                    <textarea 
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 text-gray-800 bg-white"
-                      rows="3"
-                      placeholder="Any specific requirements or preferences..."
-                    ></textarea>
-                  </div>
-                  
-                  <div className="flex justify-end gap-4">
-                    <button
-                      type="button"
-                      onClick={() => setShowPlanningForm(false)}
-                      className="px-6 py-2 border border-gray-300 rounded-lg text-white bg-gray-700 hover:bg-gray-600"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-6 py-2 bg-gradient-to-r from-red-700 to-red-900 text-white rounded-lg hover:opacity-90"
-                    >
-                      Get AI Recommendations
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      
-      {/* AI Planning Form Modal */}
       <AnimatePresence>
         {showPlanningForm && (
           <motion.div
