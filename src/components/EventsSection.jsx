@@ -138,12 +138,7 @@ const EventsSection = ({ isOpen, onClose }) => {
               >
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
                   {/* Visual banner - takes 7/12 columns on large screens */}
-                  <div className="lg:col-span-7 relative h-80 lg:h-auto">
-                    <img 
-                      src="https://images.unsplash.com/photo-1511795409834-432f7b1d6b74?ixlib=rb-4.0.3&auto=format&fit=crop&q=80"
-                      alt="Celebration Planning"
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="lg:col-span-7 relative h-80 lg:h-auto bg-gradient-to-r from-gray-900 to-red-900/30">
                     <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent" />
                     <div className="absolute top-8 left-8 max-w-md">
                       <div className="inline-block px-3 py-1 bg-red-600/80 backdrop-blur-sm rounded-full text-sm mb-4">

@@ -12,6 +12,7 @@ import BusinessRegister from './pages/BusinessRegister';
 import Layout from './components/layout/Layout';
 import { AuthProvider } from './context/AuthContext';
 import { CommunityProvider } from './context/CommunityContext';
+import EventDiscoveryDetail from './components/EventDiscoveryDetail';
 
 // Wrap routes with AnimatePresence
 const AnimatedRoutes = () => {
@@ -24,6 +25,7 @@ const AnimatedRoutes = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/events" element={<Events />} />
+        <Route path="/event/:id" element={<EventDiscoveryDetail />} />
         <Route path="/hotspots" element={<Hotspots />} />
         <Route path="/connect" element={<Connect />} />
         <Route path="/experiences" element={<Navigate to="/connect" replace />} />
