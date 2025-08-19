@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+// Auth context not needed while auth is disabled
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Menu, X, User, LogOut, ChevronDown, 
-  Calendar, Music, Heart, Crown, 
-  Bell, Search, Home, Users, MessageCircle, Sparkles
+  Menu, X, Search, Home, Calendar, Users, Sparkles
 } from 'lucide-react';
 
 const Header = () => {
-  const { currentUser, logout } = useAuth();
+  const currentUser = null;
+  const logout = () => {};
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -56,8 +55,7 @@ const Header = () => {
   const navItems = [
     { path: '/', label: 'Home', icon: <Home size={16} /> },
     { path: '/events', label: 'Events', icon: <Calendar size={16} /> },
-    { path: '/hotspots', label: 'Hotspots', icon: <Users size={16} /> },
-    { path: '/connect', label: 'Connect', icon: <Heart size={16} /> },
+    { path: '/venues', label: 'Venues', icon: <Users size={16} /> },
   ];
 
   return (
@@ -159,93 +157,7 @@ const Header = () => {
               </button>
             </motion.div>
             
-            {currentUser ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: isLoaded ? 1 : 0, scale: isLoaded ? 1 : 0.9 }}
-                transition={{ duration: 0.5, delay: 0.6 }}
-                className="relative"
-              >
-                <button
-                  onClick={toggleProfileMenu}
-                  className="flex items-center gap-2 bg-gray-800/50 hover:bg-gray-700/50 rounded-full pl-2 pr-4 py-1.5 transition-colors"
-                >
-                  <div className="h-8 w-8 rounded-full overflow-hidden bg-red-100 flex-shrink-0 border-2 border-red-500">
-                    {currentUser.profilePicture ? (
-                      <img
-                        src={currentUser.profilePicture}
-                        alt={currentUser.name}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <User className="h-5 w-5 m-auto text-red-600" />
-                    )}
-                  </div>
-                  <span className="text-sm font-medium">{currentUser.name}</span>
-                  <ChevronDown className="h-4 w-4" />
-                </button>
-
-                <AnimatePresence>
-                  {isProfileMenuOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      transition={{ duration: 0.2 }}
-                      className="absolute right-0 mt-2 w-56 bg-gray-900/90 backdrop-blur-md border border-gray-800 rounded-xl shadow-xl py-1 z-10"
-                    >
-                      <Link
-                        to="/profile"
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
-                        onClick={() => setIsProfileMenuOpen(false)}
-                      >
-                        <User size={16} />
-                        Profile
-                      </Link>
-                      <Link
-                        to="/notifications"
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
-                        onClick={() => setIsProfileMenuOpen(false)}
-                      >
-                        <Bell size={16} />
-                        Notifications
-                      </Link>
-                      <div className="border-t border-gray-800 my-1"></div>
-                      <button
-                        onClick={() => {
-                          handleLogout();
-                          setIsProfileMenuOpen(false);
-                        }}
-                        className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
-                      >
-                        <LogOut size={16} />
-                        Logout
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: isLoaded ? 1 : 0, x: isLoaded ? 0 : 20 }}
-                transition={{ duration: 0.5, delay: 0.6 }}
-                className="flex items-center gap-3"
-              >
-                <Link
-                  to="/login"
-                  className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/signup"
-                  className="text-sm font-medium bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white px-4 py-2 rounded-full transition-colors shadow-lg shadow-red-900/20"
-                >
-                  Sign Up
-                </Link>
-              </motion.div>
-            )}
+            {/* Auth temporarily disabled: hide login/signup and user menu */}
           </div>
 
           {/* Mobile Menu Button */}
@@ -306,54 +218,16 @@ const Header = () => {
                     ConviviaPass
                   </Link>
 
-                  {currentUser ? (
-                    <>
-                      <div className="border-t border-gray-700/50 my-2"></div>
-                      <Link
-                        to="/profile"
-                        className="text-sm font-medium py-2 px-4 rounded-lg flex items-center gap-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        <User className="h-4 w-4" />
-                        Profile
-                      </Link>
-                      <Link
-                        to="/notifications"
-                        className="text-sm font-medium py-2 px-4 rounded-lg flex items-center gap-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        <Bell className="h-4 w-4" />
-                        Notifications
-                      </Link>
-                      <button
-                        onClick={() => {
-                          handleLogout();
-                          setIsMenuOpen(false);
-                        }}
-                        className="text-sm font-medium py-2 px-4 rounded-lg flex items-center gap-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors w-full text-left"
-                      >
-                        <LogOut className="h-4 w-4" />
-                        Logout
-                      </button>
-                    </>
-                  ) : (
+                  {/* Auth temporarily disabled */}
                     <>
                       <div className="border-t border-gray-700/50 my-2"></div>
                       <div className="flex flex-col space-y-2 px-4 pt-2">
-                        <Link
-                          to="/login"
-                          className="text-sm font-medium text-center py-2 px-4 rounded-lg text-gray-300 border border-gray-700 hover:bg-gray-800 hover:text-white transition-colors"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          Login
-                        </Link>
-                        <Link
-                          to="/signup"
-                          className="text-sm font-medium text-center py-2 px-4 rounded-lg bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white transition-colors"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          Sign Up
-                        </Link>
+                        <span className="text-sm font-medium text-center py-2 px-4 rounded-lg text-gray-500">
+                          Login (Coming Soon)
+                        </span>
+                        <span className="text-sm font-medium text-center py-2 px-4 rounded-lg text-gray-500">
+                          Sign Up (Coming Soon)
+                        </span>
                       </div>
                     </>
                   )}

@@ -41,7 +41,7 @@ const Events = () => {
                 transition={{ duration: 0.5 }}
                 className="text-4xl md:text-5xl font-bold mb-4"
               >
-                Discover Events & Connect
+                Discover Events & Celebrations
               </motion.h1>
               <motion.p 
                 initial={{ opacity: 0, y: 20 }}
@@ -49,7 +49,7 @@ const Events = () => {
                 transition={{ duration: 0.5, delay: 0.1 }}
                 className="text-lg text-gray-300 max-w-3xl mb-8"
               >
-                Find upcoming events in your area and connect with people who share your interests
+                Find upcoming events in your area. Plan better with beverage packages, venue suggestions, and fast delivery.
               </motion.p>
               
               <motion.div 

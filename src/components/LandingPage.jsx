@@ -74,7 +74,7 @@ const LandingPage = () => {
     {
       icon: <Utensils size={32} className="text-red-600" />,
       title: "Catering Services",
-      description: "Connect with top-rated caterers for your special event",
+      description: "Work with top-rated caterers for your special event",
       features: ["Diverse cuisine options", "Custom menus", "Professional service"]
     },
     {
@@ -100,7 +100,7 @@ const LandingPage = () => {
     {
       icon: <Utensils size={32} color="#DC2626" />,
       title: "Catering Services",
-      description: "Connect with top-rated food and beverage providers"
+      description: "Work with top-rated food and beverage providers"
     },
     {
       icon: <Clock size={32} color="#DC2626" />,
@@ -190,18 +190,18 @@ const LandingPage = () => {
   const features = [
     {
       icon: <Users size={24} />,
-      title: "Connect with Like-Minded People",
-      description: "Find people who share your interests, hobbies, and passions within your local area"
+      title: "Smart Beverage Ordering",
+      description: "Bulk orders for weddings, birthdays, and corporate events"
     },
     {
       icon: <Heart size={24} />,
-      title: "Discover Popular Hotspots",
-      description: "Explore favorite local hangouts where community members meet and socialize"
+      title: "Venue Suggestions & Booking",
+      description: "Find and book venues by city, size, and budget"
     },
     {
       icon: <MessageCircle size={24} />,
-      title: "Meaningful Conversations",
-      description: "Create connections that go beyond digital interaction through real-world meetups"
+      title: "Live Chatbot Concierge",
+      description: "Pairings, quantities, and event Q&A in seconds"
     }
   ];
 
@@ -275,7 +275,7 @@ const LandingPage = () => {
             >
               <span className="text-white/90 text-sm font-medium flex items-center">
                 <PartyPopper size={14} className="mr-1.5" /> 
-                Experience Celebrations Like Never Before
+                Celebrate Smarter, Celebrate Faster
               </span>
             </motion.div>
 
@@ -286,7 +286,7 @@ const LandingPage = () => {
               className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight" 
               style={{ fontFamily: 'Playfair Display, serif' }}
             >
-              Connecting People <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-300">Through Celebrations</span>
+              Drinks, Venues & Vibes – <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-300">Sorted in 24</span>
             </motion.h1>
 
             <motion.p
@@ -295,7 +295,7 @@ const LandingPage = () => {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="text-xl md:text-2xl text-gray-300 mb-10 max-w-2xl"
             >
-              Your all-in-one platform for meeting and connecting with people who share your interests and passions.
+              Your all-in-one event and beverage partner: bulk beverage ordering, venue suggestions and booking, live chatbot concierge, and age-verified checkout with 24-hour delivery.
             </motion.p>
 
             <motion.div
@@ -305,18 +305,18 @@ const LandingPage = () => {
               className="flex flex-wrap gap-4"
             >
               <button 
-                onClick={() => navigate('/experiences')}
+                onClick={() => navigate('/hotspots')}
                 className="px-8 py-4 text-base md:text-lg bg-gradient-to-r from-red-600 to-red-800 text-white font-semibold rounded-lg hover:from-red-700 hover:to-red-900 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2"
               >
                 <Heart size={20} />
-                Connect with People
+                Order Beverages
               </button>
               <button 
-                onClick={() => navigate('/hotspots')}
+                onClick={() => navigate('/venues')}
                 className="px-8 py-4 text-base md:text-lg bg-white/10 backdrop-blur-sm text-white border border-white/30 font-semibold rounded-lg hover:bg-white/20 transition-all duration-300 flex items-center gap-2"
               >
                 <MapPin size={20} />
-                Explore Hotspots
+                Find Venues
               </button>
             </motion.div>
             
@@ -338,7 +338,7 @@ const LandingPage = () => {
                 ))}
               </div>
               <div className="text-white text-sm md:text-base">
-                <span className="font-bold text-xl text-red-400">10,000+</span> people already finding meaningful connections
+                <span className="font-bold text-xl text-red-400">10,000+</span> events powered by Convivia24
               </div>
             </motion.div>
           </div>
@@ -381,11 +381,11 @@ const LandingPage = () => {
               <div className="mx-auto w-16 h-1 bg-gradient-to-r from-red-500 to-red-700 mb-6 rounded-full"></div>
               <h2 className="text-4xl md:text-5xl font-bold mb-6" style={{ fontFamily: 'Playfair Display, serif' }}>
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-600 to-red-800">
-                  Discover Vibrant Hotspots
+                  Discover Venues & Partners
                 </span>
               </h2>
               <p className="text-gray-600 max-w-2xl mx-auto text-lg mb-6">
-                Explore carefully curated venues and communities where meaningful connections happen naturally.
+                Browse event venues by city, size, and budget. Book directly or connect with trusted partners.
               </p>
             </motion.div>
             <div className="flex justify-center gap-2 mt-6">
@@ -442,7 +442,7 @@ const LandingPage = () => {
                   <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Cozy</span>
                 </div>
                 <button className="text-red-600 hover:text-red-800 text-sm font-medium flex items-center gap-1 transition-colors group-hover:font-semibold">
-                  View Hotspot <ChevronDown className="h-4 w-4 -rotate-90" />
+                  View Venue <ChevronDown className="h-4 w-4 -rotate-90" />
                 </button>
               </div>
             </motion.div>
@@ -493,7 +493,7 @@ const LandingPage = () => {
                   <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Luxury</span>
                 </div>
                 <button className="text-red-600 hover:text-red-800 text-sm font-medium flex items-center gap-1 transition-colors group-hover:font-semibold">
-                  View Hotspot <ChevronDown className="h-4 w-4 -rotate-90" />
+                  View Venue <ChevronDown className="h-4 w-4 -rotate-90" />
                 </button>
               </div>
             </motion.div>
@@ -544,7 +544,7 @@ const LandingPage = () => {
                   <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Creative</span>
                 </div>
                 <button className="text-red-600 hover:text-red-800 text-sm font-medium flex items-center gap-1 transition-colors group-hover:font-semibold">
-                  View Hotspot <ChevronDown className="h-4 w-4 -rotate-90" />
+                  View Venue <ChevronDown className="h-4 w-4 -rotate-90" />
                 </button>
               </div>
             </motion.div>
@@ -559,9 +559,9 @@ const LandingPage = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="px-8 py-3 bg-white text-red-600 border border-red-600 rounded-full font-medium hover:bg-red-50 transition-colors"
-              onClick={() => navigate('/hotspots')}
+              onClick={() => navigate('/venues')}
             >
-              View All Hotspots
+              Browse All Venues
             </motion.button>
           </div>
         </div>
@@ -582,7 +582,7 @@ const LandingPage = () => {
                 <div className="text-5xl font-bold mb-2">
                   <AnimatedCounter end={10000} /> +
                 </div>
-                <p className="text-white/80 text-lg">Active Users</p>
+                <p className="text-white/80 text-lg">Orders Delivered</p>
               </motion.div>
               
               <motion.div
@@ -595,7 +595,7 @@ const LandingPage = () => {
                 <div className="text-5xl font-bold mb-2">
                   <AnimatedCounter end={2500} /> +
                 </div>
-                <p className="text-white/80 text-lg">Events Hosted</p>
+                <p className="text-white/80 text-lg">Events Served</p>
               </motion.div>
               
               <motion.div
@@ -621,7 +621,7 @@ const LandingPage = () => {
                 <div className="text-5xl font-bold mb-2">
                   <AnimatedCounter end={350} /> +
                 </div>
-                <p className="text-white/80 text-lg">Communities</p>
+                <p className="text-white/80 text-lg">Planner Accounts</p>
               </motion.div>
             </div>
           </div>
@@ -634,28 +634,28 @@ const LandingPage = () => {
               transition={{ duration: 0.5 }}
             >
               <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-800" style={{ fontFamily: 'Playfair Display, serif' }}>
-                Experience the power of <span className="text-red-600">connection</span>
+                Why <span className="text-red-600">Convivia24</span> Works
               </h2>
               <p className="text-gray-600 max-w-3xl mx-auto text-lg mb-8">
-                Our platform is designed to bring people together through shared experiences, in-person events, and vibrant communities. We're building a world where meaningful connections happen naturally.
+                Bulk beverage ordering. 24-hour delivery. Age-verified checkout. Live chatbot for pairings, guest counts, and planning.
               </p>
               
               <div className="flex justify-center gap-4 flex-wrap">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-500" />
-                  <span className="text-gray-700">No Subscription Required</span>
+                  <span className="text-gray-700">Bulk Beverage Ordering</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-500" />
-                  <span className="text-gray-700">Real In-Person Events</span>
+                  <span className="text-gray-700">24-Hour Turnaround</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-500" />
-                  <span className="text-gray-700">Diverse Communities</span>
+                  <span className="text-gray-700">Age-Verified Checkout</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-500" />
-                  <span className="text-gray-700">Verified Users</span>
+                  <span className="text-gray-700">Live Chatbot Concierge</span>
                 </div>
               </div>
             </motion.div>

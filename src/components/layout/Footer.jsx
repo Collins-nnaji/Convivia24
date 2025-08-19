@@ -45,15 +45,9 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/hotspots" className="hover:text-white transition-colors flex items-center gap-2">
+                <Link to="/venues" className="hover:text-white transition-colors flex items-center gap-2">
                   <Globe className="h-4 w-4" />
-                  Hotspots
-                </Link>
-              </li>
-              <li>
-                <Link to="/experiences" className="hover:text-white transition-colors flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  Connect
+                  Venues
                 </Link>
               </li>
               <li>
@@ -68,11 +62,11 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-bold mb-4">Company</h3>
             <ul className="space-y-2 text-gray-400">
-              <li><Link to="/about" className="hover:text-white transition-colors">About Us</Link></li>
-              <li><Link to="/careers" className="hover:text-white transition-colors">Careers</Link></li>
-              <li><Link to="/partners" className="hover:text-white transition-colors">Partner With Us</Link></li>
-              <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-              <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+              <li><span className="text-gray-500">About Us</span></li>
+              <li><span className="text-gray-500">Careers</span></li>
+              <li><span className="text-gray-500">Partner With Us</span></li>
+              <li><span className="text-gray-500">Privacy Policy</span></li>
+              <li><span className="text-gray-500">Terms of Service</span></li>
             </ul>
           </div>
           

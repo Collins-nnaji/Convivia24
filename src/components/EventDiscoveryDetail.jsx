@@ -540,11 +540,11 @@ const EventDiscoveryDetail = () => {
               </button>
             </div>
             
-            {/* Connect */}
+            {/* Planning Assistance */}
             <div className="bg-white/5 rounded-xl p-6 mb-6">
-              <h3 className="text-lg font-semibold mb-4">Connect with Attendees</h3>
+              <h3 className="text-lg font-semibold mb-4">Plan With Convivia24</h3>
               <p className="text-white/70 text-sm mb-4">
-                Discover people attending this event who share your interests.
+                Order beverages in bulk, get venue suggestions, and use our chatbot for pairings and guest counts. 24-hour delivery available.
               </p>
               
               {/* Connection Stats */}
@@ -561,56 +561,35 @@ const EventDiscoveryDetail = () => {
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-white/60">People you may want to connect with</p>
+                  <p className="text-xs text-white/60">Smart tools for better event planning</p>
                 </div>
               </div>
               
               {/* Attendee Profiles */}
               <div className="space-y-3 mb-5">
-                {event.attendees.going?.slice(0, 3).map((person, index) => (
-                  <div key={index} className="flex items-center justify-between bg-white/5 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="relative">
-                        <img 
-                          src={person.image} 
-                          alt={person.name}
-                          className="w-10 h-10 rounded-full border-2 border-gray-900"
-                        />
-                        {person.mutual && (
-                          <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-gray-900" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm">{person.name}</p>
-                        <div className="flex flex-wrap gap-1 mt-0.5">
-                          {person.interests?.slice(0, 1).map((interest, idx) => (
-                            <span key={idx} className="text-xs bg-white/10 text-white/70 px-1.5 py-0.5 rounded">
-                              {interest}
-                            </span>
-                          ))}
-                          {person.interests?.length > 1 && (
-                            <span className="text-xs text-white/50">+{person.interests.length - 1}</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <button className="bg-white/10 hover:bg-white/15 text-xs text-white py-1.5 px-3 rounded transition-colors">
-                      Connect
-                    </button>
-                  </div>
-                ))}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <button className="bg-white/10 hover:bg-white/15 text-white py-3 rounded-lg transition-colors text-sm">
+                    Browse Beverage Packages
+                  </button>
+                  <button className="bg-white/10 hover:bg-white/15 text-white py-3 rounded-lg transition-colors text-sm">
+                    Get Venue Suggestions
+                  </button>
+                  <button className="bg-white/10 hover:bg-white/15 text-white py-3 rounded-lg transition-colors text-sm">
+                    Ask the Chatbot
+                  </button>
+                </div>
               </div>
               
               {/* Interest Matching */}
               <div className="mb-5">
                 <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
                   <Star className="h-3.5 w-3.5 text-yellow-400" />
-                  <span>Common interests at this event</span>
+                  <span>Popular add‑ons</span>
                 </h4>
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {event.attendees.going[0].interests?.map((interest, index) => (
+                  {['Bronze Beverage Package', 'Silver Beverage Package', 'Gold Beverage Package', 'Soft Drinks Bundle'].map((addon, index) => (
                     <button key={index} className="text-xs bg-white/10 hover:bg-white/15 text-white/80 px-2 py-1 rounded-full transition-colors">
-                      {interest}
+                      {addon}
                     </button>
                   ))}
                 </div>
@@ -619,11 +598,11 @@ const EventDiscoveryDetail = () => {
               {/* Action Buttons */}
               <button className="w-full bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 mb-3">
                 <MessageCircle className="h-4 w-4" />
-                <span>Join Event Chat</span>
+                <span>Open Chatbot</span>
               </button>
               <button className="w-full bg-white/10 hover:bg-white/15 text-white py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2">
                 <UserPlus className="h-4 w-4" />
-                <span>View All Attendees</span>
+                <span>Bundle Venue + Beverages</span>
               </button>
             </div>
             

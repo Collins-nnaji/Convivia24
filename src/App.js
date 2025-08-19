@@ -2,11 +2,9 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import LandingPage from './components/LandingPage';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
+// Auth pages removed for now
 import Events from './pages/Events';
-import Hotspots from './pages/Hotspots';
-import Connect from './pages/Connect';
+import Venues from './pages/Venues';
 import ConviviaPass from './pages/ConviviaPass';
 import BusinessRegister from './pages/BusinessRegister';
 import Layout from './components/layout/Layout';
@@ -22,13 +20,12 @@ const AnimatedRoutes = () => {
     <AnimatePresence mode="wait" initial={false}>
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        {/* Auth routes removed for now */}
         <Route path="/events" element={<Events />} />
         <Route path="/event/:id" element={<EventDiscoveryDetail />} />
-        <Route path="/hotspots" element={<Hotspots />} />
-        <Route path="/connect" element={<Connect />} />
-        <Route path="/experiences" element={<Navigate to="/connect" replace />} />
+        <Route path="/venues" element={<Venues />} />
+        <Route path="/experiences" element={<Navigate to="/venues" replace />} />
+        <Route path="/hotspots" element={<Navigate to="/venues" replace />} />
         <Route path="/conviviapass" element={<ConviviaPass />} />
         <Route path="/business-register" element={<BusinessRegister />} />
         <Route path="/business-dashboard" element={<Navigate to="/business-register" replace />} />

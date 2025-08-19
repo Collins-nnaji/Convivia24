@@ -53,7 +53,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 
-// Simple HotspotCard component for displaying venues
+// Simple VenueCard component for displaying venues
 const HotspotCard = ({ hotspot, index }) => {
   const [isHovered, setIsHovered] = useState(false);
   
@@ -253,7 +253,7 @@ const HotspotCard = ({ hotspot, index }) => {
   );
 };
 
-const Hotspots = () => {
+const Venues = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [ratingFilter, setRatingFilter] = useState(0);
@@ -337,8 +337,8 @@ const Hotspots = () => {
   const spotlightRef = useRef(null);
   const scrollControlsRef = useRef(null);
   
-  // Sample hotspots data with detailed information
-  const hotspots = [
+  // Sample venues data with detailed information
+  const venues = [
     {
       id: 1,
       name: 'The Grand Lounge',
@@ -804,8 +804,8 @@ const Hotspots = () => {
   ];
   
   // First, find and update the top hotspots section
-  // Define a single featured hotspot instead of an array
-  const featuredHotspot = {
+  // Define a single featured venue instead of an array
+  const featuredVenue = {
     id: 1,
     name: 'The Grand Lounge',
     type: 'Premium Nightclub',
@@ -814,7 +814,7 @@ const Hotspots = () => {
     image: 'https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1430&q=80',
     description: 'Experience the ultimate luxury nightclub with world-class DJs, premium drinks, and a vibrant atmosphere that creates unforgettable nights. The Grand Lounge sets the standard for nightlife excellence in Lagos.',
     features: ['Live DJs', 'VIP Areas', 'Premium Bar', 'Elite Crowd', 'Exclusive Events', 'Bottle Service'],
-    promoMessage: 'Featured Hotspot',
+    promoMessage: 'Featured Venue',
     openingHours: '10:00 PM - 4:00 AM',
     popularity: 98,
     reviews: [
@@ -836,7 +836,7 @@ const Hotspots = () => {
     }
   };
 
-  // Add mood categories
+  // Add venue categories
   const moodCategories = [
     {
       id: 'high-energy',
@@ -882,22 +882,22 @@ const Hotspots = () => {
     }
   ];
 
-  // Filter hotspots based on search query and filters
-  const filteredHotspots = hotspots.filter(hotspot => {
-    const matchesSearch = hotspot.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         hotspot.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || hotspot.category === selectedCategory;
-    const matchesRating = hotspot.rating >= ratingFilter;
-    const matchesLocation = selectedLocation === 'all' || hotspot.location.includes(selectedLocation);
+  // Filter venues based on search query and filters
+  const filteredVenues = venues.filter(venue => {
+    const matchesSearch = venue.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         venue.location.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || venue.category === selectedCategory;
+    const matchesRating = venue.rating >= ratingFilter;
+    const matchesLocation = selectedLocation === 'all' || venue.location.includes(selectedLocation);
     const matchesPrice = true; // Temporarily disable price filtering
     const matchesFeatures = selectedFeatures.length === 0 || 
-                           selectedFeatures.every(feature => hotspot.features.includes(feature));
+                           selectedFeatures.every(feature => venue.features.includes(feature));
     
     return matchesSearch && matchesCategory && matchesRating && matchesLocation && matchesPrice && matchesFeatures;
   });
 
-  // Sort hotspots
-  const sortedHotspots = [...filteredHotspots].sort((a, b) => {
+  // Sort venues
+  const sortedVenues = [...filteredVenues].sort((a, b) => {
     switch (sortBy) {
       case 'rating':
         return b.rating - a.rating;
@@ -939,7 +939,7 @@ const Hotspots = () => {
       <section className="py-12 px-4 md:px-8 max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row items-center justify-between mb-8">
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-2">Featured Hotspot</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-2">Featured Venue</h2>
             <p className="text-white/70">Our top recommended venue this week</p>
           </div>
           
@@ -974,8 +974,8 @@ const Hotspots = () => {
                 transition={{ duration: 20, ease: 'easeInOut', repeat: Infinity, repeatType: "reverse" }}
               >
                 <img
-                  src={featuredHotspot.image}
-                  alt={featuredHotspot.name}
+                  src={featuredVenue.image}
+                  alt={featuredVenue.name}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
@@ -991,30 +991,30 @@ const Hotspots = () => {
                 >
                   <div className="mb-3 flex items-center gap-2">
                     <span className="bg-[#FF0000] text-white text-xs font-bold px-3 py-1 rounded-full">FEATURED</span>
-                    <span className="bg-white/20 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full">{featuredHotspot.type}</span>
+                    <span className="bg-white/20 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full">{featuredVenue.type}</span>
                   </div>
                   
-                  <h3 className="text-3xl md:text-5xl font-bold mb-3">{featuredHotspot.name}</h3>
+                  <h3 className="text-3xl md:text-5xl font-bold mb-3">{featuredVenue.name}</h3>
                   
                   <div className="flex flex-wrap items-center gap-4 mb-3 text-sm md:text-base">
                     <div className="flex items-center gap-1.5">
                       <MapPin className="h-4 w-4 text-[#FF0000]" />
-                      <span>{featuredHotspot.location}</span>
+                      <span>{featuredVenue.location}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                      <span>{featuredHotspot.rating} Rating</span>
+                      <span>{featuredVenue.rating} Rating</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Clock className="h-4 w-4 text-[#FF0000]" />
-                      <span>{featuredHotspot.openingHours}</span>
+                      <span>{featuredVenue.openingHours}</span>
                     </div>
                   </div>
                   
-                  <p className="text-white/80 mb-6 max-w-2xl">{featuredHotspot.description}</p>
+                  <p className="text-white/80 mb-6 max-w-2xl">{featuredVenue.description}</p>
                   
                   <div className="flex flex-wrap gap-3 mb-6">
-                    {featuredHotspot.features.map((feature, idx) => (
+                    {featuredVenue.features.map((feature, idx) => (
                       <motion.span 
                         key={idx}
                         initial={{ opacity: 0, y: 10 }}
@@ -1064,7 +1064,7 @@ const Hotspots = () => {
             className="absolute top-6 right-6 bg-gradient-to-r from-[#FF0000] to-red-700 px-4 py-2 rounded-full flex items-center gap-2"
           >
             <Award className="h-4 w-4 text-white" />
-            <span className="text-white font-bold text-sm">{featuredHotspot.promoMessage}</span>
+            <span className="text-white font-bold text-sm">{featuredVenue.promoMessage}</span>
           </motion.div>
           
           {/* Quick Info Icons */}
@@ -1105,7 +1105,7 @@ const Hotspots = () => {
       <section className="py-8 px-4 md:px-8 max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-center mb-8">
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-2">Discover Hotspots</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-2">Discover Venues</h2>
             <p className="text-white/70">Browse popular venues in your area</p>
           </div>
           
@@ -1148,12 +1148,12 @@ const Hotspots = () => {
           ))}
         </div>
         
-        {/* Hotspots Listing */}
+        {/* Venues Listing */}
         <div className="grid grid-cols-1 gap-8">
-          {sortedHotspots.length > 0 ? (
-            sortedHotspots.map((hotspot, index) => (
-              <HotspotCard key={index} hotspot={hotspot} index={index} />
-            ))
+                  {sortedVenues.length > 0 ? (
+          sortedVenues.map((venue, index) => (
+            <HotspotCard key={index} hotspot={venue} index={index} />
+          ))
           ) : (
             <div className="text-center py-16">
               <SearchX className="h-16 w-16 mx-auto text-white/40 mb-4" />
@@ -1180,4 +1180,4 @@ const Hotspots = () => {
   );
 };
 
-export default Hotspots;
+export default Venues;

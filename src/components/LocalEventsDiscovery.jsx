@@ -109,10 +109,10 @@ const LocalEventsDiscovery = () => {
             transition={{ duration: 0.5 }}
           >
             <h2 className="text-3xl sm:text-4xl font-bold mb-2">
-              Connect at Local Events
+              Plan Better with Convivia24
             </h2>
             <p className="text-gray-400">
-              Discover people who are attending the same events as you
+              Find events and bundle beverages, venues, and planning tools in one place
             </p>
           </motion.div>
           
