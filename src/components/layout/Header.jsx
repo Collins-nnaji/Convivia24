@@ -3,8 +3,10 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 // Auth context not needed while auth is disabled
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Menu, X, Search, Home, Calendar, Users, Sparkles
+  Menu, X, Search, Home, Calendar, Users, Sparkles, Wine, ShoppingCart, Ticket, Gift, BarChart3
 } from 'lucide-react';
+import { useCart } from '../../context/CartContext';
+import CartDropdown from '../CartDropdown';
 
 const Header = () => {
   const currentUser = null;
@@ -15,6 +17,7 @@ const Header = () => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const { getCartItemCount, isCartVisible, setCartVisible } = useCart();
 
   useEffect(() => {
     setIsLoaded(true);
@@ -55,7 +58,9 @@ const Header = () => {
   const navItems = [
     { path: '/', label: 'Home', icon: <Home size={16} /> },
     { path: '/events', label: 'Events', icon: <Calendar size={16} /> },
-    { path: '/venues', label: 'Venues', icon: <Users size={16} /> },
+    
+    { path: '/shopping', label: 'Premium Cellar', icon: <Wine size={16} /> },
+    { path: '/organizer', label: 'Organizer', icon: <BarChart3 size={16} /> },
   ];
 
   return (
@@ -156,6 +161,27 @@ const Header = () => {
                 <Search size={18} />
               </button>
             </motion.div>
+
+            {/* Cart Button */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: isLoaded ? 1 : 0, scale: isLoaded ? 1 : 0.9 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+              className="relative"
+            >
+              <button 
+                onClick={() => setCartVisible(!isCartVisible)}
+                className="p-2 rounded-full bg-red-600/20 hover:bg-red-600/30 transition-colors text-white relative"
+              >
+                <ShoppingCart size={18} />
+                {getCartItemCount() > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold">
+                    {getCartItemCount()}
+                  </span>
+                )}
+              </button>
+              <CartDropdown />
+            </motion.div>
             
             {/* Auth temporarily disabled: hide login/signup and user menu */}
           </div>
@@ -217,6 +243,25 @@ const Header = () => {
                     <Sparkles className="h-4 w-4 text-yellow-300" />
                     ConviviaPass
                   </Link>
+
+                  {/* Cart Link in Mobile Menu */}
+                  <button
+                    onClick={() => {
+                      setCartVisible(!isCartVisible);
+                      setIsMenuOpen(false);
+                    }}
+                    className="flex items-center justify-between py-2 px-4 rounded-lg bg-red-600/20 text-white"
+                  >
+                    <div className="flex items-center gap-3">
+                      <ShoppingCart size={16} />
+                      <span>Cart</span>
+                    </div>
+                    {getCartItemCount() > 0 && (
+                      <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold">
+                        {getCartItemCount()}
+                      </span>
+                    )}
+                  </button>
 
                   {/* Auth temporarily disabled */}
                     <>

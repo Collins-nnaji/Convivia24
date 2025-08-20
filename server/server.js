@@ -24,12 +24,16 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const communityRoutes = require('./routes/communities');
 const eventRoutes = require('./routes/events');
+const productRoutes = require('./routes/products');
+const orderRoutes = require('./routes/orders');
 
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/communities', communityRoutes);
 app.use('/api/events', eventRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/orders', orderRoutes);
 
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {

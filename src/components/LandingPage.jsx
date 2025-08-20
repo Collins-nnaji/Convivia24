@@ -305,11 +305,11 @@ const LandingPage = () => {
               className="flex flex-wrap gap-4"
             >
               <button 
-                onClick={() => navigate('/hotspots')}
+                onClick={() => navigate('/shopping')}
                 className="px-8 py-4 text-base md:text-lg bg-gradient-to-r from-red-600 to-red-800 text-white font-semibold rounded-lg hover:from-red-700 hover:to-red-900 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2"
               >
-                <Heart size={20} />
-                Order Beverages
+                <Wine size={20} />
+                Explore Premium Cellar
               </button>
               <button 
                 onClick={() => navigate('/venues')}
