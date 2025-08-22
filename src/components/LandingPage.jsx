@@ -4,7 +4,7 @@ import {
   Star, PartyPopper,
   Heart, Crown, CheckCircle, MapPin,
   Calendar, Users, Wine, 
-  GlassWater, Globe, Building, Gift, Sparkles, Utensils, Clock, Coffee, Mountain, MessageCircle, ChevronDown
+  GlassWater, Globe, Building, Gift, Sparkles, Utensils, Clock, Coffee, Mountain, MessageCircle, ChevronDown, Truck, Shield
 } from 'lucide-react';
 import InvestorSection from './InvestorSection';
 import EventsSection from './EventsSection';
@@ -658,6 +658,185 @@ const LandingPage = () => {
                   <span className="text-gray-700">Live Chatbot Concierge</span>
                 </div>
               </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Curated Bundles Section */}
+      <section className="py-24 bg-gradient-to-b from-gray-50 to-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="mx-auto w-16 h-1 bg-gradient-to-r from-red-500 to-red-700 mb-6 rounded-full"></div>
+              <h2 className="text-4xl md:text-5xl font-bold mb-6" style={{ fontFamily: 'Playfair Display, serif' }}>
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-600 to-red-800">
+                  Curated Drink Bundles
+                </span>
+              </h2>
+              <p className="text-gray-600 max-w-2xl mx-auto text-lg mb-6">
+                Not just bottles - complete party solutions with everything you need for the perfect celebration.
+              </p>
+            </motion.div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Birthday Pack */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group"
+            >
+              <div className="relative h-48 bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center">
+                <Gift className="text-red-600" size={64} />
+                <div className="absolute top-4 right-4 bg-red-600 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                  -23% OFF
+                </div>
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Birthday Pack</h3>
+                <p className="text-gray-600 text-sm mb-4">Soft drinks + alcohol mix + disposable cups for 15-20 people.</p>
+                <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+                  <Users size={14} />
+                  <span>15-20 people</span>
+                  <span className="mx-2">•</span>
+                  <Truck size={14} />
+                  <span>24-hour delivery</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="text-2xl font-bold text-gray-900">₦85,000</div>
+                  <button 
+                    onClick={() => navigate('/shopping')}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors"
+                  >
+                    View Bundle
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Chill Friday Pack */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group"
+            >
+              <div className="relative h-48 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
+                <Wine className="text-blue-600" size={64} />
+                <div className="absolute top-4 right-4 bg-blue-600 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                  -24% OFF
+                </div>
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Chill Friday Pack</h3>
+                <p className="text-gray-600 text-sm mb-4">Beers + mixers + snacks for a relaxed evening.</p>
+                <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+                  <Users size={14} />
+                  <span>8-12 people</span>
+                  <span className="mx-2">•</span>
+                  <Clock size={14} />
+                  <span>Same-day delivery</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="text-2xl font-bold text-gray-900">₦65,000</div>
+                  <button 
+                    onClick={() => navigate('/shopping')}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
+                  >
+                    View Bundle
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Couples Night Pack */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group"
+            >
+              <div className="relative h-48 bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center">
+                <Heart className="text-purple-600" size={64} />
+                <div className="absolute top-4 right-4 bg-purple-600 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                  -21% OFF
+                </div>
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Couples Night Pack</h3>
+                <p className="text-gray-600 text-sm mb-4">Wine + chocolates for a romantic evening.</p>
+                <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+                  <Users size={14} />
+                  <span>2 people</span>
+                  <span className="mx-2">•</span>
+                  <Clock size={14} />
+                  <span>Evening delivery</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="text-2xl font-bold text-gray-900">₦95,000</div>
+                  <button 
+                    onClick={() => navigate('/shopping')}
+                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors"
+                  >
+                    View Bundle
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Delivery Promises */}
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="bg-white rounded-xl p-6 shadow-sm border border-red-200"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <Clock className="text-red-600" size={24} />
+                <h3 className="font-semibold text-gray-900">24-Hour Delivery</h3>
+              </div>
+              <p className="text-gray-600 text-sm">Free delivery within 24 hours or your order is free!</p>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+              className="bg-white rounded-xl p-6 shadow-sm border border-blue-200"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <Truck className="text-blue-600" size={24} />
+                <h3 className="font-semibold text-gray-900">Night Owl Service</h3>
+              </div>
+              <p className="text-gray-600 text-sm">Same-day or evening delivery within your coverage zone.</p>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+              className="bg-white rounded-xl p-6 shadow-sm border border-green-200"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <Shield className="text-green-600" size={24} />
+                <h3 className="font-semibold text-gray-900">Age Verified</h3>
+              </div>
+              <p className="text-gray-600 text-sm">Secure age verification for all alcohol purchases.</p>
             </motion.div>
           </div>
         </div>

@@ -38,3 +38,7 @@ body {
 .animate-blob {
   animation: blob 7s infinite;
 }
+
+.font-stylish {
+  font-family: 'Playfair Display', serif;
+}

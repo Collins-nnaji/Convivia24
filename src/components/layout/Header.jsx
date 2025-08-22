@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import CartDropdown from '../CartDropdown';
+import LoyaltyBadge from '../LoyaltyBadge';
 
 const Header = () => {
   const currentUser = null;
@@ -59,8 +60,7 @@ const Header = () => {
     { path: '/', label: 'Home', icon: <Home size={16} /> },
     { path: '/events', label: 'Events', icon: <Calendar size={16} /> },
     
-    { path: '/shopping', label: 'Premium Cellar', icon: <Wine size={16} /> },
-    { path: '/organizer', label: 'Organizer', icon: <BarChart3 size={16} /> },
+    { path: '/shopping', label: 'Premium Cellar', icon: <Wine size={16} /> }
   ];
 
   return (
@@ -160,6 +160,15 @@ const Header = () => {
               >
                 <Search size={18} />
               </button>
+            </motion.div>
+
+            {/* Loyalty Badge */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: isLoaded ? 1 : 0, scale: isLoaded ? 1 : 0.9 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+            >
+              <LoyaltyBadge />
             </motion.div>
 
             {/* Cart Button */}
@@ -264,18 +273,15 @@ const Header = () => {
                   </button>
 
                   {/* Auth temporarily disabled */}
-                    <>
-                      <div className="border-t border-gray-700/50 my-2"></div>
-                      <div className="flex flex-col space-y-2 px-4 pt-2">
-                        <span className="text-sm font-medium text-center py-2 px-4 rounded-lg text-gray-500">
-                          Login (Coming Soon)
-                        </span>
-                        <span className="text-sm font-medium text-center py-2 px-4 rounded-lg text-gray-500">
-                          Sign Up (Coming Soon)
-                        </span>
-                      </div>
-                    </>
-                  )}
+                  <div className="border-t border-gray-700/50 my-2"></div>
+                  <div className="flex flex-col space-y-2 px-4 pt-2">
+                    <span className="text-sm font-medium text-center py-2 px-4 rounded-lg text-gray-500">
+                      Login (Coming Soon)
+                    </span>
+                    <span className="text-sm font-medium text-center py-2 px-4 rounded-lg text-gray-500">
+                      Sign Up (Coming Soon)
+                    </span>
+                  </div>
                 </nav>
               </div>
             </motion.div>
