@@ -53,7 +53,7 @@ const InvestorSection = ({ isOpen, onClose }) => {
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <p className="text-sm text-gray-600">Cities Live</p>
-                    <p className="text-2xl font-bold text-purple-600">4</p>
+                    <p className="text-2xl font-bold text-red-600">4</p>
                   </div>
                 </div>
               </div>

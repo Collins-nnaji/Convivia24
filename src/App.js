@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import LandingPage from './components/LandingPage';
-import Events from './pages/Events';
+
 import ModernShopping from './pages/ModernShopping';
 import DrinkDetail from './pages/DrinkDetail';
 import Checkout from './pages/Checkout';
@@ -27,7 +27,7 @@ const AnimatedRoutes = () => {
     <AnimatePresence mode="wait" initial={false}>
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/events" element={<Events />} />
+
         <Route path="/shopping" element={<AgeGate><ModernShopping /></AgeGate>} />
         <Route path="/drink/:id" element={<AgeGate><DrinkDetail /></AgeGate>} />
         <Route path="/checkout" element={<Checkout />} />

@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 // Auth context not needed while auth is disabled
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Menu, X, Search, Home, Calendar, Users, Sparkles, Wine, ShoppingCart, Ticket, Gift, BarChart3
+  Menu, X, Search, Home, Users, Sparkles, Wine, ShoppingCart, Ticket, Gift, BarChart3
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import CartDropdown from '../CartDropdown';
@@ -58,8 +58,6 @@ const Header = () => {
 
   const navItems = [
     { path: '/', label: 'Home', icon: <Home size={16} /> },
-    { path: '/events', label: 'Events', icon: <Calendar size={16} /> },
-    
     { path: '/shopping', label: 'Premium Cellar', icon: <Wine size={16} /> }
   ];
 
@@ -137,12 +135,12 @@ const Header = () => {
                 to="/conviviapass" 
                 className={`text-sm font-medium px-3 py-2 rounded-full flex items-center gap-1.5 transition-all ${
                   isActive('/conviviapass')
-                    ? 'bg-gradient-to-r from-red-600 to-purple-600 text-white shadow-lg shadow-purple-700/20' 
-                    : 'bg-gradient-to-r from-red-600/20 to-purple-600/20 text-white hover:from-red-600/30 hover:to-purple-600/30'
+                                    ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-700/20'
+                : 'bg-gradient-to-r from-red-600/20 to-red-700/20 text-white hover:from-red-600/30 hover:to-red-700/30'
                 }`}
               >
                 <Sparkles size={16} className="text-yellow-300" />
-                ConviviaPass
+                                    Convivia Rewards
               </Link>
             </motion.div>
           </nav>
@@ -244,13 +242,13 @@ const Header = () => {
                     to="/conviviapass" 
                     className={`text-sm font-medium py-2 px-4 rounded-lg flex items-center gap-3 transition-colors ${
                       isActive('/conviviapass')
-                        ? 'bg-gradient-to-r from-red-600 to-purple-600 text-white' 
-                        : 'bg-gradient-to-r from-red-600/20 to-purple-600/20 text-white hover:from-red-600/30 hover:to-purple-600/30'
+                                        ? 'bg-gradient-to-r from-red-600 to-red-700 text-white'
+                : 'bg-gradient-to-r from-red-600/20 to-red-700/20 text-white hover:from-red-600/30 hover:to-red-700/30'
                     }`}
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <Sparkles className="h-4 w-4 text-yellow-300" />
-                    ConviviaPass
+                    Convivia Rewards
                   </Link>
 
                   {/* Cart Link in Mobile Menu */}

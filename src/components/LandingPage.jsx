@@ -1,23 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Star, PartyPopper,
+  Star,
   Heart, Crown, CheckCircle, MapPin,
-  Calendar, Users, Wine, 
-  GlassWater, Globe, Building, Gift, Sparkles, Utensils, Clock, Coffee, Mountain, MessageCircle, ChevronDown, Truck, Shield
+  Users, Wine, 
+  Building, Gift, Sparkles, Clock, Coffee, MessageCircle, ChevronDown, Truck, Shield,
+  BarChart3, Briefcase, Handshake, Package, DollarSign
 } from 'lucide-react';
 import InvestorSection from './InvestorSection';
-import EventsSection from './EventsSection';
 import AboutSection from './AboutSection';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import BrandSpotlightSection from './BrandSpotlightSection';
-import HomeEventsSection from './HomeEventsSection';
 
 const LandingPage = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [showInvestorSection, setShowInvestorSection] = useState(false);
-  const [showEventsSection, setShowEventsSection] = useState(false);
   const [showBrandSpotlight, setShowBrandSpotlight] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState('nigeria');
   const [activeSlide, setActiveSlide] = useState(0);
@@ -66,163 +64,163 @@ const LandingPage = () => {
 
   const celebrationTypes = [
     {
-      icon: <Crown size={32} className="text-red-600" />,
-      title: "Premium Venues",
-      description: "Discover exceptional venues for all types of celebrations",
-      features: ["Premium locations", "Customizable spaces", "Expert venue staff"]
+              icon: <Wine size={32} className="text-red-600" />,
+      title: "Premium Selection",
+      description: "Curated wine & spirits for discerning venues",
+      features: ["Premium brands", "Bulk pricing", "Exclusive access"]
     },
     {
-      icon: <Utensils size={32} className="text-red-600" />,
-      title: "Catering Services",
-      description: "Work with top-rated caterers for your special event",
-      features: ["Diverse cuisine options", "Custom menus", "Professional service"]
+              icon: <Truck size={32} className="text-red-600" />,
+      title: "Smart Logistics",
+      description: "AI-powered delivery and inventory management",
+      features: ["24-hour delivery", "Real-time tracking", "Smart reordering"]
     },
     {
-      icon: <Wine size={32} className="text-red-600" />,
-      title: "Beverage Packages",
-      description: "Find the perfect drinks package for your celebration",
-      features: ["Premium selections", "Custom cocktails", "Professional bartenders"]
+              icon: <BarChart3 size={32} className="text-red-600" />,
+      title: "Business Intelligence",
+      description: "Data-driven insights for growth",
+      features: ["Consumption trends", "Demand forecasting", "Revenue analytics"]
     },
     {
-      icon: <PartyPopper size={32} className="text-red-600" />,
-      title: "Event Planning",
-      description: "All-in-one platform for seamless celebration planning",
-      features: ["End-to-end planning", "Vendor coordination", "Day-of management"]
+              icon: <Package size={32} className="text-red-600" />,
+      title: "Private Label",
+      description: "Custom branding for your business",
+      features: ["Your branding", "Exclusive products", "Market differentiation"]
     }
   ];
 
   const serviceCategories = [
     {
-      icon: <Users size={32} color="#DC2626" />,
-      title: "Venue Booking",
-      description: "Find and book the perfect venue for any occasion"
+      icon: <Wine size={32} color="#9333EA" />,
+      title: "Wine & Spirits",
+      description: "Premium selection with bulk pricing tiers"
     },
     {
-      icon: <Utensils size={32} color="#DC2626" />,
-      title: "Catering Services",
-      description: "Work with top-rated food and beverage providers"
+      icon: <Truck size={32} color="#9333EA" />,
+      title: "Smart Delivery",
+      description: "Real-time tracking and 24-hour delivery"
     },
     {
-      icon: <Clock size={32} color="#DC2626" />,
-      title: "Planning Tools",
-      description: "Powerful tools to organize every aspect of your celebration"
+      icon: <BarChart3 size={32} color="#9333EA" />,
+      title: "AI Reordering",
+      description: "Smart inventory management and forecasting"
     },
     {
-      icon: <Sparkles size={32} color="#DC2626" />,
-      title: "Decoration Services",
-      description: "Transform your venue with professional decoration services"
+      icon: <Package size={32} color="#9333EA" />,
+      title: "Private Label",
+      description: "Custom branding for venues and retailers"
     },
     {
-      icon: <Wine size={32} color="#DC2626" />,
-      title: "Beverage Packages",
-      description: "Custom drink packages for any type of celebration"
+      icon: <DollarSign size={32} color="#9333EA" />,
+      title: "Flexible Payments",
+      description: "Net-30/60 terms and multi-currency support"
     },
     {
-      icon: <Calendar size={32} color="#DC2626" />,
-      title: "Event Management",
-      description: "Professional coordination for flawless celebrations"
+      icon: <Users size={32} color="#9333EA" />,
+      title: "Dedicated Support",
+      description: "Account managers and 24/7 assistance"
     }
   ];
 
   const communityGroups = [
     {
-      name: "Lagos Coffee Enthusiasts",
-      category: "Social & Lifestyle",
-      members: "325 members",
-      description: "A vibrant community of coffee lovers who meet weekly to share brewing techniques and meaningful conversations.",
-      image: "https://images.unsplash.com/photo-1517231925375-bf2cb42917a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+              name: "Premium Bars Network",
+      category: "Hospitality & Bars",
+      members: "45 venues",
+      description: "Premium bars and clubs sharing wine & spirits best practices and bulk ordering strategies.",
+      image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
     },
     {
-      name: "London Photography Walks",
-      category: "Photography",
-      members: "187 members",
-      description: "Photographers of all skill levels exploring London's hidden gems together and building lasting friendships.",
-      image: "https://images.unsplash.com/photo-1452587925148-ce544e77262d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+      name: "London Fine Dining",
+      category: "Restaurants & Hotels",
+      members: "67 establishments",
+      description: "Fine dining restaurants and luxury hotels collaborating on premium wine programs and inventory management.",
+      image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
     },
     {
-      name: "Abuja Hikers Network",
-      category: "Outdoors",
-      members: "312 members",
-      description: "Adventure seekers connecting on weekly hikes, forming bonds through shared experiences in nature.",
-      image: "https://images.unsplash.com/photo-1551632811-561732d1e306?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+              name: "Corporate Buyers Network",
+      category: "Corporate Procurement",
+      members: "89 businesses",
+      description: "Corporate buyers and procurement teams sharing strategies for bulk wine & spirits purchasing.",
+      image: "https://images.unsplash.com/photo-1511578314322-379afb476865?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
     }
   ];
 
   const cityData = {
     "Nigeria": [
     {
-      name: "Lagos",
-        members: "2,450+"
+              name: "Premium Hub",
+        members: "150+"
     },
     {
-      name: "Port Harcourt",
-        members: "1,250+"
+              name: "Business Center",
+        members: "45+"
     },
     {
-      name: "Abuja",
-        members: "1,850+"
+              name: "Corporate Hub",
+        members: "85+"
     },
     {
       name: "Benin",
-        members: "950+"
+        members: "35+"
     }
     ],
     "United Kingdom": [
     {
       name: "London",
-        members: "3,200+"
+        members: "120+"
     },
     {
       name: "Manchester",
-        members: "1,700+"
+        members: "70+"
     },
     {
       name: "Birmingham",
-        members: "1,450+"
+        members: "45+"
     },
     {
       name: "Leeds",
-        members: "1,100+"
+        members: "30+"
     }
     ]
   };
 
   const features = [
     {
-      icon: <Users size={24} />,
-      title: "Smart Beverage Ordering",
-      description: "Bulk orders for weddings, birthdays, and corporate events"
+      icon: <Wine size={24} />,
+      title: "Premium Selection",
+      description: "Curated wine & spirits with bulk pricing tiers"
     },
     {
-      icon: <Heart size={24} />,
-      title: "Venue Suggestions & Booking",
-      description: "Find and book venues by city, size, and budget"
+      icon: <Truck size={24} />,
+      title: "Smart Delivery",
+      description: "24-hour delivery with real-time tracking"
     },
     {
-      icon: <MessageCircle size={24} />,
-      title: "Live Chatbot Concierge",
-      description: "Pairings, quantities, and event Q&A in seconds"
+      icon: <BarChart3 size={24} />,
+      title: "AI Reordering",
+      description: "Smart inventory management and demand forecasting"
     }
   ];
 
   const testimonials = [
     {
-      name: "David Okonkwo",
-      role: "Community Member",
-      image: "https://randomuser.me/api/portraits/men/54.jpg",
-      quote: "I moved to Lagos last year and didn't know anyone. Through this platform, I've met incredible people who share my love for jazz music. I now have a whole new social circle!"
+      name: "Adaora Okafor",
+      role: "Head of Corporate Affairs, Zenith Bank",
+      image: "https://randomuser.me/api/portraits/women/54.jpg",
+      quote: "Convivia24 cut our stockouts by 30%. Their premium wine selection and smart reordering keep our corporate events perfectly stocked!"
     },
     {
-      name: "Sarah Thompson",
-      role: "Social Butterfly",
-      image: "https://randomuser.me/api/portraits/women/45.jpg",
-      quote: "The hotspot feature is brilliant! I discovered a local café where photographers gather every Tuesday. I've improved my skills and made amazing friends at the same time."
+      name: "Emeka Chukwu",
+      role: "Marketing Director, MTN Nigeria",
+      image: "https://randomuser.me/api/portraits/men/45.jpg",
+      quote: "We save hours every week by using the platform for reordering. The bulk pricing and 24-hour delivery are game-changers."
     },
     {
-      name: "Chinedu Eze",
-      role: "Working Professional",
-      image: "https://randomuser.me/api/portraits/men/33.jpg",
-      quote: "As someone who works remotely, I was feeling isolated. Now I have a community of other remote workers I meet with regularly. It's changed my social life completely!"
+      name: "Fatima Abdullahi",
+      role: "Executive Assistant to CEO, Dangote Group",
+      image: "https://randomuser.me/api/portraits/women/33.jpg",
+      quote: "Outstanding B2B service and attention to detail. The AI forecasting helps us optimize inventory perfectly."
     }
   ];
 
@@ -274,8 +272,8 @@ const LandingPage = () => {
               className="inline-block mb-3 py-1 px-3 bg-gradient-to-r from-red-500/30 to-red-700/30 rounded-full backdrop-blur-sm"
             >
               <span className="text-white/90 text-sm font-medium flex items-center">
-                <PartyPopper size={14} className="mr-1.5" /> 
-                Celebrate Smarter, Celebrate Faster
+                <Wine size={14} className="mr-1.5" /> 
+                Your B2B Partner for Wine & Spirits Distribution
               </span>
             </motion.div>
 
@@ -286,7 +284,7 @@ const LandingPage = () => {
               className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight" 
               style={{ fontFamily: 'Playfair Display, serif' }}
             >
-              Drinks, Venues & Vibes – <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-300">Sorted in 24</span>
+                              Powering <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-300">Consumption Hotspots</span> with <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-300">Bulk & Premium Orders</span>
             </motion.h1>
 
             <motion.p
@@ -295,7 +293,7 @@ const LandingPage = () => {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="text-xl md:text-2xl text-gray-300 mb-10 max-w-2xl"
             >
-              Your all-in-one event and beverage partner: bulk beverage ordering, venue suggestions and booking, live chatbot concierge, and age-verified checkout with 24-hour delivery.
+              Wholesale ordering, smart inventory, and reliable delivery – all in one platform. Bulk orders, premium spirits, and AI-driven reorder reminders for restaurants, bars, hotels, and retailers.
             </motion.p>
 
             <motion.div
@@ -309,14 +307,14 @@ const LandingPage = () => {
                 className="px-8 py-4 text-base md:text-lg bg-gradient-to-r from-red-600 to-red-800 text-white font-semibold rounded-lg hover:from-red-700 hover:to-red-900 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2"
               >
                 <Wine size={20} />
-                Explore Premium Cellar
+                Get Early Access
               </button>
               <button 
-                onClick={() => navigate('/venues')}
+                onClick={() => navigate('/business-register')}
                 className="px-8 py-4 text-base md:text-lg bg-white/10 backdrop-blur-sm text-white border border-white/30 font-semibold rounded-lg hover:bg-white/20 transition-all duration-300 flex items-center gap-2"
               >
-                <MapPin size={20} />
-                Find Venues
+                <Truck size={20} />
+                Request a Demo
               </button>
             </motion.div>
             
@@ -338,7 +336,7 @@ const LandingPage = () => {
                 ))}
               </div>
               <div className="text-white text-sm md:text-base">
-                <span className="font-bold text-xl text-red-400">10,000+</span> events powered by Convivia24
+                <span className="font-bold text-xl text-red-400">500+</span> consumption hotspots powered by Convivia24
               </div>
             </motion.div>
           </div>
@@ -381,11 +379,11 @@ const LandingPage = () => {
               <div className="mx-auto w-16 h-1 bg-gradient-to-r from-red-500 to-red-700 mb-6 rounded-full"></div>
               <h2 className="text-4xl md:text-5xl font-bold mb-6" style={{ fontFamily: 'Playfair Display, serif' }}>
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-600 to-red-800">
-                  Discover Venues & Partners
+                  Featured Hotspots for the Week
                 </span>
               </h2>
               <p className="text-gray-600 max-w-2xl mx-auto text-lg mb-6">
-                Browse event venues by city, size, and budget. Book directly or connect with trusted partners.
+                Discover this week's most popular venues and trending consumption hotspots powered by premium wine & spirits.
               </p>
             </motion.div>
             <div className="flex justify-center gap-2 mt-6">
@@ -418,7 +416,7 @@ const LandingPage = () => {
                 <div className="absolute bottom-4 left-4 right-4">
                   <div className="flex items-center gap-2 text-white mb-1">
                     <MapPin size={16} />
-                    <span className="text-sm">Lagos, Nigeria</span>
+                    <span className="text-sm">Premium Location</span>
                   </div>
                   <h3 className="text-xl font-bold text-white">Brew Café Social Hub</h3>
                 </div>
@@ -464,7 +462,7 @@ const LandingPage = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
                 <div className="absolute top-4 right-4">
-                  <span className="bg-purple-600 text-white text-xs px-3 py-1 rounded-full">Premium</span>
+                  <span className="bg-red-600 text-white text-xs px-3 py-1 rounded-full">Premium</span>
                 </div>
                 <div className="absolute bottom-4 left-4 right-4">
                   <div className="flex items-center gap-2 text-white mb-1">
@@ -520,7 +518,7 @@ const LandingPage = () => {
                 <div className="absolute bottom-4 left-4 right-4">
                   <div className="flex items-center gap-2 text-white mb-1">
                     <MapPin size={16} />
-                    <span className="text-sm">Port Harcourt, Nigeria</span>
+                    <span className="text-sm">Premium Location</span>
                   </div>
                   <h3 className="text-xl font-bold text-white">Cultural Haven</h3>
                 </div>
@@ -570,7 +568,7 @@ const LandingPage = () => {
       {/* Statistics Section */}
       <section id="stats-section" className="py-20 bg-white">
         <div className="container mx-auto px-4">
-          <div className="bg-gradient-to-r from-red-600 to-red-800 rounded-3xl overflow-hidden shadow-2xl">
+                        <div className="bg-gradient-to-r from-red-600 to-red-800 rounded-3xl overflow-hidden shadow-2xl">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -580,9 +578,9 @@ const LandingPage = () => {
                 className="p-10 text-center text-white border-b md:border-b-0 md:border-r border-white/20"
               >
                 <div className="text-5xl font-bold mb-2">
-                  <AnimatedCounter end={10000} /> +
+                  <AnimatedCounter end={500} /> +
                 </div>
-                <p className="text-white/80 text-lg">Orders Delivered</p>
+                <p className="text-white/80 text-lg">Consumption Hotspots</p>
               </motion.div>
               
               <motion.div
@@ -593,9 +591,9 @@ const LandingPage = () => {
                 className="p-10 text-center text-white border-b md:border-b-0 md:border-r border-white/20"
               >
                 <div className="text-5xl font-bold mb-2">
-                  <AnimatedCounter end={2500} /> +
+                  <AnimatedCounter end={25000} /> +
                 </div>
-                <p className="text-white/80 text-lg">Events Served</p>
+                <p className="text-white/80 text-lg">Bottles Delivered</p>
               </motion.div>
               
               <motion.div
@@ -606,9 +604,9 @@ const LandingPage = () => {
                 className="p-10 text-center text-white border-b lg:border-b-0 lg:border-r border-white/20"
               >
                 <div className="text-5xl font-bold mb-2">
-                  <AnimatedCounter end={800} /> +
+                  <AnimatedCounter end={150} /> +
                 </div>
-                <p className="text-white/80 text-lg">Verified Venues</p>
+                <p className="text-white/80 text-lg">Premium Brands</p>
               </motion.div>
               
               <motion.div
@@ -619,9 +617,9 @@ const LandingPage = () => {
                 className="p-10 text-center text-white"
               >
                 <div className="text-5xl font-bold mb-2">
-                  <AnimatedCounter end={350} /> +
+                  <AnimatedCounter end={24} />
                 </div>
-                <p className="text-white/80 text-lg">Planner Accounts</p>
+                <p className="text-white/80 text-lg">Hour Delivery</p>
               </motion.div>
             </div>
           </div>
@@ -634,28 +632,28 @@ const LandingPage = () => {
               transition={{ duration: 0.5 }}
             >
               <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-800" style={{ fontFamily: 'Playfair Display, serif' }}>
-                Why <span className="text-red-600">Convivia24</span> Works
+                How <span className="text-red-600">Convivia24</span> Works
               </h2>
               <p className="text-gray-600 max-w-3xl mx-auto text-lg mb-8">
-                Bulk beverage ordering. 24-hour delivery. Age-verified checkout. Live chatbot for pairings, guest counts, and planning.
+                Order & Manage Stock – Wholesale wine & spirits, delivered on time. Track & Reorder Easily – Smart AI reorder reminders and logistics tracking. Grow with Insights – Data-driven analytics for smarter purchasing decisions.
               </p>
               
               <div className="flex justify-center gap-4 flex-wrap">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-500" />
-                  <span className="text-gray-700">Bulk Beverage Ordering</span>
+                  <span className="text-gray-700">Bulk Ordering</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-500" />
-                  <span className="text-gray-700">24-Hour Turnaround</span>
+                  <span className="text-gray-700">Smart Reorder</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-500" />
-                  <span className="text-gray-700">Age-Verified Checkout</span>
+                  <span className="text-gray-700">Real-time Tracking</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-500" />
-                  <span className="text-gray-700">Live Chatbot Concierge</span>
+                  <span className="text-gray-700">Premium Spirits</span>
                 </div>
               </div>
             </motion.div>
@@ -663,7 +661,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Curated Bundles Section */}
+      {/* Delivery Promises Section */}
       <section className="py-24 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
@@ -676,127 +674,16 @@ const LandingPage = () => {
               <div className="mx-auto w-16 h-1 bg-gradient-to-r from-red-500 to-red-700 mb-6 rounded-full"></div>
               <h2 className="text-4xl md:text-5xl font-bold mb-6" style={{ fontFamily: 'Playfair Display, serif' }}>
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-600 to-red-800">
-                  Curated Drink Bundles
+                  Delivery & Service Promises
                 </span>
               </h2>
               <p className="text-gray-600 max-w-2xl mx-auto text-lg mb-6">
-                Not just bottles - complete party solutions with everything you need for the perfect celebration.
+                We guarantee exceptional service and reliable delivery for all your premium wine & spirits needs.
               </p>
             </motion.div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Birthday Pack */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group"
-            >
-              <div className="relative h-48 bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center">
-                <Gift className="text-red-600" size={64} />
-                <div className="absolute top-4 right-4 bg-red-600 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                  -23% OFF
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Birthday Pack</h3>
-                <p className="text-gray-600 text-sm mb-4">Soft drinks + alcohol mix + disposable cups for 15-20 people.</p>
-                <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-                  <Users size={14} />
-                  <span>15-20 people</span>
-                  <span className="mx-2">•</span>
-                  <Truck size={14} />
-                  <span>24-hour delivery</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="text-2xl font-bold text-gray-900">₦85,000</div>
-                  <button 
-                    onClick={() => navigate('/shopping')}
-                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors"
-                  >
-                    View Bundle
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Chill Friday Pack */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group"
-            >
-              <div className="relative h-48 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
-                <Wine className="text-blue-600" size={64} />
-                <div className="absolute top-4 right-4 bg-blue-600 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                  -24% OFF
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Chill Friday Pack</h3>
-                <p className="text-gray-600 text-sm mb-4">Beers + mixers + snacks for a relaxed evening.</p>
-                <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-                  <Users size={14} />
-                  <span>8-12 people</span>
-                  <span className="mx-2">•</span>
-                  <Clock size={14} />
-                  <span>Same-day delivery</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="text-2xl font-bold text-gray-900">₦65,000</div>
-                  <button 
-                    onClick={() => navigate('/shopping')}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
-                  >
-                    View Bundle
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Couples Night Pack */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group"
-            >
-              <div className="relative h-48 bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center">
-                <Heart className="text-purple-600" size={64} />
-                <div className="absolute top-4 right-4 bg-purple-600 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                  -21% OFF
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Couples Night Pack</h3>
-                <p className="text-gray-600 text-sm mb-4">Wine + chocolates for a romantic evening.</p>
-                <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-                  <Users size={14} />
-                  <span>2 people</span>
-                  <span className="mx-2">•</span>
-                  <Clock size={14} />
-                  <span>Evening delivery</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="text-2xl font-bold text-gray-900">₦95,000</div>
-                  <button 
-                    onClick={() => navigate('/shopping')}
-                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors"
-                  >
-                    View Bundle
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Delivery Promises */}
-          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -842,9 +729,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Add HomeEventsSection here */}
-      <HomeEventsSection />
-      
       {/* Modal Components */}
       <AnimatePresence>
         {showInvestorSection && (
@@ -855,17 +739,6 @@ const LandingPage = () => {
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
           >
             <InvestorSection onClose={() => setShowInvestorSection(false)} />
-          </motion.div>
-        )}
-        
-        {showEventsSection && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
-          >
-            <EventsSection onClose={() => setShowEventsSection(false)} />
           </motion.div>
         )}
         

@@ -1,10 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Wine, Filter, Search, Star, ShoppingCart, Heart, 
-  ChevronDown, ChevronUp, Minus, Plus, Crown, Sparkles,
-  MapPin, Clock, Truck, Shield, CheckCircle, Eye, Gift, Users, Coffee, MessageCircle,
-  Grid, List, SlidersHorizontal, Zap, Target, Sliders
+  Search, 
+  Filter, 
+  Star, 
+  ChevronDown, 
+  ChevronUp, 
+  Minus, 
+  Plus, 
+  MapPin, 
+  Sliders, 
+  ShoppingCart, 
+  Heart, 
+  Eye, 
+  Crown, 
+  Target, 
+  Wine, 
+  Sparkles, 
+  ArrowRight, 
+  Truck, 
+  Package, 
+  Users, 
+  Building, 
+  BarChart3, 
+  DollarSign,
+  Zap,
+  Gift,
+  Grid,
+  List,
+  SlidersHorizontal
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
@@ -14,7 +38,7 @@ import SimpleDrinkCard from '../components/SimpleDrinkCard';
 import BundleModal from '../components/BundleModal';
 import VIPDrops from '../components/VIPDrops';
 import Notification from '../components/Notification';
-import DrinksMarquee from '../components/DrinksMarquee';
+
 
 const ModernShopping = () => {
   const navigate = useNavigate();
@@ -38,83 +62,87 @@ const ModernShopping = () => {
   const { loyaltyData, addPoints } = useLoyalty();
 
   const categories = [
-    { id: 'all', name: 'All Spirits', icon: <Wine size={20} />, color: 'from-gray-400 to-gray-600' },
+    { id: 'all', name: 'All Products', icon: <Wine size={20} />, color: 'from-gray-400 to-gray-600' },
     { id: 'vodka', name: 'Vodka', icon: <Zap size={20} />, color: 'from-blue-400 to-cyan-500' },
     { id: 'whisky', name: 'Whisky', icon: <Crown size={20} />, color: 'from-amber-400 to-orange-500' },
     { id: 'whiskey', name: 'Whiskey', icon: <Crown size={20} />, color: 'from-amber-500 to-yellow-500' },
     { id: 'cognac', name: 'Cognac', icon: <Wine size={20} />, color: 'from-purple-400 to-pink-500' },
-    { id: 'tequila', name: 'Tequila', icon: <Target size={20} />, color: 'from-green-400 to-teal-500' }
+    { id: 'tequila', name: 'Tequila', icon: <Target size={20} />, color: 'from-green-400 to-teal-500' },
+    { id: 'wine', name: 'Wine', icon: <Wine size={20} />, color: 'from-red-400 to-purple-500' },
+    { id: 'champagne', name: 'Champagne', icon: <Sparkles size={20} />, color: 'from-yellow-400 to-orange-500' }
   ];
 
   const occasions = [
-    { id: 'all', name: 'All Occasions' },
-    { id: 'celebrations', name: 'Celebrations' },
-    { id: 'business', name: 'Business Events' },
-    { id: 'luxury', name: 'Luxury Events' },
-    { id: 'casual', name: 'Casual Socializing' },
-    { id: 'gifts', name: 'Gifts' },
-    { id: 'collections', name: 'Collections' }
+    { id: 'all', name: 'All Business Types' },
+    { id: 'restaurants', name: 'Restaurants' },
+    { id: 'bars', name: 'Bars & Lounges' },
+    { id: 'hotels', name: 'Hotels & Resorts' },
+    { id: 'corporate', name: 'Corporate Events' },
+    { id: 'weddings', name: 'Weddings & Events' },
+    { id: 'retail', name: 'Retail & Distribution' }
   ];
 
   const sortOptions = [
     { id: 'featured', name: 'Featured' },
     { id: 'price-low', name: 'Price: Low to High' },
     { id: 'price-high', name: 'Price: High to Low' },
-    { id: 'rating', name: 'Highest Rated' },
-    { id: 'newest', name: 'Newest First' },
-    { id: 'popular', name: 'Most Popular' }
+    { id: 'premium', name: 'Premium First' },
+    { id: 'bulk-discount', name: 'Bulk Discount' },
+    { id: 'business-value', name: 'Business Value' }
   ];
 
-  // Bundles data (keeping existing bundles)
+  // B2B Hospitality Bundles
   const bundles = [
     {
-      id: 'birthday-pack',
-      name: 'Birthday Pack',
-      description: 'Soft drinks + alcohol mix + disposable cups for 15-20 people.',
+      id: 'restaurant-starter',
+      name: 'Restaurant Starter Pack',
+      description: 'Essential spirits and wines for new restaurant openings and daily operations.',
       items: [
         { category: 'spirits', tier: 'premium', name: 'Premium Vodka' },
         { category: 'spirits', tier: 'mainstream', name: 'Gin' },
-        { category: 'mixers', tier: 'mainstream', name: 'Soft Drinks Mix' },
-        { category: 'accessories', tier: 'mainstream', name: 'Disposable Cups' }
+        { category: 'wine', tier: 'premium', name: 'House Wines' },
+        { category: 'mixers', tier: 'mainstream', name: 'Premium Mixers' }
       ],
-      price: 85000,
-      originalPrice: 110000,
-      discount: 23,
-      partySize: '15-20 people',
-      delivery: '24-hour delivery',
-      includes: ['Premium spirits', 'Soft drink mixers', 'Disposable cups', 'Party serving guide']
-    },
-    {
-      id: 'chill-friday-pack',
-      name: 'Chill Friday Pack',
-      description: 'Beers + mixers + snacks for a relaxed evening.',
-      items: [
-        { category: 'beer', tier: 'premium', name: 'Premium Beers' },
-        { category: 'mixers', tier: 'mainstream', name: 'Mixers' },
-        { category: 'snacks', tier: 'mainstream', name: 'Premium Snacks' }
-      ],
-      price: 65000,
-      originalPrice: 85000,
+      price: 125000,
+      originalPrice: 165000,
       discount: 24,
-      partySize: '8-12 people',
-      delivery: 'Same-day delivery available',
-      includes: ['Premium beers', 'Mixers', 'Snacks', 'Chill playlist QR code']
+      businessSize: 'Small-Medium Restaurant',
+      delivery: '24-hour delivery',
+      includes: ['Premium spirits selection', 'House wine collection', 'Premium mixers', 'Inventory management guide']
     },
     {
-      id: 'couples-night-pack',
-      name: 'Couples Night Pack',
-      description: 'Wine + chocolates for a romantic evening.',
+      id: 'bar-premium',
+      name: 'Premium Bar Collection',
+      description: 'High-end spirits and premium wines for upscale bars and lounges.',
       items: [
-        { category: 'wine', tier: 'premium', name: 'Premium Wine' },
-        { category: 'wine', tier: 'premium', name: 'Sparkling Wine' },
-        { category: 'accessories', tier: 'premium', name: 'Premium Chocolates' }
+        { category: 'spirits', tier: 'premium', name: 'Premium Whiskey' },
+        { category: 'spirits', tier: 'premium', name: 'Premium Gin' },
+        { category: 'wine', tier: 'premium', name: 'Premium Wines' },
+        { category: 'champagne', tier: 'premium', name: 'Champagne Selection' }
       ],
-      price: 95000,
-      originalPrice: 120000,
-      discount: 21,
-      partySize: '2 people',
-      delivery: 'Evening delivery available',
-      includes: ['Premium wines', 'Artisan chocolates', 'Romantic playlist', 'Wine pairing guide']
+      price: 185000,
+      originalPrice: 245000,
+      discount: 24,
+      businessSize: 'Premium Bar/Lounge',
+      delivery: 'Same-day delivery available',
+      includes: ['Premium spirits selection', 'Premium wine collection', 'Champagne selection', 'Bar management guide']
+    },
+    {
+      id: 'hotel-events',
+      name: 'Hotel Events Package',
+      description: 'Complete beverage solution for hotel events, conferences, and corporate functions.',
+      items: [
+        { category: 'wine', tier: 'premium', name: 'Premium Red Wine' },
+        { category: 'wine', tier: 'premium', name: 'Premium White Wine' },
+        { category: 'spirits', tier: 'premium', name: 'Premium Spirits' },
+        { category: 'champagne', tier: 'premium', name: 'Champagne Selection' }
+      ],
+      price: 225000,
+      originalPrice: 295000,
+      discount: 24,
+      businessSize: 'Hotel/Conference Center',
+      delivery: '24-hour delivery',
+      includes: ['Premium wine selection', 'Premium spirits', 'Champagne', 'Event planning guide']
     }
   ];
 
@@ -158,17 +186,28 @@ const ModernShopping = () => {
       case 'price-high':
         filtered.sort((a, b) => b.price - a.price);
         break;
-      case 'rating':
-        filtered.sort((a, b) => b.rating - a.rating);
+      case 'premium':
+        filtered.sort((a, b) => {
+          const aIsPremium = a.subcategory.includes('premium') || a.subcategory.includes('luxury') ? 1 : 0;
+          const bIsPremium = b.subcategory.includes('premium') || b.subcategory.includes('luxury') ? 1 : 0;
+          return bIsPremium - aIsPremium || b.price - a.price;
+        });
         break;
-      case 'popular':
-        filtered.sort((a, b) => b.reviewCount - a.reviewCount);
+      case 'bulk-discount':
+        filtered.sort((a, b) => (b.discount || 0) - (a.discount || 0));
+        break;
+      case 'business-value':
+        filtered.sort((a, b) => {
+          const aValue = a.price * (1 - (a.discount || 0) / 100);
+          const bValue = b.price * (1 - (b.discount || 0) / 100);
+          return aValue - bValue;
+        });
         break;
       case 'featured':
         filtered.sort((a, b) => {
           const aIsPremium = a.subcategory.includes('premium') || a.subcategory.includes('luxury') ? 1 : 0;
           const bIsPremium = b.subcategory.includes('premium') || b.subcategory.includes('luxury') ? 1 : 0;
-          return bIsPremium - aIsPremium || b.rating - a.rating;
+          return bIsPremium - aIsPremium || b.price - a.price;
         });
         break;
       default:
@@ -227,9 +266,9 @@ const ModernShopping = () => {
             {/* Tab Navigation */}
             <div className="flex items-center space-x-2">
               {[
-                { id: 'drinks', label: 'Premium Spirits', icon: Wine },
-                { id: 'bundles', label: 'Curated Bundles', icon: Gift },
-                { id: 'vip', label: 'VIP Exclusive', icon: Crown }
+                { id: 'drinks', label: 'Wholesale Catalog', icon: Wine },
+                { id: 'bundles', label: 'B2B Bundles', icon: Gift },
+                { id: 'vip', label: 'Premium Collection', icon: Crown }
               ].map(tab => (
                 <button
                   key={tab.id}
@@ -285,13 +324,114 @@ const ModernShopping = () => {
               exit={{ opacity: 0, y: -20 }}
               className="space-y-8"
             >
+              {/* Premium Hero Section */}
+              <div className="relative overflow-hidden rounded-3xl shadow-2xl mb-12">
+                {/* Background with gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-red-800 to-purple-900"></div>
+                
+                {/* Animated background elements */}
+                <div className="absolute inset-0 opacity-10">
+                  <div className="absolute top-10 left-10 w-32 h-32 bg-white/20 rounded-full blur-xl animate-pulse"></div>
+                  <div className="absolute bottom-10 right-10 w-24 h-24 bg-red-400/30 rounded-full blur-lg animate-pulse delay-1000"></div>
+                  <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-purple-400/20 rounded-full blur-md animate-pulse delay-500"></div>
+                </div>
+
+                {/* Content */}
+                <div className="relative px-8 py-16 text-center text-white">
+                  <div className="max-w-4xl mx-auto">
+                    {/* Badge */}
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full border border-white/30 mb-6">
+                      <Crown size={16} className="text-yellow-300" />
+                      <span className="text-sm font-medium">Premium B2B Distribution</span>
+                    </div>
+
+                    {/* Main Headline */}
+                    <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+                      <span className="bg-gradient-to-r from-white to-red-200 bg-clip-text text-transparent">
+                        Premium Wine & Spirits
+                      </span>
+                      <br />
+                      <span className="text-white">
+                        for Hospitality Excellence
+                      </span>
+                    </h1>
+
+                    {/* Description */}
+                    <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed">
+                      Curated selection of world-class spirits, premium wines, and exclusive collections. 
+                      Delivered to your business with wholesale pricing and smart inventory management.
+                    </p>
+
+                    {/* Key Benefits */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                      <div className="text-center">
+                        <div className="bg-white/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                          <Truck size={28} />
+                        </div>
+                        <h3 className="font-semibold text-lg mb-2">24-Hour Delivery</h3>
+                        <p className="text-white/80">Fast, reliable delivery to your business</p>
+                      </div>
+                      <div className="text-center">
+                        <div className="bg-white/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                          <DollarSign size={28} />
+                        </div>
+                        <h3 className="font-semibold text-lg mb-2">Wholesale Pricing</h3>
+                        <p className="text-white/80">Bulk discounts and business rates</p>
+                      </div>
+                      <div className="text-center">
+                        <div className="bg-white/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                          <BarChart3 size={28} />
+                        </div>
+                        <h3 className="font-semibold text-lg mb-2">Smart Inventory</h3>
+                        <p className="text-white/80">AI-powered reordering and forecasting</p>
+                      </div>
+                    </div>
+
+                    {/* CTA Buttons */}
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                      <button 
+                        onClick={() => setActiveTab('bundles')}
+                        className="px-8 py-4 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                      >
+                        View B2B Bundles
+                      </button>
+                      <button 
+                        onClick={() => navigate('/conviviapass')}
+                        className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white border border-white/30 font-semibold rounded-xl hover:bg-white/20 transition-all duration-300"
+                      >
+                        Become a Partner
+                      </button>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="grid grid-cols-3 gap-8 mt-12 pt-8 border-t border-white/20">
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-white mb-1">500+</div>
+                        <div className="text-white/70 text-sm">Business Partners</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-white mb-1">25,000+</div>
+                        <div className="text-white/70 text-sm">Bottles Delivered</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-white mb-1">24hr</div>
+                        <div className="text-white/70 text-sm">Delivery Time</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Modern Filters */}
               <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">Discover Your Perfect Spirit</h2>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">B2B Wholesale Wine & Spirits</h2>
+                    <p className="text-gray-600 mt-2">Premium selection, bulk pricing, and smart inventory management for hospitality businesses.</p>
+                  </div>
                   <button
                     onClick={() => setShowFilters(!showFilters)}
-                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-xl hover:shadow-lg transition-all duration-300"
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-red-500 text-white rounded-xl hover:shadow-lg transition-all duration-300"
                   >
                     <SlidersHorizontal size={18} />
                     Filters
@@ -452,9 +592,9 @@ const ModernShopping = () => {
               exit={{ opacity: 0, y: -20 }}
             >
               <div className="text-center mb-12">
-                <h2 className="text-4xl font-bold text-gray-900 mb-4">Curated Bundles</h2>
+                <h2 className="text-4xl font-bold text-gray-900 mb-4">B2B Hospitality Bundles</h2>
                 <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                  Perfect combinations for every occasion. Save up to 24% with our expertly curated bundles.
+                  Curated packages for restaurants, bars, hotels, and events. Wholesale pricing with bulk discounts and smart quantity planning.
                 </p>
               </div>
               
@@ -486,7 +626,7 @@ const ModernShopping = () => {
                       <p className="text-gray-600 mb-6">{bundle.description}</p>
                       
                       <div className="grid grid-cols-2 gap-3 mb-6 text-sm text-gray-700">
-                        <div className="flex items-center gap-2"><Users size={16} /><span>{bundle.partySize}</span></div>
+                        <div className="flex items-center gap-2"><Users size={16} /><span>{bundle.businessSize}</span></div>
                         <div className="flex items-center gap-2"><Truck size={16} /><span>{bundle.delivery}</span></div>
                       </div>
                       
@@ -507,8 +647,8 @@ const ModernShopping = () => {
                           <div className="text-3xl font-extrabold text-gray-900">{formatPrice(bundle.price)}</div>
                         </div>
                         <div className="text-right">
-                          <div className="text-xs text-green-600 font-medium">Best value</div>
-                          <div className="text-[11px] text-gray-500">Save time and money</div>
+                          <div className="text-xs text-green-600 font-medium">Wholesale value</div>
+                          <div className="text-[11px] text-gray-500">B2B pricing & bulk discounts</div>
                         </div>
                       </div>
                       
@@ -545,7 +685,7 @@ const ModernShopping = () => {
             </motion.div>
           )}
 
-          {/* VIP Tab */}
+          {/* Premium Collection Tab */}
           {activeTab === 'vip' && (
             <motion.div
               key="vip"
@@ -553,6 +693,12 @@ const ModernShopping = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
             >
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">Premium Collection</h2>
+                <p className="text-gray-600 max-w-2xl mx-auto">
+                  Exclusive premium spirits and luxury collections for discerning hospitality businesses.
+                </p>
+              </div>
               <VIPDrops />
             </motion.div>
           )}
@@ -568,6 +714,29 @@ const ModernShopping = () => {
           setSelectedBundle(null);
         }} 
       />
+
+      {/* B2B Call to Action */}
+      <div className="bg-gradient-to-r from-gray-900 to-purple-900 rounded-3xl shadow-2xl p-12 text-center text-white mb-8">
+        <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Scale Your Beverage Business?</h2>
+        <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
+          Join hundreds of hospitality businesses already using Convivia24 for wholesale wine & spirits distribution. 
+          Get started with bulk pricing, smart inventory, and 24-hour delivery.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <button 
+            onClick={() => navigate('/business-register')}
+            className="px-8 py-4 bg-gradient-to-r from-purple-600 to-red-600 text-white font-semibold rounded-xl hover:from-purple-700 hover:to-red-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+          >
+            Become a B2B Partner
+          </button>
+          <button 
+            onClick={() => navigate('/conviviapass')}
+            className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white border border-white/30 font-semibold rounded-xl hover:bg-white/20 transition-all duration-300"
+          >
+            View Partnership Plans
+          </button>
+        </div>
+      </div>
 
       {/* Notification */}
       <Notification

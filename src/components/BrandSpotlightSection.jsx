@@ -14,7 +14,7 @@ const BrandSpotlightSection = ({ onClose }) => {
         name: 'The Garden Terrace',
         logo: '/images/brands/restaurant1.jpg',
         description: 'A premium dining experience offering a fusion of continental and local dishes in an elegant setting.',
-        location: 'Lagos, Nigeria',
+        location: 'Premium Location',
         rating: 4.8,
         specialOffer: '15% off for Convivia24 event bookings',
         highlight: true
@@ -46,7 +46,7 @@ const BrandSpotlightSection = ({ onClose }) => {
         name: 'Royal Oak Winery',
         logo: '/images/brands/beverage1.jpg',
         description: 'Premium wines sourced from vineyards around the world, perfect for sophisticated celebrations.',
-        location: 'Lagos, Nigeria',
+        location: 'Premium Location',
         rating: 4.9,
         specialOffer: 'Free tasting session for event planners',
         highlight: true
@@ -66,7 +66,7 @@ const BrandSpotlightSection = ({ onClose }) => {
         name: 'Tropical Blends',
         logo: '/images/brands/beverage3.jpg',
         description: 'Non-alcoholic premium beverages for inclusive celebrations that everyone can enjoy.',
-        location: 'Port Harcourt, Nigeria',
+        location: 'Premium Location',
         rating: 4.7,
         specialOffer: 'Special pricing for bulk orders',
         highlight: false
@@ -78,7 +78,7 @@ const BrandSpotlightSection = ({ onClose }) => {
         name: 'Elegance Catering',
         logo: '/images/brands/catering1.jpg',
         description: 'Full-service catering for events of all sizes, specializing in fusion cuisine and presentation.',
-        location: 'Abuja, Nigeria',
+        location: 'Premium Location',
         rating: 4.9,
         specialOffer: 'Free dessert station with packages over £2000',
         highlight: true

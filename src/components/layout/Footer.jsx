@@ -51,9 +51,9 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/conviviapass" className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-purple-400 hover:from-red-300 hover:to-purple-300 font-medium transition-colors flex items-center gap-2">
+                <Link to="/conviviapass" className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-600 hover:from-red-300 hover:to-red-500 font-medium transition-colors flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-yellow-300" />
-                  ConviviaPass
+                  Convivia Rewards
                 </Link>
               </li>
             </ul>
@@ -77,7 +77,7 @@ const Footer = () => {
                 <Globe className="h-5 w-5 mt-0.5 text-red-400" />
                 <div>
                   <p>Nigeria Office:</p>
-                  <p>123 Victoria Island, Lagos</p>
+                  <p>Premium Business District</p>
                 </div>
               </div>
               <div className="flex items-start gap-2">

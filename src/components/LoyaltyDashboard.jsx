@@ -53,7 +53,7 @@ const LoyaltyDashboard = ({ isOpen, onClose }) => {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-red-600 p-6 text-white">
+        <div className="bg-gradient-to-r from-red-600 to-red-700 p-6 text-white">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="text-3xl">{loyaltyData.tier.icon}</div>
@@ -155,7 +155,7 @@ const LoyaltyDashboard = ({ isOpen, onClose }) => {
                 {/* Redeem Points */}
                 <div className="bg-white border border-gray-200 rounded-xl p-6">
                   <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                    <Sparkles className="text-purple-500" size={24} />
+                    <Sparkles className="text-red-500" size={24} />
                     Redeem Points
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -198,7 +198,7 @@ const LoyaltyDashboard = ({ isOpen, onClose }) => {
                       key={tier.id}
                       className={`border rounded-xl p-6 ${
                         loyaltyData.tier.id === tier.id 
-                          ? 'border-2 border-purple-500 bg-purple-50' 
+                          ? 'border-2 border-red-500 bg-red-50' 
                           : 'border-gray-200'
                       }`}
                     >
@@ -253,8 +253,8 @@ const LoyaltyDashboard = ({ isOpen, onClose }) => {
                         <div className="font-bold text-lg">Easy Sharing</div>
                         <div className="text-sm text-gray-600">Unique referral codes</div>
                       </div>
-                      <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                        <TrendingUp className="text-purple-600 mx-auto mb-2" size={32} />
+                              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <TrendingUp className="text-red-600 mx-auto mb-2" size={32} />
                         <div className="font-bold text-lg">Real-time Tracking</div>
                         <div className="text-sm text-gray-600">Monitor your earnings</div>
                       </div>
@@ -262,7 +262,7 @@ const LoyaltyDashboard = ({ isOpen, onClose }) => {
 
                     <button 
                       onClick={() => setShowAmbassadorSignup(true)}
-                      className="px-8 py-3 bg-gradient-to-r from-purple-600 to-red-600 text-white font-bold rounded-lg hover:shadow-lg transition-all"
+                      className="px-8 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white font-bold rounded-lg hover:shadow-lg transition-all"
                     >
                       Join Ambassador Program
                     </button>
@@ -285,7 +285,7 @@ const LoyaltyDashboard = ({ isOpen, onClose }) => {
                           <div className="text-sm text-gray-600">Referrals</div>
                         </div>
                         <div className="text-center">
-                          <div className="text-2xl font-bold text-purple-600">{(ambassadorData.commissionRate * 100).toFixed(0)}%</div>
+                          <div className="text-2xl font-bold text-red-600">{(ambassadorData.commissionRate * 100).toFixed(0)}%</div>
                           <div className="text-sm text-gray-600">Commission Rate</div>
                         </div>
                         <div className="text-center">
