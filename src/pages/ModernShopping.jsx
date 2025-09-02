@@ -28,7 +28,8 @@ import {
   Gift,
   Grid,
   List,
-  SlidersHorizontal
+  SlidersHorizontal,
+  CheckCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
@@ -38,6 +39,7 @@ import SimpleDrinkCard from '../components/SimpleDrinkCard';
 import BundleModal from '../components/BundleModal';
 import VIPDrops from '../components/VIPDrops';
 import Notification from '../components/Notification';
+import BusinessRegisterModal from '../components/BusinessRegisterModal';
 
 
 const ModernShopping = () => {
@@ -52,8 +54,9 @@ const ModernShopping = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedBundle, setSelectedBundle] = useState(null);
   const [isBundleModalOpen, setIsBundleModalOpen] = useState(false);
+  const [isBusinessModalOpen, setIsBusinessModalOpen] = useState(false);
   const [notification, setNotification] = useState({ show: false, message: '' });
-  const [activeTab, setActiveTab] = useState('drinks'); // 'drinks', 'bundles', or 'vip'
+  const [activeTab, setActiveTab] = useState('drinks'); // 'drinks' or 'bundles'
   const [showPartyCalculator, setShowPartyCalculator] = useState(false);
   const [partySize, setPartySize] = useState(10);
   const [partyType, setPartyType] = useState('casual');
@@ -103,9 +106,9 @@ const ModernShopping = () => {
         { category: 'wine', tier: 'premium', name: 'House Wines' },
         { category: 'mixers', tier: 'mainstream', name: 'Premium Mixers' }
       ],
-      price: 125000,
-      originalPrice: 165000,
-      discount: 24,
+      price: 485000,
+      originalPrice: 625000,
+      discount: 22,
       businessSize: 'Small-Medium Restaurant',
       delivery: '24-hour delivery',
       includes: ['Premium spirits selection', 'House wine collection', 'Premium mixers', 'Inventory management guide']
@@ -120,8 +123,8 @@ const ModernShopping = () => {
         { category: 'wine', tier: 'premium', name: 'Premium Wines' },
         { category: 'champagne', tier: 'premium', name: 'Champagne Selection' }
       ],
-      price: 185000,
-      originalPrice: 245000,
+      price: 750000,
+      originalPrice: 985000,
       discount: 24,
       businessSize: 'Premium Bar/Lounge',
       delivery: 'Same-day delivery available',
@@ -137,8 +140,8 @@ const ModernShopping = () => {
         { category: 'spirits', tier: 'premium', name: 'Premium Spirits' },
         { category: 'champagne', tier: 'premium', name: 'Champagne Selection' }
       ],
-      price: 225000,
-      originalPrice: 295000,
+      price: 1250000,
+      originalPrice: 1650000,
       discount: 24,
       businessSize: 'Hotel/Conference Center',
       delivery: '24-hour delivery',
@@ -267,8 +270,7 @@ const ModernShopping = () => {
             <div className="flex items-center space-x-2">
               {[
                 { id: 'drinks', label: 'Wholesale Catalog', icon: Wine },
-                { id: 'bundles', label: 'B2B Bundles', icon: Gift },
-                { id: 'vip', label: 'Premium Collection', icon: Crown }
+                { id: 'bundles', label: 'B2B Bundles', icon: Gift }
               ].map(tab => (
                 <button
                   key={tab.id}
@@ -281,11 +283,6 @@ const ModernShopping = () => {
                 >
                   <tab.icon size={18} />
                   {tab.label}
-                  {tab.id === 'vip' && loyaltyData.tier.id === 'gold' && (
-                    <span className="bg-yellow-400 text-black px-2 py-1 rounded-full text-xs font-bold">
-                      NEW
-                    </span>
-                  )}
                 </button>
               ))}
             </div>
@@ -324,149 +321,272 @@ const ModernShopping = () => {
               exit={{ opacity: 0, y: -20 }}
               className="space-y-8"
             >
-              {/* Premium Hero Section */}
-              <div className="relative overflow-hidden rounded-3xl shadow-2xl mb-12">
-                {/* Background with gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-red-800 to-purple-900"></div>
+              {/* Compact Premium Hero Section */}
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                className="relative overflow-hidden rounded-2xl shadow-xl mb-8"
+              >
+                {/* Background with red gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-br from-red-600 via-red-700 to-red-800"></div>
                 
                 {/* Animated background elements */}
-                <div className="absolute inset-0 opacity-10">
-                  <div className="absolute top-10 left-10 w-32 h-32 bg-white/20 rounded-full blur-xl animate-pulse"></div>
-                  <div className="absolute bottom-10 right-10 w-24 h-24 bg-red-400/30 rounded-full blur-lg animate-pulse delay-1000"></div>
-                  <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-purple-400/20 rounded-full blur-md animate-pulse delay-500"></div>
+                <div className="absolute inset-0 opacity-20">
+                  <motion.div 
+                    animate={{ 
+                      scale: [1, 1.2, 1],
+                      x: [0, 30, 0],
+                      y: [0, -20, 0]
+                    }}
+                    transition={{ 
+                      duration: 8,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                    className="absolute top-4 right-4 w-24 h-24 bg-white/20 rounded-full blur-xl"
+                  />
+                  <motion.div 
+                    animate={{ 
+                      scale: [1.2, 1, 1.2],
+                      x: [0, -20, 0],
+                      y: [0, 15, 0]
+                    }}
+                    transition={{ 
+                      duration: 6,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: 2
+                    }}
+                    className="absolute bottom-4 left-4 w-16 h-16 bg-red-300/30 rounded-full blur-lg"
+                  />
                 </div>
 
                 {/* Content */}
-                <div className="relative px-8 py-16 text-center text-white">
-                  <div className="max-w-4xl mx-auto">
-                    {/* Badge */}
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full border border-white/30 mb-6">
-                      <Crown size={16} className="text-yellow-300" />
-                      <span className="text-sm font-medium">Premium B2B Distribution</span>
-                    </div>
-
-                    {/* Main Headline */}
-                    <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-                      <span className="bg-gradient-to-r from-white to-red-200 bg-clip-text text-transparent">
-                        Premium Wine & Spirits
-                      </span>
-                      <br />
-                      <span className="text-white">
-                        for Hospitality Excellence
-                      </span>
-                    </h1>
-
-                    {/* Description */}
-                    <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed">
-                      Curated selection of world-class spirits, premium wines, and exclusive collections. 
-                      Delivered to your business with wholesale pricing and smart inventory management.
-                    </p>
-
-                    {/* Key Benefits */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                      <div className="text-center">
-                        <div className="bg-white/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                          <Truck size={28} />
-                        </div>
-                        <h3 className="font-semibold text-lg mb-2">24-Hour Delivery</h3>
-                        <p className="text-white/80">Fast, reliable delivery to your business</p>
-                      </div>
-                      <div className="text-center">
-                        <div className="bg-white/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                          <DollarSign size={28} />
-                        </div>
-                        <h3 className="font-semibold text-lg mb-2">Wholesale Pricing</h3>
-                        <p className="text-white/80">Bulk discounts and business rates</p>
-                      </div>
-                      <div className="text-center">
-                        <div className="bg-white/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                          <BarChart3 size={28} />
-                        </div>
-                        <h3 className="font-semibold text-lg mb-2">Smart Inventory</h3>
-                        <p className="text-white/80">AI-powered reordering and forecasting</p>
-                      </div>
-                    </div>
-
-                    {/* CTA Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                      <button 
-                        onClick={() => setActiveTab('bundles')}
-                        className="px-8 py-4 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                <div className="relative px-6 py-10 text-white">
+                  <div className="max-w-6xl mx-auto">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                      {/* Left Content */}
+                      <motion.div
+                        initial={{ opacity: 0, x: -50 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.8, delay: 0.2 }}
                       >
-                        View B2B Bundles
-                      </button>
-                      <button 
-                        onClick={() => navigate('/conviviapass')}
-                        className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white border border-white/30 font-semibold rounded-xl hover:bg-white/20 transition-all duration-300"
-                      >
-                        Become a Partner
-                      </button>
-                    </div>
+                        {/* Badge */}
+                        <motion.div 
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.6, delay: 0.4 }}
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full border border-white/30 mb-4"
+                        >
+                          <Crown size={16} className="text-yellow-300" />
+                          <span className="text-sm font-medium">Premium B2B Distribution</span>
+                        </motion.div>
 
-                    {/* Stats */}
-                    <div className="grid grid-cols-3 gap-8 mt-12 pt-8 border-t border-white/20">
-                      <div className="text-center">
-                        <div className="text-3xl font-bold text-white mb-1">500+</div>
-                        <div className="text-white/70 text-sm">Business Partners</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-3xl font-bold text-white mb-1">25,000+</div>
-                        <div className="text-white/70 text-sm">Bottles Delivered</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-3xl font-bold text-white mb-1">24hr</div>
-                        <div className="text-white/70 text-sm">Delivery Time</div>
-                      </div>
+                        {/* Main Headline */}
+                        <motion.h1 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.8, delay: 0.6 }}
+                          className="text-3xl md:text-4xl font-bold mb-4 leading-tight"
+                        >
+                          <span className="bg-gradient-to-r from-white to-red-100 bg-clip-text text-transparent">
+                            Premium Wine & Spirits
+                          </span>
+                          <br />
+                          <span className="text-white text-2xl md:text-3xl">
+                            B2B Marketplace
+                          </span>
+                        </motion.h1>
+
+                        {/* Description */}
+                        <motion.p 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.8, delay: 0.8 }}
+                          className="text-lg text-white/90 mb-6 max-w-lg"
+                        >
+                          Curated selection of world-class spirits and premium wines with wholesale pricing and smart inventory management.
+                        </motion.p>
+
+                        {/* CTA Buttons */}
+                        <motion.div 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.8, delay: 1.0 }}
+                          className="flex justify-center"
+                        >
+                          <motion.button 
+                            onClick={() => setActiveTab('bundles')}
+                            whileHover={{ scale: 1.05, y: -2 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="px-8 py-3 bg-white text-red-600 font-semibold rounded-xl hover:bg-gray-100 transition-all duration-300 shadow-lg"
+                          >
+                            View B2B Bundles
+                          </motion.button>
+                        </motion.div>
+                      </motion.div>
+                      
+                      {/* Right Stats Grid */}
+                      <motion.div 
+                        initial={{ opacity: 0, x: 50 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.8, delay: 0.4 }}
+                        className="grid grid-cols-2 gap-4"
+                      >
+                        {[
+                          { value: "500+", label: "Business Partners", icon: Users, delay: 0.6 },
+                          { value: "25K+", label: "Bottles Delivered", icon: Package, delay: 0.8 },
+                          { value: "24hr", label: "Delivery Time", icon: Truck, delay: 1.0 },
+                          { value: "150+", label: "Premium Brands", icon: Crown, delay: 1.2 }
+                        ].map((stat, index) => (
+                          <motion.div
+                            key={index}
+                            initial={{ opacity: 0, y: 30, scale: 0.8 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            transition={{ duration: 0.6, delay: stat.delay }}
+                            whileHover={{ 
+                              scale: 1.05, 
+                              y: -5,
+                              transition: { duration: 0.2 }
+                            }}
+                            className="text-center p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 hover:border-white/40 transition-all duration-300"
+                          >
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              transition={{ duration: 0.5, delay: stat.delay + 0.2, type: "spring" }}
+                              className="flex justify-center mb-2"
+                            >
+                              <stat.icon size={20} className="text-white" />
+                            </motion.div>
+                            <motion.div 
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ duration: 0.5, delay: stat.delay + 0.4 }}
+                              className="text-xl font-bold text-white mb-1"
+                            >
+                              {stat.value}
+                            </motion.div>
+                            <motion.div 
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ duration: 0.5, delay: stat.delay + 0.6 }}
+                              className="text-white/70 text-xs"
+                            >
+                              {stat.label}
+                            </motion.div>
+                          </motion.div>
+                        ))}
+                      </motion.div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Modern Filters */}
-              <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100"
+              >
                 <div className="flex items-center justify-between mb-6">
-                  <div>
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.6, delay: 0.4 }}
+                  >
                     <h2 className="text-2xl font-bold text-gray-900">B2B Wholesale Wine & Spirits</h2>
                     <p className="text-gray-600 mt-2">Premium selection, bulk pricing, and smart inventory management for hospitality businesses.</p>
-                  </div>
-                  <button
+                  </motion.div>
+                  <motion.button
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.4, delay: 0.6 }}
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => setShowFilters(!showFilters)}
-                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-red-500 text-white rounded-xl hover:shadow-lg transition-all duration-300"
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:shadow-lg transition-all duration-300"
                   >
-                    <SlidersHorizontal size={18} />
+                    <motion.div
+                      animate={{ rotate: showFilters ? 180 : 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <SlidersHorizontal size={18} />
+                    </motion.div>
                     Filters
-                  </button>
+                  </motion.button>
                 </div>
 
                 {/* Search Bar */}
-                <div className="relative mb-6">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                  <input
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.8 }}
+                  className="relative mb-6"
+                >
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.3, delay: 1.0 }}
+                  >
+                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                  </motion.div>
+                  <motion.input
+                    initial={{ width: "50%" }}
+                    animate={{ width: "100%" }}
+                    transition={{ duration: 0.6, delay: 0.9 }}
                     type="text"
                     placeholder="Search spirits, brands, or occasions..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-lg"
+                    className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-lg transition-all duration-300 hover:shadow-md focus:shadow-lg"
                   />
-                </div>
+                </motion.div>
 
                 {/* Category Pills */}
-                <div className="flex flex-wrap gap-3 mb-6">
-                  {categories.map(category => (
-                    <button
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5, delay: 1.1 }}
+                  className="flex flex-wrap gap-3 mb-6"
+                >
+                  {categories.map((category, index) => (
+                    <motion.button
                       key={category.id}
+                      initial={{ opacity: 0, y: 20, scale: 0.8 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      transition={{ 
+                        duration: 0.4, 
+                        delay: 1.2 + (index * 0.1),
+                        type: "spring",
+                        stiffness: 200
+                      }}
+                      whileHover={{ 
+                        scale: 1.05, 
+                        y: -2,
+                        transition: { duration: 0.2 }
+                      }}
+                      whileTap={{ scale: 0.95 }}
                       onClick={() => setSelectedCategory(category.id)}
                       className={`px-6 py-3 rounded-2xl font-medium flex items-center gap-2 transition-all duration-300 ${
                         selectedCategory === category.id
-                          ? `bg-gradient-to-r ${category.color} text-white shadow-lg transform scale-105`
+                          ? 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
-                      {category.icon}
+                      <motion.div
+                        initial={{ rotate: 0 }}
+                        animate={{ rotate: selectedCategory === category.id ? 360 : 0 }}
+                        transition={{ duration: 0.5 }}
+                      >
+                        {category.icon}
+                      </motion.div>
                       {category.name}
-                    </button>
+                    </motion.button>
                   ))}
-                </div>
+                </motion.div>
 
                 {/* Filters Panel */}
                 <AnimatePresence>
@@ -531,35 +651,68 @@ const ModernShopping = () => {
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </div>
+              </motion.div>
 
               {/* Results Summary */}
-              <div className="flex items-center justify-between">
-                <div className="text-gray-600">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="flex items-center justify-between"
+              >
+                <motion.div 
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.5 }}
+                  className="text-gray-600"
+                >
                   Showing <span className="font-semibold text-gray-900">{filteredDrinks.length}</span> premium spirits
-                </div>
-                <div className="text-sm text-gray-500">
+                </motion.div>
+                <motion.div 
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.7 }}
+                  className="text-sm text-gray-500"
+                >
                   {selectedCategory !== 'all' && `Filtered by ${categories.find(c => c.id === selectedCategory)?.name}`}
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
 
               {/* Drinks Grid */}
-              <div className={`grid gap-8 ${
-                viewMode === 'grid' 
-                  ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
-                  : 'grid-cols-1'
-              }`}>
-                <AnimatePresence>
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                className={`grid gap-8 ${
+                  viewMode === 'grid' 
+                    ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
+                    : 'grid-cols-1'
+                }`}
+              >
+                <AnimatePresence mode="popLayout">
                   {filteredDrinks.map((drink, index) => (
-                    <SimpleDrinkCard
+                    <motion.div
                       key={drink.id}
-                      drink={drink}
-                      onAddToCart={handleAddToCart}
-                      featured={index < 3 && sortBy === 'featured'}
-                    />
+                      initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -30, scale: 0.9 }}
+                      transition={{ 
+                        duration: 0.4, 
+                        delay: index * 0.05,
+                        type: "spring",
+                        stiffness: 100
+                      }}
+                      layout
+                    >
+                      <SimpleDrinkCard
+                        drink={drink}
+                        onAddToCart={handleAddToCart}
+                        featured={index < 3 && sortBy === 'featured'}
+                      />
+                    </motion.div>
                   ))}
                 </AnimatePresence>
-              </div>
+              </motion.div>
 
               {/* No Results */}
               {filteredDrinks.length === 0 && (
@@ -583,86 +736,220 @@ const ModernShopping = () => {
             </motion.div>
           )}
 
-          {/* Bundles Tab */}
+          {/* Enhanced B2B Bundles Tab */}
           {activeTab === 'bundles' && (
             <motion.div
               key="bundles"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.6 }}
             >
-              <div className="text-center mb-12">
-                <h2 className="text-4xl font-bold text-gray-900 mb-4">B2B Hospitality Bundles</h2>
-                <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                  Curated packages for restaurants, bars, hotels, and events. Wholesale pricing with bulk discounts and smart quantity planning.
-                </p>
-              </div>
+              {/* Hero Section for Bundles */}
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="text-center mb-16"
+              >
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 0.4 }}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-50 to-red-100 rounded-full border border-red-200 mb-6"
+                >
+                  <Package className="h-5 w-5 text-red-500" />
+                  <span className="text-sm font-semibold text-red-700">Premium Business Solutions</span>
+                </motion.div>
+                
+                <motion.h2 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.6 }}
+                  className="text-5xl font-bold text-gray-900 mb-6"
+                >
+                  <span className="bg-gradient-to-r from-red-600 to-red-500 bg-clip-text text-transparent">
+                    B2B Hospitality Bundles
+                  </span>
+                </motion.h2>
+                
+                <motion.p 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.8 }}
+                  className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed"
+                >
+                  Curated premium packages designed for hospitality businesses. Get wholesale pricing, bulk discounts, 
+                  and comprehensive solutions for restaurants, bars, hotels, and events.
+                </motion.p>
+
+                {/* Bundle Stats */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 1.0 }}
+                  className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-12 max-w-4xl mx-auto"
+                >
+                  {[
+                    { value: "3", label: "Bundle Types", icon: "📦" },
+                    { value: "22-24%", label: "Wholesale Discount", icon: "💰" },
+                    { value: "24hr", label: "Delivery Time", icon: "🚚" },
+                    { value: "Premium", label: "Quality Guarantee", icon: "⭐" }
+                  ].map((stat, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.5, delay: 1.2 + (index * 0.1) }}
+                      className="text-center p-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300"
+                    >
+                      <div className="text-3xl mb-2">{stat.icon}</div>
+                      <div className="text-2xl font-bold text-red-600 mb-1">{stat.value}</div>
+                      <div className="text-sm text-gray-600">{stat.label}</div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </motion.div>
               
-              {/* Bundles Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {/* Enhanced Bundles Grid */}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 1.0 }}
+                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8"
+              >
                 {bundles.map((bundle, index) => (
                   <motion.div
                     key={bundle.id}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="bg-white rounded-3xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-500 group border border-gray-100"
+                    initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ 
+                      delay: 1.2 + (index * 0.2),
+                      duration: 0.6,
+                      type: "spring",
+                      stiffness: 100
+                    }}
+                    whileHover={{ 
+                      y: -15, 
+                      scale: 1.03,
+                      transition: { duration: 0.3 }
+                    }}
+                    className="bg-white rounded-3xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-500 group border border-gray-100 relative"
                   >
-                    <div className="h-40 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="text-sm text-gray-600">Bundle Preview</div>
-                        <div className="text-xs text-gray-400">{bundle.items.map(i => i.name).slice(0,3).join(' • ')}</div>
+                    {/* Premium Badge */}
+                    <div className="absolute top-4 right-4 z-10">
+                      <div className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+                        -{bundle.discount}% OFF
                       </div>
                     </div>
 
-                    <div className="p-8">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-2xl font-bold text-gray-900">{bundle.name}</h3>
-                        <div className="bg-red-500/90 text-white px-3 py-1 rounded-full text-sm font-bold">
-                          -{bundle.discount}% OFF
+                    {/* Enhanced Header with Gradient */}
+                    <div className="h-48 bg-gradient-to-br from-red-50 via-red-100 to-red-200 relative overflow-hidden">
+                      {/* Background Pattern */}
+                      <div className="absolute inset-0 opacity-10">
+                        <div className="absolute top-4 right-4 w-24 h-24 bg-red-300 rounded-full blur-xl"></div>
+                        <div className="absolute bottom-4 left-4 w-16 h-16 bg-red-400 rounded-full blur-lg"></div>
+                      </div>
+                      
+                      <div className="relative h-full flex items-center justify-center px-4">
+                        <div className="text-center">
+                          <div className="text-3xl md:text-4xl mb-3">🍷</div>
+                          <div className="text-base md:text-lg font-semibold text-red-800 mb-2 line-clamp-2">{bundle.name}</div>
+                          <div className="text-xs md:text-sm text-red-700 bg-white/60 backdrop-blur-sm px-2 md:px-3 py-1 rounded-full">
+                            Premium Selection
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-4 md:p-6 lg:p-8">
+                      {/* Bundle Title & Business Type */}
+                      <div className="mb-4 md:mb-6">
+                        <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 mb-2 line-clamp-2">{bundle.name}</h3>
+                        <div className="flex items-center gap-2 text-xs md:text-sm text-gray-600">
+                          <Building size={14} className="text-red-500 flex-shrink-0" />
+                          <span className="truncate">{bundle.businessSize}</span>
                         </div>
                       </div>
                       
-                      <p className="text-gray-600 mb-6">{bundle.description}</p>
+                      {/* Enhanced Description */}
+                      <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6 leading-relaxed line-clamp-3">{bundle.description}</p>
                       
-                      <div className="grid grid-cols-2 gap-3 mb-6 text-sm text-gray-700">
-                        <div className="flex items-center gap-2"><Users size={16} /><span>{bundle.businessSize}</span></div>
-                        <div className="flex items-center gap-2"><Truck size={16} /><span>{bundle.delivery}</span></div>
+                      {/* Key Features Grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-4 md:mb-6">
+                        <div className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-gray-50 rounded-lg">
+                          <div className="w-8 h-8 md:w-10 md:h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <Users size={14} className="text-red-600 md:w-[18px] md:h-[18px]" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-xs text-gray-500">Business Size</div>
+                            <div className="text-xs md:text-sm font-medium text-gray-900 truncate">{bundle.businessSize}</div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-gray-50 rounded-lg">
+                          <div className="w-8 h-8 md:w-10 md:h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <Truck size={14} className="text-green-600 md:w-[18px] md:h-[18px]" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-xs text-gray-500">Delivery</div>
+                            <div className="text-xs md:text-sm font-medium text-gray-900 truncate">{bundle.delivery}</div>
+                          </div>
+                        </div>
                       </div>
                       
-                      <div className="mb-6">
-                        <div className="text-xs text-gray-500 mb-2">Includes</div>
-                        <div className="flex flex-wrap gap-2">
-                          {bundle.includes.slice(0, 4).map((item, idx) => (
-                            <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-3 py-1 rounded-full">
-                              {item}
-                            </span>
+                      {/* What's Included */}
+                      <div className="mb-4 md:mb-6">
+                        <div className="text-xs md:text-sm font-semibold text-gray-700 mb-2 md:mb-3 flex items-center gap-2">
+                          <CheckCircle size={14} className="text-green-500 flex-shrink-0" />
+                          What's Included
+                        </div>
+                        <div className="grid grid-cols-1 gap-1 md:gap-2">
+                          {bundle.includes.map((item, idx) => (
+                            <div key={idx} className="flex items-start gap-2 text-xs md:text-sm text-gray-600">
+                              <div className="w-1.5 h-1.5 bg-red-400 rounded-full mt-1.5 flex-shrink-0"></div>
+                              <span className="break-words">{item}</span>
+                            </div>
                           ))}
                         </div>
                       </div>
                       
-                      <div className="flex items-end justify-between mb-6">
-                        <div>
-                          <div className="text-sm text-gray-400 line-through">{formatPrice(bundle.originalPrice)}</div>
-                          <div className="text-3xl font-extrabold text-gray-900">{formatPrice(bundle.price)}</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-xs text-green-600 font-medium">Wholesale value</div>
-                          <div className="text-[11px] text-gray-500">B2B pricing & bulk discounts</div>
+                      {/* Enhanced Pricing Section */}
+                      <div className="bg-gradient-to-r from-gray-50 to-red-50 rounded-xl p-3 md:p-4 mb-4 md:mb-6 border border-red-100">
+                        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 md:gap-0">
+                          <div className="flex-1">
+                            <div className="text-xs md:text-sm text-gray-500 mb-1">Original Price</div>
+                            <div className="text-sm md:text-lg text-gray-400 line-through">{formatPrice(bundle.originalPrice)}</div>
+                          </div>
+                          <div className="text-center flex-1">
+                            <div className="text-xs text-green-600 font-medium mb-1">Wholesale Price</div>
+                            <div className="text-xl md:text-2xl lg:text-3xl font-extrabold text-red-600">{formatPrice(bundle.price)}</div>
+                            <div className="text-xs text-gray-500">B2B Exclusive</div>
+                          </div>
+                          <div className="text-center md:text-right flex-1">
+                            <div className="text-xs md:text-sm text-green-600 font-semibold mb-1">Save {formatPrice(bundle.originalPrice - bundle.price)}</div>
+                            <div className="text-xs text-gray-500">Bulk discount applied</div>
+                          </div>
                         </div>
                       </div>
                       
-                      <div className="flex gap-3">
-                        <button 
+                      {/* Enhanced Action Buttons */}
+                      <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
+                        <motion.button 
+                          whileHover={{ scale: 1.02, y: -2 }}
+                          whileTap={{ scale: 0.98 }}
                           onClick={() => {
                             setSelectedBundle(bundle);
                             setIsBundleModalOpen(true);
                           }}
-                          className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-xl font-medium transition-colors"
+                          className="flex-1 px-3 md:px-4 py-2.5 md:py-3 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 text-sm md:text-base"
                         >
-                          Details
-                        </button>
-                        <button 
+                          <Eye size={14} className="md:w-4 md:h-4" />
+                          <span className="truncate">View Details</span>
+                        </motion.button>
+                        <motion.button 
+                          whileHover={{ scale: 1.02, y: -2 }}
+                          whileTap={{ scale: 0.98 }}
                           onClick={() => handleAddToCart({
                             id: `bundle-${bundle.id}`,
                             name: bundle.name,
@@ -673,35 +960,86 @@ const ModernShopping = () => {
                             tier: 'premium',
                             discount: bundle.discount
                           })}
-                          className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition-colors"
+                          className="flex-1 px-3 md:px-4 py-2.5 md:py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl text-sm md:text-base"
                         >
-                          Add Bundle
-                        </button>
+                          <ShoppingCart size={14} className="md:w-4 md:h-4" />
+                          <span className="truncate">Add to Cart</span>
+                        </motion.button>
                       </div>
                     </div>
                   </motion.div>
                 ))}
-              </div>
+              </motion.div>
+
+              {/* Bundle CTA Section */}
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 1.5 }}
+                className="mt-16 text-center"
+              >
+                <div className="bg-gradient-to-r from-gray-50 to-red-50 rounded-3xl p-12 border border-red-100">
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.6, delay: 1.7 }}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-red-100 rounded-full border border-red-200 mb-6"
+                  >
+                    <Sparkles className="h-5 w-5 text-red-500" />
+                    <span className="text-sm font-semibold text-red-700">Custom Solutions</span>
+                  </motion.div>
+                  
+                  <motion.h3 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 1.9 }}
+                    className="text-3xl font-bold text-gray-900 mb-4"
+                  >
+                    Need a Custom Bundle?
+                  </motion.h3>
+                  
+                  <motion.p 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 2.1 }}
+                    className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto"
+                  >
+                    Our team can create personalized beverage packages tailored to your specific business needs, 
+                    event requirements, or budget constraints.
+                  </motion.p>
+                  
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 2.3 }}
+                    className="flex flex-col sm:flex-row gap-4 justify-center"
+                  >
+                    <motion.button 
+                      whileHover={{ scale: 1.05, y: -2 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setIsBusinessModalOpen(true)}
+                      className="px-8 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-300 shadow-lg hover:shadow-xl"
+                    >
+                      <Building className="inline-block mr-2" size={20} />
+                      Contact Sales Team
+                    </motion.button>
+                    
+                    <motion.button 
+                      whileHover={{ scale: 1.05, y: -2 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setActiveTab('drinks')}
+                      className="px-8 py-4 bg-white text-red-600 border-2 border-red-600 font-semibold rounded-xl hover:bg-red-50 transition-all duration-300"
+                    >
+                      <Wine className="inline-block mr-2" size={20} />
+                      Browse Individual Products
+                    </motion.button>
+                  </motion.div>
+                </div>
+              </motion.div>
             </motion.div>
           )}
 
-          {/* Premium Collection Tab */}
-          {activeTab === 'vip' && (
-            <motion.div
-              key="vip"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-            >
-              <div className="text-center mb-12">
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">Premium Collection</h2>
-                <p className="text-gray-600 max-w-2xl mx-auto">
-                  Exclusive premium spirits and luxury collections for discerning hospitality businesses.
-                </p>
-              </div>
-              <VIPDrops />
-            </motion.div>
-          )}
+
         </AnimatePresence>
       </div>
 
@@ -715,28 +1053,59 @@ const ModernShopping = () => {
         }} 
       />
 
+      <BusinessRegisterModal 
+        isOpen={isBusinessModalOpen}
+        onClose={() => setIsBusinessModalOpen(false)}
+      />
+
       {/* B2B Call to Action */}
-      <div className="bg-gradient-to-r from-gray-900 to-purple-900 rounded-3xl shadow-2xl p-12 text-center text-white mb-8">
-        <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Scale Your Beverage Business?</h2>
-        <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="bg-gradient-to-r from-gray-900 to-red-900 rounded-3xl shadow-2xl p-12 text-center text-white mb-8"
+      >
+        <motion.h2 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="text-3xl md:text-4xl font-bold mb-6"
+        >
+          Ready to Scale Your Beverage Business?
+        </motion.h2>
+        <motion.p 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto"
+        >
           Join hundreds of hospitality businesses already using Convivia24 for wholesale wine & spirits distribution. 
           Get started with bulk pricing, smart inventory, and 24-hour delivery.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button 
-            onClick={() => navigate('/business-register')}
-            className="px-8 py-4 bg-gradient-to-r from-purple-600 to-red-600 text-white font-semibold rounded-xl hover:from-purple-700 hover:to-red-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+        </motion.p>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+          className="flex flex-col sm:flex-row gap-4 justify-center"
+        >
+          <motion.button 
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsBusinessModalOpen(true)}
+            className="px-8 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-300 shadow-lg hover:shadow-xl"
           >
             Become a B2B Partner
-          </button>
-          <button 
+          </motion.button>
+          <motion.button 
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => navigate('/conviviapass')}
             className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white border border-white/30 font-semibold rounded-xl hover:bg-white/20 transition-all duration-300"
           >
             View Partnership Plans
-          </button>
-        </div>
-      </div>
+          </motion.button>
+        </motion.div>
+      </motion.div>
 
       {/* Notification */}
       <Notification

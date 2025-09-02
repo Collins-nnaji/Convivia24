@@ -106,7 +106,7 @@ const ConviviaPass = () => {
 
   const currentTier = tiers.find(tier => tier.id === membershipTier);
   const nextTier = membershipTier === 'vip' ? null : tiers.find(tier => tier.id === (membershipTier === 'standard' ? 'premium' : 'vip'));
-
+  
   // Calculate progress to next tier
   const calculateProgress = () => {
     if (membershipTier === 'vip') return 100;
@@ -173,14 +173,14 @@ const ConviviaPass = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-black">
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         {/* Enhanced Background decorations */}
         <motion.div 
           animate={{ 
             scale: [1, 1.2, 1],
-            opacity: [0.1, 0.15, 0.1]
+            opacity: [0.05, 0.08, 0.05]
           }}
           transition={{ 
             duration: 8,
@@ -192,14 +192,14 @@ const ConviviaPass = () => {
         <motion.div 
           animate={{ 
             scale: [1.2, 1, 1.2],
-            opacity: [0.1, 0.15, 0.1]
+            opacity: [0.05, 0.08, 0.05]
           }}
           transition={{ 
             duration: 10,
             repeat: Infinity,
             ease: "easeInOut"
           }}
-          className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500 rounded-full filter blur-3xl -z-10"
+          className="absolute bottom-0 left-0 w-96 h-96 bg-red-100 rounded-full filter blur-3xl -z-10"
         />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -209,19 +209,19 @@ const ConviviaPass = () => {
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-red-500/20 to-purple-500/20 backdrop-blur-sm border border-white/20 mb-6"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-red-50 to-red-100 border border-red-200 mb-6"
               >
                 <Sparkles className="h-4 w-4 text-red-400" />
-                <span className="text-sm font-medium text-white">Reward Points System</span>
+                <span className="text-sm font-medium text-red-700">Reward Points System</span>
               </motion.div>
               
               <motion.h1 
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.1 }}
-                className="text-5xl md:text-6xl font-bold mb-6"
+                className="text-5xl md:text-6xl font-bold mb-6 text-gray-900"
               >
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-400 to-purple-400">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-600 to-red-500">
                   Convivia24 Rewards
                 </span>
               </motion.h1>
@@ -230,12 +230,12 @@ const ConviviaPass = () => {
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                className="text-xl text-white/80 mb-8 max-w-xl"
+                className="text-xl text-gray-600 mb-8 max-w-xl"
               >
                 Your reward points accumulate automatically with every business purchase. Unlock exclusive discounts, 
                 priority access, and premium benefits as you climb the loyalty ladder through your spending.
               </motion.p>
-
+              
               {/* Quick Stats */}
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
@@ -243,19 +243,19 @@ const ConviviaPass = () => {
                 transition={{ duration: 0.6, delay: 0.3 }}
                 className="grid grid-cols-3 gap-4 mb-8"
               >
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center border border-white/20">
-                  <div className="text-2xl font-bold text-red-400">{userPoints}</div>
-                  <div className="text-white/70 text-sm">Total Points</div>
+                <div className="bg-white rounded-lg p-4 text-center border border-gray-200 shadow-sm">
+                  <div className="text-2xl font-bold text-red-600">{userPoints}</div>
+                  <div className="text-gray-600 text-sm">Total Points</div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center border border-white/20">
-                  <div className="text-2xl font-bold text-purple-400">{currentTier.name}</div>
-                  <div className="text-white/70 text-sm">Current Tier</div>
+                <div className="bg-white rounded-lg p-4 text-center border border-gray-200 shadow-sm">
+                  <div className="text-2xl font-bold text-red-500">{currentTier.name}</div>
+                  <div className="text-gray-600 text-sm">Current Tier</div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center border border-white/20">
-                  <div className="text-2xl font-bold text-green-400">
+                <div className="bg-white rounded-lg p-4 text-center border border-gray-200 shadow-sm">
+                  <div className="text-2xl font-bold text-green-600">
                     {nextTier ? nextTier.pointsRequired - userPoints : 'MAX'}
                   </div>
-                  <div className="text-white/70 text-sm">To Next Tier</div>
+                  <div className="text-gray-600 text-sm">To Next Tier</div>
                 </div>
               </motion.div>
             </div>
@@ -276,20 +276,20 @@ const ConviviaPass = () => {
                 }}>
                   {/* Front of the Card */}
                   <div className="absolute w-full h-full backface-hidden rounded-2xl overflow-hidden shadow-2xl shadow-purple-900/50">
-                    {/* Card Background */}
+                  {/* Card Background */}
                     <div className={`absolute inset-0 bg-gradient-to-br ${
                       membershipTier === 'standard' ? 'from-blue-600 to-indigo-800' :
                       membershipTier === 'premium' ? 'from-[#FF0000] to-rose-600' :
                       'from-amber-400 to-amber-700'
                     }`}>
-                      {/* Background Pattern */}
-                      <div className="absolute inset-0 opacity-30">
-                        <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1)_0%,rgba(0,0,0,0)_60%)]"></div>
-                        <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-white/10 filter blur-3xl"></div>
-                      </div>
-                      
+                    {/* Background Pattern */}
+                    <div className="absolute inset-0 opacity-30">
+                      <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1)_0%,rgba(0,0,0,0)_60%)]"></div>
+                      <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-white/10 filter blur-3xl"></div>
+                    </div>
+                    
                       {/* Membership Badge */}
-                      <div className="absolute top-6 right-6">
+                    <div className="absolute top-6 right-6">
                         <motion.div 
                           animate={{ rotate: [0, 10, -10, 0] }}
                           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -311,31 +311,31 @@ const ConviviaPass = () => {
                             </div>
                           )}
                         </motion.div>
-                      </div>
                     </div>
-                    
-                    {/* Card Content */}
-                    <div className="relative p-6 h-full flex flex-col justify-between">
-                      <div className="flex justify-between items-start">
-                        <div>
+                  </div>
+                  
+                  {/* Card Content */}
+                  <div className="relative p-6 h-full flex flex-col justify-between">
+                    <div className="flex justify-between items-start">
+                      <div>
                           <h3 className="text-xl font-bold text-white">Convivia24 Reward Card</h3>
                           <p className="text-white/70 text-sm capitalize">{membershipTier} Business Member</p>
-                        </div>
+                      </div>
                         <motion.div 
                           animate={{ rotate: [0, 360] }}
                           transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                           className="rounded-full bg-white/20 backdrop-blur-xl p-2"
                         >
-                          <Sparkles className="h-6 w-6 text-white" />
+                        <Sparkles className="h-6 w-6 text-white" />
                         </motion.div>
-                      </div>
-                      
-                      <div className="pt-4">
-                        {/* Barcode/Card Number */}
-                        <div className="mb-4">
-                          <div className="bg-white/10 backdrop-blur-xl p-3 rounded-lg">
-                            <div className="flex justify-between items-center">
-                              <div className="flex space-x-1">
+                    </div>
+                    
+                    <div className="pt-4">
+                      {/* Barcode/Card Number */}
+                      <div className="mb-4">
+                        <div className="bg-white/10 backdrop-blur-xl p-3 rounded-lg">
+                          <div className="flex justify-between items-center">
+                            <div className="flex space-x-1">
                                 {Array.from({ length: 8 }).map((_, i) => (
                                   <motion.div 
                                     key={i}
@@ -344,34 +344,34 @@ const ConviviaPass = () => {
                                     className={`w-${Math.random() > 0.5 ? '0.5' : '1'} bg-white/80`}
                                   />
                                 ))}
-                              </div>
-                              <div className="text-white/80 text-xs">
+                            </div>
+                            <div className="text-white/80 text-xs">
                                 {[...Array(4)].map((_, i) => (
                                   <span key={i}>{Math.floor(1000 + Math.random() * 9000)} </span>
                                 ))}
-                              </div>
                             </div>
                           </div>
                         </div>
-                        
-                        <div className="flex justify-between">
-                          <div>
+                      </div>
+                      
+                      <div className="flex justify-between">
+                        <div>
                             <p className="text-white/60 text-xs mb-1">BUSINESS NAME</p>
                             <p className="text-white font-medium">PREMIUM VENUES LTD</p>
-                          </div>
-                          <div>
+                        </div>
+                        <div>
                             <p className="text-white/60 text-xs mb-1">TIER LEVEL</p>
                             <p className="text-white font-medium uppercase">{membershipTier}</p>
-                          </div>
-                          <div>
-                            <p className="text-white/60 text-xs mb-1">EXPIRES</p>
-                            <p className="text-white font-medium">12/26</p>
-                          </div>
                         </div>
+                        <div>
+                            <p className="text-white/60 text-xs mb-1">EXPIRES</p>
+                          <p className="text-white font-medium">12/26</p>
+                          </div>
                       </div>
                     </div>
                   </div>
-                  
+                </div>
+                
                   {/* Back of the Card */}
                   <div className="absolute w-full h-full backface-hidden rounded-2xl overflow-hidden shadow-2xl shadow-purple-900/50" style={{ transform: 'rotateY(180deg)' }}>
                     {/* Card Background */}
@@ -433,19 +433,19 @@ const ConviviaPass = () => {
       
       {/* Membership Dashboard Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="bg-black/30 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden">
-          <div className="flex border-b border-white/10 overflow-x-auto">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
+          <div className="flex border-b border-gray-200 overflow-x-auto bg-gray-50">
             {tabs.map((tab) => (
-              <button 
+            <button 
                 key={tab.id}
                 className={`px-6 py-4 text-sm font-medium flex items-center gap-2 whitespace-nowrap ${
-                  activeTab === tab.id ? 'text-white border-b-2 border-red-500' : 'text-white/60 hover:text-white/80'
+                  activeTab === tab.id ? 'text-red-600 border-b-2 border-red-500 bg-white' : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
                 }`}
                 onClick={() => setActiveTab(tab.id)}
               >
                 {tab.icon}
                 {tab.name}
-              </button>
+            </button>
             ))}
           </div>
           
@@ -457,47 +457,47 @@ const ConviviaPass = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <h2 className="text-2xl font-bold mb-8">Your Business Benefits</h2>
+                <h2 className="text-2xl font-bold mb-8 text-gray-900">Your Business Benefits</h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {[
                     {
-                      icon: <Percent className="h-6 w-6 text-red-400" />,
+                      icon: <Percent className="h-6 w-6 text-red-500" />,
                       title: "Bulk Order Discounts",
                       description: "Save up to 15% on bulk orders with tier-based pricing across all premium spirits.",
                       available: true,
                       details: `Current tier: ${currentTier.name} - ${membershipTier === 'standard' ? '5%' : membershipTier === 'premium' ? '10%' : '15%'} discount`
                     },
                     {
-                      icon: <Star className="h-6 w-6 text-red-400" />,
+                      icon: <Star className="h-6 w-6 text-red-500" />,
                       title: "Priority Allocation",
                       description: "Get first access to limited releases and rare spirits before general availability.",
                       available: membershipTier !== 'standard',
                       details: `Available for ${membershipTier === 'premium' ? 'Silver' : membershipTier === 'vip' ? 'Gold' : 'Bronze'} tier and above`
                     },
                     {
-                      icon: <Gift className="h-6 w-6 text-red-400" />,
+                      icon: <Gift className="h-6 w-6 text-red-500" />,
                       title: "Custom Packaging",
                       description: "Personalized branding and packaging for corporate events and gifting.",
                       available: membershipTier !== 'standard',
                       details: `Available for ${membershipTier === 'premium' ? 'Silver' : membershipTier === 'vip' ? 'Gold' : 'Bronze'} tier and above`
                     },
                     {
-                      icon: <Calendar className="h-6 w-6 text-red-400" />,
+                      icon: <Calendar className="h-6 w-6 text-red-500" />,
                       title: "Business Consultation",
                       description: "Quarterly strategy sessions with our spirits experts for optimal inventory planning.",
                       available: true,
                       details: `Next session: ${new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toLocaleDateString()}`
                     },
                     {
-                      icon: <Check className="h-6 w-6 text-red-400" />,
+                      icon: <Check className="h-6 w-6 text-red-500" />,
                       title: "Dedicated Support",
                       description: "24/7 dedicated account management and priority customer service.",
                       available: membershipTier === 'vip',
                       details: "Available for Gold tier only"
                     },
                     {
-                      icon: <Users className="h-6 w-6 text-red-400" />,
+                      icon: <Users className="h-6 w-6 text-red-500" />,
                       title: "Sommelier Services",
                       description: "Personal consultation for wine pairings and event planning expertise.",
                       available: membershipTier === 'vip',
@@ -509,47 +509,49 @@ const ConviviaPass = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className={`p-5 rounded-xl border ${benefit.available 
-                        ? 'bg-white/5 border-white/10' 
-                        : 'bg-white/2 border-white/5 opacity-40'}`}
+                      className={`p-5 rounded-xl border ${
+                        benefit.available 
+                          ? 'bg-white border-gray-200 hover:border-red-300 hover:shadow-md transition-all duration-300' 
+                          : 'bg-gray-50 border-gray-200 opacity-60'
+                      }`}
                     >
                       <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-red-600/20 to-purple-600/20 rounded-full flex items-center justify-center flex-shrink-0">
+                        <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center flex-shrink-0">
                           {benefit.icon}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <h3 className="text-lg font-semibold text-white">{benefit.title}</h3>
+                            <h3 className="text-lg font-semibold text-gray-900">{benefit.title}</h3>
                             {!benefit.available && (
-                              <span className="px-2 py-0.5 text-xs bg-white/10 rounded-full text-white/70">
+                              <span className="px-2 py-0.5 text-xs bg-gray-200 text-gray-600 rounded-full">
                                 Higher tier
                               </span>
                             )}
                           </div>
-                          <p className="text-white/70 text-sm mt-1">{benefit.description}</p>
-                          <p className="text-red-400 text-xs mt-2 font-medium">{benefit.details}</p>
+                          <p className="text-gray-600 text-sm mt-1">{benefit.description}</p>
+                          <p className="text-red-600 text-xs mt-2 font-medium">{benefit.details}</p>
                         </div>
                       </div>
                     </motion.div>
                   ))}
                 </div>
-
+                
                 {/* Tier Progress Section */}
                 {nextTier && (
                   <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.6 }}
-                    className="mt-8 bg-gradient-to-r from-red-900/20 to-purple-900/20 rounded-xl p-6 border border-red-500/20"
+                    className="mt-8 bg-gradient-to-r from-red-50 to-red-100 rounded-xl p-6 border border-red-200"
                   >
                     <div className="flex flex-col md:flex-row items-center gap-6">
                       <div className="flex-1">
-                        <h3 className="text-xl font-bold text-white mb-2">Progress to {nextTier.name} Tier</h3>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Progress to {nextTier.name} Tier</h3>
                         <div className="flex items-center gap-4 mb-4">
-                          <div className="text-white/70 text-sm">Current: {userPoints} points</div>
-                          <div className="text-white/70 text-sm">Required: {nextTier.pointsRequired} points</div>
-                        </div>
-                        <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+                          <div className="text-gray-600 text-sm">Current: {userPoints} points</div>
+                          <div className="text-gray-600 text-sm">Required: {nextTier.pointsRequired} points</div>
+                      </div>
+                        <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                           <motion.div 
                             initial={{ width: 0 }}
                             animate={{ width: `${calculateProgress()}%` }}
@@ -559,13 +561,13 @@ const ConviviaPass = () => {
                             }`}
                           />
                         </div>
-                        <div className="text-white/70 text-sm mt-2">
+                        <div className="text-gray-600 text-sm mt-2">
                           {nextTier.pointsRequired - userPoints} points needed to unlock {nextTier.name} benefits
                         </div>
                       </div>
                       <div className="text-center">
-                        <div className="text-3xl font-bold text-white mb-2">{calculateProgress()}%</div>
-                        <div className="text-white/70 text-sm">Complete</div>
+                        <div className="text-3xl font-bold text-red-600 mb-2">{calculateProgress()}%</div>
+                        <div className="text-gray-600 text-sm">Complete</div>
                       </div>
                     </div>
                   </motion.div>
@@ -619,7 +621,7 @@ const ConviviaPass = () => {
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-green-400 font-bold">{activity.points}</div>
+                        <div className="text-green-400 font-bold">{activity.points}</div>
                           <div className="text-white/50 text-xs">points earned</div>
                         </div>
                       </div>
@@ -640,8 +642,8 @@ const ConviviaPass = () => {
                 
                 <div className="space-y-8">
                   {howItWorksSteps.map((step, index) => (
-                    <motion.div 
-                      key={index}
+            <motion.div
+              key={index}
                       initial={{ opacity: 0, x: -30 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.2 }}
@@ -657,7 +659,7 @@ const ConviviaPass = () => {
                               {index + 1}
                             </div>
                             <h3 className="text-xl font-bold text-white">{step.title}</h3>
-                          </div>
+              </div>
                           <p className="text-white/80 text-lg mb-4">{step.description}</p>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             {step.details.map((detail, i) => (
@@ -670,18 +672,18 @@ const ConviviaPass = () => {
                               >
                                 <Check className="h-4 w-4 text-green-400 flex-shrink-0" />
                                 <span className="text-sm">{detail}</span>
-                              </motion.div>
-                            ))}
-                          </div>
-                        </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
                       </div>
                     </motion.div>
                   ))}
-                </div>
-
+        </div>
+        
                 {/* Quick Start Guide */}
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
+          <motion.div
+              initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.8 }}
                   className="mt-12 bg-gradient-to-r from-red-900/20 to-purple-900/20 rounded-xl p-6 border border-red-500/20"
@@ -705,13 +707,13 @@ const ConviviaPass = () => {
                     <div className="text-center">
                       <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
                         <Gift className="h-6 w-6 text-green-400" />
-                      </div>
+                  </div>
                       <h4 className="text-white font-semibold mb-2">3. Enjoy Benefits</h4>
                       <p className="text-white/70 text-sm">Unlock exclusive perks as you reach new tiers</p>
-                    </div>
+              </div>
                   </div>
                 </motion.div>
-              </motion.div>
+            </motion.div>
             )}
           </div>
         </div>

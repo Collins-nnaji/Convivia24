@@ -11,6 +11,7 @@ import InvestorSection from './InvestorSection';
 import AboutSection from './AboutSection';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import BusinessRegisterModal from './BusinessRegisterModal';
 import BrandSpotlightSection from './BrandSpotlightSection';
 
 const LandingPage = () => {
@@ -20,6 +21,7 @@ const LandingPage = () => {
   const [selectedLocation, setSelectedLocation] = useState('nigeria');
   const [activeSlide, setActiveSlide] = useState(0);
   const [animateCount, setAnimateCount] = useState(false);
+  const [isBusinessModalOpen, setIsBusinessModalOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -300,21 +302,14 @@ const LandingPage = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 30 }}
               transition={{ duration: 0.8, delay: 0.6 }}
-              className="flex flex-wrap gap-4"
+              className="flex justify-center"
             >
               <button 
-                onClick={() => navigate('/shopping')}
-                className="px-8 py-4 text-base md:text-lg bg-gradient-to-r from-red-600 to-red-800 text-white font-semibold rounded-lg hover:from-red-700 hover:to-red-900 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2"
+                onClick={() => setIsBusinessModalOpen(true)}
+                className="px-10 py-4 text-base md:text-lg bg-gradient-to-r from-red-600 to-red-800 text-white font-semibold rounded-lg hover:from-red-700 hover:to-red-900 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2"
               >
-                <Wine size={20} />
-                Get Early Access
-              </button>
-              <button 
-                onClick={() => navigate('/business-register')}
-                className="px-8 py-4 text-base md:text-lg bg-white/10 backdrop-blur-sm text-white border border-white/30 font-semibold rounded-lg hover:bg-white/20 transition-all duration-300 flex items-center gap-2"
-              >
-                <Truck size={20} />
-                Request a Demo
+                <Building size={20} />
+                Register Your Business
               </button>
             </motion.div>
             
@@ -753,6 +748,12 @@ const LandingPage = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Business Register Modal */}
+      <BusinessRegisterModal 
+        isOpen={isBusinessModalOpen}
+        onClose={() => setIsBusinessModalOpen(false)}
+      />
     </div>
   );
 };
