@@ -26,6 +26,9 @@ const communityRoutes = require('./routes/communities');
 const eventRoutes = require('./routes/events');
 const productRoutes = require('./routes/products');
 const orderRoutes = require('./routes/orders');
+const hangoutRoomRoutes = require('./routes/hangoutRooms');
+const pollRoutes = require('./routes/polls');
+const predictionRoutes = require('./routes/predictions');
 
 // Use routes
 app.use('/api/auth', authRoutes);
@@ -34,6 +37,9 @@ app.use('/api/communities', communityRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/hangout-rooms', hangoutRoomRoutes);
+app.use('/api/polls', pollRoutes);
+app.use('/api/predictions', predictionRoutes);
 
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {

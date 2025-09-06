@@ -37,6 +37,62 @@ const UserSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Community'
   }],
+  // Social Hub Features
+  socialProfile: {
+    bio: {
+      type: String,
+      maxlength: [300, 'Bio cannot be more than 300 characters']
+    },
+    interests: [{
+      type: String,
+      trim: true
+    }],
+    location: {
+      city: String,
+      country: String,
+      coordinates: {
+        lat: Number,
+        lng: Number
+      }
+    },
+    preferences: {
+      eventTypes: [{
+        type: String,
+        enum: ['music', 'sports', 'art', 'networking', 'workshop', 'party']
+      }],
+      notificationSettings: {
+        email: { type: Boolean, default: true },
+        push: { type: Boolean, default: true },
+        sms: { type: Boolean, default: false }
+      }
+    }
+  },
+  stats: {
+    eventsHosted: { type: Number, default: 0 },
+    eventsAttended: { type: Number, default: 0 },
+    predictionsMade: { type: Number, default: 0 },
+    correctPredictions: { type: Number, default: 0 },
+    socialScore: { type: Number, default: 0 },
+    loyaltyPoints: { type: Number, default: 0 }
+  },
+  badges: [{
+    badge: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Badge'
+    },
+    earnedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  isOnline: {
+    type: Boolean,
+    default: false
+  },
+  lastSeen: {
+    type: Date,
+    default: Date.now
+  },
   createdAt: {
     type: Date,
     default: Date.now

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   TrendingUp, Target, Briefcase, ChevronRight, 
   X, PieChart, BarChart2, Users, Percent, Globe,  Crown,
-  PartyPopper, Heart
+  Sparkles, Heart
 } from 'lucide-react';
 
 const InvestorSection = ({ isOpen, onClose }) => {
@@ -88,7 +88,7 @@ const InvestorSection = ({ isOpen, onClose }) => {
                   { label: "Traditional Ceremonies", icon: <Crown />, events: "45+" },
                   { label: "Wedding Services", icon: <Heart />, events: "60+" },
                   { label: "Corporate Events", icon: <Users />, events: "35+" },
-                  { label: "Private Celebrations", icon: <PartyPopper />, events: "80+" }
+                  { label: "Private Celebrations", icon: <Sparkles />, events: "80+" }
                 ].map((item, index) => (
                   <div key={index} className="bg-gray-50 p-4 rounded-lg">
                     <div className="text-red-600 mb-2">{item.icon}</div>
@@ -232,7 +232,7 @@ const InvestorSection = ({ isOpen, onClose }) => {
                       <p className="text-xl font-bold text-gray-800">500+</p>
                     </div>
                     <div className="text-blue-600">
-                      <PartyPopper size={16} />
+                      <Sparkles size={16} />
                     </div>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">

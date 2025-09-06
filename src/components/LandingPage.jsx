@@ -5,7 +5,7 @@ import {
   Heart, Crown, CheckCircle, MapPin,
   Users, Wine, Music,
   Building, Gift, Sparkles, Clock, Coffee, MessageCircle, ChevronDown, Truck, Shield,
-  BarChart3, Briefcase, Handshake, Package, DollarSign
+  BarChart3, Briefcase, Handshake, Package, DollarSign, TrendingUp, Gamepad2, Search
 } from 'lucide-react';
 import InvestorSection from './InvestorSection';
 import AboutSection from './AboutSection';
@@ -189,24 +189,24 @@ const LandingPage = () => {
 
   const features = [
     {
-      icon: <Wine size={24} />,
-      title: "Premium Selection",
-      description: "Curated wine & spirits with bulk pricing tiers"
+      icon: <Search size={24} />,
+      title: "Smart Event Discovery",
+      description: "AI-powered recommendations for events based on your interests and location"
     },
     {
-      icon: <Music size={24} />,
-      title: "Music Curation",
-      description: "Mood-based playlists for every nightlife experience"
+      icon: <Users size={24} />,
+      title: "Social Hangout Rooms",
+      description: "Join live chat rooms for events with polls, predictions, and real-time interaction"
     },
     {
-      icon: <Truck size={24} />,
-      title: "Smart Delivery",
-      description: "24-hour delivery with real-time tracking"
+      icon: <Gift size={24} />,
+      title: "Rewards & Perks",
+      description: "Earn points for activities and redeem exclusive perks at partner venues"
     },
     {
-      icon: <BarChart3 size={24} />,
-      title: "AI Reordering",
-      description: "Smart inventory management and demand forecasting"
+      icon: <Crown size={24} />,
+      title: "Membership Tiers",
+      description: "Free, Premium, and VIP memberships with escalating benefits and access"
     }
   ];
 
@@ -259,7 +259,7 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-white text-black overflow-hidden" style={{ fontFamily: 'Raleway, sans-serif' }}>
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center overflow-hidden">
+      <section className="relative min-h-screen flex items-center overflow-hidden">
         {/* Background Video or Image */}
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-red-900/80 z-10"></div>
@@ -280,7 +280,7 @@ const LandingPage = () => {
             >
               <span className="text-white/90 text-sm font-medium flex items-center">
                 <Sparkles size={14} className="mr-1.5" /> 
-                Discover, Connect, and Experience Nightlife Like Never Before
+                Your Gateway to Global Events, Social Connections & Exclusive Rewards
               </span>
             </motion.div>
 
@@ -291,7 +291,7 @@ const LandingPage = () => {
               className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight" 
               style={{ fontFamily: 'Playfair Display, serif' }}
             >
-              Discover <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-300">Exclusive Nightlife</span> & <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-300">Social Events</span>
+              The <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-300">Always-On</span> <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-300">Social Hub</span>
             </motion.h1>
 
             <motion.p
@@ -300,7 +300,7 @@ const LandingPage = () => {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="text-xl md:text-2xl text-gray-300 mb-10 max-w-2xl"
             >
-              Connect with curated events, discover exclusive experiences, and unlock member-only benefits. Your gateway to the most vibrant nightlife and social experiences in your city.
+              Discover amazing events worldwide, connect with like-minded people in real-time hangout rooms, earn rewards for your social activities, and unlock exclusive perks at partner venues. Your social life, elevated.
             </motion.p>
 
             <motion.div
@@ -311,11 +311,11 @@ const LandingPage = () => {
             >
               <div className="flex flex-col sm:flex-row gap-4">
                 <button 
-                  onClick={() => navigate('/shopping')}
+                  onClick={() => navigate('/discover')}
                   className="px-10 py-4 text-base md:text-lg bg-gradient-to-r from-red-600 to-red-800 text-white font-semibold rounded-lg hover:from-red-700 hover:to-red-900 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2"
                 >
                   <Sparkles size={20} />
-                  Explore Events
+                  Discover Events
                 </button>
                 <button 
                   onClick={() => setIsBusinessModalOpen(true)}
@@ -590,7 +590,7 @@ const LandingPage = () => {
                 <div className="text-5xl font-bold mb-2">
                   <AnimatedCounter end={500} /> +
                 </div>
-                <p className="text-white/80 text-lg">Partner Events</p>
+                <p className="text-white/80 text-lg">Events Discovered</p>
               </motion.div>
               
               <motion.div
@@ -603,7 +603,7 @@ const LandingPage = () => {
                 <div className="text-5xl font-bold mb-2">
                   <AnimatedCounter end={25000} /> +
                 </div>
-                <p className="text-white/80 text-lg">Events Hosted</p>
+                <p className="text-white/80 text-lg">Rewards Earned</p>
               </motion.div>
               
               <motion.div
@@ -616,7 +616,7 @@ const LandingPage = () => {
                 <div className="text-5xl font-bold mb-2">
                   <AnimatedCounter end={150} /> +
                 </div>
-                <p className="text-white/80 text-lg">Active Members</p>
+                <p className="text-white/80 text-lg">Partner Venues</p>
               </motion.div>
               
               <motion.div
@@ -629,7 +629,7 @@ const LandingPage = () => {
                 <div className="text-5xl font-bold mb-2">
                   <AnimatedCounter end={24} />
                 </div>
-                <p className="text-white/80 text-lg">Cities Covered</p>
+                <p className="text-white/80 text-lg">Countries Active</p>
               </motion.div>
             </div>
           </div>
@@ -645,25 +645,25 @@ const LandingPage = () => {
                 How <span className="text-red-600">Convivia24</span> Works
               </h2>
               <p className="text-gray-600 max-w-3xl mx-auto text-lg mb-8">
-                Discover & Connect – Find exclusive events and experiences tailored to your preferences. Book & Experience – Reserve your spot at the hottest nightlife events and social gatherings. Enjoy & Share – Create unforgettable memories and connect with like-minded people.
+                Discover & Explore – Find amazing events worldwide with AI-powered recommendations. Connect & Socialize – Join live hangout rooms, chat with attendees, and make new connections. Earn & Redeem – Get rewarded for your social activities and unlock exclusive perks at partner venues.
               </p>
               
               <div className="flex justify-center gap-4 flex-wrap">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-500" />
-                  <span className="text-gray-700">Exclusive Events</span>
+                  <span className="text-gray-700">Smart Event Discovery</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-500" />
-                  <span className="text-gray-700">Curated Events</span>
+                  <span className="text-gray-700">Social Hangout Rooms</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-500" />
-                  <span className="text-gray-700">Member Benefits</span>
+                  <span className="text-gray-700">Rewards & Perks</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-500" />
-                  <span className="text-gray-700">Social Connection</span>
+                  <span className="text-gray-700">Membership Tiers</span>
                 </div>
               </div>
             </motion.div>

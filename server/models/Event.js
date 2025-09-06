@@ -43,6 +43,33 @@ const EventSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  // Social Hub Features
+  hangoutRoom: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'HangoutRoom',
+    default: null
+  },
+  eventType: {
+    type: String,
+    enum: ['music', 'sports', 'art', 'networking', 'workshop', 'party', 'cultural', 'streaming'],
+    default: 'party'
+  },
+  streamingInfo: {
+    isStreaming: { type: Boolean, default: false },
+    streamUrl: String,
+    streamPlatform: String
+  },
+  socialFeatures: {
+    enableChat: { type: Boolean, default: true },
+    enablePolls: { type: Boolean, default: true },
+    enablePredictions: { type: Boolean, default: true },
+    enableReactions: { type: Boolean, default: true },
+    enableGames: { type: Boolean, default: true }
+  },
+  tags: [{
+    type: String,
+    trim: true
+  }],
   createdAt: {
     type: Date,
     default: Date.now

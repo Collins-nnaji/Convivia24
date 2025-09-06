@@ -1,19 +1,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import LandingPage from './components/LandingPage';
+import LandingPageMobile from './components/LandingPageMobile';
 
-import AdminDashboard from './pages/AdminDashboard';
-import ConviviaPass from './pages/ConviviaPass';
-import BusinessRegister from './pages/BusinessRegister';
-import Events from './pages/Events';
-import MusicPage from './pages/Music';
-import Profile from './pages/Profile';
-import LiveUpdates from './pages/LiveUpdates';
+import EventDiscoveryPremium from './pages/EventDiscoveryPremium';
+import PartnerDashboard from './pages/PartnerDashboard';
 
-
-import { RewardsProvider } from './context/RewardsContext';
-import { LoyaltyProvider } from './context/LoyaltyContext';
 import Layout from './components/layout/Layout';
 import { AuthProvider } from './context/AuthContext';
 
@@ -24,25 +16,22 @@ const AnimatedRoutes = () => {
   return (
     <AnimatePresence mode="wait" initial={false}>
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<LandingPageMobile />} />
 
-        {/* Nightlife & Social Events Platform */}
-        <Route path="/events" element={<Events />} />
-        <Route path="/music" element={<MusicPage />} />
-        <Route path="/live-updates" element={<LiveUpdates />} />
-        <Route path="/profile" element={<Profile />} />
-
-
-        {/* Other Pages */}
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/conviviapass" element={<ConviviaPass />} />
-        <Route path="/business-register" element={<BusinessRegister />} />
+        {/* Core App Pages */}
+        <Route path="/discover" element={<EventDiscoveryPremium />} />
+        <Route path="/partner-dashboard" element={<PartnerDashboard />} />
 
         {/* Redirects */}
-        <Route path="/experiences" element={<Navigate to="/events" replace />} />
-        <Route path="/hotspots" element={<Navigate to="/events" replace />} />
-        <Route path="/business-dashboard" element={<Navigate to="/business-register" replace />} />
-        <Route path="/business-demo" element={<Navigate to="/business-register" replace />} />
+        <Route path="/events" element={<Navigate to="/discover" replace />} />
+        <Route path="/music" element={<Navigate to="/discover" replace />} />
+        <Route path="/live-updates" element={<Navigate to="/discover" replace />} />
+        <Route path="/profile" element={<Navigate to="/" replace />} />
+        <Route path="/rewards" element={<Navigate to="/" replace />} />
+        <Route path="/conviviapass" element={<Navigate to="/" replace />} />
+        <Route path="/dashboard" element={<Navigate to="/" replace />} />
+        <Route path="/business-register" element={<Navigate to="/partner-dashboard" replace />} />
+        <Route path="/admin" element={<Navigate to="/partner-dashboard" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AnimatePresence>
@@ -52,15 +41,11 @@ const AnimatedRoutes = () => {
 function App() {
   return (
     <AuthProvider>
-      <LoyaltyProvider>
-        <RewardsProvider>
-          <Router>
-            <Layout>
-              <AnimatedRoutes />
-            </Layout>
-          </Router>
-        </RewardsProvider>
-      </LoyaltyProvider>
+      <Router>
+        <Layout>
+          <AnimatedRoutes />
+        </Layout>
+      </Router>
     </AuthProvider>
   );
 }
