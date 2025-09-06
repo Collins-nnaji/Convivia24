@@ -80,22 +80,13 @@ const Header = () => {
               className="relative"
             >
               <motion.img 
-                src="/convivia24logo.png" 
+                src="/Logo2.png" 
                 alt="Convivia24 Logo" 
-                className="h-8 sm:h-10 mr-2"
+                className="h-8 sm:h-10"
                 animate={{ rotate: 360 }}
                 transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
               />
             </motion.div>
-            <motion.span 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: isLoaded ? 1 : 0, x: isLoaded ? 0 : -20 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="text-lg sm:text-xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent" 
-              style={{ fontFamily: 'Playfair Display, serif' }}
-            >
-              Convivia24
-            </motion.span>
           </Link>
 
           {/* Desktop Navigation - Hidden on mobile */}

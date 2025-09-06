@@ -3,7 +3,8 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
   Star, Search, Users, Gift, Coffee, MessageCircle, ChevronDown, Truck, Shield,
-  BarChart3, Briefcase, Handshake, Package, DollarSign, TrendingUp, Gamepad2, Crown
+  BarChart3, Briefcase, Handshake, Package, DollarSign, TrendingUp, Gamepad2, Crown,
+  Sparkles
 } from 'lucide-react';
 import BusinessRegisterModal from './BusinessRegisterModal';
 import BrandSpotlightSection from './BrandSpotlightSection';
@@ -90,7 +91,7 @@ const LandingPageMobile = () => {
           <img 
             src="https://images.unsplash.com/photo-1527529482837-4698179dc6ce?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.0.3" 
             alt="Background" 
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover blur-sm"
           />
         </div>
         
@@ -114,7 +115,7 @@ const LandingPageMobile = () => {
             className="text-4xl sm:text-5xl font-bold text-white mb-6 leading-tight px-4 drop-shadow-lg" 
             style={{ fontFamily: 'Playfair Display, serif' }}
           >
-            Discover <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-200 to-red-100 drop-shadow-md">Amazing Events</span> <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-200 to-red-100 drop-shadow-md">Worldwide</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-200 to-red-100 drop-shadow-md">Convivia24</span> - Discover <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-200 to-red-100 drop-shadow-md">Amazing Events</span> <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-200 to-red-100 drop-shadow-md">Worldwide</span>
           </motion.h1>
 
           <motion.p
@@ -123,7 +124,7 @@ const LandingPageMobile = () => {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="text-lg text-gray-100 mb-8 px-4 drop-shadow-md"
           >
-            Find the best events, concerts, festivals, and experiences near you or around the world. Get exclusive access, earn rewards, and never miss out on the events that matter to you.
+            Find the best events, concerts, festivals, and experiences near you or around the world. Connect safely with like-minded people at events you're attending. Never feel socially awkward again.
           </motion.p>
 
           <motion.div
@@ -208,6 +209,111 @@ const LandingPageMobile = () => {
                 <p className="text-gray-600">{feature.description}</p>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Preview Feature - Safe Social Connections */}
+      <section className="py-16 bg-gradient-to-br from-gray-50 to-white">
+        <div className="px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-12"
+          >
+            <div className="inline-flex items-center gap-2 bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-medium mb-4">
+              <Sparkles size={16} />
+              Coming Soon
+            </div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
+              Safe Social <span className="text-red-600">Connections</span>
+            </h2>
+            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+              Never feel socially awkward at events again. Connect with like-minded people safely and naturally.
+            </p>
+          </motion.div>
+
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">How It Works</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-red-600 font-bold text-sm">1</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900">Event Check-in</h4>
+                        <p className="text-gray-600 text-sm">Check into events you're attending to join the safe social space</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-red-600 font-bold text-sm">2</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900">Smart Matching</h4>
+                        <p className="text-gray-600 text-sm">AI matches you with people who share similar interests and vibes</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-red-600 font-bold text-sm">3</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900">Safe Connection</h4>
+                        <p className="text-gray-600 text-sm">Connect through our secure platform with built-in safety features</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">Safety Features</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Shield size={16} className="text-red-600" />
+                      <span className="text-gray-700 text-sm">Verified event attendees only</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Shield size={16} className="text-red-600" />
+                      <span className="text-gray-700 text-sm">Anonymous until mutual interest</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Shield size={16} className="text-red-600" />
+                      <span className="text-gray-700 text-sm">Easy block and report system</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Shield size={16} className="text-red-600" />
+                      <span className="text-gray-700 text-sm">Event-based connections only</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-6 p-4 bg-white rounded-lg border border-red-200">
+                    <p className="text-sm text-gray-600 italic">
+                      "Finally, a way to meet people at events without the awkward small talk. 
+                      Convivia24 helped me connect with amazing people who actually share my interests!"
+                    </p>
+                    <p className="text-xs text-gray-500 mt-2">- Sarah M., Beta Tester</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-gray-50 px-8 py-4 border-t border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Get Early Access</p>
+                    <p className="text-xs text-gray-600">Be the first to experience safe social connections</p>
+                  </div>
+                  <button className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm font-medium">
+                    Join Waitlist
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
