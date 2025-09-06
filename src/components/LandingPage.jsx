@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Star,
   Heart, Crown, CheckCircle, MapPin,
-  Users, Wine, 
+  Users, Wine, Music,
   Building, Gift, Sparkles, Clock, Coffee, MessageCircle, ChevronDown, Truck, Shield,
   BarChart3, Briefcase, Handshake, Package, DollarSign
 } from 'lucide-react';
@@ -194,6 +194,11 @@ const LandingPage = () => {
       description: "Curated wine & spirits with bulk pricing tiers"
     },
     {
+      icon: <Music size={24} />,
+      title: "Music Curation",
+      description: "Mood-based playlists for every nightlife experience"
+    },
+    {
       icon: <Truck size={24} />,
       title: "Smart Delivery",
       description: "24-hour delivery with real-time tracking"
@@ -274,8 +279,8 @@ const LandingPage = () => {
               className="inline-block mb-3 py-1 px-3 bg-gradient-to-r from-red-500/30 to-red-700/30 rounded-full backdrop-blur-sm"
             >
               <span className="text-white/90 text-sm font-medium flex items-center">
-                <Wine size={14} className="mr-1.5" /> 
-                Your B2B Partner for Wine & Spirits Distribution
+                <Sparkles size={14} className="mr-1.5" /> 
+                Discover, Connect, and Experience Nightlife Like Never Before
               </span>
             </motion.div>
 
@@ -286,7 +291,7 @@ const LandingPage = () => {
               className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight" 
               style={{ fontFamily: 'Playfair Display, serif' }}
             >
-                              Powering <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-300">Consumption Hotspots</span> with <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-300">Bulk & Premium Orders</span>
+              Discover <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-300">Exclusive Nightlife</span> & <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-300">Social Events</span>
             </motion.h1>
 
             <motion.p
@@ -295,7 +300,7 @@ const LandingPage = () => {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="text-xl md:text-2xl text-gray-300 mb-10 max-w-2xl"
             >
-              Wholesale ordering, smart inventory, and reliable delivery – all in one platform. Bulk orders, premium spirits, and AI-driven reorder reminders for restaurants, bars, hotels, and retailers.
+              Connect with curated events, discover exclusive experiences, and unlock member-only benefits. Your gateway to the most vibrant nightlife and social experiences in your city.
             </motion.p>
 
             <motion.div
@@ -304,13 +309,22 @@ const LandingPage = () => {
               transition={{ duration: 0.8, delay: 0.6 }}
               className="flex justify-center"
             >
-              <button 
-                onClick={() => setIsBusinessModalOpen(true)}
-                className="px-10 py-4 text-base md:text-lg bg-gradient-to-r from-red-600 to-red-800 text-white font-semibold rounded-lg hover:from-red-700 hover:to-red-900 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2"
-              >
-                <Building size={20} />
-                Register Your Business
-              </button>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button 
+                  onClick={() => navigate('/shopping')}
+                  className="px-10 py-4 text-base md:text-lg bg-gradient-to-r from-red-600 to-red-800 text-white font-semibold rounded-lg hover:from-red-700 hover:to-red-900 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2"
+                >
+                  <Sparkles size={20} />
+                  Explore Events
+                </button>
+                <button 
+                  onClick={() => setIsBusinessModalOpen(true)}
+                  className="px-10 py-4 text-base md:text-lg bg-white/10 backdrop-blur-sm text-white font-semibold rounded-lg hover:bg-white/20 transition-all duration-300 border border-white/30 flex items-center gap-2"
+                >
+                  <Building size={20} />
+                  Partner With Us
+                </button>
+              </div>
             </motion.div>
             
             <motion.div 
@@ -331,7 +345,7 @@ const LandingPage = () => {
                 ))}
               </div>
               <div className="text-white text-sm md:text-base">
-                <span className="font-bold text-xl text-red-400">500+</span> consumption hotspots powered by Convivia24
+                <span className="font-bold text-xl text-red-400">500+</span> exclusive events and experiences on Convivia24
               </div>
             </motion.div>
           </div>
@@ -361,8 +375,9 @@ const LandingPage = () => {
         </motion.div>
       </section>
       
-      {/* Featured Hotspots Section */}
-      <section className="py-24 bg-gradient-to-b from-white to-gray-50">
+
+      {/* Featured Events Section */}
+      <section className="py-24 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <motion.div
@@ -374,11 +389,11 @@ const LandingPage = () => {
               <div className="mx-auto w-16 h-1 bg-gradient-to-r from-red-500 to-red-700 mb-6 rounded-full"></div>
               <h2 className="text-4xl md:text-5xl font-bold mb-6" style={{ fontFamily: 'Playfair Display, serif' }}>
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-600 to-red-800">
-                  Featured Hotspots for the Week
+                  Featured Events This Week
                 </span>
               </h2>
               <p className="text-gray-600 max-w-2xl mx-auto text-lg mb-6">
-                Discover this week's most popular venues and trending consumption hotspots powered by premium wine & spirits.
+                Discover this week's most popular events and trending nightlife experiences with exclusive access and special moments.
               </p>
             </motion.div>
             <div className="flex justify-center gap-2 mt-6">
@@ -428,11 +443,11 @@ const LandingPage = () => {
                   </div>
                   <span className="text-xs text-gray-500">42 active members</span>
                 </div>
-                <p className="text-gray-600 mb-4">A vibrant café where entrepreneurs and creatives connect over specialty coffee and ideas.</p>
+                <p className="text-gray-600 mb-4">A premium nightclub featuring live DJs, craft cocktails, and exclusive VIP experiences every weekend.</p>
                 <div className="flex flex-wrap gap-2 mb-4">
-                  <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Coffee</span>
-                  <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Networking</span>
-                  <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Cozy</span>
+                  <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Nightclub</span>
+                  <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Live Music</span>
+                  <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">VIP</span>
                 </div>
                 <button className="text-red-600 hover:text-red-800 text-sm font-medium flex items-center gap-1 transition-colors group-hover:font-semibold">
                   View Venue <ChevronDown className="h-4 w-4 -rotate-90" />
@@ -479,11 +494,11 @@ const LandingPage = () => {
                   </div>
                   <span className="text-xs text-gray-500">67 active members</span>
                 </div>
-                <p className="text-gray-600 mb-4">Luxurious rooftop venue perfect for professional networking and upscale social events.</p>
+                <p className="text-gray-600 mb-4">Luxurious rooftop lounge with panoramic city views, premium cocktails, and exclusive social events.</p>
                 <div className="flex flex-wrap gap-2 mb-4">
                   <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Rooftop</span>
                   <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Cocktails</span>
-                  <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Luxury</span>
+                  <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Exclusive</span>
                 </div>
                 <button className="text-red-600 hover:text-red-800 text-sm font-medium flex items-center gap-1 transition-colors group-hover:font-semibold">
                   View Venue <ChevronDown className="h-4 w-4 -rotate-90" />
@@ -530,11 +545,11 @@ const LandingPage = () => {
                   </div>
                   <span className="text-xs text-gray-500">35 active members</span>
                 </div>
-                <p className="text-gray-600 mb-4">A cultural center where art enthusiasts and creative minds share passions and projects.</p>
+                <p className="text-gray-600 mb-4">An underground speakeasy featuring live jazz, craft cocktails, and intimate social gatherings.</p>
                 <div className="flex flex-wrap gap-2 mb-4">
-                  <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Art</span>
-                  <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Culture</span>
-                  <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Creative</span>
+                  <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Speakeasy</span>
+                  <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Jazz</span>
+                  <span className="bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full">Intimate</span>
                 </div>
                 <button className="text-red-600 hover:text-red-800 text-sm font-medium flex items-center gap-1 transition-colors group-hover:font-semibold">
                   View Venue <ChevronDown className="h-4 w-4 -rotate-90" />
@@ -552,9 +567,9 @@ const LandingPage = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="px-8 py-3 bg-white text-red-600 border border-red-600 rounded-full font-medium hover:bg-red-50 transition-colors"
-              onClick={() => navigate('/venues')}
+              onClick={() => navigate('/events')}
             >
-              Browse All Venues
+              Browse All Events
             </motion.button>
           </div>
         </div>
@@ -575,7 +590,7 @@ const LandingPage = () => {
                 <div className="text-5xl font-bold mb-2">
                   <AnimatedCounter end={500} /> +
                 </div>
-                <p className="text-white/80 text-lg">Consumption Hotspots</p>
+                <p className="text-white/80 text-lg">Partner Events</p>
               </motion.div>
               
               <motion.div
@@ -588,7 +603,7 @@ const LandingPage = () => {
                 <div className="text-5xl font-bold mb-2">
                   <AnimatedCounter end={25000} /> +
                 </div>
-                <p className="text-white/80 text-lg">Bottles Delivered</p>
+                <p className="text-white/80 text-lg">Events Hosted</p>
               </motion.div>
               
               <motion.div
@@ -601,7 +616,7 @@ const LandingPage = () => {
                 <div className="text-5xl font-bold mb-2">
                   <AnimatedCounter end={150} /> +
                 </div>
-                <p className="text-white/80 text-lg">Premium Brands</p>
+                <p className="text-white/80 text-lg">Active Members</p>
               </motion.div>
               
               <motion.div
@@ -614,7 +629,7 @@ const LandingPage = () => {
                 <div className="text-5xl font-bold mb-2">
                   <AnimatedCounter end={24} />
                 </div>
-                <p className="text-white/80 text-lg">Hour Delivery</p>
+                <p className="text-white/80 text-lg">Cities Covered</p>
               </motion.div>
             </div>
           </div>
@@ -630,25 +645,25 @@ const LandingPage = () => {
                 How <span className="text-red-600">Convivia24</span> Works
               </h2>
               <p className="text-gray-600 max-w-3xl mx-auto text-lg mb-8">
-                Order & Manage Stock – Wholesale wine & spirits, delivered on time. Track & Reorder Easily – Smart AI reorder reminders and logistics tracking. Grow with Insights – Data-driven analytics for smarter purchasing decisions.
+                Discover & Connect – Find exclusive events and experiences tailored to your preferences. Book & Experience – Reserve your spot at the hottest nightlife events and social gatherings. Enjoy & Share – Create unforgettable memories and connect with like-minded people.
               </p>
               
               <div className="flex justify-center gap-4 flex-wrap">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-500" />
-                  <span className="text-gray-700">Bulk Ordering</span>
+                  <span className="text-gray-700">Exclusive Events</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-500" />
-                  <span className="text-gray-700">Smart Reorder</span>
+                  <span className="text-gray-700">Curated Events</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-500" />
-                  <span className="text-gray-700">Real-time Tracking</span>
+                  <span className="text-gray-700">Member Benefits</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-500" />
-                  <span className="text-gray-700">Premium Spirits</span>
+                  <span className="text-gray-700">Social Connection</span>
                 </div>
               </div>
             </motion.div>
@@ -656,7 +671,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Delivery Promises Section */}
+      {/* Service Promises Section */}
       <section className="py-24 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
@@ -669,11 +684,11 @@ const LandingPage = () => {
               <div className="mx-auto w-16 h-1 bg-gradient-to-r from-red-500 to-red-700 mb-6 rounded-full"></div>
               <h2 className="text-4xl md:text-5xl font-bold mb-6" style={{ fontFamily: 'Playfair Display, serif' }}>
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-600 to-red-800">
-                  Delivery & Service Promises
+                  Our Service Promises
                 </span>
               </h2>
               <p className="text-gray-600 max-w-2xl mx-auto text-lg mb-6">
-                We guarantee exceptional service and reliable delivery for all your premium wine & spirits needs.
+                We guarantee exceptional experiences and exclusive access to the best nightlife and social events in your city.
               </p>
             </motion.div>
           </div>
@@ -688,9 +703,9 @@ const LandingPage = () => {
             >
               <div className="flex items-center gap-3 mb-3">
                 <Clock className="text-red-600" size={24} />
-                <h3 className="font-semibold text-gray-900">24-Hour Delivery</h3>
+                <h3 className="font-semibold text-gray-900">24/7 Access</h3>
               </div>
-              <p className="text-gray-600 text-sm">Free delivery within 24 hours or your order is free!</p>
+              <p className="text-gray-600 text-sm">Round-the-clock access to exclusive events and experiences!</p>
             </motion.div>
             
             <motion.div
@@ -701,10 +716,10 @@ const LandingPage = () => {
               className="bg-white rounded-xl p-6 shadow-sm border border-blue-200"
             >
               <div className="flex items-center gap-3 mb-3">
-                <Truck className="text-blue-600" size={24} />
-                <h3 className="font-semibold text-gray-900">Night Owl Service</h3>
+                <Crown className="text-blue-600" size={24} />
+                <h3 className="font-semibold text-gray-900">VIP Access</h3>
               </div>
-              <p className="text-gray-600 text-sm">Same-day or evening delivery within your coverage zone.</p>
+              <p className="text-gray-600 text-sm">Exclusive member benefits and priority access to premium events.</p>
             </motion.div>
             
             <motion.div
@@ -716,9 +731,9 @@ const LandingPage = () => {
             >
               <div className="flex items-center gap-3 mb-3">
                 <Shield className="text-green-600" size={24} />
-                <h3 className="font-semibold text-gray-900">Age Verified</h3>
+                <h3 className="font-semibold text-gray-900">Safe & Secure</h3>
               </div>
-              <p className="text-gray-600 text-sm">Secure age verification for all alcohol purchases.</p>
+              <p className="text-gray-600 text-sm">Verified events and secure booking for all your nightlife experiences.</p>
             </motion.div>
           </div>
         </div>
