@@ -8,7 +8,8 @@ const BusinessRegisterModal = ({ isOpen, onClose }) => {
   const [location, setLocation] = useState('');
   const [files, setFiles] = useState([]);
   const [formData, setFormData] = useState({
-    name: '',
+    venueName: '',
+    venueType: '',
     description: '',
     address: '',
     city: '',
@@ -17,7 +18,8 @@ const BusinessRegisterModal = ({ isOpen, onClose }) => {
     phoneNumber: '',
     email: '',
     capacity: '',
-    features: []
+    eventTypes: [],
+    amenities: []
   });
 
   const handleInputChange = (e) => {
@@ -37,16 +39,17 @@ const BusinessRegisterModal = ({ isOpen, onClose }) => {
     setFiles(files.filter((_, index) => index !== indexToRemove));
   };
 
-  const handleCheckboxChange = (feature) => {
-    if (formData.features.includes(feature)) {
+  const handleCheckboxChange = (item, type) => {
+    const currentArray = formData[type];
+    if (currentArray.includes(item)) {
       setFormData({
         ...formData,
-        features: formData.features.filter(f => f !== feature)
+        [type]: currentArray.filter(f => f !== item)
       });
     } else {
       setFormData({
         ...formData,
-        features: [...formData.features, feature]
+        [type]: [...currentArray, item]
       });
     }
   };
@@ -93,12 +96,14 @@ const BusinessRegisterModal = ({ isOpen, onClose }) => {
   ];
 
   const businessTypes = [
-    { id: 'restaurant', name: 'Restaurant', icon: '🍽️' },
-    { id: 'bar', name: 'Bar & Nightclub', icon: '🍺' },
-    { id: 'hotel', name: 'Hotel & Resort', icon: '🏨' },
-    { id: 'event', name: 'Event Venue', icon: '🎉' },
-    { id: 'retail', name: 'Retail Store', icon: '🏪' },
-    { id: 'other', name: 'Other', icon: '🏢' }
+    { id: 'concert-venue', name: 'Concert Venue', icon: '🎵' },
+    { id: 'nightclub', name: 'Nightclub & Bar', icon: '🍺' },
+    { id: 'conference-center', name: 'Conference Center', icon: '🏢' },
+    { id: 'restaurant', name: 'Restaurant & Lounge', icon: '🍽️' },
+    { id: 'rooftop', name: 'Rooftop & Outdoor', icon: '🌆' },
+    { id: 'cultural', name: 'Cultural Center', icon: '🎭' },
+    { id: 'sports', name: 'Sports Venue', icon: '⚽' },
+    { id: 'other', name: 'Other Event Space', icon: '🎉' }
   ];
 
   const locations = [
@@ -109,9 +114,14 @@ const BusinessRegisterModal = ({ isOpen, onClose }) => {
     { id: 'other', name: 'Other Location', flag: '🌍' }
   ];
 
-  const features = [
+  const eventTypes = [
+    'Concerts', 'Conferences', 'Networking Events', 'Food & Wine Tastings', 
+    'Cultural Events', 'Sports Viewing', 'Private Parties', 'Corporate Events'
+  ];
+
+  const amenities = [
     'Wi-Fi', 'Parking', 'Outdoor Space', 'Private Rooms', 'Wheelchair Access',
-    'Live Music', 'Kitchen Facilities', 'Catering Service', 'Bar Service', 'Dance Floor'
+    'Live Music Setup', 'Sound System', 'Lighting', 'Bar Service', 'Catering', 'Dance Floor'
   ];
 
   if (!isOpen) return null;
@@ -136,8 +146,8 @@ const BusinessRegisterModal = ({ isOpen, onClose }) => {
           {/* Modal Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white rounded-t-2xl">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Join B2B Partner Program</h2>
-              <p className="text-gray-600 mt-1">Get wholesale access to premium spirits</p>
+              <h2 className="text-2xl font-bold text-gray-900">List Your Event Venue</h2>
+              <p className="text-gray-600 mt-1">Connect with event-goers and grow your venue</p>
             </div>
             <button
               onClick={handleClose}
@@ -178,7 +188,7 @@ const BusinessRegisterModal = ({ isOpen, onClose }) => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <h3 className="text-xl font-semibold mb-6">What type of business do you operate?</h3>
+                <h3 className="text-xl font-semibold mb-6">What type of venue or event space do you operate?</h3>
                 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
                   {businessTypes.map((type) => (
@@ -417,31 +427,60 @@ const BusinessRegisterModal = ({ isOpen, onClose }) => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <h3 className="text-xl font-semibold mb-6">Business Features & Photos</h3>
+                <h3 className="text-xl font-semibold mb-6">Venue Details & Features</h3>
                 
                 <div className="mb-8">
-                  <h4 className="font-medium text-gray-700 mb-4">What features does your business offer? (Select all that apply)</h4>
+                  <h4 className="font-medium text-gray-700 mb-4">What types of events do you host? (Select all that apply)</h4>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {features.map((feature) => (
+                    {eventTypes.map((eventType) => (
                       <motion.label
-                        key={feature}
+                        key={eventType}
                         whileHover={{ scale: 1.02 }}
                         className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                          formData.features.includes(feature)
+                          formData.eventTypes.includes(eventType)
                             ? 'border-red-500 bg-red-50'
                             : 'border-gray-200 hover:border-gray-300'
                         }`}
                       >
                         <input
                           type="checkbox"
-                          checked={formData.features.includes(feature)}
-                          onChange={() => handleCheckboxChange(feature)}
+                          checked={formData.eventTypes.includes(eventType)}
+                          onChange={() => handleCheckboxChange(eventType, 'eventTypes')}
                           className="sr-only"
                         />
                         <span className={`text-sm font-medium ${
-                          formData.features.includes(feature) ? 'text-red-700' : 'text-gray-700'
+                          formData.eventTypes.includes(eventType) ? 'text-red-700' : 'text-gray-700'
                         }`}>
-                          {feature}
+                          {eventType}
+                        </span>
+                      </motion.label>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="mb-8">
+                  <h4 className="font-medium text-gray-700 mb-4">What amenities does your venue offer? (Select all that apply)</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {amenities.map((amenity) => (
+                      <motion.label
+                        key={amenity}
+                        whileHover={{ scale: 1.02 }}
+                        className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                          formData.amenities.includes(amenity)
+                            ? 'border-red-500 bg-red-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={formData.amenities.includes(amenity)}
+                          onChange={() => handleCheckboxChange(amenity, 'amenities')}
+                          className="sr-only"
+                        />
+                        <span className={`text-sm font-medium ${
+                          formData.amenities.includes(amenity) ? 'text-red-700' : 'text-gray-700'
+                        }`}>
+                          {amenity}
                         </span>
                       </motion.label>
                     ))}

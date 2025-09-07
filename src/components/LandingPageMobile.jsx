@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Star, Search, Users, Gift, Coffee, MessageCircle, ChevronDown, Truck, Shield,
   BarChart3, Briefcase, Handshake, Package, DollarSign, TrendingUp, Gamepad2, Crown,
-  Sparkles
+  Sparkles, Heart
 } from 'lucide-react';
 import BusinessRegisterModal from './BusinessRegisterModal';
 import BrandSpotlightSection from './BrandSpotlightSection';
@@ -20,47 +20,27 @@ const LandingPageMobile = () => {
 
   const features = [
     {
+      icon: <Users size={24} />,
+      title: "Safe Social Connections",
+      description: "Connect with like-minded people at events you're attending. Never feel socially awkward again with our smart matching system."
+    },
+    {
       icon: <Search size={24} />,
       title: "Smart Event Discovery",
-      description: "AI-powered recommendations for events based on your interests, mood, and location"
+      description: "AI-powered recommendations for events based on your interests, mood, and location preferences"
     },
     {
-      icon: <Star size={24} />,
-      title: "Exclusive Access",
-      description: "Get early access to tickets, VIP experiences, and exclusive events before they sell out"
+      icon: <MessageCircle size={24} />,
+      title: "Icebreaker Prompts",
+      description: "Pre-written conversation starters help you break the ice and start meaningful conversations naturally"
     },
     {
-      icon: <Gift size={24} />,
-      title: "Rewards & Perks",
-      description: "Earn points for attending events and redeem exclusive perks at partner venues"
-    },
-    {
-      icon: <Crown size={24} />,
-      title: "Membership Tiers",
-      description: "Free, Premium, and VIP memberships with escalating benefits and event access"
+      icon: <Shield size={24} />,
+      title: "Verified & Secure",
+      description: "All users are verified event attendees with built-in safety features and easy reporting systems"
     }
   ];
 
-  const testimonials = [
-    {
-      name: "Adaora Okafor",
-      role: "Head of Corporate Affairs, Zenith Bank",
-      image: "https://randomuser.me/api/portraits/women/54.jpg",
-      quote: "Convivia24 cut our stockouts by 30%. Their premium wine selection and smart reordering keep our corporate events perfectly stocked!"
-    },
-    {
-      name: "James Mitchell",
-      role: "Event Manager, The Shard",
-      image: "https://randomuser.me/api/portraits/men/32.jpg",
-      quote: "The platform's real-time inventory tracking and automated reordering have revolutionized our event management process."
-    },
-    {
-      name: "Sarah Chen",
-      role: "Operations Director, Sky Lounge",
-      image: "https://randomuser.me/api/portraits/women/28.jpg",
-      quote: "Convivia24's predictive analytics help us anticipate demand and maintain perfect stock levels for every event."
-    }
-  ];
 
   const AnimatedCounter = ({ end, duration = 2000 }) => {
     const [count, setCount] = useState(0);
@@ -108,24 +88,24 @@ const LandingPageMobile = () => {
             </span>
           </motion.div>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 30 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-4xl sm:text-5xl font-bold text-white mb-6 leading-tight px-4 drop-shadow-lg" 
-            style={{ fontFamily: 'Playfair Display, serif' }}
-          >
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-200 to-red-100 drop-shadow-md">Convivia24</span> - Discover <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-200 to-red-100 drop-shadow-md">Amazing Events</span> <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-200 to-red-100 drop-shadow-md">Worldwide</span>
-          </motion.h1>
+                  <motion.h1
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 30 }}
+                    transition={{ duration: 0.8, delay: 0.2 }}
+                    className="text-4xl sm:text-5xl font-bold text-white mb-6 leading-tight px-4 drop-shadow-lg"
+                    style={{ fontFamily: 'Playfair Display, serif' }}
+                  >
+                    Transform Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-200 to-red-100 drop-shadow-md">Social Life</span> with <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-200 to-red-100 drop-shadow-md">Convivia24</span>
+                  </motion.h1>
 
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 30 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-lg text-gray-100 mb-8 px-4 drop-shadow-md"
-          >
-            Find the best events, concerts, festivals, and experiences near you or around the world. Connect safely with like-minded people at events you're attending. Never feel socially awkward again.
-          </motion.p>
+                  <motion.p
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 30 }}
+                    transition={{ duration: 0.8, delay: 0.4 }}
+                    className="text-lg text-gray-100 mb-8 px-4 drop-shadow-md"
+                  >
+                    Never feel socially awkward again. Discover amazing events, connect with like-minded people, and build meaningful relationships that last beyond the night. Your social transformation starts here.
+                  </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -188,7 +168,7 @@ const LandingPageMobile = () => {
               Why Choose <span className="text-red-600">Convivia24</span>?
             </h2>
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-              Experience the future of social events with our innovative platform
+              Transform your social life with safe connections, smart event discovery, and meaningful relationships.
             </p>
           </motion.div>
 
@@ -308,8 +288,11 @@ const LandingPageMobile = () => {
                     <p className="text-sm font-medium text-gray-900">Get Early Access</p>
                     <p className="text-xs text-gray-600">Be the first to experience safe social connections</p>
                   </div>
-                  <button className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm font-medium">
-                    Join Waitlist
+                  <button 
+                    onClick={() => navigate('/event-companions')}
+                    className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+                  >
+                    Learn More
                   </button>
                 </div>
               </div>
@@ -318,35 +301,37 @@ const LandingPageMobile = () => {
         </div>
       </section>
 
-      {/* Statistics Section */}
+      {/* How Convivia Works Section */}
       <section className="py-16 bg-gradient-to-r from-red-600 to-red-800">
-        <div className="px-4">
-          <div className="bg-white rounded-2xl overflow-hidden shadow-2xl">
-            <div className="grid grid-cols-2 gap-4 p-6">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5 }}
-                className="text-center text-red-600"
-              >
-                <div className="text-3xl font-bold mb-2">
-                  <AnimatedCounter end={500} /> +
-                </div>
-                <p className="text-red-600/80 text-sm">Events Discovered</p>
-              </motion.div>
-              
+        <div className="px-4 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <h2 className="text-3xl font-bold text-white mb-6" style={{ fontFamily: 'Playfair Display, serif' }}>
+              How <span className="text-red-200">Convivia24</span> Works
+            </h2>
+            <p className="text-red-100 max-w-2xl mx-auto mb-8 text-lg">
+              Transform your social life in three simple steps. Discover amazing events, connect with like-minded people, and build meaningful relationships that last.
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.1 }}
-                className="text-center text-red-600"
+                className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20"
               >
-                <div className="text-3xl font-bold mb-2">
-                  <AnimatedCounter end={25000} /> +
+                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Search size={24} className="text-white" />
                 </div>
-                <p className="text-red-600/80 text-sm">Rewards Earned</p>
+                <h3 className="text-xl font-bold text-white mb-3">1. Discover Events</h3>
+                <p className="text-red-100 text-sm">
+                  Find amazing events near you with AI-powered recommendations based on your interests and mood.
+                </p>
               </motion.div>
               
               <motion.div
@@ -354,12 +339,15 @@ const LandingPageMobile = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="text-center text-red-600"
+                className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20"
               >
-                <div className="text-3xl font-bold mb-2">
-                  <AnimatedCounter end={150} /> +
+                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Users size={24} className="text-white" />
                 </div>
-                <p className="text-red-600/80 text-sm">Partner Venues</p>
+                <h3 className="text-xl font-bold text-white mb-3">2. Connect Safely</h3>
+                <p className="text-red-100 text-sm">
+                  Get matched with verified attendees who share your interests. Chat with icebreaker prompts to start conversations naturally.
+                </p>
               </motion.div>
               
               <motion.div
@@ -367,100 +355,21 @@ const LandingPageMobile = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.3 }}
-                className="text-center text-red-600"
+                className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20"
               >
-                <div className="text-3xl font-bold mb-2">
-                  <AnimatedCounter end={24} />
+                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Heart size={24} className="text-white" />
                 </div>
-                <p className="text-red-600/80 text-sm">Countries Active</p>
+                <h3 className="text-xl font-bold text-white mb-3">3. Build Relationships</h3>
+                <p className="text-red-100 text-sm">
+                  Meet up at events and build meaningful connections that extend beyond the night. Never feel socially awkward again.
+                </p>
               </motion.div>
             </div>
-          </div>
-          
-          <div className="mt-12 text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-            >
-              <h2 className="text-2xl font-bold mb-4 text-white" style={{ fontFamily: 'Playfair Display, serif' }}>
-                How <span className="text-yellow-300">Convivia24</span> Works
-              </h2>
-              <p className="text-red-100 max-w-2xl mx-auto mb-6">
-                Discover & Explore – Find amazing events worldwide with AI-powered recommendations. Connect & Socialize – Join live hangout rooms, chat with attendees, and make new connections. Earn & Redeem – Get rewarded for your social activities and unlock exclusive perks at partner venues.
-              </p>
-              
-              <div className="flex flex-wrap justify-center gap-3">
-                <div className="flex items-center gap-2 bg-white/20 px-3 py-2 rounded-full">
-                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  <span className="text-white text-sm">Smart Event Discovery</span>
-                </div>
-                <div className="flex items-center gap-2 bg-white/20 px-3 py-2 rounded-full">
-                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  <span className="text-white text-sm">Social Hangout Rooms</span>
-                </div>
-                <div className="flex items-center gap-2 bg-white/20 px-3 py-2 rounded-full">
-                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  <span className="text-white text-sm">Rewards & Perks</span>
-                </div>
-                <div className="flex items-center gap-2 bg-white/20 px-3 py-2 rounded-full">
-                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  <span className="text-white text-sm">Membership Tiers</span>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
-              What Our <span className="text-red-600">Partners</span> Say
-            </h2>
-            <p className="text-gray-600 text-lg">
-              Trusted by venues and event organizers worldwide
-            </p>
           </motion.div>
-
-          <div className="space-y-6">
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-white p-6 rounded-2xl shadow-lg"
-              >
-                <div className="flex items-start gap-4">
-                  <img
-                    src={testimonial.image}
-                    alt={testimonial.name}
-                    className="w-12 h-12 rounded-full object-cover"
-                  />
-                  <div className="flex-1">
-                    <p className="text-gray-700 mb-4 italic">"{testimonial.quote}"</p>
-                    <div>
-                      <h4 className="font-semibold text-gray-900">{testimonial.name}</h4>
-                      <p className="text-sm text-gray-600">{testimonial.role}</p>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
         </div>
       </section>
+
 
       {/* CTA Section */}
       <section className="py-16 bg-gradient-to-r from-red-600 to-red-800">
@@ -475,7 +384,7 @@ const LandingPageMobile = () => {
               Ready to Transform Your Social Life?
             </h2>
             <p className="text-red-100 mb-8 max-w-2xl mx-auto">
-              Join thousands of users who are already discovering amazing events, making new connections, and earning exclusive rewards.
+              Join thousands of users who are already building meaningful connections, discovering amazing events, and never feeling socially awkward again.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button 

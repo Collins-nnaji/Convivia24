@@ -10,17 +10,23 @@ const MobileBottomNav = () => {
   const navigate = useNavigate();
 
   const navItems = [
-    { 
-      path: '/', 
-      label: 'Home', 
+    {
+      path: '/',
+      label: 'Home',
       icon: <Home size={20} />,
       activeIcon: <Home size={20} />
     },
-    { 
-      path: '/discover', 
-      label: 'Events', 
+    {
+      path: '/discover',
+      label: 'Events',
       icon: <Search size={20} />,
       activeIcon: <Search size={20} />
+    },
+    {
+      path: '/event-companions',
+      label: 'Companions',
+      icon: <Users size={20} />,
+      activeIcon: <Users size={20} />
     }
   ];
 
