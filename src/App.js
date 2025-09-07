@@ -4,6 +4,7 @@ import { AnimatePresence } from 'framer-motion';
 import LandingPageMobile from './components/LandingPageMobile';
 
 import EventDiscoveryPremium from './pages/EventDiscoveryPremium';
+import EventCompanions from './pages/EventCompanions';
 import PartnerDashboard from './pages/PartnerDashboard';
 
 import Layout from './components/layout/Layout';
@@ -20,6 +21,7 @@ const AnimatedRoutes = () => {
 
         {/* Core App Pages */}
         <Route path="/discover" element={<EventDiscoveryPremium />} />
+        <Route path="/event-companions" element={<EventCompanions />} />
         <Route path="/partner-dashboard" element={<PartnerDashboard />} />
 
         {/* Redirects */}
