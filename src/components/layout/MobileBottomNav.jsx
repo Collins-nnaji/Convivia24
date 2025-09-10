@@ -27,6 +27,12 @@ const MobileBottomNav = () => {
       label: 'Companions',
       icon: <Users size={20} />,
       activeIcon: <Users size={20} />
+    },
+    {
+      path: '/dashboard',
+      label: 'Profile',
+      icon: <User size={20} />,
+      activeIcon: <User size={20} />
     }
   ];
 
