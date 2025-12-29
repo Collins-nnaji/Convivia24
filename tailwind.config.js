@@ -7,6 +7,7 @@ module.exports = {
       extend: {
         animation: {
           blob: "blob 7s infinite",
+          'spin-slow': 'spin 12s linear infinite',
         },
         keyframes: {
           blob: {
