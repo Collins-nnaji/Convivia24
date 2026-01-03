@@ -1,13 +1,9 @@
 [build]
   command = "npm run build"
-  publish = "build"
+  publish = ".next"
 
 [build.environment]
   CI = "false"
-  NODE_VERSION = "18"
+  NODE_VERSION = "20.9.0"
 
-# Handle SPA routing
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200 
+# Next.js handles all routing automatically - no redirects needed 
