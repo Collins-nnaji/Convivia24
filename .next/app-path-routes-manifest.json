@@ -1,0 +1,9 @@
+{
+  "/(app)/business/page": "/business",
+  "/(app)/explore/page": "/explore",
+  "/(app)/profile/page": "/profile",
+  "/(app)/saved/page": "/saved",
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/page": "/"
+}

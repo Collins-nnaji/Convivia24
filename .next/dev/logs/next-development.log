@@ -1,0 +1,70 @@
+[00:00:03.509] Server  LOG     ✓ Ready in 3.1s
+[00:00:06.440] Server  ERROR   ⨯ ./app/globals.css:2124:8
+Parsing CSS source code failed
+  2122 | }
+  2123 |
+> 2124 | @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+       |        ^
+  2125 |
+  2126 | body {
+  2127 |   margin: 0;
+
+@import rules must precede all rules aside from @charset and @layer statements
+
+Import trace:
+  Client Component Browser:
+    ./app/globals.css [Client Component Browser]
+    ./app/layout.jsx [Server Component]
+
+
+[00:00:07.741] Browser ERROR   uncaughtError: Error: ./app/globals.css:2124:8
+Parsing CSS source code failed
+  2122 | }
+  2123 |
+> 2124 | @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+       |        ^
+  2125 |
+  2126 | body {
+  2127 |   margin: 0;
+
+@import rules must precede all rules aside from @charset and @layer statements
+
+Import trace:
+  Client Component Browser:
+    ./app/globals.css [Client Component Browser]
+    ./app/layout.jsx [Server Component]
+
+
+[00:00:07.931] Browser ERROR   ./app/globals.css:2124:8
+Parsing CSS source code failed
+  2122 | }
+  2123 |
+> 2124 | @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+       |        ^
+  2125 |
+  2126 | body {
+  2127 |   margin: 0;
+
+@import rules must precede all rules aside from @charset and @layer statements
+
+Import trace:
+  Client Component Browser:
+    ./app/globals.css [Client Component Browser]
+    ./app/layout.jsx [Server Component]
+[00:00:08.119] Browser ERROR   ./app/globals.css:2124:8
+Parsing CSS source code failed
+  2122 | }
+  2123 |
+> 2124 | @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+       |        ^
+  2125 |
+  2126 | body {
+  2127 |   margin: 0;
+
+@import rules must precede all rules aside from @charset and @layer statements
+
+Import trace:
+  Client Component Browser:
+    ./app/globals.css [Client Component Browser]
+    ./app/layout.jsx [Server Component]
+[00:00:43.438] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
