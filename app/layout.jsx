@@ -15,9 +15,10 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <head>
         <link rel="icon" href="/convivialogo.png" />
+        <link rel="shortcut icon" href="/convivialogo.png" />
       </head>
       <body>
-        <div id="root">{children}</div>
+        {children}
       </body>
     </html>
   );
