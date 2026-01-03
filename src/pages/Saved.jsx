@@ -7,15 +7,15 @@ const Saved = () => {
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="space-y-12 pb-20"
+      className="space-y-12 pb-20 px-6 lg:px-0"
     >
-      <header className="flex items-end justify-between border-b border-white/5 pb-8">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-yellow-500 mb-1">
+      <header className="flex flex-col sm:flex-row items-center sm:items-end justify-between border-b border-white/5 pb-8 gap-6">
+        <div className="space-y-2 text-center sm:text-left">
+          <div className="flex items-center justify-center sm:justify-start gap-2 text-yellow-500 mb-1">
             <Star size={14} fill="currentColor" />
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Curated Vault</span>
           </div>
-          <h1 className="text-5xl font-black tracking-tighter uppercase italic leading-none text-white">Saved</h1>
+          <h1 className="text-4xl lg:text-5xl font-black tracking-tighter uppercase italic leading-none text-white">Saved</h1>
         </div>
         
         <div className="flex bg-zinc-950 p-1.5 rounded-2xl border border-white/5 gap-1">
@@ -29,7 +29,7 @@ const Saved = () => {
       </header>
 
       {/* Empty State / Coming Soon */}
-      <div className="relative group rounded-[3.5rem] bg-zinc-950 border border-white/5 p-16 flex flex-col items-center text-center space-y-8 overflow-hidden">
+      <div className="relative group rounded-[2.5rem] lg:rounded-[3.5rem] bg-zinc-950 border border-white/5 p-8 lg:p-16 flex flex-col items-center text-center space-y-8 overflow-hidden">
         {/* Background Glow */}
         <div className="absolute inset-0 bg-yellow-500/5 blur-3xl rounded-full opacity-20 group-hover:opacity-40 transition-opacity duration-1000"></div>
 

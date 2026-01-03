@@ -1,17 +1,17 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { Home, Bookmark, User, Compass, Briefcase, LayoutGrid } from 'lucide-react';
+import { Home, Bookmark, User, Compass, Briefcase, LayoutGrid, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const AppLayout = () => {
   const navItems = [
-    { icon: <Compass size={20} />, label: 'Explore', path: '/explore' },
+    { icon: <Compass size={20} />, label: 'Hub', path: '/explore' },
     { icon: <Bookmark size={20} />, label: 'Saved', path: '/saved' },
     { icon: <User size={20} />, label: 'Profile', path: '/profile' },
   ];
 
   return (
-    <div className="min-h-screen bg-[#080808] text-white font-sans selection:bg-red-600 overflow-x-hidden relative">
+    <div className="min-h-screen bg-[#111111] text-white font-sans selection:bg-red-600 overflow-x-hidden relative">
       {/* Visual Depth: Noise & Glows (Matching Landing Page) */}
       <div className="fixed inset-0 z-[0] pointer-events-none opacity-[0.05] mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
       <div className="fixed top-[-10%] right-[-10%] w-[600px] h-[600px] bg-red-600/[0.08] blur-[120px] rounded-full pointer-events-none z-0"></div>
@@ -63,7 +63,7 @@ const AppLayout = () => {
       </aside>
 
       {/* Main Content Area */}
-      <main className="lg:pl-24 pb-24 lg:pb-0 min-h-screen relative z-10">
+      <main className="lg:pl-24 pb-32 lg:pb-0 min-h-screen relative z-10">
         <div className="max-w-[1600px] mx-auto">
           <Outlet />
         </div>

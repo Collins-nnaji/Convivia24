@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { 
   Briefcase, BarChart3, Users, Zap, ShieldCheck, 
   ArrowRight, Globe, Store, Rocket, Target, 
-  MessageSquare, LayoutDashboard, Plus, Search
+  MessageSquare, LayoutDashboard, Plus, Search, TrendingUp
 } from 'lucide-react';
 
 const Business = () => {
@@ -21,25 +21,25 @@ const Business = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-transparent">
+    <div className="min-h-screen bg-transparent relative overflow-x-hidden">
       {/* 1. Hero Section - Strategic Marketing */}
-      <section className="relative px-6 py-20 lg:px-12 overflow-hidden border-b border-white/5">
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16">
-          <div className="flex-1 space-y-10 text-center lg:text-left relative z-10">
+      <section className="relative px-6 py-12 lg:py-20 lg:px-12 overflow-hidden border-b border-white/5">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+          <div className="flex-1 space-y-8 lg:space-y-10 text-center lg:text-left relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-600/10 border border-red-600/20 text-red-500"
             >
               <Briefcase size={14} />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em]">Convivia for Business</span>
+              <span className="text-[9px] lg:text-[10px] font-black uppercase tracking-[0.3em]">Convivia for Business</span>
             </motion.div>
             
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-6xl lg:text-8xl font-black tracking-tighter uppercase italic leading-none text-white"
+              className="text-4xl md:text-6xl lg:text-8xl font-black tracking-tighter uppercase italic leading-none text-white"
             >
               The City's <br/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-white">Growth</span> Engine
             </motion.h1>
@@ -48,7 +48,7 @@ const Business = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-lg lg:text-xl text-zinc-500 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium"
+              className="text-base lg:text-xl text-zinc-500 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium"
             >
               Transform your venue or service into a premium city experience. Connect with over 4,000+ active members looking for the best spots tonight.
             </motion.p>
@@ -59,54 +59,54 @@ const Business = () => {
               transition={{ delay: 0.3 }}
               className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
             >
-              <button className="group px-12 py-6 bg-white text-black font-black text-xs uppercase tracking-[0.2em] rounded-2xl hover:bg-zinc-200 transition-all shadow-[0_20px_50px_-10px_rgba(255,255,255,0.3)] flex items-center justify-center gap-3">
+              <button className="group px-8 lg:px-12 py-5 lg:py-6 bg-white text-black font-black text-[10px] lg:text-xs uppercase tracking-[0.2em] rounded-2xl hover:bg-zinc-200 transition-all shadow-[0_20px_50px_-10px_rgba(255,255,255,0.3)] flex items-center justify-center gap-3">
                 Become a Partner <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
               </button>
-              <button className="px-12 py-6 bg-zinc-950 border border-white/5 text-zinc-400 font-black text-xs uppercase tracking-[0.2em] rounded-2xl hover:text-white hover:border-white/10 transition-all">
+              <button className="px-8 lg:px-12 py-5 lg:py-6 bg-zinc-950 border border-white/5 text-zinc-400 font-black text-[10px] lg:text-xs uppercase tracking-[0.2em] rounded-2xl hover:text-white hover:border-white/10 transition-all">
                 Partner Login
               </button>
             </motion.div>
           </div>
 
-          {/* Abstract Dashboard Mockup */}
-          <div className="flex-1 w-full lg:max-w-xl relative group">
-            <div className="absolute inset-0 bg-red-600/10 blur-[120px] rounded-full transition-opacity duration-1000 group-hover:opacity-100 opacity-50"></div>
-            <div className="relative bg-zinc-900 border border-white/10 rounded-[3rem] overflow-hidden shadow-2xl p-10 flex flex-col gap-8 backdrop-blur-sm transform-gpu">
+          {/* Abstract Dashboard Mockup - Hardware Accelerated */}
+          <div className="flex-1 w-full lg:max-w-xl relative group transform-gpu">
+            <div className="absolute inset-0 bg-red-600/10 blur-[120px] rounded-full transition-opacity duration-1000 group-hover:opacity-100 opacity-50 pointer-events-none"></div>
+            <div className="relative bg-zinc-900 border border-white/10 rounded-[2.5rem] lg:rounded-[3rem] overflow-hidden shadow-2xl p-6 lg:p-10 flex flex-col gap-6 lg:gap-8 backdrop-blur-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-red-600/10 border border-red-600/20 flex items-center justify-center text-red-500">
-                    <LayoutDashboard size={20} />
+                  <div className="w-8 lg:w-10 h-8 lg:h-10 rounded-xl bg-red-600/10 border border-red-600/20 flex items-center justify-center text-red-500">
+                    <LayoutDashboard size={18} />
                   </div>
-                  <p className="text-xs font-black uppercase tracking-widest text-zinc-300">Live Dashboard</p>
+                  <p className="text-[10px] lg:text-xs font-black uppercase tracking-widest text-zinc-300">Live Dashboard</p>
                 </div>
-                <div className="px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-500 text-[8px] font-black uppercase tracking-widest">System Active</div>
+                <div className="px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-500 text-[7px] lg:text-[8px] font-black uppercase tracking-widest">System Active</div>
               </div>
 
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-black/40 rounded-[2rem] border border-white/5 p-6 space-y-1">
-                    <p className="text-[8px] font-black uppercase text-zinc-600 tracking-widest">Daily Revenue</p>
-                    <p className="text-2xl font-black italic text-white leading-none">₦482,000</p>
+              <div className="space-y-4 lg:space-y-6">
+                <div className="grid grid-cols-2 gap-3 lg:gap-4">
+                  <div className="bg-black/40 rounded-[1.5rem] lg:rounded-[2rem] border border-white/5 p-4 lg:p-6 space-y-1">
+                    <p className="text-[7px] lg:text-[8px] font-black uppercase text-zinc-600 tracking-widest">Daily Revenue</p>
+                    <p className="text-xl lg:text-2xl font-black italic text-white leading-none">₦482,000</p>
                   </div>
-                  <div className="bg-black/40 rounded-[2rem] border border-white/5 p-6 space-y-1">
-                    <p className="text-[8px] font-black uppercase text-zinc-600 tracking-widest">Active Guests</p>
-                    <p className="text-2xl font-black italic text-white leading-none">24</p>
+                  <div className="bg-black/40 rounded-[1.5rem] lg:rounded-[2rem] border border-white/5 p-4 lg:p-6 space-y-1">
+                    <p className="text-[7px] lg:text-[8px] font-black uppercase text-zinc-600 tracking-widest">Active Guests</p>
+                    <p className="text-xl lg:text-2xl font-black italic text-white leading-none">24</p>
                   </div>
                 </div>
                 
-                <div className="bg-black/40 rounded-[2.5rem] border border-white/5 p-8 relative overflow-hidden h-48">
-                  <div className="flex items-center justify-between mb-6">
-                    <p className="text-[10px] font-black uppercase text-zinc-400">Weekly Booking Velocity</p>
+                <div className="bg-black/40 rounded-[2rem] lg:rounded-[2.5rem] border border-white/5 p-6 lg:p-8 relative overflow-hidden h-40 lg:h-48">
+                  <div className="flex items-center justify-between mb-4 lg:mb-6">
+                    <p className="text-[8px] lg:text-[10px] font-black uppercase text-zinc-400">Weekly Booking Velocity</p>
                     <TrendingUp size={14} className="text-red-500" />
                   </div>
-                  <div className="flex gap-2 items-end h-24 absolute bottom-8 left-8 right-8">
+                  <div className="flex gap-1 lg:gap-2 items-end h-20 lg:h-24 absolute bottom-6 lg:bottom-8 left-6 lg:left-8 right-6 lg:right-8">
                     {[4, 7, 5, 9, 6, 8, 10, 7, 12, 8].map((h, i) => (
                       <motion.div 
                         key={i} 
                         initial={{ height: 0 }}
                         animate={{ height: `${h * 8}%` }}
                         transition={{ delay: 0.5 + (i * 0.05), duration: 0.8, ease: "easeOut" }}
-                        className="flex-1 bg-red-600/40 rounded-t-lg group-hover:bg-red-600 transition-colors"
+                        className="flex-1 bg-red-600/40 rounded-t-sm lg:rounded-t-lg group-hover:bg-red-600 transition-colors"
                       />
                     ))}
                   </div>
@@ -118,11 +118,11 @@ const Business = () => {
       </section>
 
       {/* 2. Features Section - Professional Value Prop */}
-      <section className="px-6 py-32 lg:px-12 max-w-7xl mx-auto space-y-20">
-        <div className="flex flex-col lg:flex-row items-end justify-between gap-8 border-b border-white/5 pb-16">
+      <section className="px-6 py-20 lg:py-32 lg:px-12 max-w-7xl mx-auto space-y-16 lg:space-y-20">
+        <div className="flex flex-col md:flex-row items-center md:items-end justify-between gap-8 border-b border-white/5 pb-16 text-center md:text-left">
           <div className="space-y-4">
-            <h2 className="text-4xl lg:text-5xl font-black tracking-tighter uppercase italic leading-[0.9]">Beyond simple listings</h2>
-            <p className="text-zinc-500 text-sm font-medium uppercase tracking-[0.3em]">Comprehensive tools for the modern entrepreneur</p>
+            <h2 className="text-3xl lg:text-5xl font-black tracking-tighter uppercase italic leading-[0.9]">Beyond simple listings</h2>
+            <p className="text-zinc-500 text-[10px] lg:text-sm font-medium uppercase tracking-[0.3em]">Comprehensive tools for the modern entrepreneur</p>
           </div>
           <button className="flex items-center gap-2 text-red-500 font-black uppercase tracking-[0.2em] text-xs hover:opacity-70 transition-all">
             Explore All Tools <Plus size={16} />
@@ -176,18 +176,18 @@ const Business = () => {
       </section>
 
       {/* 4. Final CTA - The Conversion */}
-      <section className="px-6 py-32 lg:px-12 text-center max-w-4xl mx-auto space-y-12">
+      <section className="px-6 py-20 lg:py-32 lg:px-12 text-center max-w-4xl mx-auto space-y-12">
         <div className="relative inline-block">
           <div className="absolute inset-[-20px] bg-red-600/20 blur-[60px] rounded-full"></div>
           <Rocket size={48} className="text-red-500 mx-auto relative z-10" />
         </div>
         
         <div className="space-y-4">
-          <h2 className="text-5xl lg:text-7xl font-black tracking-tighter uppercase italic leading-[0.85]">Join the Elite<br/>Network</h2>
-          <p className="text-zinc-500 text-lg leading-relaxed font-medium">Over 50+ premium venues in Lagos are already using Convivia to drive secure, high-value bookings.</p>
+          <h2 className="text-4xl lg:text-7xl font-black tracking-tighter uppercase italic leading-[0.85]">Join the Elite<br/>Network</h2>
+          <p className="text-zinc-500 text-sm lg:text-lg leading-relaxed font-medium">Over 50+ premium venues in Lagos are already using Convivia to drive secure, high-value bookings.</p>
         </div>
 
-        <button className="px-16 py-8 bg-red-600 text-white font-black text-sm uppercase tracking-[0.4em] rounded-3xl hover:bg-red-500 transition-all shadow-[0_30px_60px_-15px_rgba(220,38,38,0.4)] transform hover:scale-105">
+        <button className="w-full sm:w-auto px-16 py-8 bg-red-600 text-white font-black text-xs lg:text-sm uppercase tracking-[0.4em] rounded-3xl hover:bg-red-500 transition-all shadow-[0_30px_60px_-15px_rgba(220,38,38,0.4)] transform hover:scale-105">
           Apply for Partnership
         </button>
         
@@ -198,12 +198,5 @@ const Business = () => {
   );
 };
 
-// Re-using TrendingUp icon from main platform
-const TrendingUp = ({ size, className }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-    <polyline points="17 6 23 6 23 12"></polyline>
-  </svg>
-);
-
+// Re-using icon from main platform
 export default Business;

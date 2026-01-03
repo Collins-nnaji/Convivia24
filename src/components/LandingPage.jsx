@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
-  ArrowRight, Sparkles, Star, ShieldCheck, X, AlertTriangle, MapPin
+  ArrowRight, Sparkles, Star, ShieldCheck, X, AlertTriangle, MapPin, Users
 } from 'lucide-react';
 
 const LandingPage = () => {
@@ -28,7 +28,7 @@ const LandingPage = () => {
 
   const confirmAge = () => {
     setShowAgeModal(false);
-    navigate('/feed');
+    navigate('/explore');
   };
 
   return (
@@ -62,30 +62,34 @@ const LandingPage = () => {
               />
             </div>
 
-            <div className="flex items-center justify-center lg:justify-start gap-3 mb-2">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] backdrop-blur-xl border border-white/10 hover:bg-white/10 transition-all cursor-default group">
-                <Sparkles size={14} className="text-red-500 group-hover:rotate-12 transition-transform" />
-                <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-gray-400">Curated City Experiences</span>
-              </div>
-              
-              {/* 18+ Badge */}
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={isLoaded ? { scale: 1 } : {}}
-                transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-600/20 border border-red-600/40 backdrop-blur-xl"
-              >
-                <ShieldCheck size={12} className="text-red-500" />
-                <span className="text-[10px] font-black tracking-[0.2em] uppercase text-red-500">18+</span>
-              </motion.div>
-            </div>
+    <div className="flex items-center justify-center lg:justify-start gap-3 mb-2">
+      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] backdrop-blur-xl border border-white/10 hover:bg-white/10 transition-all cursor-default group">
+        <Sparkles size={14} className="text-red-500 group-hover:rotate-12 transition-transform" />
+        <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-gray-400">Curated Social Hub</span>
+      </div>
+      
+      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-600/5 backdrop-blur-xl border border-red-600/20 hover:bg-red-600/10 transition-all cursor-default group">
+        <Users size={14} className="text-red-500" />
+        <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-red-500">Location-First Matching</span>
+      </div>
+      
+      {/* 18+ Badge */}
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={isLoaded ? { scale: 1 } : {}}
+        transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 border border-white/10 backdrop-blur-xl"
+      >
+        <span className="text-[10px] font-black tracking-[0.2em] uppercase text-white">18+</span>
+      </motion.div>
+    </div>
             
             <h1 className="text-6xl md:text-7xl lg:text-8xl font-black mb-3 tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white via-gray-100 to-gray-500 leading-[0.9] whitespace-nowrap">
               CONVIVIA 24
             </h1>
             
             <p className="text-xl lg:text-2xl text-red-500 mb-2 font-medium italic tracking-tight opacity-90">
-              "Your city, simplified. Your life, elevated."
+              "Meet through the city, not through a screen."
             </p>
             
             {/* Adult-Only Notice */}
@@ -133,9 +137,9 @@ const LandingPage = () => {
               transition={{ duration: 1.2, delay: 0.3 }}
               className="relative pt-6 border-t border-white/5 max-w-xl mx-auto lg:mx-0"
             >
-              <h2 className="text-xl lg:text-2xl font-bold tracking-tight text-zinc-200 leading-[1.5] text-center lg:text-left italic relative z-10 mb-6">
-                Discover, book, and enjoy the <span className="text-white font-black not-italic border-b-2 border-red-600/50">best social experiences</span> and lifestyle services in your city — <span className="text-zinc-500">anytime, any day.</span>
-              </h2>
+            <h2 className="text-xl lg:text-2xl font-bold tracking-tight text-zinc-200 leading-[1.5] text-center lg:text-left italic relative z-10 mb-6">
+              Discover where your <span className="text-white font-black not-italic border-b-2 border-red-600/50">circle is tonight</span>. Match experiences, see lifestyle synergy, and meet at the venue — <span className="text-zinc-500">no endless chats, just real connections.</span>
+            </h2>
               
               <div className="flex justify-center lg:justify-start gap-4 mb-10">
                 <div className="w-12 h-[1px] bg-red-600/30 self-center"></div>
@@ -199,7 +203,7 @@ const LandingPage = () => {
 
               <div className="space-y-1">
                 <h4 className="text-lg font-black tracking-tighter text-yellow-500 uppercase italic">The Macallan</h4>
-                <p className="text-[9px] text-zinc-500 leading-relaxed font-medium uppercase tracking-wider">"The First Light" Essence — A legacy of craftsmanship meets city nights.</p>
+                <p className="text-[9px] text-zinc-500 leading-relaxed font-medium uppercase tracking-wider">"The First Light" Essence — Crafting the perfect backdrop for city connections.</p>
               </div>
             </div>
           </motion.div>
@@ -259,7 +263,7 @@ const LandingPage = () => {
 
               <h3 className="text-3xl font-black tracking-tighter uppercase italic mb-4">Age Verification</h3>
               <p className="text-zinc-500 text-sm leading-relaxed mb-10 font-medium">
-                Convivia 24 is a curated platform for social experiences. You must be <span className="text-white font-bold">18 years or older</span> to access the city feed and book lifestyle services.
+                Convivia 24 is an adult-only social platform. You must be <span className="text-white font-bold">18 years or older</span> to discover circles and meet through city experiences.
               </p>
 
               <div className="flex flex-col gap-4">
