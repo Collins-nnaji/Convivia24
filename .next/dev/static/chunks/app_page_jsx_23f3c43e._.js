@@ -6,6 +6,8 @@ __turbopack_context__.s([
     "default",
     ()=>__TURBOPACK__default__export__
 ]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$swc$2f$helpers$2f$esm$2f$_sliced_to_array$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@swc/helpers/esm/_sliced_to_array.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$swc$2f$helpers$2f$esm$2f$_type_of$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@swc/helpers/esm/_type_of.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/framer-motion/dist/es/render/components/motion/proxy.mjs [app-client] (ecmascript)");
@@ -19,19 +21,22 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$re
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$map$2d$pin$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__MapPin$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/map-pin.js [app-client] (ecmascript) <export default as MapPin>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$users$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Users$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/users.js [app-client] (ecmascript) <export default as Users>");
 ;
+;
+var _this = ("TURBOPACK compile-time value", void 0);
+;
 var _s = __turbopack_context__.k.signature();
 'use client';
 ;
 ;
 ;
 ;
-const LandingPage = ()=>{
+var LandingPage = function() {
     _s();
-    const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
-    const [isLoaded, setIsLoaded] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
-    const [showAgeModal, setShowAgeModal] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
-    const [currentLocation, setCurrentLocation] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(0);
-    const locations = [
+    var router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
+    var _useState = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$swc$2f$helpers$2f$esm$2f$_sliced_to_array$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["_"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false), 2), isLoaded = _useState[0], setIsLoaded = _useState[1];
+    var _useState1 = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$swc$2f$helpers$2f$esm$2f$_sliced_to_array$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["_"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false), 2), showAgeModal = _useState1[0], setShowAgeModal = _useState1[1];
+    var _useState2 = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$swc$2f$helpers$2f$esm$2f$_sliced_to_array$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["_"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(0), 2), currentLocation = _useState2[0], setCurrentLocation = _useState2[1];
+    var locations = [
         'Lagos',
         'Abuja',
         'London',
@@ -40,25 +45,29 @@ const LandingPage = ()=>{
         'Dubai'
     ];
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
-        "LandingPage.useEffect": ()=>{
+        "LandingPage.useEffect": function() {
             setIsLoaded(true);
             // Animate locations
-            const interval = setInterval({
-                "LandingPage.useEffect.interval": ()=>{
+            var interval = setInterval({
+                "LandingPage.useEffect.interval": function() {
                     setCurrentLocation({
-                        "LandingPage.useEffect.interval": (prev)=>(prev + 1) % locations.length
+                        "LandingPage.useEffect.interval": function(prev) {
+                            return (prev + 1) % locations.length;
+                        }
                     }["LandingPage.useEffect.interval"]);
                 }
             }["LandingPage.useEffect.interval"], 3000);
             return ({
-                "LandingPage.useEffect": ()=>clearInterval(interval)
+                "LandingPage.useEffect": function() {
+                    return clearInterval(interval);
+                }
             })["LandingPage.useEffect"];
         }
     }["LandingPage.useEffect"], []);
-    const handleEnterPlatform = ()=>{
+    var handleEnterPlatform = function() {
         setShowAgeModal(true);
     };
-    const confirmAge = ()=>{
+    var confirmAge = function() {
         setShowAgeModal(false);
         router.push('/explore');
     };
@@ -71,21 +80,21 @@ const LandingPage = ()=>{
                 fileName: "[project]/app/page.jsx",
                 lineNumber: 39,
                 columnNumber: 7
-            }, ("TURBOPACK compile-time value", void 0)),
+            }, _this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-red-600/5 blur-[120px] rounded-full pointer-events-none z-0"
             }, void 0, false, {
                 fileName: "[project]/app/page.jsx",
                 lineNumber: 42,
                 columnNumber: 7
-            }, ("TURBOPACK compile-time value", void 0)),
+            }, _this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "fixed top-1/3 left-1/3 w-[300px] h-[300px] bg-red-600/5 blur-[100px] rounded-full pointer-events-none z-0 animate-pulse"
             }, void 0, false, {
                 fileName: "[project]/app/page.jsx",
                 lineNumber: 43,
                 columnNumber: 7
-            }, ("TURBOPACK compile-time value", void 0)),
+            }, _this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
                 className: "flex-1 flex flex-col lg:flex-row max-w-[1400px] mx-auto w-full px-6 pt-12 pb-12 lg:py-8 lg:pt-12 items-center justify-center gap-12 lg:gap-24 relative z-10",
                 children: [
@@ -129,12 +138,12 @@ const LandingPage = ()=>{
                                         fileName: "[project]/app/page.jsx",
                                         lineNumber: 58,
                                         columnNumber: 15
-                                    }, ("TURBOPACK compile-time value", void 0))
+                                    }, _this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/page.jsx",
                                     lineNumber: 57,
                                     columnNumber: 13
-                                }, ("TURBOPACK compile-time value", void 0)),
+                                }, _this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "flex items-center justify-center lg:justify-start gap-3 mb-2",
                                     children: [
@@ -148,7 +157,7 @@ const LandingPage = ()=>{
                                                     fileName: "[project]/app/page.jsx",
                                                     lineNumber: 69,
                                                     columnNumber: 17
-                                                }, ("TURBOPACK compile-time value", void 0)),
+                                                }, _this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                     className: "text-[10px] font-bold tracking-[0.3em] uppercase text-gray-400",
                                                     children: "Curated Social Hub"
@@ -156,13 +165,13 @@ const LandingPage = ()=>{
                                                     fileName: "[project]/app/page.jsx",
                                                     lineNumber: 70,
                                                     columnNumber: 17
-                                                }, ("TURBOPACK compile-time value", void 0))
+                                                }, _this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/page.jsx",
                                             lineNumber: 68,
                                             columnNumber: 15
-                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        }, _this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                             className: "inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-600/5 backdrop-blur-xl border border-red-600/20 hover:bg-red-600/10 transition-all cursor-default group",
                                             children: [
@@ -173,7 +182,7 @@ const LandingPage = ()=>{
                                                     fileName: "[project]/app/page.jsx",
                                                     lineNumber: 74,
                                                     columnNumber: 17
-                                                }, ("TURBOPACK compile-time value", void 0)),
+                                                }, _this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                     className: "text-[10px] font-bold tracking-[0.3em] uppercase text-red-500",
                                                     children: "Location-First Matching"
@@ -181,13 +190,13 @@ const LandingPage = ()=>{
                                                     fileName: "[project]/app/page.jsx",
                                                     lineNumber: 75,
                                                     columnNumber: 17
-                                                }, ("TURBOPACK compile-time value", void 0))
+                                                }, _this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/page.jsx",
                                             lineNumber: 73,
                                             columnNumber: 15
-                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        }, _this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["motion"].div, {
                                             initial: {
                                                 scale: 0
@@ -208,18 +217,18 @@ const LandingPage = ()=>{
                                                 fileName: "[project]/app/page.jsx",
                                                 lineNumber: 85,
                                                 columnNumber: 17
-                                            }, ("TURBOPACK compile-time value", void 0))
+                                            }, _this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/page.jsx",
                                             lineNumber: 79,
                                             columnNumber: 15
-                                        }, ("TURBOPACK compile-time value", void 0))
+                                        }, _this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/page.jsx",
                                     lineNumber: 67,
                                     columnNumber: 13
-                                }, ("TURBOPACK compile-time value", void 0)),
+                                }, _this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
                                     className: "text-6xl md:text-7xl lg:text-8xl font-black mb-3 tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white via-gray-100 to-gray-500 leading-[0.9] whitespace-nowrap",
                                     children: "CONVIVIA 24"
@@ -227,7 +236,7 @@ const LandingPage = ()=>{
                                     fileName: "[project]/app/page.jsx",
                                     lineNumber: 89,
                                     columnNumber: 13
-                                }, ("TURBOPACK compile-time value", void 0)),
+                                }, _this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                     className: "text-xl lg:text-2xl text-red-500 mb-2 font-medium italic tracking-tight opacity-90",
                                     children: '"Meet through the city, not through a screen."'
@@ -235,7 +244,7 @@ const LandingPage = ()=>{
                                     fileName: "[project]/app/page.jsx",
                                     lineNumber: 93,
                                     columnNumber: 13
-                                }, ("TURBOPACK compile-time value", void 0)),
+                                }, _this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                     className: "text-xs text-zinc-600 mb-6 font-medium uppercase tracking-widest flex items-center justify-center lg:justify-start gap-2",
                                     children: [
@@ -246,20 +255,20 @@ const LandingPage = ()=>{
                                             fileName: "[project]/app/page.jsx",
                                             lineNumber: 99,
                                             columnNumber: 15
-                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        }, _this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                             children: "Adults Only • 18+ Platform"
                                         }, void 0, false, {
                                             fileName: "[project]/app/page.jsx",
                                             lineNumber: 100,
                                             columnNumber: 15
-                                        }, ("TURBOPACK compile-time value", void 0))
+                                        }, _this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/page.jsx",
                                     lineNumber: 98,
                                     columnNumber: 13
-                                }, ("TURBOPACK compile-time value", void 0)),
+                                }, _this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "flex items-center justify-center lg:justify-start gap-2 mb-6",
                                     children: [
@@ -270,7 +279,7 @@ const LandingPage = ()=>{
                                             fileName: "[project]/app/page.jsx",
                                             lineNumber: 105,
                                             columnNumber: 15
-                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        }, _this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                             className: "relative h-5 overflow-hidden w-28",
                                             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$components$2f$AnimatePresence$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AnimatePresence"], {
@@ -297,17 +306,17 @@ const LandingPage = ()=>{
                                                     fileName: "[project]/app/page.jsx",
                                                     lineNumber: 108,
                                                     columnNumber: 19
-                                                }, ("TURBOPACK compile-time value", void 0))
+                                                }, _this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/page.jsx",
                                                 lineNumber: 107,
                                                 columnNumber: 17
-                                            }, ("TURBOPACK compile-time value", void 0))
+                                            }, _this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/page.jsx",
                                             lineNumber: 106,
                                             columnNumber: 15
-                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        }, _this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                             className: "text-zinc-600 text-sm font-bold",
                                             children: "•"
@@ -315,7 +324,7 @@ const LandingPage = ()=>{
                                             fileName: "[project]/app/page.jsx",
                                             lineNumber: 120,
                                             columnNumber: 15
-                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        }, _this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                             className: "text-zinc-600 text-[9px] font-bold uppercase tracking-widest",
                                             children: "Live Now"
@@ -323,13 +332,13 @@ const LandingPage = ()=>{
                                             fileName: "[project]/app/page.jsx",
                                             lineNumber: 121,
                                             columnNumber: 15
-                                        }, ("TURBOPACK compile-time value", void 0))
+                                        }, _this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/page.jsx",
                                     lineNumber: 104,
                                     columnNumber: 13
-                                }, ("TURBOPACK compile-time value", void 0)),
+                                }, _this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "flex items-center justify-center lg:justify-start gap-3 text-zinc-600 text-[9px] font-bold uppercase tracking-widest mb-6",
                                     children: [
@@ -339,40 +348,42 @@ const LandingPage = ()=>{
                                                 1,
                                                 2,
                                                 3
-                                            ].map((i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            ].map(function(i) {
+                                                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                     className: "w-7 h-7 rounded-full border-2 border-black bg-zinc-900 flex items-center justify-center overflow-hidden ring-1 ring-white/10",
                                                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
-                                                        src: `https://i.pravatar.cc/100?img=${i + 25}`,
+                                                        src: "https://i.pravatar.cc/100?img=".concat(i + 25),
                                                         alt: "user",
                                                         className: "opacity-80"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/page.jsx",
                                                         lineNumber: 128,
                                                         columnNumber: 21
-                                                    }, ("TURBOPACK compile-time value", void 0))
+                                                    }, _this)
                                                 }, i, false, {
                                                     fileName: "[project]/app/page.jsx",
                                                     lineNumber: 127,
                                                     columnNumber: 19
-                                                }, ("TURBOPACK compile-time value", void 0)))
+                                                }, _this);
+                                            })
                                         }, void 0, false, {
                                             fileName: "[project]/app/page.jsx",
                                             lineNumber: 125,
                                             columnNumber: 15
-                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        }, _this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                             children: "400+ Active"
                                         }, void 0, false, {
                                             fileName: "[project]/app/page.jsx",
                                             lineNumber: 132,
                                             columnNumber: 15
-                                        }, ("TURBOPACK compile-time value", void 0))
+                                        }, _this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/page.jsx",
                                     lineNumber: 124,
                                     columnNumber: 13
-                                }, ("TURBOPACK compile-time value", void 0)),
+                                }, _this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["motion"].div, {
                                     initial: {
                                         opacity: 0,
@@ -399,7 +410,7 @@ const LandingPage = ()=>{
                                                     fileName: "[project]/app/page.jsx",
                                                     lineNumber: 143,
                                                     columnNumber: 35
-                                                }, ("TURBOPACK compile-time value", void 0)),
+                                                }, _this),
                                                 ". Match experiences, see lifestyle synergy, and meet at the venue — ",
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                     className: "text-zinc-500",
@@ -408,13 +419,13 @@ const LandingPage = ()=>{
                                                     fileName: "[project]/app/page.jsx",
                                                     lineNumber: 143,
                                                     columnNumber: 207
-                                                }, ("TURBOPACK compile-time value", void 0))
+                                                }, _this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/page.jsx",
                                             lineNumber: 142,
                                             columnNumber: 13
-                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        }, _this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                             className: "flex justify-center lg:justify-start gap-4 mb-10",
                                             children: [
@@ -424,7 +435,7 @@ const LandingPage = ()=>{
                                                     fileName: "[project]/app/page.jsx",
                                                     lineNumber: 147,
                                                     columnNumber: 17
-                                                }, ("TURBOPACK compile-time value", void 0)),
+                                                }, _this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                     className: "text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600",
                                                     children: "The Convivia Mission"
@@ -432,13 +443,13 @@ const LandingPage = ()=>{
                                                     fileName: "[project]/app/page.jsx",
                                                     lineNumber: 148,
                                                     columnNumber: 17
-                                                }, ("TURBOPACK compile-time value", void 0))
+                                                }, _this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/page.jsx",
                                             lineNumber: 146,
                                             columnNumber: 15
-                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        }, _this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                             className: "flex flex-col items-center lg:items-start gap-3",
                                             children: [
@@ -460,7 +471,7 @@ const LandingPage = ()=>{
                                                             fileName: "[project]/app/page.jsx",
                                                             lineNumber: 159,
                                                             columnNumber: 19
-                                                        }, ("TURBOPACK compile-time value", void 0)),
+                                                        }, _this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["motion"].div, {
                                                             animate: {
                                                                 x: [
@@ -481,25 +492,25 @@ const LandingPage = ()=>{
                                                                 fileName: "[project]/app/page.jsx",
                                                                 lineNumber: 164,
                                                                 columnNumber: 21
-                                                            }, ("TURBOPACK compile-time value", void 0))
+                                                            }, _this)
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/page.jsx",
                                                             lineNumber: 160,
                                                             columnNumber: 19
-                                                        }, ("TURBOPACK compile-time value", void 0)),
+                                                        }, _this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                             className: "absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/page.jsx",
                                                             lineNumber: 168,
                                                             columnNumber: 19
-                                                        }, ("TURBOPACK compile-time value", void 0))
+                                                        }, _this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/page.jsx",
                                                     lineNumber: 153,
                                                     columnNumber: 17
-                                                }, ("TURBOPACK compile-time value", void 0)),
+                                                }, _this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                     className: "text-[9px] text-zinc-700 font-bold uppercase tracking-[0.3em] flex items-center gap-1.5",
                                                     children: [
@@ -510,43 +521,43 @@ const LandingPage = ()=>{
                                                             fileName: "[project]/app/page.jsx",
                                                             lineNumber: 173,
                                                             columnNumber: 19
-                                                        }, ("TURBOPACK compile-time value", void 0)),
+                                                        }, _this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                             children: "Age Verification Required • 18+ Only"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/page.jsx",
                                                             lineNumber: 174,
                                                             columnNumber: 19
-                                                        }, ("TURBOPACK compile-time value", void 0))
+                                                        }, _this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/page.jsx",
                                                     lineNumber: 172,
                                                     columnNumber: 17
-                                                }, ("TURBOPACK compile-time value", void 0))
+                                                }, _this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/page.jsx",
                                             lineNumber: 152,
                                             columnNumber: 15
-                                        }, ("TURBOPACK compile-time value", void 0))
+                                        }, _this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/page.jsx",
                                     lineNumber: 136,
                                     columnNumber: 13
-                                }, ("TURBOPACK compile-time value", void 0))
+                                }, _this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/page.jsx",
                             lineNumber: 50,
                             columnNumber: 11
-                        }, ("TURBOPACK compile-time value", void 0))
+                        }, _this)
                     }, void 0, false, {
                         fileName: "[project]/app/page.jsx",
                         lineNumber: 49,
                         columnNumber: 9
-                    }, ("TURBOPACK compile-time value", void 0)),
+                    }, _this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "w-full lg:w-[40%] flex flex-col items-center lg:items-center justify-center gap-10 pt-8 lg:pt-0",
                         children: [
@@ -571,7 +582,7 @@ const LandingPage = ()=>{
                                         fileName: "[project]/app/page.jsx",
                                         lineNumber: 191,
                                         columnNumber: 13
-                                    }, ("TURBOPACK compile-time value", void 0)),
+                                    }, _this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "relative p-8 rounded-[2rem] bg-zinc-950/40 border border-white/5 backdrop-blur-xl overflow-hidden flex flex-col items-center text-center",
                                         children: [
@@ -582,7 +593,7 @@ const LandingPage = ()=>{
                                                 fileName: "[project]/app/page.jsx",
                                                 lineNumber: 194,
                                                 columnNumber: 15
-                                            }, ("TURBOPACK compile-time value", void 0)),
+                                            }, _this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["motion"].img, {
                                                 animate: {
                                                     y: [
@@ -610,7 +621,7 @@ const LandingPage = ()=>{
                                                 fileName: "[project]/app/page.jsx",
                                                 lineNumber: 198,
                                                 columnNumber: 15
-                                            }, ("TURBOPACK compile-time value", void 0)),
+                                            }, _this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                 className: "space-y-1",
                                                 children: [
@@ -621,7 +632,7 @@ const LandingPage = ()=>{
                                                         fileName: "[project]/app/page.jsx",
                                                         lineNumber: 207,
                                                         columnNumber: 17
-                                                    }, ("TURBOPACK compile-time value", void 0)),
+                                                    }, _this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                         className: "text-[9px] text-zinc-500 leading-relaxed font-medium uppercase tracking-wider",
                                                         children: '"The First Light" Essence — Crafting the perfect backdrop for city connections.'
@@ -629,25 +640,25 @@ const LandingPage = ()=>{
                                                         fileName: "[project]/app/page.jsx",
                                                         lineNumber: 208,
                                                         columnNumber: 17
-                                                    }, ("TURBOPACK compile-time value", void 0))
+                                                    }, _this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/page.jsx",
                                                 lineNumber: 206,
                                                 columnNumber: 15
-                                            }, ("TURBOPACK compile-time value", void 0))
+                                            }, _this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.jsx",
                                         lineNumber: 193,
                                         columnNumber: 13
-                                    }, ("TURBOPACK compile-time value", void 0))
+                                    }, _this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/page.jsx",
                                 lineNumber: 185,
                                 columnNumber: 11
-                            }, ("TURBOPACK compile-time value", void 0)),
+                            }, _this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["motion"].div, {
                                 initial: {
                                     opacity: 0,
@@ -669,7 +680,7 @@ const LandingPage = ()=>{
                                         fileName: "[project]/app/page.jsx",
                                         lineNumber: 220,
                                         columnNumber: 13
-                                    }, ("TURBOPACK compile-time value", void 0)),
+                                    }, _this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "flex justify-between items-start relative z-10",
                                         children: [
@@ -686,7 +697,7 @@ const LandingPage = ()=>{
                                                                 fileName: "[project]/app/page.jsx",
                                                                 lineNumber: 225,
                                                                 columnNumber: 19
-                                                            }, ("TURBOPACK compile-time value", void 0)),
+                                                            }, _this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                 className: "text-[8px] font-black uppercase tracking-widest",
                                                                 children: "Plus Tier"
@@ -694,13 +705,13 @@ const LandingPage = ()=>{
                                                                 fileName: "[project]/app/page.jsx",
                                                                 lineNumber: 226,
                                                                 columnNumber: 19
-                                                            }, ("TURBOPACK compile-time value", void 0))
+                                                            }, _this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/page.jsx",
                                                         lineNumber: 224,
                                                         columnNumber: 17
-                                                    }, ("TURBOPACK compile-time value", void 0)),
+                                                    }, _this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
                                                         className: "text-sm font-black tracking-tight text-white uppercase italic",
                                                         children: "City Pass"
@@ -708,13 +719,13 @@ const LandingPage = ()=>{
                                                         fileName: "[project]/app/page.jsx",
                                                         lineNumber: 228,
                                                         columnNumber: 17
-                                                    }, ("TURBOPACK compile-time value", void 0))
+                                                    }, _this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/page.jsx",
                                                 lineNumber: 223,
                                                 columnNumber: 15
-                                            }, ("TURBOPACK compile-time value", void 0)),
+                                            }, _this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
                                                 src: "/Logo2.png",
                                                 alt: "mini logo",
@@ -723,13 +734,13 @@ const LandingPage = ()=>{
                                                 fileName: "[project]/app/page.jsx",
                                                 lineNumber: 230,
                                                 columnNumber: 15
-                                            }, ("TURBOPACK compile-time value", void 0))
+                                            }, _this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.jsx",
                                         lineNumber: 222,
                                         columnNumber: 13
-                                    }, ("TURBOPACK compile-time value", void 0)),
+                                    }, _this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "space-y-1 relative z-10",
                                         children: [
@@ -740,7 +751,7 @@ const LandingPage = ()=>{
                                                 fileName: "[project]/app/page.jsx",
                                                 lineNumber: 234,
                                                 columnNumber: 15
-                                            }, ("TURBOPACK compile-time value", void 0)),
+                                            }, _this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                 className: "text-[10px] font-mono text-zinc-400",
                                                 children: "C24-LGS-8820"
@@ -748,31 +759,31 @@ const LandingPage = ()=>{
                                                 fileName: "[project]/app/page.jsx",
                                                 lineNumber: 235,
                                                 columnNumber: 15
-                                            }, ("TURBOPACK compile-time value", void 0))
+                                            }, _this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/page.jsx",
                                         lineNumber: 233,
                                         columnNumber: 13
-                                    }, ("TURBOPACK compile-time value", void 0))
+                                    }, _this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/page.jsx",
                                 lineNumber: 214,
                                 columnNumber: 11
-                            }, ("TURBOPACK compile-time value", void 0))
+                            }, _this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/page.jsx",
                         lineNumber: 182,
                         columnNumber: 9
-                    }, ("TURBOPACK compile-time value", void 0))
+                    }, _this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/page.jsx",
                 lineNumber: 46,
                 columnNumber: 7
-            }, ("TURBOPACK compile-time value", void 0)),
+            }, _this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$components$2f$AnimatePresence$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AnimatePresence"], {
                 children: showAgeModal && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "fixed inset-0 z-[200] flex items-center justify-center px-6",
@@ -787,13 +798,15 @@ const LandingPage = ()=>{
                             exit: {
                                 opacity: 0
                             },
-                            onClick: ()=>setShowAgeModal(false),
+                            onClick: function() {
+                                return setShowAgeModal(false);
+                            },
                             className: "absolute inset-0 bg-black/80 backdrop-blur-md"
                         }, void 0, false, {
                             fileName: "[project]/app/page.jsx",
                             lineNumber: 246,
                             columnNumber: 13
-                        }, ("TURBOPACK compile-time value", void 0)),
+                        }, _this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["motion"].div, {
                             initial: {
                                 opacity: 0,
@@ -818,7 +831,7 @@ const LandingPage = ()=>{
                                     fileName: "[project]/app/page.jsx",
                                     lineNumber: 260,
                                     columnNumber: 15
-                                }, ("TURBOPACK compile-time value", void 0)),
+                                }, _this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "w-20 h-20 bg-red-600/10 rounded-3xl flex items-center justify-center text-red-500 mx-auto mb-8",
                                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$shield$2d$check$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ShieldCheck$3e$__["ShieldCheck"], {
@@ -828,12 +841,12 @@ const LandingPage = ()=>{
                                         fileName: "[project]/app/page.jsx",
                                         lineNumber: 263,
                                         columnNumber: 17
-                                    }, ("TURBOPACK compile-time value", void 0))
+                                    }, _this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/page.jsx",
                                     lineNumber: 262,
                                     columnNumber: 15
-                                }, ("TURBOPACK compile-time value", void 0)),
+                                }, _this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
                                     className: "text-3xl font-black tracking-tighter uppercase italic mb-4",
                                     children: "Age Verification"
@@ -841,7 +854,7 @@ const LandingPage = ()=>{
                                     fileName: "[project]/app/page.jsx",
                                     lineNumber: 266,
                                     columnNumber: 15
-                                }, ("TURBOPACK compile-time value", void 0)),
+                                }, _this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                     className: "text-zinc-500 text-sm leading-relaxed mb-10 font-medium",
                                     children: [
@@ -853,14 +866,14 @@ const LandingPage = ()=>{
                                             fileName: "[project]/app/page.jsx",
                                             lineNumber: 268,
                                             columnNumber: 75
-                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        }, _this),
                                         " to discover circles and meet through city experiences."
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/page.jsx",
                                     lineNumber: 267,
                                     columnNumber: 15
-                                }, ("TURBOPACK compile-time value", void 0)),
+                                }, _this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "flex flex-col gap-4",
                                     children: [
@@ -872,22 +885,24 @@ const LandingPage = ()=>{
                                             fileName: "[project]/app/page.jsx",
                                             lineNumber: 272,
                                             columnNumber: 17
-                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        }, _this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                            onClick: ()=>setShowAgeModal(false),
+                                            onClick: function() {
+                                                return setShowAgeModal(false);
+                                            },
                                             className: "w-full py-5 bg-zinc-900 border border-white/5 text-zinc-500 font-bold text-[10px] uppercase tracking-[0.2em] rounded-2xl hover:text-white transition-all",
                                             children: "Exit Platform"
                                         }, void 0, false, {
                                             fileName: "[project]/app/page.jsx",
                                             lineNumber: 278,
                                             columnNumber: 17
-                                        }, ("TURBOPACK compile-time value", void 0))
+                                        }, _this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/page.jsx",
                                     lineNumber: 271,
                                     columnNumber: 15
-                                }, ("TURBOPACK compile-time value", void 0)),
+                                }, _this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "mt-8 flex items-center justify-center gap-2 text-zinc-700",
                                     children: [
@@ -897,7 +912,7 @@ const LandingPage = ()=>{
                                             fileName: "[project]/app/page.jsx",
                                             lineNumber: 287,
                                             columnNumber: 17
-                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        }, _this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                             className: "text-[8px] font-black uppercase tracking-widest",
                                             children: "Adult Content & Experience Warning"
@@ -905,30 +920,30 @@ const LandingPage = ()=>{
                                             fileName: "[project]/app/page.jsx",
                                             lineNumber: 288,
                                             columnNumber: 17
-                                        }, ("TURBOPACK compile-time value", void 0))
+                                        }, _this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/page.jsx",
                                     lineNumber: 286,
                                     columnNumber: 15
-                                }, ("TURBOPACK compile-time value", void 0))
+                                }, _this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/page.jsx",
                             lineNumber: 254,
                             columnNumber: 13
-                        }, ("TURBOPACK compile-time value", void 0))
+                        }, _this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/page.jsx",
                     lineNumber: 245,
                     columnNumber: 11
-                }, ("TURBOPACK compile-time value", void 0))
+                }, _this)
             }, void 0, false, {
                 fileName: "[project]/app/page.jsx",
                 lineNumber: 243,
                 columnNumber: 7
-            }, ("TURBOPACK compile-time value", void 0)),
+            }, _this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("footer", {
                 className: "py-8 border-t border-white/5 bg-zinc-950/20 backdrop-blur-xl",
                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -944,7 +959,7 @@ const LandingPage = ()=>{
                                     fileName: "[project]/app/page.jsx",
                                     lineNumber: 299,
                                     columnNumber: 13
-                                }, ("TURBOPACK compile-time value", void 0)),
+                                }, _this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                     className: "text-[8px] text-zinc-800 font-black uppercase tracking-[0.2em] flex items-center gap-1.5",
                                     children: [
@@ -955,62 +970,64 @@ const LandingPage = ()=>{
                                             fileName: "[project]/app/page.jsx",
                                             lineNumber: 303,
                                             columnNumber: 15
-                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        }, _this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                             children: "18+ Platform • Adults Only"
                                         }, void 0, false, {
                                             fileName: "[project]/app/page.jsx",
                                             lineNumber: 304,
                                             columnNumber: 15
-                                        }, ("TURBOPACK compile-time value", void 0))
+                                        }, _this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/page.jsx",
                                     lineNumber: 302,
                                     columnNumber: 13
-                                }, ("TURBOPACK compile-time value", void 0))
+                                }, _this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/page.jsx",
                             lineNumber: 298,
                             columnNumber: 11
-                        }, ("TURBOPACK compile-time value", void 0)),
+                        }, _this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             className: "flex gap-8",
                             children: [
                                 'Services',
                                 'Privacy',
                                 'Support'
-                            ].map((item)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                            ].map(function(item) {
+                                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                     className: "text-zinc-700 hover:text-white transition-colors text-[8px] font-black uppercase tracking-[0.3em]",
                                     children: item
                                 }, item, false, {
                                     fileName: "[project]/app/page.jsx",
                                     lineNumber: 309,
                                     columnNumber: 15
-                                }, ("TURBOPACK compile-time value", void 0)))
+                                }, _this);
+                            })
                         }, void 0, false, {
                             fileName: "[project]/app/page.jsx",
                             lineNumber: 307,
                             columnNumber: 11
-                        }, ("TURBOPACK compile-time value", void 0))
+                        }, _this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/page.jsx",
                     lineNumber: 297,
                     columnNumber: 9
-                }, ("TURBOPACK compile-time value", void 0))
+                }, _this)
             }, void 0, false, {
                 fileName: "[project]/app/page.jsx",
                 lineNumber: 296,
                 columnNumber: 7
-            }, ("TURBOPACK compile-time value", void 0))
+            }, _this)
         ]
     }, void 0, true, {
         fileName: "[project]/app/page.jsx",
         lineNumber: 37,
         columnNumber: 5
-    }, ("TURBOPACK compile-time value", void 0));
+    }, _this);
 };
 _s(LandingPage, "cjHZv8flnMG66D8v8HBFZhgtrT0=", false, function() {
     return [
@@ -1021,7 +1038,7 @@ _c = LandingPage;
 const __TURBOPACK__default__export__ = LandingPage;
 var _c;
 __turbopack_context__.k.register(_c, "LandingPage");
-if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
+if ((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$swc$2f$helpers$2f$esm$2f$_type_of$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["_"])(globalThis.$RefreshHelpers$) === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
 }
 }),

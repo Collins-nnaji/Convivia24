@@ -20,7 +20,56 @@
     "afterFiles": [],
     "fallback": []
   },
-  "dynamicRoutes": [],
+  "dynamicRoutes": [
+    {
+      "page": "/admin/jobs/[id]",
+      "regex": "^/admin/jobs/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/admin/jobs/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/bookings/[id]",
+      "regex": "^/api/bookings/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/bookings/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/bookings/[id]/assign",
+      "regex": "^/api/bookings/([^/]+?)/assign(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/bookings/(?<nxtPid>[^/]+?)/assign(?:/)?$"
+    },
+    {
+      "page": "/client/jobs/[id]",
+      "regex": "^/client/jobs/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/client/jobs/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/staff/jobs/[id]",
+      "regex": "^/staff/jobs/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/staff/jobs/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/supervisor/jobs/[id]",
+      "regex": "^/supervisor/jobs/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/supervisor/jobs/(?<nxtPid>[^/]+?)(?:/)?$"
+    }
+  ],
   "staticRoutes": [
     {
       "page": "/",
@@ -41,28 +90,190 @@
       "namedRegex": "^/_not\\-found(?:/)?$"
     },
     {
-      "page": "/business",
-      "regex": "^/business(?:/)?$",
+      "page": "/admin/clients",
+      "regex": "^/admin/clients(?:/)?$",
       "routeKeys": {},
-      "namedRegex": "^/business(?:/)?$"
+      "namedRegex": "^/admin/clients(?:/)?$"
     },
     {
-      "page": "/explore",
-      "regex": "^/explore(?:/)?$",
+      "page": "/admin/compliance",
+      "regex": "^/admin/compliance(?:/)?$",
       "routeKeys": {},
-      "namedRegex": "^/explore(?:/)?$"
+      "namedRegex": "^/admin/compliance(?:/)?$"
     },
     {
-      "page": "/profile",
-      "regex": "^/profile(?:/)?$",
+      "page": "/admin/dashboard",
+      "regex": "^/admin/dashboard(?:/)?$",
       "routeKeys": {},
-      "namedRegex": "^/profile(?:/)?$"
+      "namedRegex": "^/admin/dashboard(?:/)?$"
     },
     {
-      "page": "/saved",
-      "regex": "^/saved(?:/)?$",
+      "page": "/admin/jobs",
+      "regex": "^/admin/jobs(?:/)?$",
       "routeKeys": {},
-      "namedRegex": "^/saved(?:/)?$"
+      "namedRegex": "^/admin/jobs(?:/)?$"
+    },
+    {
+      "page": "/admin/services",
+      "regex": "^/admin/services(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/services(?:/)?$"
+    },
+    {
+      "page": "/admin/settings",
+      "regex": "^/admin/settings(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/settings(?:/)?$"
+    },
+    {
+      "page": "/admin/staff",
+      "regex": "^/admin/staff(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/staff(?:/)?$"
+    },
+    {
+      "page": "/api/auth/login",
+      "regex": "^/api/auth/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/auth/login(?:/)?$"
+    },
+    {
+      "page": "/api/auth/me",
+      "regex": "^/api/auth/me(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/auth/me(?:/)?$"
+    },
+    {
+      "page": "/api/auth/register",
+      "regex": "^/api/auth/register(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/auth/register(?:/)?$"
+    },
+    {
+      "page": "/api/auth/register/staff",
+      "regex": "^/api/auth/register/staff(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/auth/register/staff(?:/)?$"
+    },
+    {
+      "page": "/api/bookings",
+      "regex": "^/api/bookings(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/bookings(?:/)?$"
+    },
+    {
+      "page": "/api/compliance",
+      "regex": "^/api/compliance(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/compliance(?:/)?$"
+    },
+    {
+      "page": "/api/invoices",
+      "regex": "^/api/invoices(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/invoices(?:/)?$"
+    },
+    {
+      "page": "/api/services",
+      "regex": "^/api/services(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/services(?:/)?$"
+    },
+    {
+      "page": "/auth/login",
+      "regex": "^/auth/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/auth/login(?:/)?$"
+    },
+    {
+      "page": "/auth/register",
+      "regex": "^/auth/register(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/auth/register(?:/)?$"
+    },
+    {
+      "page": "/auth/register/staff",
+      "regex": "^/auth/register/staff(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/auth/register/staff(?:/)?$"
+    },
+    {
+      "page": "/auth/register/staff/success",
+      "regex": "^/auth/register/staff/success(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/auth/register/staff/success(?:/)?$"
+    },
+    {
+      "page": "/client/dashboard",
+      "regex": "^/client/dashboard(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/client/dashboard(?:/)?$"
+    },
+    {
+      "page": "/client/invoices",
+      "regex": "^/client/invoices(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/client/invoices(?:/)?$"
+    },
+    {
+      "page": "/client/jobs",
+      "regex": "^/client/jobs(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/client/jobs(?:/)?$"
+    },
+    {
+      "page": "/client/profile",
+      "regex": "^/client/profile(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/client/profile(?:/)?$"
+    },
+    {
+      "page": "/client/request",
+      "regex": "^/client/request(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/client/request(?:/)?$"
+    },
+    {
+      "page": "/staff/dashboard",
+      "regex": "^/staff/dashboard(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/staff/dashboard(?:/)?$"
+    },
+    {
+      "page": "/staff/jobs",
+      "regex": "^/staff/jobs(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/staff/jobs(?:/)?$"
+    },
+    {
+      "page": "/staff/profile",
+      "regex": "^/staff/profile(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/staff/profile(?:/)?$"
+    },
+    {
+      "page": "/supervisor/jobs",
+      "regex": "^/supervisor/jobs(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/supervisor/jobs(?:/)?$"
+    },
+    {
+      "page": "/supervisor/profile",
+      "regex": "^/supervisor/profile(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/supervisor/profile(?:/)?$"
+    },
+    {
+      "page": "/supervisor/team",
+      "regex": "^/supervisor/team(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/supervisor/team(?:/)?$"
+    },
+    {
+      "page": "/test",
+      "regex": "^/test(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/test(?:/)?$"
     }
   ],
   "dataRoutes": [],

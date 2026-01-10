@@ -1,10 +1,10 @@
 (globalThis.TURBOPACK || (globalThis.TURBOPACK = [])).push([typeof document === "object" ? document.currentScript : undefined,
 "[next]/entry/page-loader.ts { PAGE => \"[project]/node_modules/next/error.js [client] (ecmascript)\" } [client] (ecmascript)", ((__turbopack_context__, module, exports) => {
 
-const PAGE_PATH = "/_error";
+var PAGE_PATH = "/_error";
 (window.__NEXT_P = window.__NEXT_P || []).push([
     PAGE_PATH,
-    ()=>{
+    function() {
         return __turbopack_context__.r("[project]/node_modules/next/error.js [client] (ecmascript)");
     }
 ]);

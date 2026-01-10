@@ -46,11 +46,16 @@ self.__SERVER_FILES_MANIFEST={
           "search": ""
         }
       ],
-      "remotePatterns": [],
+      "remotePatterns": [
+        {
+          "protocol": "https",
+          "hostname": "**"
+        }
+      ],
       "qualities": [
         75
       ],
-      "unoptimized": false
+      "unoptimized": true
     },
     "reactMaxHeadersLength": 6000,
     "cacheLife": {
