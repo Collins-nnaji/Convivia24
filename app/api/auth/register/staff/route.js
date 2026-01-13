@@ -6,7 +6,7 @@ export async function POST(request) {
   try {
     const body = await request.json();
     const { 
-      service_category, // 'cleaning', 'security', or 'both'
+      service_category, // 'cleaning', 'security', 'drivers', 'both', or combinations
       email, 
       password, 
       first_name, 
@@ -20,7 +20,7 @@ export async function POST(request) {
       availability,
       experience_years,
       certifications,
-      licenses, // Security licenses
+      licenses, // Security licenses or driver licenses
       license_number, // SIA license number
       license_expiry, // License expiry date
       sia_licensed,
@@ -30,13 +30,20 @@ export async function POST(request) {
       emergency_contact_name,
       emergency_contact_phone,
       emergency_contact_relationship,
-      notes
+      notes,
+      // Driver-specific fields
+      drivers_license_number,
+      drivers_license_expiry,
+      vehicle_owned,
+      vehicle_type,
+      years_driving_experience
     } = body;
 
     // Validation
-    if (!service_category || !['cleaning', 'security', 'both'].includes(service_category)) {
+    const validCategories = ['cleaning', 'security', 'drivers', 'both', 'cleaning,security', 'cleaning,drivers', 'security,drivers', 'all'];
+    if (!service_category || !validCategories.includes(service_category)) {
       return NextResponse.json(
-        { error: 'Service category (cleaning, security, or both) is required' },
+        { error: 'Service category is required. Valid options: cleaning, security, drivers, both, or combinations' },
         { status: 400 }
       );
     }
@@ -63,7 +70,7 @@ export async function POST(request) {
     }
 
     // Security-specific validation
-    if (service_category === 'security' || service_category === 'both') {
+    if (service_category === 'security' || service_category === 'both' || service_category?.includes('security')) {
       if (!sia_licensed || !license_number || !licenses || licenses.length === 0) {
         return NextResponse.json(
           { error: 'Security license information is required for security professionals' },
@@ -73,6 +80,22 @@ export async function POST(request) {
       if (!license_expiry) {
         return NextResponse.json(
           { error: 'License expiry date is required' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Driver-specific validation
+    if (service_category === 'drivers' || service_category?.includes('drivers')) {
+      if (!drivers_license_number || !drivers_license_expiry) {
+        return NextResponse.json(
+          { error: 'Driver license number and expiry date are required for driver professionals' },
+          { status: 400 }
+        );
+      }
+      if (!years_driving_experience) {
+        return NextResponse.json(
+          { error: 'Years of driving experience is required' },
           { status: 400 }
         );
       }
@@ -118,7 +141,12 @@ export async function POST(request) {
     const passwordHash = await hashPassword(password);
 
     // Determine role based on service category
-    const userRole = service_category === 'security' ? 'security_staff' : 'staff';
+    let userRole = 'staff';
+    if (service_category === 'security' || service_category?.includes('security')) {
+      userRole = 'security_staff';
+    } else if (service_category === 'drivers' || service_category?.includes('drivers')) {
+      userRole = 'staff'; // Drivers use 'staff' role for now, can be extended later
+    }
 
     // Create user with appropriate role and vetting_status = 'pending'
     const [user] = await sql`
@@ -128,6 +156,7 @@ export async function POST(request) {
         service_areas, availability, experience_years, certifications, licenses,
         vetting_status, background_check_completed, dbs_check_completed, sia_licensed,
         license_number, license_expiry,
+        drivers_license_number, drivers_license_expiry, vehicle_owned, vehicle_type, years_driving_experience,
         references_data, emergency_contact_name, emergency_contact_phone,
         emergency_contact_relationship, application_notes
       )
@@ -154,6 +183,11 @@ export async function POST(request) {
         ${sia_licensed || false},
         ${license_number || null},
         ${license_expiry ? new Date(license_expiry) : null},
+        ${drivers_license_number || null},
+        ${drivers_license_expiry ? new Date(drivers_license_expiry) : null},
+        ${vehicle_owned || false},
+        ${vehicle_type || null},
+        ${years_driving_experience ? parseInt(years_driving_experience) : null},
         ${JSON.stringify(references || [])},
         ${emergency_contact_name || null},
         ${emergency_contact_phone || null},
@@ -163,11 +197,22 @@ export async function POST(request) {
       RETURNING id, email, role, service_category, first_name, last_name, vetting_status, created_at
     `;
 
-    const serviceType = service_category === 'cleaning' 
-      ? 'cleaning professional'
-      : service_category === 'security'
-      ? 'security professional'
-      : 'cleaning and security professional';
+    let serviceType = 'professional';
+    if (service_category === 'cleaning') {
+      serviceType = 'cleaning professional';
+    } else if (service_category === 'security') {
+      serviceType = 'security professional';
+    } else if (service_category === 'drivers') {
+      serviceType = 'driver professional';
+    } else if (service_category === 'both') {
+      serviceType = 'cleaning and security professional';
+    } else if (service_category?.includes('drivers')) {
+      serviceType = 'driver professional';
+      if (service_category?.includes('cleaning')) serviceType += ' and cleaning professional';
+      if (service_category?.includes('security')) serviceType += ' and security professional';
+    } else {
+      serviceType = 'multi-service professional';
+    }
 
     return NextResponse.json(
       {

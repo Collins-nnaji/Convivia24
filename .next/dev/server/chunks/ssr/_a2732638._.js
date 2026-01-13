@@ -223,8 +223,8 @@ function JobCard({ job, onClick, index = 0 }) {
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                     className: "text-sm font-medium text-black",
                                                     children: [
-                                                        "£",
-                                                        total_cost.toLocaleString('en-GB', {
+                                                        "₦",
+                                                        total_cost.toLocaleString('en-NG', {
                                                             minimumFractionDigits: 2,
                                                             maximumFractionDigits: 2
                                                         })
@@ -232,7 +232,7 @@ function JobCard({ job, onClick, index = 0 }) {
                                                 }, void 0, true, {
                                                     fileName: "[project]/components/JobCard.jsx",
                                                     lineNumber: 110,
-                                                    columnNumber: 19
+                                                    columnNumber: 23
                                                 }, this)
                                             ]
                                         }, void 0, true, {
@@ -631,10 +631,10 @@ function ClientDashboard() {
             setLoading(false);
         }
     };
-    // Format currency for UK
-    const formatCurrency = (amount)=>`£${amount.toLocaleString('en-GB', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
+    // Format currency for Nigeria (NGN)
+    const formatCurrency = (amount)=>`₦${amount.toLocaleString('en-NG', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
         })}`;
     const primaryStats = [
         {
@@ -1274,7 +1274,7 @@ function ClientDashboard() {
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                 className: "font-medium",
-                                                children: new Date(booking.scheduled_start).toLocaleDateString('en-GB', {
+                                                children: new Date(booking.scheduled_start).toLocaleDateString('en-NG', {
                                                     day: 'numeric',
                                                     month: 'short',
                                                     hour: '2-digit',

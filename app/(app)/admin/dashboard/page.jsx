@@ -180,14 +180,14 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter italic text-black mb-2">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter italic text-black mb-2">
             Admin Dashboard
           </h1>
-          <p className="text-gray-600 font-medium">Platform overview and analytics</p>
+          <p className="text-sm sm:text-base text-gray-600 font-medium">Platform overview and analytics</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
           <select
             value={timeRange}
             onChange={(e) => setTimeRange(e.target.value)}
@@ -210,7 +210,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Primary Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {primaryStats.map((stat, index) => (
           <motion.div
             key={index}
@@ -218,7 +218,7 @@ export default function AdminDashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1, duration: 0.4 }}
             whileHover={{ y: -4, scale: 1.02 }}
-            className={`p-6 rounded-2xl bg-white border-2 ${stat.borderColor} hover:border-red-300 transition-all shadow-lg hover:shadow-xl cursor-pointer`}
+            className={`p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-white border-2 ${stat.borderColor} hover:border-red-300 transition-all shadow-lg hover:shadow-xl cursor-pointer`}
             onClick={() => stat.path && router.push(stat.path)}
           >
             <div className="flex items-start justify-between mb-4">
@@ -242,9 +242,9 @@ export default function AdminDashboard() {
       </div>
 
       {/* Secondary Stats & Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Secondary Stats */}
-        <div className="lg:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="lg:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           {secondaryStats.map((stat, index) => (
             <motion.div
               key={index}

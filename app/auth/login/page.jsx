@@ -41,11 +41,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-6 py-12">
+    <div className="min-h-screen bg-white flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md space-y-8"
+        className="w-full max-w-md space-y-6 sm:space-y-8"
       >
         {/* Logo & Header */}
         <div className="text-center space-y-4">
@@ -56,10 +56,10 @@ export default function LoginPage() {
             animate={{ rotate: 360 }}
             transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
           />
-          <h1 className="text-4xl font-black uppercase tracking-tighter italic text-black">
+          <h1 className="text-3xl sm:text-4xl font-black uppercase tracking-tighter italic text-black">
             Welcome Back
           </h1>
-          <p className="text-gray-600 text-sm">
+          <p className="text-gray-600 text-xs sm:text-sm">
             Sign in to your Convivia 24 account
           </p>
         </div>

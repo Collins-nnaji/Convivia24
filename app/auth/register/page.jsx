@@ -54,11 +54,11 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-6 py-12">
+    <div className="min-h-screen bg-white flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-2xl space-y-8"
+        className="w-full max-w-2xl space-y-6 sm:space-y-8"
       >
         {/* Header */}
         <div className="text-center space-y-4">
@@ -69,8 +69,8 @@ export default function RegisterPage() {
             animate={{ rotate: 360 }}
             transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
           />
-          <h1 className="text-4xl font-black uppercase tracking-tighter italic text-black">Register as Client</h1>
-          <p className="text-gray-600 text-sm font-medium">Create your business account to access cleaning and security services</p>
+          <h1 className="text-3xl sm:text-4xl font-black uppercase tracking-tighter italic text-black">Register as Client</h1>
+          <p className="text-gray-600 text-xs sm:text-sm font-medium">Create your business account to access cleaning and security services</p>
         </div>
 
         {/* Registration Form */}
@@ -87,8 +87,8 @@ export default function RegisterPage() {
           )}
 
           {/* Personal Info */}
-          <div className="space-y-4 p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
-            <h2 className="text-lg font-black uppercase tracking-tight mb-4 text-black">Personal Information</h2>
+          <div className="space-y-4 p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-white border border-gray-200 shadow-sm">
+            <h2 className="text-base sm:text-lg font-black uppercase tracking-tight mb-3 sm:mb-4 text-black">Personal Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-bold uppercase tracking-wider text-gray-600 flex items-center gap-2">

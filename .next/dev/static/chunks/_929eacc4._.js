@@ -226,8 +226,8 @@ function JobCard(param) {
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                     className: "text-sm font-medium text-black",
                                                     children: [
-                                                        "£",
-                                                        total_cost.toLocaleString('en-GB', {
+                                                        "₦",
+                                                        total_cost.toLocaleString('en-NG', {
                                                             minimumFractionDigits: 2,
                                                             maximumFractionDigits: 2
                                                         })
@@ -235,7 +235,7 @@ function JobCard(param) {
                                                 }, void 0, true, {
                                                     fileName: "[project]/components/JobCard.jsx",
                                                     lineNumber: 110,
-                                                    columnNumber: 19
+                                                    columnNumber: 23
                                                 }, this)
                                             ]
                                         }, void 0, true, {
@@ -739,11 +739,11 @@ function AdminDashboard() {
             });
         })();
     };
-    // Format currency for UK
+    // Format currency for Nigeria (NGN)
     var formatCurrency = function(amount) {
-        return "£".concat(amount.toLocaleString('en-GB', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
+        return "₦".concat(amount.toLocaleString('en-NG', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
         }));
     };
     var primaryStats = [

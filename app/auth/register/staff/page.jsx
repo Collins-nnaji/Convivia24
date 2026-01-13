@@ -6,13 +6,13 @@ import { useRouter } from 'next/navigation';
 import { 
   ArrowRight, UserPlus, Mail, Lock, MapPin, Phone, 
   AlertCircle, CheckCircle2, Upload, Calendar, Clock,
-  Briefcase, Award, FileText, Building, ShieldCheck
+  Briefcase, Award, FileText, Building, ShieldCheck, Car, Key
 } from 'lucide-react';
 
 export default function StaffRegisterPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    service_category: 'cleaning', // 'cleaning', 'security', or 'both'
+    service_category: 'cleaning', // 'cleaning', 'security', 'drivers', 'both', or combinations
     email: '',
     password: '',
     first_name: '',
@@ -34,12 +34,18 @@ export default function StaffRegisterPage() {
     service_areas: [], // Which areas they can work in
     experience_years: '',
     certifications: [],
-    licenses: [], // For security staff (Security licenses)
+    licenses: [], // For security staff (Security licenses) or driver licenses
     license_number: '', // Security license number
     license_expiry: '', // License expiry date
     sia_licensed: false,
     background_check: false,
     dbs_check: false,
+    // Driver-specific fields
+    drivers_license_number: '', // Driver's license number
+    drivers_license_expiry: '', // Driver's license expiry
+    vehicle_owned: false, // Does driver own a vehicle
+    vehicle_type: '', // 'sedan', 'suv', 'van', 'truck', 'motorcycle'
+    years_driving_experience: '', // Years of driving experience
     references: [
       { name: '', phone: '', relationship: '' },
       { name: '', phone: '', relationship: '' },
@@ -196,11 +202,11 @@ export default function StaffRegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-black flex items-center justify-center px-6 py-12">
+    <div className="min-h-screen bg-white text-black flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-4xl space-y-8"
+        className="w-full max-w-4xl space-y-6 sm:space-y-8"
       >
         {/* Header */}
         <div className="text-center space-y-4">
@@ -211,11 +217,11 @@ export default function StaffRegisterPage() {
             animate={{ rotate: 360 }}
             transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
           />
-          <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter italic text-black">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tighter italic text-black">
             Work With Us
           </h1>
-          <p className="text-gray-600 text-sm font-medium">
-            Join Convivia 24 as a cleaning or security professional. Register now and get vetted for on-demand work across Nigeria.
+          <p className="text-gray-600 text-xs sm:text-sm font-medium">
+            Join Convivia 24 as a cleaning, security, or driver professional. Register now and get vetted for on-demand work across Nigeria.
           </p>
         </div>
 
@@ -273,10 +279,10 @@ export default function StaffRegisterPage() {
             >
               <h2 className="text-2xl font-black uppercase tracking-tight text-black mb-4">What Service Do You Provide?</h2>
               <p className="text-sm text-gray-600 font-medium mb-6">
-                Select whether you're applying as a cleaning professional, security professional, or both.
+                Select the service(s) you provide. You can select multiple services.
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[
                   { 
                     id: 'cleaning', 
@@ -293,8 +299,15 @@ export default function StaffRegisterPage() {
                     color: 'blue'
                   },
                   { 
+                    id: 'drivers', 
+                    label: 'Driver Services', 
+                    icon: Car, 
+                    description: 'Short-term, long-term, event, and chauffeur services (Valid driver license required)',
+                    color: 'purple'
+                  },
+                  { 
                     id: 'both', 
-                    label: 'Both Services', 
+                    label: 'Cleaning + Security', 
                     icon: Building, 
                     description: 'Offer both cleaning and security services (requires Security license for security)',
                     color: 'green'
@@ -323,6 +336,13 @@ export default function StaffRegisterPage() {
                       text: 'text-green-700',
                       iconBg: 'bg-green-600',
                       iconText: 'text-green-600'
+                    },
+                    purple: {
+                      bg: 'bg-purple-100',
+                      border: 'border-purple-300',
+                      text: 'text-purple-700',
+                      iconBg: 'bg-purple-600',
+                      iconText: 'text-purple-600'
                     }
                   };
                   const colors = colorClasses[option.color] || colorClasses.red;
@@ -712,8 +732,103 @@ export default function StaffRegisterPage() {
                 </div>
               )}
               
+              {/* Driver License Information (if drivers selected) */}
+              {(formData.service_category === 'drivers' || formData.service_category?.includes('drivers')) && (
+                <div className="p-6 rounded-xl bg-purple-50 border-2 border-purple-200 space-y-4 mb-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Car size={24} className="text-purple-600" />
+                    <h3 className="text-lg font-black uppercase tracking-tight text-purple-700">
+                      Driver License Information (Required)
+                    </h3>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-bold uppercase tracking-wider text-gray-600 mb-2 block">
+                        Driver License Number *
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.drivers_license_number}
+                        onChange={(e) => setFormData({ ...formData, drivers_license_number: e.target.value })}
+                        required={formData.service_category === 'drivers' || formData.service_category?.includes('drivers')}
+                        className="w-full px-4 py-3 rounded-xl bg-white border border-gray-300 text-black placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-all"
+                        placeholder="DL-XXXX-XXXX"
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-bold uppercase tracking-wider text-gray-600 mb-2 block">
+                          License Expiry Date *
+                        </label>
+                        <input
+                          type="date"
+                          value={formData.drivers_license_expiry}
+                          onChange={(e) => setFormData({ ...formData, drivers_license_expiry: e.target.value })}
+                          required={formData.service_category === 'drivers' || formData.service_category?.includes('drivers')}
+                          className="w-full px-4 py-3 rounded-xl bg-white border border-gray-300 text-black focus:outline-none focus:border-purple-500 transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-bold uppercase tracking-wider text-gray-600 mb-2 block">
+                          Years of Driving Experience *
+                        </label>
+                        <input
+                          type="number"
+                          value={formData.years_driving_experience}
+                          onChange={(e) => setFormData({ ...formData, years_driving_experience: e.target.value })}
+                          required={formData.service_category === 'drivers' || formData.service_category?.includes('drivers')}
+                          min="1"
+                          max="50"
+                          className="w-full px-4 py-3 rounded-xl bg-white border border-gray-300 text-black placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-all"
+                          placeholder="e.g. 5"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <label className="text-sm font-bold uppercase tracking-wider text-gray-600 mb-2 block">
+                        Do you own a vehicle?
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          id="vehicle_owned"
+                          checked={formData.vehicle_owned}
+                          onChange={(e) => setFormData({ ...formData, vehicle_owned: e.target.checked })}
+                          className="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                        />
+                        <label htmlFor="vehicle_owned" className="text-sm font-black uppercase tracking-wider text-purple-700">
+                          I own a vehicle
+                        </label>
+                      </div>
+                      {formData.vehicle_owned && (
+                        <div>
+                          <label className="text-sm font-bold uppercase tracking-wider text-gray-600 mb-2 block">
+                            Vehicle Type
+                          </label>
+                          <select
+                            value={formData.vehicle_type}
+                            onChange={(e) => setFormData({ ...formData, vehicle_type: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl bg-white border border-gray-300 text-black focus:outline-none focus:border-purple-500 transition-all"
+                          >
+                            <option value="">Select vehicle type</option>
+                            <option value="sedan">Sedan</option>
+                            <option value="suv">SUV</option>
+                            <option value="van">Van</option>
+                            <option value="truck">Truck</option>
+                            <option value="motorcycle">Motorcycle</option>
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Certifications (for cleaning) */}
-              {(formData.service_category === 'cleaning' || formData.service_category === 'both') && (
+              {(formData.service_category === 'cleaning' || formData.service_category === 'both' || formData.service_category?.includes('cleaning')) && (
                 <div className="space-y-3">
                   <label className="text-sm font-bold uppercase tracking-wider text-gray-600 flex items-center gap-2">
                     <Award size={14} className="text-red-600" />

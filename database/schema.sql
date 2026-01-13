@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS users (
   is_active BOOLEAN DEFAULT true,
   last_login TIMESTAMP,
   -- Staff-specific fields (for staff/security_staff roles)
-  service_category VARCHAR(20) CHECK (service_category IN ('cleaning', 'security', 'both')), -- What service they provide
+  service_category VARCHAR(20) CHECK (service_category IN ('cleaning', 'security', 'drivers', 'both', 'cleaning,security', 'cleaning,drivers', 'security,drivers', 'all')), -- What service they provide
   postcode VARCHAR(20),
   city VARCHAR(100),
   county VARCHAR(100),
@@ -52,15 +52,21 @@ CREATE TABLE IF NOT EXISTS users (
   availability JSONB, -- Weekly availability schedule
   experience_years INTEGER,
   certifications TEXT[], -- Array of certifications
-  licenses TEXT[], -- Security licenses (SIA, etc.)
+  licenses TEXT[], -- Security licenses (SIA, etc.) or Driver licenses
   vetting_status VARCHAR(20) DEFAULT 'pending' CHECK (vetting_status IN ('pending', 'approved', 'rejected', 'on_hold')),
   vetting_notes TEXT,
   background_check_completed BOOLEAN DEFAULT false,
   background_check_date TIMESTAMP,
   dbs_check_completed BOOLEAN DEFAULT false, -- DBS check for cleaning staff
   sia_licensed BOOLEAN DEFAULT false, -- SIA license for security staff
-  license_number VARCHAR(100), -- License number for security staff
+  license_number VARCHAR(100), -- License number for security staff or driver's license
   license_expiry DATE, -- License expiry date
+  -- Driver-specific fields
+  drivers_license_number VARCHAR(100), -- Driver's license number
+  drivers_license_expiry DATE, -- Driver's license expiry
+  vehicle_owned BOOLEAN DEFAULT false, -- Does driver own a vehicle
+  vehicle_type VARCHAR(50), -- 'sedan', 'suv', 'van', 'truck', 'motorcycle'
+  years_driving_experience INTEGER, -- Years of driving experience
   references_data JSONB, -- Array of references
   emergency_contact_name VARCHAR(255),
   emergency_contact_phone VARCHAR(20),
@@ -78,11 +84,11 @@ CREATE INDEX idx_users_vetting_status ON users(vetting_status);
 CREATE INDEX idx_users_city ON users(city);
 CREATE INDEX idx_users_postcode ON users(postcode);
 
--- Services table (service catalog - Cleaning & Security)
+-- Services table (service catalog - Cleaning, Security & Drivers)
 CREATE TABLE IF NOT EXISTS services (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name VARCHAR(255) NOT NULL,
-  category VARCHAR(20) NOT NULL CHECK (category IN ('cleaning', 'security', 'bundle')), -- Vertical: cleaning or security
+  category VARCHAR(20) NOT NULL CHECK (category IN ('cleaning', 'security', 'drivers', 'bundle')), -- Vertical: cleaning, security, drivers, or bundle
   type VARCHAR(50) NOT NULL, -- Service type within category (no check constraint - flexible)
   description TEXT,
   base_price DECIMAL(10, 2) NOT NULL DEFAULT 0,
@@ -218,7 +224,7 @@ CREATE TRIGGER update_compliance_logs_updated_at BEFORE UPDATE ON compliance_log
 CREATE TRIGGER update_invoices_updated_at BEFORE UPDATE ON invoices
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Seed initial services data - Cleaning & Security (Nigeria-focused pricing in NGN)
+-- Seed initial services data - Cleaning, Security & Drivers (Nigeria-focused pricing in NGN)
 -- Cleaning Services
 INSERT INTO services (name, category, type, description, base_price, pricing_model, duration_hours, frequency_options, requires_licensing, requires_certification) VALUES
   ('Home Cleaning', 'cleaning', 'routine', 'Routine home cleaning including floors, bathrooms, and common areas. Instant pricing: ₦15,000–₦50,000 based on property size.', 15000, 'fixed', 3.0, '["weekly", "bi-weekly", "monthly"]', false, false),
@@ -236,7 +242,21 @@ INSERT INTO services (name, category, type, description, base_price, pricing_mod
   ('Estate Patrols', 'security', 'estate', 'Regular patrols for gated communities and estates. Mobile security teams. Monthly contracts. ₦400,000–₦1,000,000/month.', 400000, 'monthly', 730.0, '["monthly"]', true, true)
 ON CONFLICT DO NOTHING;
 
--- Bundle Packages
+-- Driver Services (Nigeria-focused pricing in NGN)
 INSERT INTO services (name, category, type, description, base_price, pricing_model, duration_hours, frequency_options, requires_licensing, requires_certification) VALUES
-  ('Clean + Secure Event Package', 'bundle', 'event', 'Complete event solution: venue cleaning + security guards. Perfect for weddings, corporate events, and parties. Save 15%.', 100000, 'event', 8.0, '[]', true, false)
+  ('Short-Term Driver Hire', 'drivers', 'short_term', 'Professional drivers for daily, weekly, or monthly assignments. Perfect for business trips, events, or temporary needs. ₦5,000–₦15,000/day.', 5000, 'daily', 8.0, '["daily", "weekly", "monthly"]', true, true),
+  ('Long-Term Driver Hire', 'drivers', 'long_term', 'Dedicated drivers for extended periods (3+ months). Ideal for executives, families, or businesses. Monthly retainers from ₦120,000/month.', 120000, 'monthly', 240.0, '["monthly", "quarterly", "yearly"]', true, true),
+  ('Event Driver Service', 'drivers', 'event', 'Professional drivers for events, weddings, corporate functions. Hourly or per-event pricing. ₦3,000–₦8,000/hour.', 3000, 'hourly', 4.0, '[]', true, true),
+  ('Chauffeur Service', 'drivers', 'premium', 'Premium chauffeur service with luxury vehicles. Perfect for VIP transport, airport transfers, and special occasions. ₦8,000–₦20,000/trip.', 8000, 'fixed', 2.0, '[]', true, true),
+  ('Corporate Fleet Driver', 'drivers', 'corporate', 'Professional drivers for corporate fleets. Background-checked, uniformed, and reliable. Monthly contracts available.', 150000, 'monthly', 200.0, '["monthly"]', true, true),
+  ('Emergency Driver Service', 'drivers', 'emergency', 'On-demand driver service for urgent needs. Available 24/7. Same-day booking. ₦10,000–₦25,000/day.', 10000, 'daily', 8.0, '[]', true, false)
+ON CONFLICT DO NOTHING;
+
+-- Bundle Packages (Improved - combining all three services)
+INSERT INTO services (name, category, type, description, base_price, pricing_model, duration_hours, frequency_options, requires_licensing, requires_certification) VALUES
+  ('Clean + Secure Event Package', 'bundle', 'event', 'Complete event solution: venue cleaning + security guards. Perfect for weddings, corporate events, and parties. Save 15%.', 100000, 'event', 8.0, '[]', true, false),
+  ('Estate Complete Care Package', 'bundle', 'estate', 'Full estate management: cleaning, security patrols, and driver services. Monthly retainers. Save 20%.', 800000, 'monthly', 730.0, '["monthly"]', true, false),
+  ('Corporate Office Complete', 'bundle', 'corporate', 'All-in-one office solution: daily cleaning, security guards, and corporate drivers. Perfect for businesses. Save 18%.', 500000, 'monthly', 730.0, '["monthly"]', true, false),
+  ('Event Premium Package', 'bundle', 'premium_event', 'Ultimate event package: cleaning, security, and chauffeur service. Perfect for high-end events. Save 25%.', 250000, 'event', 12.0, '[]', true, false),
+  ('Move-In Complete Package', 'bundle', 'residential', 'Complete move-in solution: deep cleaning, security setup, and driver assistance. One-time package. Save 20%.', 200000, 'fixed', 8.0, '[]', true, false)
 ON CONFLICT DO NOTHING;

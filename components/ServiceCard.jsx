@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { 
   Sparkles, Zap, ShieldCheck, Moon, Lock, Key,
   Droplet, Trash2, Calendar, Clock, DollarSign,
-  Building2, Home, Eye, Star, Sparkle, Waves
+  Building2, Home, Eye, Star, Sparkle, Waves, Car
 } from 'lucide-react';
 
 // Icons by category and type
@@ -23,6 +23,11 @@ const serviceIcons = {
   commercial: <Building2 size={28} />,
   estate: <ShieldCheck size={28} />,
   emergency: <Zap size={28} />,
+  // Driver icons
+  short_term: <Clock size={28} />,
+  long_term: <Calendar size={28} />,
+  premium: <Star size={28} />,
+  corporate: <Building2 size={28} />,
   // Bundle icons
   bundle: <Star size={28} />,
 };
@@ -67,8 +72,27 @@ const categoryStyles = {
     rounded: 'rounded-2xl', // Less rounded for professional feel
     glow: 'shadow-[0_0_30px_rgba(59,130,246,0.3)]',
   },
+  drivers: {
+    // Bold, dynamic, modern - like mobility
+    gradient: 'from-purple-500 via-pink-500 to-rose-500',
+    gradientLight: 'from-purple-50 via-pink-50 to-rose-50',
+    bg: 'bg-gradient-to-br from-purple-600 to-pink-600',
+    bgLight: 'bg-gradient-to-br from-purple-50/80 to-pink-50/80',
+    border: 'border-purple-300/50',
+    borderHover: 'border-purple-400',
+    text: 'text-purple-700',
+    textHover: 'text-purple-600',
+    iconBg: 'bg-gradient-to-br from-purple-600 to-pink-600',
+    badgeBg: 'bg-gradient-to-r from-purple-100 to-pink-100',
+    badgeText: 'text-purple-700',
+    priceBg: 'bg-gradient-to-br from-purple-50 to-pink-50',
+    shadow: 'shadow-purple-200/50',
+    shadowHover: 'shadow-purple-300/60',
+    rounded: 'rounded-2xl', // Professional but modern
+    glow: 'shadow-[0_0_30px_rgba(168,85,247,0.3)]',
+  },
   bundle: {
-    // Energetic, premium - combination of both
+    // Energetic, premium - combination of all three
     gradient: 'from-green-500 via-emerald-500 to-teal-500',
     gradientLight: 'from-green-50 via-emerald-50 to-teal-50',
     bg: 'bg-gradient-to-br from-green-500 to-emerald-500',
@@ -120,6 +144,7 @@ export default function ServiceCard({ service, index = 0 }) {
   const getCategoryBadge = () => {
     if (category === 'cleaning') return 'CONVIVIA24 CLEAN';
     if (category === 'security') return 'CONVIVIA24 SECURE';
+    if (category === 'drivers') return 'CONVIVIA24 DRIVE';
     if (category === 'bundle') return 'BUNDLE PACKAGE';
     return 'SERVICE';
   };
@@ -179,16 +204,16 @@ export default function ServiceCard({ service, index = 0 }) {
             {description}
           </p>
 
-          {/* Licensing Badge for Security */}
+          {/* Licensing Badge for Security or Drivers */}
           {requires_licensing && (
             <motion.div
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               className="flex items-center gap-2 pt-2"
             >
-              <Lock size={16} className="text-blue-600" />
-              <span className="text-xs font-black uppercase tracking-wider text-blue-600">
-                Licensed Security Required
+              <Lock size={16} className={category === 'drivers' ? 'text-purple-600' : 'text-blue-600'} />
+              <span className={`text-xs font-black uppercase tracking-wider ${category === 'drivers' ? 'text-purple-600' : 'text-blue-600'}`}>
+                {category === 'drivers' ? 'Valid Driver License Required' : 'Licensed Security Required'}
               </span>
             </motion.div>
           )}
@@ -260,6 +285,22 @@ export default function ServiceCard({ service, index = 0 }) {
             }}
           >
             <ShieldCheck className="w-full h-full text-blue-500" />
+          </motion.div>
+        )}
+        {category === 'drivers' && (
+          <motion.div
+            className="absolute bottom-0 left-0 w-32 h-32 opacity-10"
+            animate={{
+              x: [0, 20, 0],
+              rotate: [0, 15, -15, 0],
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
+            <Car className="w-full h-full text-purple-500" />
           </motion.div>
         )}
         {category === 'bundle' && (

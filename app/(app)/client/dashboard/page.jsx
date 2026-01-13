@@ -170,19 +170,19 @@ export default function ClientDashboard() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter italic text-black mb-2">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter italic text-black mb-2">
             Dashboard
           </h1>
-          <p className="text-gray-600 font-medium">
+          <p className="text-sm sm:text-base text-gray-600 font-medium">
             Welcome back, <span className="font-black text-black">{user?.first_name || user?.email?.split('@')[0] || 'Guest User'}</span>
           </p>
           {user?.business_name && (
-            <p className="text-sm text-gray-500 mt-1 font-medium">{user.business_name}</p>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1 font-medium">{user.business_name}</p>
           )}
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
           {quickActions.map((action, index) => (
             <motion.button
               key={index}
@@ -192,7 +192,7 @@ export default function ClientDashboard() {
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => router.push(action.path)}
-              className={`px-6 py-4 font-black rounded-xl transition-all flex items-center gap-3 uppercase tracking-wider text-sm shadow-lg ${
+              className={`px-4 sm:px-6 py-3 sm:py-4 font-black rounded-xl transition-all flex items-center gap-2 sm:gap-3 uppercase tracking-wider text-xs sm:text-sm shadow-lg ${
                 action.primary
                   ? 'bg-red-600 text-white hover:bg-red-700 hover:shadow-xl'
                   : 'bg-white border-2 border-gray-200 text-black hover:border-red-300 hover:bg-gray-50'
@@ -206,7 +206,7 @@ export default function ClientDashboard() {
       </div>
 
       {/* Primary Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {primaryStats.map((stat, index) => (
           <motion.div
             key={index}
@@ -214,7 +214,7 @@ export default function ClientDashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1, duration: 0.4 }}
             whileHover={{ y: -4, scale: 1.02 }}
-            className={`p-6 rounded-2xl bg-white border-2 ${stat.borderColor} hover:border-red-300 transition-all shadow-lg hover:shadow-xl cursor-pointer`}
+            className={`p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-white border-2 ${stat.borderColor} hover:border-red-300 transition-all shadow-lg hover:shadow-xl cursor-pointer`}
             onClick={() => stat.path && router.push(stat.path)}
           >
             <div className="flex items-start justify-between mb-4">
@@ -232,9 +232,9 @@ export default function ClientDashboard() {
       </div>
 
       {/* Secondary Stats & Spending Insights */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Secondary Stats */}
-        <div className="lg:col-span-2 grid grid-cols-3 gap-4">
+        <div className="lg:col-span-2 grid grid-cols-3 gap-3 sm:gap-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -311,7 +311,7 @@ export default function ClientDashboard() {
               Upcoming Jobs ({upcomingBookings.length})
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {upcomingBookings.map((booking, index) => (
               <motion.div
                 key={booking.id}

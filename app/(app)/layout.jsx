@@ -182,8 +182,8 @@ const AppLayout = ({ children }) => {
       </aside>
 
       {/* Main Content Area */}
-      <main className="lg:pl-24 pb-32 lg:pb-0 min-h-screen relative z-10">
-        <div className="max-w-[1600px] mx-auto px-6 py-8">
+      <main className="lg:pl-24 pb-20 sm:pb-24 lg:pb-0 min-h-screen relative z-10">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
           {children}
         </div>
       </main>

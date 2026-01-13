@@ -1,4 +1,4 @@
--- Additional Tables for Convivia24 Cleaning & Security Platform
+-- Additional Tables for Convivia24 Cleaning, Security & Drivers Platform
 -- Run this after the main schema.sql
 
 -- Security Incidents & Events Log
@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS reviews (
   staff_id UUID REFERENCES users(id) ON DELETE SET NULL, -- If reviewing a specific staff member
   rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
   comment TEXT,
-  service_category VARCHAR(20) CHECK (service_category IN ('cleaning', 'security', 'both')),
+  service_category VARCHAR(20) CHECK (service_category IN ('cleaning', 'security', 'drivers', 'both', 'cleaning,security', 'cleaning,drivers', 'security,drivers', 'all')),
   photos TEXT[], -- Photos attached to review
   is_verified BOOLEAN DEFAULT false, -- Verified purchase
   is_public BOOLEAN DEFAULT true,
@@ -228,4 +228,71 @@ CREATE TRIGGER update_training_records_updated_at BEFORE UPDATE ON training_reco
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_shift_schedules_updated_at BEFORE UPDATE ON shift_schedules
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Vehicles Table (for driver services)
+CREATE TABLE IF NOT EXISTS vehicles (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  driver_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  make VARCHAR(100) NOT NULL,
+  model VARCHAR(100) NOT NULL,
+  year INTEGER,
+  color VARCHAR(50),
+  plate_number VARCHAR(50) UNIQUE NOT NULL,
+  vehicle_type VARCHAR(50) NOT NULL CHECK (vehicle_type IN ('sedan', 'suv', 'van', 'truck', 'motorcycle', 'luxury', 'bus')),
+  capacity INTEGER, -- Number of passengers
+  fuel_type VARCHAR(20) CHECK (fuel_type IN ('petrol', 'diesel', 'electric', 'hybrid')),
+  insurance_provider VARCHAR(255),
+  insurance_policy_number VARCHAR(100),
+  insurance_expiry DATE,
+  registration_expiry DATE,
+  roadworthiness_expiry DATE,
+  is_verified BOOLEAN DEFAULT false,
+  is_active BOOLEAN DEFAULT true,
+  photos TEXT[], -- Array of vehicle photo URLs
+  documents JSONB, -- Insurance, registration, roadworthiness documents
+  notes TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_vehicles_driver_id ON vehicles(driver_id);
+CREATE INDEX idx_vehicles_plate_number ON vehicles(plate_number);
+CREATE INDEX idx_vehicles_vehicle_type ON vehicles(vehicle_type);
+CREATE INDEX idx_vehicles_is_active ON vehicles(is_active);
+CREATE INDEX idx_vehicles_is_verified ON vehicles(is_verified);
+
+-- Driver Trip Logs
+CREATE TABLE IF NOT EXISTS driver_trips (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  booking_id UUID REFERENCES bookings(id) ON DELETE SET NULL,
+  driver_id UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+  vehicle_id UUID REFERENCES vehicles(id) ON DELETE SET NULL,
+  trip_type VARCHAR(50) NOT NULL CHECK (trip_type IN ('short_term', 'long_term', 'event', 'chauffeur', 'corporate', 'emergency')),
+  start_location TEXT NOT NULL,
+  end_location TEXT,
+  start_time TIMESTAMP NOT NULL,
+  end_time TIMESTAMP,
+  distance_km DECIMAL(8, 2),
+  duration_minutes INTEGER,
+  fare DECIMAL(10, 2),
+  status VARCHAR(20) DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'in_progress', 'completed', 'cancelled')),
+  client_feedback TEXT,
+  rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+  notes TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_driver_trips_booking_id ON driver_trips(booking_id);
+CREATE INDEX idx_driver_trips_driver_id ON driver_trips(driver_id);
+CREATE INDEX idx_driver_trips_vehicle_id ON driver_trips(vehicle_id);
+CREATE INDEX idx_driver_trips_status ON driver_trips(status);
+CREATE INDEX idx_driver_trips_start_time ON driver_trips(start_time);
+
+-- Triggers for new tables
+CREATE TRIGGER update_vehicles_updated_at BEFORE UPDATE ON vehicles
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_driver_trips_updated_at BEFORE UPDATE ON driver_trips
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

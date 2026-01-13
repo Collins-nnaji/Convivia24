@@ -58,16 +58,16 @@ export default function ClientInvoices() {
   };
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter italic text-black">Invoices</h1>
+    <div className="space-y-6 sm:space-y-8">
+      <h1 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tighter italic text-black">Invoices</h1>
 
       {/* Filters */}
-      <div className="flex gap-2 overflow-x-auto pb-2">
+      <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 sm:mx-0 sm:px-0">
         {['all', 'draft', 'sent', 'paid', 'overdue'].map(status => (
           <button
             key={status}
             onClick={() => setStatusFilter(status)}
-            className={`px-4 py-2 rounded-xl border font-bold uppercase tracking-wider text-xs whitespace-nowrap transition-all shadow-sm ${
+            className={`px-3 sm:px-4 py-2 rounded-xl border font-bold uppercase tracking-wider text-[10px] sm:text-xs whitespace-nowrap transition-all shadow-sm ${
               statusFilter === status
                 ? 'bg-red-100 border-red-300 text-red-700'
                 : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-red-300'
@@ -86,16 +86,16 @@ export default function ClientInvoices() {
           {filteredInvoices.map((invoice) => (
             <div
               key={invoice.id}
-              className="p-6 rounded-2xl bg-white border border-gray-200 hover:bg-gray-50 hover:border-red-300 transition-all cursor-pointer shadow-sm"
+              className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-white border border-gray-200 hover:bg-gray-50 hover:border-red-300 transition-all cursor-pointer shadow-sm"
               onClick={() => router.push(`/client/jobs/${invoice.booking_id}`)}
             >
-              <div className="flex flex-col md:flex-row justify-between gap-4">
-                <div className="flex-1 space-y-3">
-                  <div className="flex items-center gap-3">
-                    <Receipt size={24} className="text-red-600" />
-                    <div>
-                      <p className="text-lg font-black text-black">{invoice.invoice_number}</p>
-                      <p className="text-sm text-gray-600">{invoice.service_name}</p>
+              <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4">
+                <div className="flex-1 space-y-2 sm:space-y-3">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <Receipt size={20} className="sm:w-6 sm:h-6 text-red-600 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-base sm:text-lg font-black text-black truncate">{invoice.invoice_number}</p>
+                      <p className="text-xs sm:text-sm text-gray-600 truncate">{invoice.service_name}</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">

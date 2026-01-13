@@ -69,30 +69,30 @@ export default function StaffDashboard() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <div>
-        <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter italic mb-2 text-black">My Dashboard</h1>
-        <p className="text-gray-600">Welcome, {user?.first_name || user?.email?.split('@')[0] || 'Staff Member'}</p>
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tighter italic mb-2 text-black">My Dashboard</h1>
+        <p className="text-sm sm:text-base text-gray-600">Welcome, {user?.first_name || user?.email?.split('@')[0] || 'Staff Member'}</p>
       </div>
 
       {/* Stats Grid - Mobile Optimized */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         {statCards.map((stat, index) => (
           <div
             key={index}
-            className="p-4 md:p-6 rounded-2xl bg-white border border-gray-200 hover:bg-gray-50 hover:border-red-300 transition-all shadow-sm"
+            className="p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl bg-white border border-gray-200 hover:bg-gray-50 hover:border-red-300 transition-all shadow-sm"
           >
-            <stat.icon size={20} className="text-red-600 mb-3" />
-            <p className="text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">{stat.label}</p>
-            <p className="text-xl md:text-2xl font-black text-black">{stat.value}</p>
+            <stat.icon size={18} className="sm:w-5 sm:h-5 text-red-600 mb-2 sm:mb-3" />
+            <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">{stat.label}</p>
+            <p className="text-lg sm:text-xl md:text-2xl font-black text-black">{stat.value}</p>
           </div>
         ))}
       </div>
 
       {/* Today's Jobs */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-black uppercase tracking-tight italic text-black">Today's Jobs</h2>
+      <div className="space-y-3 sm:space-y-4">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight italic text-black">Today's Jobs</h2>
           <button
             onClick={() => router.push('/staff/jobs')}
             className="text-sm font-bold uppercase tracking-wider text-red-600 hover:text-red-700 transition-colors flex items-center gap-2"

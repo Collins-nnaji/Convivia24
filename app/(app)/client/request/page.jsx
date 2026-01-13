@@ -130,15 +130,15 @@ export default function RequestService() {
     return (
     <div className="max-w-5xl mx-auto space-y-8">
       <div>
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter italic text-black mb-2">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter italic text-black mb-2">
           Request Service
         </h1>
-        <p className="text-gray-600 font-medium">Choose cleaning, security, or both. Get instant pricing and confirmed quotes.</p>
+        <p className="text-sm sm:text-base text-gray-600 font-medium">Choose cleaning, security, or both. Get instant pricing and confirmed quotes.</p>
       </div>
 
       {/* Service Category Selector */}
-      <div className="flex flex-wrap items-center gap-4 p-6 rounded-2xl bg-gray-50 border border-gray-200">
-        <span className="text-sm font-black uppercase tracking-wider text-gray-600">Service Type:</span>
+      <div className="flex flex-wrap items-center gap-3 sm:gap-4 p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-gray-50 border border-gray-200">
+        <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-gray-600">Service Type:</span>
         {[
           { id: 'all', label: 'All Services', icon: Star, color: 'gray' },
           { id: 'cleaning', label: 'Cleaning', icon: Sparkles, color: 'red' },
@@ -176,25 +176,25 @@ export default function RequestService() {
         })}
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
         {error && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-4 rounded-xl bg-red-50 border border-red-200 flex items-center gap-3"
+            className="p-3 sm:p-4 rounded-xl bg-red-50 border border-red-200 flex items-center gap-2 sm:gap-3"
           >
-            <AlertCircle size={20} className="text-red-600 flex-shrink-0" />
-            <p className="text-sm text-red-700 font-medium">{error}</p>
+            <AlertCircle size={18} className="sm:w-5 sm:h-5 text-red-600 flex-shrink-0" />
+            <p className="text-xs sm:text-sm text-red-700 font-medium">{error}</p>
           </motion.div>
         )}
 
         {/* Urgency Selection */}
-        <div className="space-y-4">
-          <label className="text-sm font-bold uppercase tracking-wider text-gray-600 flex items-center gap-2">
-            <AlertCircle size={16} className="text-red-600" />
+        <div className="space-y-3 sm:space-y-4">
+          <label className="text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-600 flex items-center gap-2">
+            <AlertCircle size={14} className="sm:w-4 sm:h-4 text-red-600" />
             Urgency Level
           </label>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             {[
               { value: 'routine', label: 'Routine', desc: 'Normal scheduling', selectedBg: 'bg-gray-100', selectedBorder: 'border-gray-300', selectedText: 'text-gray-800' },
               { value: 'urgent', label: 'Urgent', desc: 'Same-day response', selectedBg: 'bg-orange-100', selectedBorder: 'border-orange-300', selectedText: 'text-orange-700' },
@@ -204,7 +204,7 @@ export default function RequestService() {
                 key={option.value}
                 type="button"
                 onClick={() => setFormData({ ...formData, urgency: option.value, service_id: option.value === 'emergency' || option.value === 'urgent' ? '' : formData.service_id })}
-                className={`p-4 rounded-xl border transition-all text-left ${
+                className={`p-3 sm:p-4 rounded-xl border transition-all text-left ${
                   formData.urgency === option.value
                     ? `${option.selectedBg} ${option.selectedBorder} ${option.selectedText}`
                     : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-red-300'
@@ -226,13 +226,13 @@ export default function RequestService() {
           {loading ? (
             <div className="text-center py-8 text-gray-600">Loading services...</div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {filteredServices.map((service) => (
                 <button
                   key={service.id}
                   type="button"
                   onClick={() => setFormData({ ...formData, service_id: service.id })}
-                  className={`p-6 rounded-xl border transition-all text-left shadow-sm ${
+                  className={`p-4 sm:p-5 md:p-6 rounded-xl border transition-all text-left shadow-sm ${
                     formData.service_id === service.id
                       ? 'bg-red-50 border-red-300 text-red-700'
                       : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-red-300'
@@ -279,38 +279,38 @@ export default function RequestService() {
         </div>
 
         {/* Schedule */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           <div className="space-y-2">
-            <label className="text-sm font-bold uppercase tracking-wider text-gray-600 flex items-center gap-2">
-              <Calendar size={16} className="text-red-600" />
+            <label className="text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-600 flex items-center gap-2">
+              <Calendar size={14} className="sm:w-4 sm:h-4 text-red-600" />
               Preferred Start Time
             </label>
             <input
               type="datetime-local"
               value={formData.scheduled_start}
               onChange={(e) => setFormData({ ...formData, scheduled_start: e.target.value })}
-              className="w-full px-4 py-4 rounded-xl bg-white border border-gray-200 text-black focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+              className="w-full px-3 sm:px-4 py-3 sm:py-4 rounded-xl bg-white border border-gray-200 text-black focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all text-sm sm:text-base"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-bold uppercase tracking-wider text-gray-600 flex items-center gap-2">
-              <Clock size={16} className="text-red-600" />
+            <label className="text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-600 flex items-center gap-2">
+              <Clock size={14} className="sm:w-4 sm:h-4 text-red-600" />
               Preferred End Time
             </label>
             <input
               type="datetime-local"
               value={formData.scheduled_end}
               onChange={(e) => setFormData({ ...formData, scheduled_end: e.target.value })}
-              className="w-full px-4 py-4 rounded-xl bg-white border border-gray-200 text-black focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+              className="w-full px-3 sm:px-4 py-3 sm:py-4 rounded-xl bg-white border border-gray-200 text-black focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all text-sm sm:text-base"
             />
           </div>
         </div>
 
         {/* Location */}
         <div className="space-y-2">
-          <label className="text-sm font-bold uppercase tracking-wider text-gray-600 flex items-center gap-2">
-            <MapPin size={16} className="text-red-600" />
+          <label className="text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-600 flex items-center gap-2">
+            <MapPin size={14} className="sm:w-4 sm:h-4 text-red-600" />
             Service Location Address
           </label>
           <textarea
@@ -318,30 +318,30 @@ export default function RequestService() {
             onChange={(e) => setFormData({ ...formData, location_address: e.target.value })}
             required
             rows={3}
-            className="w-full px-4 py-4 rounded-xl bg-white border border-gray-200 text-black placeholder-gray-400 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+            className="w-full px-3 sm:px-4 py-3 sm:py-4 rounded-xl bg-white border border-gray-200 text-black placeholder-gray-400 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all text-sm sm:text-base"
             placeholder="Enter full address where service is needed"
           />
         </div>
 
         {/* Special Instructions */}
         <div className="space-y-2">
-          <label className="text-sm font-bold uppercase tracking-wider text-gray-600">
+          <label className="text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-600">
             Special Instructions (Optional)
           </label>
           <textarea
             value={formData.special_instructions}
             onChange={(e) => setFormData({ ...formData, special_instructions: e.target.value })}
             rows={4}
-            className="w-full px-4 py-4 rounded-xl bg-white border border-gray-200 text-black placeholder-gray-400 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
+            className="w-full px-3 sm:px-4 py-3 sm:py-4 rounded-xl bg-white border border-gray-200 text-black placeholder-gray-400 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all text-sm sm:text-base"
             placeholder="Any specific requirements or special instructions..."
           />
         </div>
 
         {/* Quote Display */}
         {quote && selectedService && (
-          <div className="p-6 rounded-xl bg-green-50 border border-green-300 space-y-3 shadow-lg">
-            <h3 className="text-lg font-black uppercase tracking-tight text-green-700">Estimated Quote</h3>
-            <div className="space-y-2 text-sm">
+          <div className="p-4 sm:p-6 rounded-xl bg-green-50 border border-green-300 space-y-2 sm:space-y-3 shadow-lg">
+            <h3 className="text-base sm:text-lg font-black uppercase tracking-tight text-green-700">Estimated Quote</h3>
+            <div className="space-y-2 text-xs sm:text-sm">
               <div className="flex justify-between text-gray-700">
                 <span className="font-bold">Base Price:</span>
                 <span className="font-black">{formatCurrency(quote.base_price)}</span>
@@ -374,10 +374,10 @@ export default function RequestService() {
           disabled={submitting || !formData.service_id || !formData.location_address}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="w-full px-6 py-5 bg-red-600 text-white font-black rounded-xl hover:bg-red-700 transition-all flex items-center justify-center gap-3 uppercase tracking-wider text-sm shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-600"
+          className="w-full px-5 sm:px-6 py-4 sm:py-5 bg-red-600 text-white font-black rounded-xl hover:bg-red-700 transition-all flex items-center justify-center gap-2 sm:gap-3 uppercase tracking-wider text-xs sm:text-sm shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-600"
         >
           {submitting ? 'Submitting Request...' : 'Submit Service Request'}
-          <ArrowRight size={20} />
+          <ArrowRight size={18} className="sm:w-5 sm:h-5" />
         </motion.button>
       </form>
     </div>

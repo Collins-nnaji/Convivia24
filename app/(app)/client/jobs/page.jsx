@@ -141,12 +141,12 @@ export default function ClientJobs() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter italic text-black mb-2">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter italic text-black mb-2">
             My Jobs
           </h1>
-          <p className="text-gray-600 font-medium">Manage and track your cleaning service bookings</p>
+          <p className="text-sm sm:text-base text-gray-600 font-medium">Manage and track your cleaning service bookings</p>
         </div>
         <motion.button
           initial={{ opacity: 0, scale: 0.9 }}
@@ -154,15 +154,15 @@ export default function ClientJobs() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => router.push('/client/request')}
-          className="px-6 py-4 bg-red-600 text-white font-black rounded-xl hover:bg-red-700 transition-all flex items-center gap-3 uppercase tracking-wider text-sm shadow-xl"
+          className="w-full sm:w-auto px-5 sm:px-6 py-3 sm:py-4 bg-red-600 text-white font-black rounded-xl hover:bg-red-700 transition-all flex items-center justify-center gap-2 sm:gap-3 uppercase tracking-wider text-xs sm:text-sm shadow-xl"
         >
-          <Plus size={20} />
+          <Plus size={18} className="sm:w-5 sm:h-5" />
           Request Service
         </motion.button>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
         {[
           { label: 'Total', value: stats.total, icon: Calendar, color: 'blue' },
           { label: 'Pending', value: stats.pending, icon: Clock, color: 'orange' },
@@ -199,11 +199,11 @@ export default function ClientJobs() {
         </div>
 
         {/* Filter Row */}
-        <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
           {/* Status Filters */}
           <div className="flex-1">
             <label className="text-xs font-bold uppercase tracking-wider text-gray-600 mb-2 block">Status</label>
-            <div className="flex gap-2 overflow-x-auto pb-2">
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 sm:mx-0 sm:px-0">
               {statuses.map(status => (
                 <motion.button
                   key={status}
@@ -223,8 +223,8 @@ export default function ClientJobs() {
           </div>
 
           {/* Sort & View Mode */}
-          <div className="flex gap-3">
-            <div className="md:w-48">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="w-full sm:w-48">
               <label className="text-xs font-bold uppercase tracking-wider text-gray-600 mb-2 block">Sort By</label>
               <div className="relative">
                 <ArrowUpDown size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
