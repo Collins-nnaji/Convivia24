@@ -1,6 +1,5 @@
 {
-  "/(app)/admin/dashboard/page": "app/(app)/admin/dashboard/page.js",
-  "/api/bookings/route": "app/api/bookings/route.js",
+  "/api/support/enquire/route": "app/api/support/enquire/route.js",
   "/page": "app/page.js",
-  "/test/page": "app/test/page.js"
+  "/support/page": "app/support/page.js"
 }

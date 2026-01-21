@@ -1,52 +1,44 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --foreground-rgb: 23, 23, 23;
+  --background-start-rgb: 250, 250, 250;
+  --background-end-rgb: 255, 255, 255;
+}
+
 body {
-  margin: 0;
-  padding: 0;
-  background-color: #ffffff; /* White background */
-  color: #000000; /* Black text */
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
 }
 
-/* Custom selection styles */
-::selection {
-  background-color: #dc2626; /* Red for selection */
-  color: white;
+/* Custom Utilities */
+.animate-spin-slow {
+  animation: spin 12s linear infinite;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(220, 38, 38, 0.5); /* Red scrollbar */
-  border-radius: 4px;
+/* Glassmorphism for Light Theme */
+.glass-card {
+  @apply bg-white/70 backdrop-blur-md border border-zinc-200/50 shadow-sm;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(220, 38, 38, 0.7);
+.premium-shadow {
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
 }
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
-
-
-
-
-

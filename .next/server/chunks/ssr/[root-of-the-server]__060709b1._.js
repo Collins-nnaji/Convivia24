@@ -1,0 +1,3 @@
+module.exports=[5268,a=>{a.v({className:"outfit_9edc4f9a-module__h4ISCa__className"})},33290,a=>{"use strict";var b=a.i(7997),c=a.i(5268);let d={className:c.default.className,style:{fontFamily:"'Outfit', 'Outfit Fallback'",fontStyle:"normal"}};function e({children:a}){return(0,b.jsx)("html",{lang:"en",children:(0,b.jsx)("body",{className:`${d.className} bg-slate-50 text-zinc-900 antialiased`,children:a})})}null!=c.default.variable&&(d.variable=c.default.variable),a.s(["default",()=>e,"metadata",0,{title:"Convivia24 | Premium Personal Driver Service",description:"Hire elite vetted drivers for your personal vehicle. Manage your fleet and bookings with ease.",icons:{icon:"/Logo2.png"}}],33290)}];
+
+//# sourceMappingURL=%5Broot-of-the-server%5D__060709b1._.js.map
