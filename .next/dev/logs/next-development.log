@@ -1,14 +1,157 @@
-[00:00:01.813] Server  WARN    ⚠ Minimum recommended TypeScript version is v5.1.0, older versions can potentially be incompatible with Next.js. Detected: 4.9.5
-[00:00:02.047] Server  LOG     ✓ Ready in 1458ms
-[00:00:04.343] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:06.631] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:20.988] Server  ERROR   DATABASE_URL not configured
-[00:00:25.213] Server  ERROR   DATABASE_URL not configured
-[00:04:09.129] Server  ERROR   DATABASE_URL not configured
-[00:04:10.049] Server  ERROR   DATABASE_URL not configured
-[00:04:11.129] Server  ERROR   DATABASE_URL not configured
-[00:04:12.184] Server  ERROR   DATABASE_URL not configured
-[00:04:13.517] Server  ERROR   DATABASE_URL not configured
-[00:05:23.743] Server  ERROR   DATABASE_URL not configured
-[00:05:24.465] Server  ERROR   DATABASE_URL not configured
-[00:05:25.037] Server  ERROR   DATABASE_URL not configured
+[00:00:03.116] Server  WARN    ⚠ Minimum recommended TypeScript version is v5.1.0, older versions can potentially be incompatible with Next.js. Detected: 4.9.5
+[00:00:03.436] Server  LOG     ✓ Ready in 2.8s
+[00:00:05.557] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:06.099] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:06.607] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:08:30.564] Server  LOG     ✓ Compiled in 1380ms
+[00:08:30.670] Browser ERROR   uncaughtError: ReferenceError: Shield is not defined
+[00:08:31.271] Server  WARN    ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:08:31.375] Server  LOG     ✓ Compiled in 64ms
+[00:08:31.491] Server  ERROR   ⨯ ReferenceError: Shield is not defined
+[00:08:31.516] Browser ERROR   uncaughtError: ReferenceError: Shield is not defined
+[00:08:31.746] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:08:31.910] Browser ERROR   uncaughtError: ReferenceError: Shield is not defined
+[00:08:34.689] Server  WARN    ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:08:34.766] Server  LOG     ✓ Compiled in 45ms
+[00:08:34.857] Server  ERROR   ⨯ ReferenceError: Shield is not defined
+[00:08:35.021] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:08:35.174] Browser ERROR   uncaughtError: ReferenceError: Shield is not defined
+[00:08:37.589] Server  WARN    ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:08:37.717] Server  LOG     ✓ Compiled in 80ms
+[00:08:37.786] Server  ERROR   ⨯ ReferenceError: Shield is not defined
+[00:08:37.927] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:08:38.080] Browser ERROR   uncaughtError: ReferenceError: Shield is not defined
+[00:08:44.000] Server  WARN    ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:08:44.136] Server  ERROR   ⨯ ReferenceError: History is not defined
+[00:08:44.150] Server  LOG     ✓ Compiled in 211ms
+[00:08:44.150] Browser ERROR   unhandledRejection: Error: No link element found for chunk /_next/static/chunks/%5Broot-of-the-server%5D__3bf02c0d._.css
+[00:08:44.158] Server  WARN    ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:08:44.273] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:08:44.430] Browser ERROR   uncaughtError: ReferenceError: Car is not defined
+[00:08:46.256] Server  WARN    ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:08:46.387] Server  LOG     ✓ Compiled in 203ms
+[00:08:46.388] Browser ERROR   unhandledRejection: Error: No link element found for chunk /_next/static/chunks/%5Broot-of-the-server%5D__3bf02c0d._.css
+[00:08:46.400] Server  WARN    ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:08:46.547] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:08:46.583] Server  LOG     ✓ Compiled in 3ms
+[00:08:49.904] Server  LOG     ✓ Compiled in 54ms
+[00:09:00.886] Server  LOG     ✓ Compiled in 131ms
+[00:09:13.282] Server  LOG     ✓ Compiled in 63ms
+[00:11:33.510] Server  LOG     ✓ Compiled in 76ms
+[00:11:37.283] Server  LOG     ✓ Compiled in 66ms
+[00:11:49.478] Server  LOG     ✓ Compiled in 75ms
+[00:11:54.895] Server  LOG     ✓ Compiled in 82ms
+[00:11:54.998] Browser ERROR   ./app/page.tsx:194:19
+Parsing ecmascript source code failed
+  192 |             </motion.div>
+  193 |           ))}
+> 194 |         </section>
+      |                   ^
+> 195 |
+      | ^
+> 196 |         {/* Pricing Tiers */}
+      | ^^^^^^^^^
+  197 |         <section className="max-w-7xl mx-auto mb-32 px-6">
+  198 |           <div className="text-center mb-16">
+  199 |             <h2 className="text-5xl md:text-6xl font-black text-zinc-900 uppercase tracking-tighter leading-[0.9] italic mb-6">
+
+Expected '</', got 'jsx text (
+
+        )'
+
+Import traces:
+  Client Component Browser:
+    ./app/page.tsx [Client Component Browser]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/page.tsx [Client Component SSR]
+    ./app/page.tsx [Server Component]
+[00:12:01.700] Server  LOG     ✓ Compiled in 57ms
+[00:12:03.519] Server  LOG     ✓ Compiled in 60ms
+[00:12:13.549] Server  LOG     ✓ Compiled in 186ms
+[00:12:47.670] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:12:48.237] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <SegmentViewNode type="layout" pagePath="layout.tsx">
+                    <SegmentTrieNode>
+                    <link>
+                    <script>
+                    <RootLayout>
+                      <html
+                        lang="en"
+-                       style={{transition-property:"none",margin-right:"0px"}}
+                      >
+                  ...
+
+[00:13:52.326] Server  LOG     ✓ Compiled in 99ms
+[00:13:55.008] Server  LOG     ✓ Compiled in 101ms
+[00:13:57.081] Server  LOG     ✓ Compiled in 97ms
+[00:14:04.414] Server  LOG     ✓ Compiled in 103ms
+[00:14:07.260] Server  LOG     ✓ Compiled in 92ms
+[00:15:16.469] Server  LOG     ✓ Compiled in 126ms
+[00:15:18.537] Server  LOG     ✓ Compiled in 78ms
+[00:15:20.943] Server  LOG     ✓ Compiled in 83ms
+[00:17:46.998] Server  LOG     ✓ Compiled in 105ms
+[00:17:48.872] Server  LOG     ✓ Compiled in 103ms
+[00:17:51.343] Server  LOG     ✓ Compiled in 72ms
+[00:18:00.160] Server  LOG     ✓ Compiled in 60ms
+[00:20:36.561] Server  LOG     ✓ Compiled in 91ms
+[00:20:39.314] Server  LOG     ✓ Compiled in 96ms
+[00:22:50.762] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:22:51.225] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/support" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <SegmentViewNode type="layout" pagePath="layout.tsx">
+                    <SegmentTrieNode>
+                    <link>
+                    <script>
+                    <script>
+                    <RootLayout>
+                      <html
+                        lang="en"
+-                       style={{transition-property:"none",margin-right:"0px"}}
+                      >
+                  ...
+
+[00:22:53.220] Server  LOG     ✓ Compiled in 50ms
+[00:22:57.062] Server  LOG     ✓ Compiled in 133ms

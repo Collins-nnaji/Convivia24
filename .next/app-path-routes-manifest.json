@@ -1,7 +1,6 @@
 {
   "/_global-error/page": "/_global-error",
   "/_not-found/page": "/_not-found",
-  "/api/support/enquire/route": "/api/support/enquire",
   "/drivers/apply/page": "/drivers/apply",
   "/drivers/status/page": "/drivers/status",
   "/marketplace/bookings/[id]/page": "/marketplace/bookings/[id]",
@@ -11,6 +10,5 @@
   "/marketplace/settings/page": "/marketplace/settings",
   "/marketplace/vehicles/page": "/marketplace/vehicles",
   "/page": "/",
-  "/share/[token]/page": "/share/[token]",
-  "/support/page": "/support"
+  "/share/[token]/page": "/share/[token]"
 }

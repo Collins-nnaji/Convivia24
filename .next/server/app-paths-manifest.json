@@ -1,7 +1,6 @@
 {
   "/_global-error/page": "app/_global-error/page.js",
   "/_not-found/page": "app/_not-found/page.js",
-  "/api/support/enquire/route": "app/api/support/enquire/route.js",
   "/drivers/apply/page": "app/drivers/apply/page.js",
   "/drivers/status/page": "app/drivers/status/page.js",
   "/marketplace/bookings/[id]/page": "app/marketplace/bookings/[id]/page.js",
@@ -11,6 +10,5 @@
   "/marketplace/settings/page": "app/marketplace/settings/page.js",
   "/marketplace/vehicles/page": "app/marketplace/vehicles/page.js",
   "/page": "app/page.js",
-  "/share/[token]/page": "app/share/[token]/page.js",
-  "/support/page": "app/support/page.js"
+  "/share/[token]/page": "app/share/[token]/page.js"
 }

@@ -58,12 +58,6 @@
       "namedRegex": "^/_not\\-found(?:/)?$"
     },
     {
-      "page": "/api/support/enquire",
-      "regex": "^/api/support/enquire(?:/)?$",
-      "routeKeys": {},
-      "namedRegex": "^/api/support/enquire(?:/)?$"
-    },
-    {
       "page": "/drivers/apply",
       "regex": "^/drivers/apply(?:/)?$",
       "routeKeys": {},
@@ -104,12 +98,6 @@
       "regex": "^/marketplace/vehicles(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/marketplace/vehicles(?:/)?$"
-    },
-    {
-      "page": "/support",
-      "regex": "^/support(?:/)?$",
-      "routeKeys": {},
-      "namedRegex": "^/support(?:/)?$"
     }
   ],
   "dataRoutes": [],

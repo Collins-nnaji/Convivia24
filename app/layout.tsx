@@ -7,8 +7,8 @@ const outfit = Outfit({
 });
 
 export const metadata = {
-  title: 'Convivia24 | Premium Personal Driver Service',
-  description: 'Hire elite vetted drivers for your personal vehicle. Manage your fleet and bookings with ease.',
+  title: 'Convivia24 | Build Speaking Confidence Through Daily Practice',
+  description: 'Practice conversations in real-life situations. Build confidence through daily 5-minute sessions with prompts, partner matching, and progress tracking.',
   icons: {
     icon: '/Logo2.png',
   }
