@@ -50,7 +50,7 @@
         "x-next-revalidate-tag-token"
       ]
     },
-    "/drivers/apply": {
+    "/audit": {
       "experimentalBypassFor": [
         {
           "type": "header",
@@ -63,8 +63,8 @@
         }
       ],
       "initialRevalidateSeconds": false,
-      "srcRoute": "/drivers/apply",
-      "dataRoute": "/drivers/apply.rsc",
+      "srcRoute": "/audit",
+      "dataRoute": "/audit.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -74,7 +74,7 @@
         "x-next-revalidate-tag-token"
       ]
     },
-    "/drivers/status": {
+    "/briefing": {
       "experimentalBypassFor": [
         {
           "type": "header",
@@ -87,8 +87,8 @@
         }
       ],
       "initialRevalidateSeconds": false,
-      "srcRoute": "/drivers/status",
-      "dataRoute": "/drivers/status.rsc",
+      "srcRoute": "/briefing",
+      "dataRoute": "/briefing.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -98,7 +98,7 @@
         "x-next-revalidate-tag-token"
       ]
     },
-    "/marketplace/bookings": {
+    "/collective": {
       "experimentalBypassFor": [
         {
           "type": "header",
@@ -111,8 +111,8 @@
         }
       ],
       "initialRevalidateSeconds": false,
-      "srcRoute": "/marketplace/bookings",
-      "dataRoute": "/marketplace/bookings.rsc",
+      "srcRoute": "/collective",
+      "dataRoute": "/collective.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -122,7 +122,7 @@
         "x-next-revalidate-tag-token"
       ]
     },
-    "/marketplace": {
+    "/engine": {
       "experimentalBypassFor": [
         {
           "type": "header",
@@ -135,8 +135,8 @@
         }
       ],
       "initialRevalidateSeconds": false,
-      "srcRoute": "/marketplace",
-      "dataRoute": "/marketplace.rsc",
+      "srcRoute": "/engine",
+      "dataRoute": "/engine.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -146,7 +146,7 @@
         "x-next-revalidate-tag-token"
       ]
     },
-    "/marketplace/payments": {
+    "/intel": {
       "experimentalBypassFor": [
         {
           "type": "header",
@@ -159,56 +159,8 @@
         }
       ],
       "initialRevalidateSeconds": false,
-      "srcRoute": "/marketplace/payments",
-      "dataRoute": "/marketplace/payments.rsc",
-      "allowHeader": [
-        "host",
-        "x-matched-path",
-        "x-prerender-revalidate",
-        "x-prerender-revalidate-if-generated",
-        "x-next-revalidated-tags",
-        "x-next-revalidate-tag-token"
-      ]
-    },
-    "/marketplace/settings": {
-      "experimentalBypassFor": [
-        {
-          "type": "header",
-          "key": "next-action"
-        },
-        {
-          "type": "header",
-          "key": "content-type",
-          "value": "multipart/form-data;.*"
-        }
-      ],
-      "initialRevalidateSeconds": false,
-      "srcRoute": "/marketplace/settings",
-      "dataRoute": "/marketplace/settings.rsc",
-      "allowHeader": [
-        "host",
-        "x-matched-path",
-        "x-prerender-revalidate",
-        "x-prerender-revalidate-if-generated",
-        "x-next-revalidated-tags",
-        "x-next-revalidate-tag-token"
-      ]
-    },
-    "/marketplace/vehicles": {
-      "experimentalBypassFor": [
-        {
-          "type": "header",
-          "key": "next-action"
-        },
-        {
-          "type": "header",
-          "key": "content-type",
-          "value": "multipart/form-data;.*"
-        }
-      ],
-      "initialRevalidateSeconds": false,
-      "srcRoute": "/marketplace/vehicles",
-      "dataRoute": "/marketplace/vehicles.rsc",
+      "srcRoute": "/intel",
+      "dataRoute": "/intel.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -241,13 +193,37 @@
         "x-next-revalidated-tags",
         "x-next-revalidate-tag-token"
       ]
+    },
+    "/performance": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/performance",
+      "dataRoute": "/performance.rsc",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
     }
   },
   "dynamicRoutes": {},
   "notFoundRoutes": [],
   "preview": {
-    "previewModeId": "704fbcff5f723cfa32608ae723dbf5ca",
-    "previewModeSigningKey": "d7b4d8e074e227c7fcb20d527592a3a2b3a7b64d6f705c2315650798a9606cca",
-    "previewModeEncryptionKey": "4738d028501cee66e74c34f10840e13bda002ef4b125faaf6ae1dbb54393f67f"
+    "previewModeId": "855ca2589236ca85ed9ce5486f02aadf",
+    "previewModeSigningKey": "b0bbdc4ccdbbade9c946f0739ea0d33df05247f97706c64691ef3d8289a99001",
+    "previewModeEncryptionKey": "c23d2c702f1d0f3fe1b9df70d188c586af725e785682d958952ee7f5dd7945d9"
   }
 }

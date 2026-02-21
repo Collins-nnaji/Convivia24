@@ -20,24 +20,7 @@
     "afterFiles": [],
     "fallback": []
   },
-  "dynamicRoutes": [
-    {
-      "page": "/marketplace/bookings/[id]",
-      "regex": "^/marketplace/bookings/([^/]+?)(?:/)?$",
-      "routeKeys": {
-        "nxtPid": "nxtPid"
-      },
-      "namedRegex": "^/marketplace/bookings/(?<nxtPid>[^/]+?)(?:/)?$"
-    },
-    {
-      "page": "/share/[token]",
-      "regex": "^/share/([^/]+?)(?:/)?$",
-      "routeKeys": {
-        "nxtPtoken": "nxtPtoken"
-      },
-      "namedRegex": "^/share/(?<nxtPtoken>[^/]+?)(?:/)?$"
-    }
-  ],
+  "dynamicRoutes": [],
   "staticRoutes": [
     {
       "page": "/",
@@ -58,46 +41,52 @@
       "namedRegex": "^/_not\\-found(?:/)?$"
     },
     {
-      "page": "/drivers/apply",
-      "regex": "^/drivers/apply(?:/)?$",
+      "page": "/api/chat",
+      "regex": "^/api/chat(?:/)?$",
       "routeKeys": {},
-      "namedRegex": "^/drivers/apply(?:/)?$"
+      "namedRegex": "^/api/chat(?:/)?$"
     },
     {
-      "page": "/drivers/status",
-      "regex": "^/drivers/status(?:/)?$",
+      "page": "/api/inquiries/save",
+      "regex": "^/api/inquiries/save(?:/)?$",
       "routeKeys": {},
-      "namedRegex": "^/drivers/status(?:/)?$"
+      "namedRegex": "^/api/inquiries/save(?:/)?$"
     },
     {
-      "page": "/marketplace",
-      "regex": "^/marketplace(?:/)?$",
+      "page": "/audit",
+      "regex": "^/audit(?:/)?$",
       "routeKeys": {},
-      "namedRegex": "^/marketplace(?:/)?$"
+      "namedRegex": "^/audit(?:/)?$"
     },
     {
-      "page": "/marketplace/bookings",
-      "regex": "^/marketplace/bookings(?:/)?$",
+      "page": "/briefing",
+      "regex": "^/briefing(?:/)?$",
       "routeKeys": {},
-      "namedRegex": "^/marketplace/bookings(?:/)?$"
+      "namedRegex": "^/briefing(?:/)?$"
     },
     {
-      "page": "/marketplace/payments",
-      "regex": "^/marketplace/payments(?:/)?$",
+      "page": "/collective",
+      "regex": "^/collective(?:/)?$",
       "routeKeys": {},
-      "namedRegex": "^/marketplace/payments(?:/)?$"
+      "namedRegex": "^/collective(?:/)?$"
     },
     {
-      "page": "/marketplace/settings",
-      "regex": "^/marketplace/settings(?:/)?$",
+      "page": "/engine",
+      "regex": "^/engine(?:/)?$",
       "routeKeys": {},
-      "namedRegex": "^/marketplace/settings(?:/)?$"
+      "namedRegex": "^/engine(?:/)?$"
     },
     {
-      "page": "/marketplace/vehicles",
-      "regex": "^/marketplace/vehicles(?:/)?$",
+      "page": "/intel",
+      "regex": "^/intel(?:/)?$",
       "routeKeys": {},
-      "namedRegex": "^/marketplace/vehicles(?:/)?$"
+      "namedRegex": "^/intel(?:/)?$"
+    },
+    {
+      "page": "/performance",
+      "regex": "^/performance(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/performance(?:/)?$"
     }
   ],
   "dataRoutes": [],

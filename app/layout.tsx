@@ -1,14 +1,16 @@
 import './globals.css';
 import { Outfit } from 'next/font/google';
+import Navigation from '@/components/Navigation';
+import Footer from '@/components/Footer';
 
-const outfit = Outfit({ 
+const outfit = Outfit({
   subsets: ['latin'],
   display: 'swap',
 });
 
 export const metadata = {
-  title: 'Convivia24 | Build Speaking Confidence Through Daily Practice',
-  description: 'Practice conversations in real-life situations. Build confidence through daily 5-minute sessions with prompts, partner matching, and progress tracking.',
+  title: 'Convivia24 | Revenue Management, Redefined.',
+  description: 'Convivia24 manages the insights, planning, and execution that transform stagnant pipelines into high-velocity revenue engines.',
   icons: {
     icon: '/Logo2.png',
   }
@@ -20,9 +22,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={`${outfit.className} bg-slate-50 text-zinc-900 antialiased`}>
-        {children}
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${outfit.className} bg-white text-zinc-900 antialiased selection:bg-red-700 selection:text-white`} suppressHydrationWarning>
+        <Navigation />
+        <div className="relative z-0">
+          {children}
+        </div>
+        <Footer />
       </body>
     </html>
   );

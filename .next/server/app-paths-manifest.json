@@ -1,14 +1,13 @@
 {
   "/_global-error/page": "app/_global-error/page.js",
   "/_not-found/page": "app/_not-found/page.js",
-  "/drivers/apply/page": "app/drivers/apply/page.js",
-  "/drivers/status/page": "app/drivers/status/page.js",
-  "/marketplace/bookings/[id]/page": "app/marketplace/bookings/[id]/page.js",
-  "/marketplace/bookings/page": "app/marketplace/bookings/page.js",
-  "/marketplace/page": "app/marketplace/page.js",
-  "/marketplace/payments/page": "app/marketplace/payments/page.js",
-  "/marketplace/settings/page": "app/marketplace/settings/page.js",
-  "/marketplace/vehicles/page": "app/marketplace/vehicles/page.js",
+  "/api/chat/route": "app/api/chat/route.js",
+  "/api/inquiries/save/route": "app/api/inquiries/save/route.js",
+  "/audit/page": "app/audit/page.js",
+  "/briefing/page": "app/briefing/page.js",
+  "/collective/page": "app/collective/page.js",
+  "/engine/page": "app/engine/page.js",
+  "/intel/page": "app/intel/page.js",
   "/page": "app/page.js",
-  "/share/[token]/page": "app/share/[token]/page.js"
+  "/performance/page": "app/performance/page.js"
 }
