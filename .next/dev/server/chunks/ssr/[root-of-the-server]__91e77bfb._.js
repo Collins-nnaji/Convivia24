@@ -79,14 +79,6 @@ const footerLinks = [
         href: '/'
     },
     {
-        label: 'The Engine',
-        href: '/engine'
-    },
-    {
-        label: 'Performance',
-        href: '/performance'
-    },
-    {
         label: 'What We Do',
         href: '/collective'
     },
@@ -95,17 +87,17 @@ const footerLinks = [
         href: '/intel'
     },
     {
-        label: 'Chat with AI',
+        label: 'Contact',
         href: '/briefing'
     }
 ];
 function Footer() {
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("footer", {
-        className: "bg-zinc-900 border-t-2 border-red-700",
+        className: "mt-24 bg-zinc-900 border-t-2 border-red-700",
         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            className: "max-w-6xl mx-auto px-4 sm:px-6 py-8",
+            className: "max-w-6xl mx-auto px-4 sm:px-6 pt-16 pb-14",
             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6",
+                className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-10",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "flex flex-wrap items-center gap-x-4 gap-y-2 sm:gap-x-8",
@@ -122,12 +114,12 @@ function Footer() {
                                     }
                                 }, void 0, false, {
                                     fileName: "[project]/components/Footer.tsx",
-                                    lineNumber: 19,
+                                    lineNumber: 17,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/components/Footer.tsx",
-                                lineNumber: 18,
+                                lineNumber: 16,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -136,7 +128,7 @@ function Footer() {
                                 children: "|"
                             }, void 0, false, {
                                 fileName: "[project]/components/Footer.tsx",
-                                lineNumber: 21,
+                                lineNumber: 19,
                                 columnNumber: 13
                             }, this),
                             footerLinks.map((link)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$react$2d$server$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"], {
@@ -145,13 +137,13 @@ function Footer() {
                                     children: link.label
                                 }, link.href, false, {
                                     fileName: "[project]/components/Footer.tsx",
-                                    lineNumber: 23,
+                                    lineNumber: 21,
                                     columnNumber: 15
                                 }, this))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/Footer.tsx",
-                        lineNumber: 17,
+                        lineNumber: 15,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -160,46 +152,46 @@ function Footer() {
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$react$2d$server$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"], {
                                 href: "/briefing",
                                 className: "text-red-400 hover:text-red-300 font-medium transition-colors",
-                                children: "Chat with AI"
+                                children: "Contact"
                             }, void 0, false, {
                                 fileName: "[project]/components/Footer.tsx",
-                                lineNumber: 33,
+                                lineNumber: 31,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                 children: "© 2024 Convivia24"
                             }, void 0, false, {
                                 fileName: "[project]/components/Footer.tsx",
-                                lineNumber: 36,
+                                lineNumber: 34,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                 children: "Lagos · Abuja · London"
                             }, void 0, false, {
                                 fileName: "[project]/components/Footer.tsx",
-                                lineNumber: 37,
+                                lineNumber: 35,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/Footer.tsx",
-                        lineNumber: 32,
+                        lineNumber: 30,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/Footer.tsx",
-                lineNumber: 16,
+                lineNumber: 14,
                 columnNumber: 9
             }, this)
         }, void 0, false, {
             fileName: "[project]/components/Footer.tsx",
-            lineNumber: 15,
+            lineNumber: 13,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/components/Footer.tsx",
-        lineNumber: 14,
+        lineNumber: 12,
         columnNumber: 5
     }, this);
 }

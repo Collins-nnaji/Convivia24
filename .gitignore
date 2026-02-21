@@ -13,9 +13,13 @@
 
 # misc
 .DS_Store
+
+# env files (never commit secrets — use .env.local locally; set vars in host for deploy)
+.env
 .env.local
 .env.development.local
 .env.test.local
+.env.production
 .env.production.local
 
 npm-debug.log*

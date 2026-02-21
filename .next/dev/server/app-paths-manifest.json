@@ -1,9 +1,6 @@
 {
-  "/api/chat/route": "app/api/chat/route.js",
   "/briefing/page": "app/briefing/page.js",
   "/collective/page": "app/collective/page.js",
-  "/engine/page": "app/engine/page.js",
   "/intel/page": "app/intel/page.js",
-  "/page": "app/page.js",
-  "/performance/page": "app/performance/page.js"
+  "/page": "app/page.js"
 }

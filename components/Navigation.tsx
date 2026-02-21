@@ -4,8 +4,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const PAGES = [
-  { label: 'The Engine', href: '/engine' },
-  { label: 'Performance', href: '/performance' },
   { label: 'What We Do', href: '/collective' },
   { label: 'Intel', href: '/intel' },
 ];
@@ -34,7 +32,7 @@ export default function Navigation() {
             href="/briefing"
             className="shrink-0 rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 sm:px-5 sm:py-2.5"
           >
-            Chat with AI
+            Contact
           </Link>
         </nav>
       </div>

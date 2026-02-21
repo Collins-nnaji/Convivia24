@@ -1,67 +1,14 @@
-[00:00:04.158] Server  WARN    ⚠ Minimum recommended TypeScript version is v5.1.0, older versions can potentially be incompatible with Next.js. Detected: 4.9.5
-[00:00:04.807] Server  LOG     ✓ Ready in 3.1s
-[00:01:44.303] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:03:16.070] Server  LOG     ✓ Compiled in 73ms
-[00:04:15.211] Server  LOG     ✓ Compiled in 78ms
-[00:08:10.983] Server  LOG     ○ Compiling /api/chat ...
-[00:08:28.346] Server  LOG     ✓ Compiled in 6.4s
-[00:08:41.486] Server  LOG     ✓ Compiled in 35ms
-[00:08:42.657] Server  LOG     ✓ Compiled in 52ms
-[00:09:04.124] Server  LOG     ○ Compiling /intel ...
-[00:09:23.730] Server  LOG     ✓ Finished filesystem cache database compaction in 11.2s
-[00:09:35.301] Server  LOG     ✓ Compiled in 214ms
-[00:09:42.959] Server  LOG     ✓ Compiled in 146ms
-[00:09:48.579] Server  LOG     ✓ Compiled in 158ms
-[00:16:49.357] Server  LOG     ✓ Compiled in 1284ms
-[00:22:17.762] Server  LOG     ✓ Compiled in 379ms
-[00:24:18.539] Server  LOG     ✓ Finished filesystem cache database compaction in 29.2s
-[00:24:39.833] Server  LOG     ✓ Compiled in 6.1s
-[00:27:48.107] Server  LOG     ✓ Compiled in 7.5s
-[00:28:00.943] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:28:02.503] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
-
-- A server/client branch `if (typeof window !== 'undefined')`.
-- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
-- Date formatting in a user's locale which doesn't match the server.
-- External changing data without sending a snapshot of it along with the HTML.
-- Invalid HTML tag nesting.
-
-It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
-
-%s%s https://react.dev/link/hydration-mismatch 
-
-  ...
-    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
-      <AppDevOverlayErrorBoundary globalError={[...]}>
-        <ReplaySsrOnlyErrors>
-        <DevRootHTTPAccessFallbackBoundary>
-          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
-            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
-              <RedirectBoundary>
-                <RedirectErrorBoundary router={{...}}>
-                  <Head>
-                  <SegmentViewNode type="layout" pagePath="layout.tsx">
-                    <SegmentTrieNode>
-                    <link>
-                    <script>
-                    <script>
-                    <RootLayout>
-                      <html
-+                       lang="en"
--                       lang="en-GB"
--                       style={{transition-property:"none",margin-right:"0px"}}
-                      >
-                  ...
-
-[00:30:05.658] Server  LOG     ✓ Compiled in 1115ms
-[00:31:01.612] Server  LOG     ✓ Compiled in 235ms
-[00:31:10.329] Server  LOG     ✓ Compiled in 56ms
-[00:31:49.870] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:34:11.983] Server  LOG     ✓ Finished filesystem cache database compaction in 29.9s
-[00:34:12.474] Server  LOG     ✓ Finished writing to filesystem cache in 27.8s
-[00:34:41.056] Server  LOG     ✓ Compiled in 399ms
-[00:38:17.755] Server  LOG     ✓ Compiled in 228ms
-[00:38:20.476] Server  LOG     ✓ Compiled in 2.3s
-[00:42:24.772] Server  LOG     ✓ Compiled in 3s
-[00:42:25.849] Server  LOG     ✓ Compiled in 0ms
-[00:42:37.662] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:02.843] Server  WARN    ⚠ Minimum recommended TypeScript version is v5.1.0, older versions can potentially be incompatible with Next.js. Detected: 4.9.5
+[00:00:03.123] Server  LOG     ✓ Ready in 2.3s
+[00:00:13.029] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:02:38.546] Server  LOG     ✓ Compiled in 2.1s
+[00:02:39.578] Server  LOG     ✓ Compiled in 40ms
+[00:03:49.893] Server  LOG     ✓ Compiled in 285ms
+[00:05:14.721] Server  LOG     ✓ Compiled in 234ms
+[00:06:36.494] Server  LOG     ✓ Compiled in 113ms
+[00:09:33.200] Server  LOG     ✓ Compiled in 1589ms
+[00:10:50.175] Server  LOG     ✓ Compiled in 235ms
+[00:10:55.275] Server  LOG     ✓ Compiled in 395ms
+[00:11:58.346] Server  LOG     ✓ Compiled in 3ms
+[00:15:25.633] Server  LOG     ✓ Compiled in 112ms
+[00:20:19.812] Server  LOG     ✓ Compiled in 300ms
