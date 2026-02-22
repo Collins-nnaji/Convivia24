@@ -35,12 +35,12 @@ function AnimatedCounter({ target, decimals = 0, prefix = '', suffix = '' }: { t
 /* ── Ticker Tape ──────────────────────────────────────────────── */
 const TICKER_ITEMS = [
   'Revenue Doesn\'t Sleep',
-  'Pipeline Managed 24/7',
+  'Pipeline Managed 24 Hours a Day',
   'Always On · Always Closing',
-  'Your Network Is Your Net Worth — We Unlock It',
+  'Convivia: We Bring the Right People Together',
   'Cold Leads Become Closed Deals',
-  'Pipeline Health · Sales Architecture · Execution',
-  'We Connect You to the Right People',
+  'Sales Audit · Network · Execution · 24h',
+  'We Sell. You Scale.',
   '47 Clients · 6 Industries · Zero Excuses',
 ];
 
@@ -121,12 +121,12 @@ const pillars = [
 ];
 
 const painPoints = [
-  { icon: '📉', label: 'Sales cycles that never seem to close', fix: 'We cut cycle time by 60% average' },
-  { icon: '🧊', label: 'Cold leads that just sit in your CRM', fix: 'We revive and qualify your pipeline' },
-  { icon: '🚪', label: 'No access to the right decision-makers', fix: 'We connect you through our network' },
-  { icon: '🔁', label: 'Inconsistent follow-up killing warm deals', fix: 'We run structured 24h cadences' },
-  { icon: '📊', label: 'No visibility into pipeline health', fix: 'We give you live diagnostics' },
-  { icon: '📋', label: 'Team without a repeatable sales playbook', fix: 'We build one — then run it for you' },
+  { icon: '📉', label: 'Sales cycles that drag on and never close', fix: 'We cut average cycle time by 60%' },
+  { icon: '🧊', label: 'Cold leads rotting in your CRM unfollowed', fix: 'We revive, qualify, and move them' },
+  { icon: '🚪', label: 'No access to the buyers who actually decide', fix: 'We open doors through the Convivia network' },
+  { icon: '🔁', label: 'Inconsistent follow-up killing warm deals', fix: 'We run structured 24-hour cadences' },
+  { icon: '📊', label: 'Zero visibility into where your pipeline stands', fix: 'We surface what\'s real — live diagnostics' },
+  { icon: '📋', label: 'No repeatable process — different result every month', fix: 'We build the playbook, then we run it' },
 ];
 
 const proofStats = [
@@ -185,15 +185,15 @@ export default function Home() {
               </h1>
 
               <p className="text-lg md:text-xl text-zinc-500 leading-relaxed max-w-xl mb-4">
-                Struggling to grow sales volumes, manage your pipeline, or reach the right buyers?
+                Sales volumes stalling? Pipeline leaking? Can&apos;t reach the buyers who actually matter?
               </p>
               <p className="text-lg md:text-xl text-zinc-900 font-semibold leading-relaxed max-w-xl mb-9">
-                We audit your sales operation, connect you to our network of decision-makers, and manage your revenue cycle 24 hours a day — until results show up.
+                Convivia24 is your managed sales partner. We audit your operation, introduce you to our private network of decision-makers, and run your full revenue cycle around the clock — 24 hours a day — until the numbers move.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 mb-12">
                 <Link
-                  href="/audit"
+                  href="/briefing"
                   className="inline-flex items-center gap-2 px-8 py-4 bg-red-700 text-white text-sm font-black uppercase tracking-[0.15em] hover:bg-red-800 transition-colors group"
                 >
                   Get Your Free Sales Audit
@@ -240,9 +240,9 @@ export default function Home() {
 
               <div className="w-full space-y-3 mt-2">
                 {[
-                  'Clear pipeline diagnostics before anything else',
-                  'Connected to buyers through our private network',
-                  '24-hour operating rhythm from audit to close',
+                  'We diagnose your pipeline before we touch anything',
+                  'We introduce you to buyers your competitors can\'t reach',
+                  'We run the full sell cycle — 24 hours a day, every day',
                 ].map((item, i) => (
                   <motion.div
                     key={i}
@@ -285,7 +285,7 @@ export default function Home() {
               <span className="text-red-500 italic">stuck</span> — we know why.
             </h2>
             <p className="text-zinc-400 text-base max-w-2xl mt-4 leading-relaxed">
-              Every company we&apos;ve worked with faced at least one of these. Most faced all of them. Here&apos;s what we fix — and how.
+              Every business we&apos;ve taken on faced at least one of these. Most faced all of them. This is exactly what Convivia24 was built to fix.
             </p>
           </motion.div>
 
@@ -317,7 +317,7 @@ export default function Home() {
             className="mt-10"
           >
             <Link
-              href="/audit"
+              href="/briefing"
               className="inline-flex items-center gap-2 px-8 py-4 bg-red-700 text-white text-sm font-black uppercase tracking-[0.15em] hover:bg-red-600 transition-colors group"
             >
               Start with a Free Audit
@@ -348,7 +348,7 @@ export default function Home() {
               <span className="text-red-700 italic">24 hours a day.</span>
             </h2>
             <p className="text-zinc-500 text-base max-w-2xl mt-4 leading-relaxed">
-              We don&apos;t just give you a report. We plug into your operation — connecting you to our network, building your sales system, and running execution continuously.
+              We don&apos;t hand you a report and leave. We become your sales function — auditing what&apos;s broken, introducing you to the right buyers through the Convivia network, and running your full pipeline every single day until revenue moves.
             </p>
           </motion.div>
 
@@ -478,19 +478,19 @@ export default function Home() {
                 <span className="text-red-500 italic">we&apos;re closing.</span>
               </h2>
               <p className="text-zinc-400 text-base leading-relaxed mb-8 max-w-lg">
-                Revenue doesn&apos;t pause at 5pm. Our team runs a continuous three-phase cycle — analytics, outreach, and close — every single day. No cold leads. No missed follow-ups. No excuses.
+                Revenue doesn&apos;t pause at 5pm. &ldquo;24&rdquo; isn&apos;t a slogan — it&apos;s the operating model. Convivia24 runs a continuous three-phase sell cycle every day: analytics, outreach, close. No cold leads. No missed follow-ups. No excuses.
               </p>
               <p className="text-white font-black text-lg mb-2">
-                &ldquo;We&apos;re the sales team that never clocks out.&rdquo;
+                &ldquo;We are the sales team that never clocks out.&rdquo;
               </p>
               <p className="text-zinc-600 text-sm">— Convivia24 Operating Principle</p>
             </motion.div>
 
             <div className="space-y-0">
               {[
-                { hour: '00 — 08', phase: 'Analytics & Insights', desc: 'Pipeline reviewed. Data scored. Opportunities ranked. You wake up to a prioritised hit-list.' },
-                { hour: '08 — 16', phase: 'Outreach & Follow-Up', desc: 'Active outreach, warm-up sequences, and structured follow-up cadences across your entire pipeline.' },
-                { hour: '16 — 24', phase: 'Closing & Reporting', desc: 'Deals pushed to close. Day-end reporting delivered. Network introductions logged. Cycle repeats.' },
+                { hour: '00 — 08', phase: 'Analytics & Insights', desc: 'Pipeline reviewed. Data scored. Opportunities ranked by close probability. You wake up to a prioritised hit-list — we\'ve already done the thinking.' },
+                { hour: '08 — 16', phase: 'Outreach & Follow-Up', desc: 'Live outreach, warm-up sequences, and structured follow-up cadences run across your entire pipeline. No lead sits untouched.' },
+                { hour: '16 — 24', phase: 'Closing & Reporting', desc: 'Deals pushed to close. Convivia network introductions logged. Day-end performance report delivered. Cycle repeats — 365 days a year.' },
               ].map((phase, i) => (
                 <motion.div
                   key={i}
@@ -606,17 +606,17 @@ export default function Home() {
                 <span className="text-red-700 italic">one introduction away.</span>
               </h2>
               <p className="text-zinc-500 text-base leading-relaxed mb-6">
-                After auditing your sales operation, we don&apos;t just hand you a roadmap. We open doors. Convivia24 connects clients to a private network of vetted buyers, partners, and decision-makers across multiple industries and markets.
+                &ldquo;Convivia&rdquo; means the act of bringing people together — and that is exactly what we do. After auditing your operation, we open doors into a private network of vetted buyers, strategic partners, and senior decision-makers across multiple markets.
               </p>
               <p className="text-zinc-900 font-semibold text-base leading-relaxed mb-8">
-                No cold outreach. No spray-and-pray. The right people, at the right time, with context on your business.
+                Not cold outreach. Not spray-and-pray. Warm, context-rich introductions where both sides are briefed before the first conversation.
               </p>
               <div className="space-y-3">
                 {[
-                  'Network across Lagos, Abuja, and London markets',
-                  'Warm introductions to qualified decision-makers',
-                  'Partner and channel development support',
-                  '3.2× more qualified introductions vs cold outreach',
+                  'Active network across Lagos, Abuja, and London',
+                  'Warm, briefed introductions — not cold names on a list',
+                  'Partner and channel connections that actually convert',
+                  '3.2× more qualified meetings than cold outreach alone',
                 ].map((item, i) => (
                   <motion.div
                     key={i}
@@ -654,7 +654,7 @@ export default function Home() {
                 <span className="text-red-700 italic">One standard.</span>
               </h2>
               <p className="text-zinc-500 text-base leading-relaxed max-w-xl">
-                We support B2B technology, financial services, retail, professional services, and fast-growing operators across West Africa and the UK. Every client gets the same obsessive, around-the-clock approach.
+                We sell for B2B technology companies, financial services firms, retailers, professional service providers, and fast-growing operators across West Africa and the UK. Every client gets the same obsessive, around-the-clock sell cycle — no exceptions.
               </p>
             </motion.div>
 
@@ -728,11 +728,11 @@ export default function Home() {
                   <span className="text-red-500 italic">revenue on the table.</span>
                 </h2>
                 <p className="text-zinc-400 text-base leading-relaxed mb-8">
-                  Request your free Sales Health Audit. Our team reviews every submission within 24 hours and delivers a personalised revenue roadmap — at zero cost to you.
+                  The Sales Health Audit is how every Convivia24 engagement begins. We review your submission within 24 hours and come back with a personalised revenue roadmap — free, with no obligation to continue.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Link
-                    href="/audit"
+                    href="/briefing"
                     className="inline-flex items-center gap-2 px-8 py-4 bg-red-700 text-white text-sm font-black uppercase tracking-[0.15em] hover:bg-red-600 transition-colors group"
                   >
                     Get Free Sales Audit
@@ -749,10 +749,10 @@ export default function Home() {
 
               <div className="space-y-3">
                 {[
-                  { icon: '⚡', label: '24-hour response guarantee', sub: 'Every audit submission reviewed same day — no exceptions' },
-                  { icon: '🔗', label: 'Network introductions included', sub: 'Connect to buyers and decision-makers after your audit' },
-                  { icon: '📋', label: 'Full pipeline diagnostic, free', sub: 'Know exactly what to fix before spending a penny' },
-                  { icon: '🔒', label: 'Zero commitment required', sub: 'Review your roadmap. Decide with full information.' },
+                  { icon: '⚡', label: '24-hour response, guaranteed', sub: 'Every audit reviewed the same day — no exceptions, no bots' },
+                  { icon: '🔗', label: 'Convivia network introductions', sub: 'After your audit we connect you to the buyers who fit' },
+                  { icon: '📋', label: 'Full pipeline diagnostic — free', sub: 'Know exactly what\'s broken before committing a penny' },
+                  { icon: '🔒', label: 'Zero commitment required', sub: 'We earn your continued business by delivering results first' },
                 ].map((item, i) => (
                   <motion.div
                     key={i}

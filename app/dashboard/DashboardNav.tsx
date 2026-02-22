@@ -2,15 +2,25 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { LayoutDashboard, GitBranch, MessageSquare, FileText, Package } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
-type NavItem = { href: string; label: string; icon: LucideIcon };
+const ICON_MAP: Record<string, LucideIcon> = {
+  LayoutDashboard,
+  GitBranch,
+  MessageSquare,
+  FileText,
+  Package,
+};
+
+type NavItem = { href: string; label: string; icon: string };
 
 export function DashboardNav({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
   return (
     <nav className="flex-1 px-3 py-4 space-y-0.5">
-      {items.map(({ href, label, icon: Icon }) => {
+      {items.map(({ href, label, icon }) => {
+        const Icon = ICON_MAP[icon];
         const isActive = pathname === href || (href !== '/dashboard' && pathname?.startsWith(href));
         return (
           <Link
@@ -22,7 +32,7 @@ export function DashboardNav({ items }: { items: NavItem[] }) {
                 : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
             }`}
           >
-            <Icon size={15} className="shrink-0" />
+            {Icon && <Icon size={15} className="shrink-0" />}
             {label}
           </Link>
         );

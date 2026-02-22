@@ -237,9 +237,9 @@ export default function SignInPage() {
           </form>
 
           <p className="mt-5 text-center text-[11px] text-zinc-600">
-            No account?{' '}
-            <Link href="/auth/sign-up" className="text-red-500 hover:text-red-400 transition-colors">
-              Sign up →
+            Need an account?{' '}
+            <Link href="/briefing" className="text-red-500 hover:text-red-400 transition-colors">
+              Request an invite →
             </Link>
           </p>
         </div>

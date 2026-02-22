@@ -1,15 +1,15 @@
 import { requireAuth, getAppUser } from '@/lib/auth/session';
 import { canAccessAdmin } from '@/lib/auth/access';
 import Link from 'next/link';
-import { LayoutDashboard, GitBranch, MessageSquare, FileText, Package, LogOut, ShieldCheck } from 'lucide-react';
+import { LogOut, ShieldCheck } from 'lucide-react';
 import { DashboardNav } from './DashboardNav';
 
 const navItems = [
-  { href: '/dashboard',           label: 'Overview',     icon: LayoutDashboard },
-  { href: '/dashboard/pipeline',  label: 'Pipeline',    icon: GitBranch },
-  { href: '/dashboard/listings',  label: 'Items to sell', icon: Package },
-  { href: '/dashboard/messages',  label: 'Messages',    icon: MessageSquare },
-  { href: '/dashboard/documents', label: 'Documents',   icon: FileText },
+  { href: '/dashboard',           label: 'Overview',      icon: 'LayoutDashboard' },
+  { href: '/dashboard/pipeline',  label: 'Pipeline',      icon: 'GitBranch' },
+  { href: '/dashboard/listings',  label: 'Items to sell', icon: 'Package' },
+  { href: '/dashboard/messages',  label: 'Messages',      icon: 'MessageSquare' },
+  { href: '/dashboard/documents', label: 'Documents',     icon: 'FileText' },
 ];
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {

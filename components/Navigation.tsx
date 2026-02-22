@@ -110,10 +110,10 @@ export default function Navigation() {
 
             {/* CTA */}
             <Link
-              href="/audit"
+              href="/briefing"
               className="ml-2 px-5 py-2 bg-red-700 hover:bg-red-800 text-white text-[12px] font-black uppercase tracking-[0.15em] transition-colors duration-150"
             >
-              Free Audit
+              Get in Touch
             </Link>
           </nav>
 
@@ -206,10 +206,10 @@ export default function Navigation() {
 
                 <div className="pt-4 pb-2">
                   <Link
-                    href="/audit"
+                    href="/briefing"
                     className="block w-full text-center py-3.5 bg-red-700 hover:bg-red-800 text-white text-[13px] font-black uppercase tracking-[0.15em] transition-colors"
                   >
-                    Free Sales Audit
+                    Get in Touch
                   </Link>
                 </div>
               </nav>

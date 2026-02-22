@@ -5,7 +5,8 @@ UPDATE app_users
 SET role = 'admin'
 WHERE LOWER(TRIM(email)) IN (
   'collinsnnaji1@gmail.com',
-  'speak2tojo@gmail.com'
+  'speak2tojo@gmail.com',
+  'standexdigital@gmail.com'
 );
 
 -- Optional: normalize email to lowercase so future lookups match

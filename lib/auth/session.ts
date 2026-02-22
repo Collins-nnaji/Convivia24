@@ -4,7 +4,7 @@ import sql from '@/lib/db';
 import { redirect } from 'next/navigation';
 
 /** Only these emails get admin role on login. Single source of truth for "who can be admin". */
-export const ADMIN_EMAILS = ['collinsnnaji1@gmail.com', 'speak2tojo@gmail.com'] as const;
+export const ADMIN_EMAILS = ['collinsnnaji1@gmail.com', 'speak2tojo@gmail.com', 'standexdigital@gmail.com'] as const;
 
 const ADMIN_EMAILS_LOWER = ADMIN_EMAILS.map((e) => e.toLowerCase());
 

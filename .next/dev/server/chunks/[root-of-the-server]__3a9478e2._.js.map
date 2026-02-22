@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 46, "column": 0}, "map": {"version":3,"sources":["file:///Users/collinsnnaji/VSCodeDevelopments/convivia24/proxy.ts"],"sourcesContent":["import { NextRequest, NextResponse } from 'next/server';\n\nexport async function proxy(request: NextRequest) {\n  // Don't block /admin in proxy – let the server layout handle auth.\n  // That way you're never sent to sign-in again when already logged in (no cookie name mismatch).\n  return NextResponse.next();\n}\n\nexport const config = {\n  matcher: ['/admin/:path*'],\n};\n"],"names":[],"mappings":";;;;;;AAAA;;AAEO,eAAe,MAAM,OAAoB;IAC9C,mEAAmE;IACnE,gGAAgG;IAChG,OAAO,8IAAY,CAAC,IAAI;AAC1B;AAEO,MAAM,SAAS;IACpB,SAAS;QAAC;KAAgB;AAC5B"}}]
-}

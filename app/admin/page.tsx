@@ -1,7 +1,7 @@
 import { requireAdmin } from '@/lib/auth/session';
 import sql from '@/lib/db';
 import Link from 'next/link';
-import { Users, GitBranch, MessageSquare, ClipboardList, Package, ArrowRight } from 'lucide-react';
+import { Users, GitBranch, MessageSquare, ClipboardList, Package, ArrowRight, Mail } from 'lucide-react';
 
 export default async function AdminOverview() {
   await requireAdmin();
@@ -159,6 +159,7 @@ export default async function AdminOverview() {
           { href: '/admin/pipeline',  label: 'Pipeline' },
           { href: '/admin/messages',  label: 'Messages' },
           { href: '/admin/leads',     label: 'Leads' },
+          { href: '/admin/invites',   label: 'Invites' },
         ].map(({ href, label }) => (
           <Link
             key={href}

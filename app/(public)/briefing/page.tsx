@@ -23,10 +23,10 @@ const INITIAL_STATE: FormState = {
 
 const SUBJECT_OPTIONS = [
   'Sales Health Audit — I want a free assessment',
-  'Pipeline Management — struggling to grow volume',
-  'Network Introductions — connecting to buyers/partners',
-  'Full Sales Engagement — ongoing management',
-  'Intel Reports — data and benchmarks',
+  'Pipeline Management — my sales volumes are not growing',
+  'Network Introductions — I need access to the right buyers',
+  'Full Managed Engagement — I want Convivia24 to run my sales',
+  'Intel Reports — I need data and market benchmarks',
   'Other',
 ];
 
@@ -87,7 +87,7 @@ export default function BriefingPage() {
           <p className="text-[10px] font-black uppercase tracking-[0.25em] text-red-700 mb-3">Received</p>
           <h2 className="text-3xl font-black tracking-tighter text-zinc-900 mb-4">We&apos;ll be in touch within 24 hours.</h2>
           <p className="text-zinc-500 text-sm leading-relaxed mb-10">
-            Our team reviews every submission personally. Expect a call or message from us within one business day — no bots, no automated sequences.
+            Every message is read by a real person on the Convivia24 team. Expect a direct call or message within one business day — no bots, no drip sequences, no waiting room.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
@@ -152,16 +152,16 @@ export default function BriefingPage() {
             </h1>
 
             <p className="text-zinc-500 text-base leading-relaxed mb-10 max-w-md">
-              Tell us where your sales are stuck. We&apos;ll review your situation and come back with a clear view of what&apos;s blocking growth — and how we fix it.
+              Tell us where your sales are stuck. Convivia24 will review your situation and come back with a clear picture of what is blocking growth — and exactly how we fix it.
             </p>
 
             {/* What happens next */}
             <div className="space-y-5">
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">What happens next</p>
               {[
-                { step: '01', label: 'We review your submission', sub: 'Every inquiry is read by a real person on our team within 24 hours.' },
-                { step: '02', label: 'We schedule a call', sub: 'A 30-minute working session to map your pipeline gaps and goals.' },
-                { step: '03', label: 'You get a clear roadmap', sub: 'A written assessment of your sales health — free, no strings attached.' },
+                { step: '01', label: 'We review your submission', sub: 'Every inquiry is read by a real person on the Convivia24 team within 24 hours — guaranteed.' },
+                { step: '02', label: 'We schedule a working call', sub: 'A focused 30-minute session to map your pipeline gaps, priorities, and revenue goals.' },
+                { step: '03', label: 'You get a clear roadmap', sub: 'A written Sales Health Assessment delivered free — what\'s broken, what to fix first, and how we do it.' },
               ].map((item, i) => (
                 <motion.div
                   key={i}
@@ -271,7 +271,7 @@ export default function BriefingPage() {
                     disabled={isDisabled}
                     required
                     rows={5}
-                    placeholder="Describe your current sales challenges, team size, revenue goals, or anything that helps us understand your situation."
+                    placeholder="Describe your sales situation — where you're stuck, team size, revenue targets, or anything that helps us understand what you're working with."
                     className="w-full border-b-2 border-zinc-200 focus:border-red-700 bg-transparent py-3 text-sm text-zinc-900 outline-none transition-colors resize-none placeholder-zinc-400"
                   />
                 </div>
@@ -311,14 +311,14 @@ export default function BriefingPage() {
             {/* Alternative CTA */}
             <div className="mt-6 p-5 bg-zinc-50 border border-zinc-200 flex items-center justify-between gap-4">
               <div>
-                <p className="text-sm font-bold text-zinc-900">Want a structured assessment instead?</p>
-                <p className="text-xs text-zinc-500 mt-0.5">Complete the full 3-step Sales Health Audit form.</p>
+                <p className="text-sm font-bold text-zinc-900">Not sure where to start?</p>
+                <p className="text-xs text-zinc-500 mt-0.5">See exactly what Convivia24 does and how we engage.</p>
               </div>
               <Link
-                href="/audit"
+                href="/collective#what-we-do"
                 className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2.5 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.15em] hover:bg-zinc-800 transition-colors"
               >
-                Audit Form
+                What We Do
                 <ArrowRight size={11} />
               </Link>
             </div>

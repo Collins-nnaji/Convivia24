@@ -104,8 +104,8 @@ const services = [
     num: '02',
     name: 'Network & Introductions',
     tagline: 'The right door opened once beats 1,000 cold emails.',
-    description: 'After auditing your sales situation, we connect you to a private network of qualified buyers, strategic partners, and decision-makers across our client ecosystem. These aren\'t cold contacts — they\'re warm, context-rich introductions made because we manage business on both sides of the conversation. Your next deal is one introduction away.',
-    deliverables: ['Curated introductions to qualified buyers', 'Partner and channel development connections', 'Decision-maker access across Lagos, Abuja & London', 'Ongoing relationship facilitation'],
+    description: '"Convivia" means the act of bringing people together — and this is the heart of what we do. After auditing your sales operation, we connect you to a private network of qualified buyers, strategic partners, and decision-makers built across our client ecosystem. These are not cold contacts. They are warm, context-rich introductions made because we manage business on both sides of the table. Your next deal is one conversation away.',
+    deliverables: ['Curated introductions to qualified buyers who actually fit', 'Partner and channel connections across key markets', 'Decision-maker access across Lagos, Abuja & London', 'Ongoing relationship facilitation — we stay in the room'],
     metric: '3.2', metricSuffix: '×', metricLabel: 'more qualified meetings vs cold outreach',
     metric2: '89', metricSuffix2: '%', metricLabel2: 'of introductions lead to a meaningful meeting',
     bars: [
@@ -119,8 +119,8 @@ const services = [
     num: '03',
     name: 'Pipeline Management',
     tagline: 'Full-cycle sales execution, 24 hours a day.',
-    description: 'Struggling to grow sales volumes? Deals sitting idle? Warm leads going cold because nobody followed up? We become your managed sales function — handling outreach, follow-up, objection resolution, and closing coordination in a continuous 24-hour cycle. No lead goes cold. No opportunity dies from inaction.',
-    deliverables: ['24/7 outreach & structured follow-up cadences', 'Objection handling and deal acceleration', 'Weekly pipeline reviews and performance reports', 'CRM hygiene and deal stage management'],
+    description: 'Struggling to grow sales volumes? Deals sitting idle? Warm leads going cold because nobody followed up? We become your managed sales function — handling outreach, follow-up, objection resolution, and closing coordination in a continuous 24-hour sell cycle. The "24" in Convivia24 is not branding. It is the operating model: we work every hour of every day so your pipeline never stops moving.',
+    deliverables: ['24-hour outreach & structured follow-up cadences', 'Objection handling and deal acceleration on your behalf', 'Weekly pipeline reviews and performance reports', 'CRM hygiene and deal stage management'],
     metric: '340', metricSuffix: '%', metricLabel: 'avg pipeline velocity uplift',
     metric2: '95', metricSuffix2: '%', metricLabel2: 'lead follow-up consistency rate',
     bars: [
@@ -164,27 +164,27 @@ const services = [
 const faqs = [
   {
     q: 'We have a sales team already. Do you replace them?',
-    a: 'No. We augment and manage alongside your existing people. We handle the systematic layer — outreach cadences, CRM, pipeline management, and reporting — so your team focuses on high-value human closes. Think of us as the engine that keeps the machine moving between your team\'s conversations.',
+    a: 'No. We work alongside your existing team, not instead of them. We handle the systematic layer — outreach cadences, CRM management, pipeline tracking, and reporting — so your people focus on high-value closes. Think of Convivia24 as the engine running continuously between your team\'s conversations.',
   },
   {
     q: 'Our pipeline is stale. Can you actually revive it?',
-    a: 'Yes — and it\'s often where we find the fastest wins. Stale leads are usually not dead; they\'re just poorly followed up. We run structured re-engagement sequences with new angles, and typically surface 2–4 closable deals within the first 30 days from leads clients had written off.',
+    a: 'Yes — and this is often where we find the fastest wins. Stale leads are rarely dead. They are just poorly followed up. We run structured re-engagement sequences with fresh angles, and typically surface 2–4 closable deals within the first 30 days from contacts clients had already written off.',
   },
   {
-    q: 'How does the network introductions service work?',
-    a: 'After your Revenue Audit, we identify the types of buyers, partners, or decision-makers that match your ideal customer profile. We then make warm, context-aware introductions from our active client network — you show up to a meeting where both sides have been briefed. No cold calling required.',
+    q: 'How does the Convivia network introductions service work?',
+    a: 'After your Revenue Audit, we map the buyers, partners, and decision-makers who match your ideal customer profile. We then make warm, context-aware introductions from our active network — you arrive at a meeting where both sides have already been briefed. No cold calling, no awkward opening pitches.',
   },
   {
     q: 'How quickly will we see results?',
-    a: 'Pipeline improvement signals typically appear within 30–45 days. Revenue closes follow at 60–90 days depending on your cycle length. Our fastest client recorded a close in week three. We set baseline metrics in week one and report against them every week — you see every number.',
+    a: 'Pipeline improvement signals typically appear within 30–45 days. Revenue closes follow at 60–90 days depending on your cycle. Our fastest client recorded a close in week three. We set baseline metrics in week one and report against them every week — you see every number, every step.',
   },
   {
     q: 'What size of business does this work for?',
-    a: 'We work with B2B companies generating ₦300K–₦10M+ in annual revenue who are ready to move from ad hoc sales to a managed, structured approach. We have clients at pre-revenue stage building their first sales system, and established firms replacing underperforming functions.',
+    a: 'We work with B2B companies generating ₦300K–₦10M+ in annual revenue who are ready to move from ad hoc selling to a managed, structured approach. We have clients at pre-revenue stage building their first sales system, and established firms replacing an underperforming function.',
   },
   {
     q: 'Is there a long-term commitment?',
-    a: 'The Revenue Audit is a standalone 5-day engagement with no obligation to continue. Retained pipeline management requires a 3-month minimum — enough time for the full Insights → Planning → Execution cycle to produce measurable results. After that, most clients stay because the numbers speak.',
+    a: 'The Revenue Audit is a standalone 5-day engagement with no obligation to continue. Retained management requires a 3-month minimum — enough time for the full Convivia24 cycle (Audit → Network → Execute) to produce measurable results. After that, most clients stay because the numbers make the case.',
   },
 ];
 
@@ -224,7 +224,7 @@ export default function WhatWeDoPage() {
                 className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-700 text-white text-[10px] font-black uppercase tracking-[0.2em] mb-7"
               >
                 <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-                5 Services · Always On
+                Sales Management · 5 Services · Always On
               </motion.div>
 
               <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.9] text-zinc-900 mb-6">
@@ -232,15 +232,15 @@ export default function WhatWeDoPage() {
               </h1>
 
               <p className="text-lg md:text-xl text-zinc-500 leading-relaxed max-w-xl mb-4">
-                If your sales are stuck — volumes not growing, pipeline stalling, deals dying from inaction — this is exactly where we start.
+                Sales volumes not growing? Pipeline stalling? Deals dying because nobody followed up? This is where Convivia24 starts.
               </p>
               <p className="text-lg md:text-xl text-zinc-900 font-semibold leading-relaxed max-w-xl mb-9">
-                We audit, we connect you to the right people, and we run your pipeline 24 hours a day until the numbers move.
+                We are your managed sales partner. We audit what&apos;s broken, bring the right buyers to the table through our private network, and run your revenue cycle 24 hours a day — until you see it in the numbers.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 mb-12">
                 <Link
-                  href="/audit"
+                  href="/briefing"
                   className="inline-flex items-center gap-2 px-8 py-4 bg-red-700 text-white text-sm font-black uppercase tracking-[0.15em] hover:bg-red-800 transition-colors group"
                 >
                   Start with a Free Audit
@@ -323,23 +323,19 @@ export default function WhatWeDoPage() {
           <section
             key={idx}
             className={`py-20 px-6 border-b border-zinc-200 relative overflow-hidden ${
-              idx === 1 ? 'bg-zinc-900' : idx === 3 ? 'bg-zinc-50' : 'bg-white'
+              idx === 3 ? 'bg-zinc-50' : 'bg-white'
             }`}
           >
-            {/* Section accent */}
-            {idx === 1 && <div className="absolute top-0 left-0 w-full h-1 bg-red-700" />}
 
-            {/* Background grid for alternating sections */}
-            {idx !== 1 && (
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  backgroundImage: isEven
-                    ? 'repeating-linear-gradient(0deg, rgba(185,28,28,0.025) 0px, rgba(185,28,28,0.025) 1px, transparent 1px, transparent 64px)'
-                    : 'repeating-linear-gradient(90deg, rgba(185,28,28,0.025) 0px, rgba(185,28,28,0.025) 1px, transparent 1px, transparent 64px)',
-                }}
-              />
-            )}
+            {/* Background grid */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                backgroundImage: isEven
+                  ? 'repeating-linear-gradient(0deg, rgba(185,28,28,0.025) 0px, rgba(185,28,28,0.025) 1px, transparent 1px, transparent 64px)'
+                  : 'repeating-linear-gradient(90deg, rgba(185,28,28,0.025) 0px, rgba(185,28,28,0.025) 1px, transparent 1px, transparent 64px)',
+              }}
+            />
 
             <div className="max-w-6xl mx-auto relative z-10">
               <div className={`grid lg:grid-cols-2 gap-14 items-start ${!isEven ? 'lg:grid-flow-dense' : ''}`}>
@@ -354,39 +350,41 @@ export default function WhatWeDoPage() {
                 >
                   {/* Number + label */}
                   <div className="flex items-center gap-3">
-                    <span className={`text-5xl font-black leading-none select-none ${idx === 1 ? 'text-zinc-800' : 'text-zinc-100'}`}>
-                      {svc.num}
-                    </span>
-                    <div className={`h-px flex-1 ${idx === 1 ? 'bg-zinc-800' : 'bg-zinc-200'}`} />
-                    <div className={`w-9 h-9 flex items-center justify-center ${idx === 1 ? 'bg-red-700' : 'bg-red-700/10'}`}>
-                      <Icon size={16} className={idx === 1 ? 'text-white' : 'text-red-700'} />
+                    <div className="flex items-center gap-3 border-l-4 border-red-700 pl-4">
+                      <span className="text-5xl font-black leading-none select-none text-zinc-900">
+                        {svc.num}
+                      </span>
+                    </div>
+                    <div className="h-px flex-1 bg-zinc-200" />
+                    <div className="w-9 h-9 flex items-center justify-center bg-red-700/10">
+                      <Icon size={16} className="text-red-700" />
                     </div>
                   </div>
 
                   <div>
-                    <p className={`text-[10px] font-black uppercase tracking-[0.2em] mb-2 ${idx === 1 ? 'text-red-400' : 'text-red-700'}`}>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-2 text-red-700">
                       Service {svc.num}
                     </p>
-                    <h2 className={`text-4xl md:text-5xl font-black tracking-tighter leading-tight mb-2 ${idx === 1 ? 'text-white' : 'text-zinc-900'}`}>
+                    <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-tight mb-2 text-zinc-900">
                       {svc.name}
                     </h2>
-                    <p className={`text-base italic font-medium ${idx === 1 ? 'text-red-400' : 'text-red-700'}`}>
+                    <p className="text-base italic font-medium text-red-700">
                       &ldquo;{svc.tagline}&rdquo;
                     </p>
                   </div>
 
-                  <p className={`text-base leading-relaxed ${idx === 1 ? 'text-zinc-400' : 'text-zinc-600'}`}>
+                  <p className="text-base leading-relaxed text-zinc-600">
                     {svc.description}
                   </p>
 
                   {/* Deliverables */}
                   <div>
-                    <p className={`text-[10px] font-black uppercase tracking-[0.2em] mb-4 ${idx === 1 ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-4 text-zinc-400">
                       What&apos;s included
                     </p>
                     <ul className="space-y-2.5">
                       {svc.deliverables.map((d, dIdx) => (
-                        <li key={dIdx} className={`flex items-start gap-3 text-sm ${idx === 1 ? 'text-zinc-300' : 'text-zinc-700'}`}>
+                        <li key={dIdx} className="flex items-start gap-3 text-sm text-zinc-700">
                           <div className="w-4 h-4 bg-red-700 flex items-center justify-center flex-shrink-0 mt-0.5">
                             <Check size={9} className="text-white" />
                           </div>
@@ -397,17 +395,15 @@ export default function WhatWeDoPage() {
                   </div>
 
                   {/* Bars */}
-                  <div className={`space-y-4 border-t pt-6 ${idx === 1 ? 'border-zinc-800' : 'border-zinc-100'}`}>
+                  <div className="space-y-4 border-t border-zinc-100 pt-6">
                     {svc.bars.map((bar, bIdx) => (
                       <MetricBar key={bIdx} label={bar.label} pct={bar.pct} delay={bIdx * 0.12} />
                     ))}
                   </div>
 
                   <Link
-                    href="/audit"
-                    className={`inline-flex items-center gap-2 text-sm font-black uppercase tracking-[0.12em] transition-colors group ${
-                      idx === 1 ? 'text-red-400 hover:text-red-300' : 'text-red-700 hover:text-red-600'
-                    }`}
+                    href="/briefing"
+                    className="inline-flex items-center gap-2 text-sm font-black uppercase tracking-[0.12em] transition-colors group text-red-700 hover:text-red-600"
                   >
                     Start here
                     <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
@@ -422,31 +418,31 @@ export default function WhatWeDoPage() {
                   transition={{ duration: 0.6 }}
                   className={!isEven ? 'lg:col-start-1 lg:row-start-1' : ''}
                 >
-                  <div className={`border p-8 space-y-8 ${idx === 1 ? 'border-zinc-800 bg-zinc-800/50' : idx === 3 ? 'border-zinc-200 bg-white' : 'border-zinc-200 bg-zinc-50'}`}>
+                  <div className={`border p-8 space-y-8 ${idx === 3 ? 'border-zinc-200 bg-white' : 'border-zinc-200 bg-zinc-50'}`}>
                     {/* Icon large */}
                     <div className="flex items-center gap-4">
                       <div className="w-16 h-16 bg-red-700 flex items-center justify-center">
                         <Icon size={30} className="text-white" />
                       </div>
                       <div>
-                        <p className={`text-3xl font-black leading-none ${idx === 1 ? 'text-white' : 'text-zinc-900'}`}>
+                        <p className="text-3xl font-black leading-none text-zinc-900">
                           {svc.metric}{svc.metricSuffix}
                         </p>
-                        <p className={`text-[10px] uppercase tracking-widest mt-1 ${idx === 1 ? 'text-zinc-500' : 'text-zinc-500'}`}>
+                        <p className="text-[10px] uppercase tracking-widest mt-1 text-zinc-500">
                           {svc.metricLabel}
                         </p>
                       </div>
                     </div>
 
                     {/* Second metric */}
-                    <div className={`p-5 border ${idx === 1 ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-100 bg-white'}`}>
-                      <p className={`text-[10px] font-black uppercase tracking-[0.2em] mb-3 ${idx === 1 ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                    <div className="p-5 border border-zinc-100 bg-white">
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-3 text-zinc-400">
                         Key Result
                       </p>
                       <p className="text-3xl font-black text-red-700 leading-none">
                         <AnimatedCounter target={parseFloat(svc.metric2)} suffix={svc.metricSuffix2} />
                       </p>
-                      <p className={`text-xs mt-2 leading-snug ${idx === 1 ? 'text-zinc-500' : 'text-zinc-500'}`}>
+                      <p className="text-xs mt-2 leading-snug text-zinc-500">
                         {svc.metricLabel2}
                       </p>
                     </div>
@@ -481,11 +477,11 @@ export default function WhatWeDoPage() {
           >
             <p className="text-[10px] font-black uppercase tracking-[0.25em] text-red-500 mb-3">Process</p>
             <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-white leading-tight">
-              How an engagement<br />
-              <span className="text-red-500 italic">actually works.</span>
+              How a Convivia24<br />
+              <span className="text-red-500 italic">engagement works.</span>
             </h2>
             <p className="text-zinc-400 text-base max-w-2xl mx-auto mt-4 leading-relaxed">
-              Clear phases, clear outputs, clear accountability. You know exactly what happens next at every stage.
+              Clear phases, clear outputs, clear accountability. No mystery about what happens next — you see every number at every stage.
             </p>
           </motion.div>
 
@@ -594,7 +590,7 @@ export default function WhatWeDoPage() {
                 ))}
               </ul>
               <Link
-                href="/audit"
+                href="/briefing"
                 className="inline-flex items-center gap-2 text-sm font-black uppercase tracking-[0.12em] text-zinc-700 hover:text-red-700 transition-colors group"
               >
                 Start with the free audit
@@ -623,7 +619,7 @@ export default function WhatWeDoPage() {
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-400 mb-4">Retained Management</p>
               <h3 className="text-2xl font-black text-white mb-3">Full Managed Service</h3>
               <p className="text-sm text-zinc-400 leading-relaxed mb-6">
-                We become your sales management function — running all five services in an integrated, 24-hour cycle. Pricing is tied to performance milestones, not billable hours. You pay for results, not effort.
+                We become your dedicated sales management function — running all five services in an integrated, 24-hour sell cycle. Pricing is tied to performance milestones, not billable hours. You pay for results, not for our time.
               </p>
               <ul className="space-y-2.5 mb-8">
                 {[
@@ -690,15 +686,15 @@ export default function WhatWeDoPage() {
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.25em] text-red-300 mb-3">Start Now</p>
               <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-white mb-3 leading-tight">
-                Every engagement starts<br />with one free audit.
+                Every Convivia24 engagement<br />starts with one free audit.
               </h2>
               <p className="text-red-200 text-base max-w-md leading-relaxed">
-                5 business days. A personalised roadmap. Zero cost. No commitment to continue — but most do.
+                5 business days. A personalised revenue roadmap. Zero cost. No commitment to continue — but once clients see the numbers, most do.
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
-                href="/audit"
+                href="/briefing"
                 className="inline-flex items-center gap-2 px-8 py-4 bg-white text-red-700 text-sm font-black uppercase tracking-[0.15em] hover:bg-zinc-100 transition-colors group whitespace-nowrap"
               >
                 Get Free Sales Audit
