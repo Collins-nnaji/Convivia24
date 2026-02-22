@@ -2,10 +2,22 @@ import { getAuth } from '@/lib/auth/server';
 import { syncUser, isAdmin } from '@/lib/auth/session';
 import { NextResponse } from 'next/server';
 
-export async function GET(request: Request) {
-  const { data, error } = await getAuth().getSession();
+/** Brief wait then retry once so the session cookie from sign-in has time to be visible */
+async function getSessionWithRetry() {
+  const { data } = await getAuth().getSession();
   const session = data;
-  const user = session?.user ?? (session as any)?.session?.user;
+  let user = session?.user ?? (session as any)?.session?.user;
+  if (!user) {
+    await new Promise((r) => setTimeout(r, 150));
+    const retry = await getAuth().getSession();
+    const retrySession = retry.data;
+    user = retrySession?.user ?? (retrySession as any)?.session?.user;
+  }
+  return user;
+}
+
+export async function GET(request: Request) {
+  const user = await getSessionWithRetry();
   if (!user) {
     return NextResponse.redirect(new URL('/auth/sign-in', request.url));
   }

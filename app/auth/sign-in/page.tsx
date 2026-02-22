@@ -1,9 +1,12 @@
 'use client';
 
 import { authClient } from '@/lib/auth/client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
+
+/** Short delay so the browser has time to persist the session cookie before we navigate to callback */
+const REDIRECT_DELAY_MS = 200;
 
 export default function SignInPage() {
   const [email, setEmail] = useState('');
@@ -15,6 +18,7 @@ export default function SignInPage() {
   const [checkingSession, setCheckingSession] = useState(true);
   const [hasSession, setHasSession] = useState(false);
   const [debugInfo, setDebugInfo] = useState<string>('');
+  const isRedirecting = useRef(false);
 
   useEffect(() => {
     let mounted = true;
@@ -59,18 +63,15 @@ export default function SignInPage() {
         setLoading(false);
         return;
       }
-      // Success: go to callback so it can redirect to dashboard/admin (full page navigation so cookies are sent)
-      if (hasUser) {
-        window.location.replace('/auth/callback');
-        return;
-      }
-      // No error and no user in response – still try callback (session may be in cookie)
+      // Success: give the browser a moment to persist the session cookie, then go to callback
+      isRedirecting.current = true;
+      await new Promise((r) => setTimeout(r, REDIRECT_DELAY_MS));
       window.location.replace('/auth/callback');
       return;
     } catch (err: any) {
       setError(err?.message || 'Sign in failed.');
     } finally {
-      setLoading(false);
+      if (!isRedirecting.current) setLoading(false);
     }
   }
 
