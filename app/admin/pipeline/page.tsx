@@ -32,35 +32,35 @@ export default async function AdminPipelinePage() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <span className="inline-block bg-red-700 text-white text-[9px] font-black uppercase tracking-[0.2em] px-2 py-1 mb-3">
+        <span className="inline-block bg-red-600 text-white text-[9px] font-black uppercase tracking-[0.2em] px-2 py-1 mb-3 rounded">
           Pipeline
         </span>
-        <h1 className="text-3xl font-black tracking-tighter text-white uppercase italic">
+        <h1 className="text-3xl font-black tracking-tighter text-zinc-900 uppercase italic">
           All Deals
         </h1>
-        <p className="text-zinc-500 text-sm mt-1">
+        <p className="text-zinc-600 text-sm mt-1">
           {totalOpen.length} open deals · £{(totalValue / 1000).toFixed(0)}k pipeline value
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {STAGES.map(({ key, label, color }) => (
-          <div key={key} className={`bg-zinc-900 border-t-2 ${color} border-x border-b border-zinc-800`}>
-            <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
-              <span className="text-xs font-black uppercase tracking-[0.15em] text-zinc-300">{label}</span>
-              <span className="text-xs text-zinc-600">{byStage[key].length}</span>
+          <div key={key} className={`bg-white border-t-2 ${color} border-x border-b border-zinc-200 shadow-sm rounded-lg overflow-hidden`}>
+            <div className="px-4 py-3 border-b border-zinc-200 flex items-center justify-between">
+              <span className="text-xs font-black uppercase tracking-[0.15em] text-zinc-700">{label}</span>
+              <span className="text-xs text-zinc-500">{byStage[key].length}</span>
             </div>
             <div className="p-3 space-y-2 min-h-[100px]">
               {byStage[key].length === 0 && (
-                <p className="text-[11px] text-zinc-700 text-center pt-3">Empty</p>
+                <p className="text-[11px] text-zinc-500 text-center pt-3">Empty</p>
               )}
               {byStage[key].map((deal: any) => (
                 <Link key={deal.id} href={`/admin/clients/${deal.client_id}`}
-                  className="block bg-zinc-800 border border-zinc-700 hover:border-zinc-600 px-3 py-2.5 transition-colors">
-                  <p className="text-sm font-semibold text-white leading-tight">{deal.title}</p>
+                  className="block bg-zinc-50 border border-zinc-200 hover:bg-zinc-100 hover:border-zinc-300 px-3 py-2.5 rounded transition-colors">
+                  <p className="text-sm font-semibold text-zinc-900 leading-tight">{deal.title}</p>
                   <p className="text-[11px] text-zinc-500 mt-0.5">{deal.client_name}</p>
                   {deal.value && (
-                    <p className="text-[11px] text-zinc-400 mt-1">£{parseFloat(deal.value).toLocaleString()}</p>
+                    <p className="text-[11px] text-zinc-600 mt-1">£{parseFloat(deal.value).toLocaleString()}</p>
                   )}
                 </Link>
               ))}

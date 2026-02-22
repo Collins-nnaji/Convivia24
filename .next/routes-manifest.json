@@ -30,6 +30,14 @@
       "namedRegex": "^/admin/clients/(?<nxtPid>[^/]+?)(?:/)?$"
     },
     {
+      "page": "/admin/listings/[id]",
+      "regex": "^/admin/listings/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/admin/listings/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
       "page": "/api/admin/deals/[id]",
       "regex": "^/api/admin/deals/([^/]+?)(?:/)?$",
       "routeKeys": {
@@ -60,6 +68,22 @@
         "nxtPid": "nxtPid"
       },
       "namedRegex": "^/api/documents/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/listings/[id]",
+      "regex": "^/api/listings/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/listings/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/dashboard/listings/[id]",
+      "regex": "^/dashboard/listings/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/dashboard/listings/(?<nxtPid>[^/]+?)(?:/)?$"
     }
   ],
   "staticRoutes": [
@@ -104,6 +128,12 @@
       "regex": "^/admin/leads(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/admin/leads(?:/)?$"
+    },
+    {
+      "page": "/admin/listings",
+      "regex": "^/admin/listings(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/listings(?:/)?$"
     },
     {
       "page": "/admin/messages",
@@ -158,6 +188,12 @@
       "regex": "^/api/inquiries/save(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/inquiries/save(?:/)?$"
+    },
+    {
+      "page": "/api/listings",
+      "regex": "^/api/listings(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/listings(?:/)?$"
     },
     {
       "page": "/api/me",
@@ -224,6 +260,18 @@
       "regex": "^/dashboard/documents(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/dashboard/documents(?:/)?$"
+    },
+    {
+      "page": "/dashboard/listings",
+      "regex": "^/dashboard/listings(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/listings(?:/)?$"
+    },
+    {
+      "page": "/dashboard/listings/new",
+      "regex": "^/dashboard/listings/new(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/listings/new(?:/)?$"
     },
     {
       "page": "/dashboard/messages",

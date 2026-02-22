@@ -93,7 +93,7 @@ async function PipelinePage() {
                 className: "mb-8",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                        className: "inline-block bg-red-700 text-white text-[9px] font-black uppercase tracking-[0.2em] px-2 py-1 mb-3",
+                        className: "inline-block bg-red-600 text-white text-[9px] font-black uppercase tracking-[0.2em] px-2 py-1 mb-3",
                         children: "Pipeline"
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/pipeline/page.tsx",
@@ -101,7 +101,7 @@ async function PipelinePage() {
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
-                        className: "text-3xl font-black tracking-tighter text-white uppercase italic",
+                        className: "text-3xl font-black tracking-tighter text-zinc-900 uppercase italic",
                         children: "Your Deals"
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/pipeline/page.tsx",
@@ -109,7 +109,7 @@ async function PipelinePage() {
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-zinc-500 text-sm mt-1",
+                        className: "text-zinc-600 text-sm mt-1",
                         children: [
                             deals.length,
                             " deal",
@@ -130,9 +130,9 @@ async function PipelinePage() {
                 columnNumber: 7
             }, this),
             !client ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "bg-zinc-900 border border-zinc-800 p-6",
+                className: "bg-white border border-zinc-200 rounded-lg p-6 shadow-sm",
                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                    className: "text-zinc-400 text-sm",
+                    className: "text-zinc-600 text-sm",
                     children: "No pipeline linked yet. Contact your account manager."
                 }, void 0, false, {
                     fileName: "[project]/app/dashboard/pipeline/page.tsx",
@@ -146,10 +146,10 @@ async function PipelinePage() {
             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4",
                 children: STAGES.map(({ key, label, color })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: `bg-zinc-900 border-t-2 ${color} border-x border-b border-zinc-800`,
+                        className: `bg-white border-t-4 ${color} border-x border-b border-zinc-200 rounded-lg shadow-sm`,
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "px-4 py-3 border-b border-zinc-800 flex items-center justify-between",
+                                className: "px-4 py-3 border-b border-zinc-100 flex items-center justify-between",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "flex items-center gap-2",
@@ -162,7 +162,7 @@ async function PipelinePage() {
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                className: "text-xs font-black uppercase tracking-[0.15em] text-zinc-300",
+                                                className: "text-xs font-black uppercase tracking-[0.15em] text-zinc-600",
                                                 children: label
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/pipeline/page.tsx",
@@ -176,7 +176,7 @@ async function PipelinePage() {
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        className: "text-xs text-zinc-600",
+                                        className: "text-xs text-zinc-500",
                                         children: byStage[key].length
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/pipeline/page.tsx",
@@ -193,7 +193,7 @@ async function PipelinePage() {
                                 className: "p-3 space-y-2 min-h-[120px]",
                                 children: [
                                     byStage[key].length === 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                        className: "text-[11px] text-zinc-700 text-center pt-4",
+                                        className: "text-[11px] text-zinc-500 text-center pt-4",
                                         children: "No deals"
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/pipeline/page.tsx",
@@ -201,10 +201,10 @@ async function PipelinePage() {
                                         columnNumber: 19
                                     }, this),
                                     byStage[key].map((deal)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "bg-zinc-800 border border-zinc-700 px-3 py-2.5",
+                                            className: "bg-zinc-50 border border-zinc-200 rounded px-3 py-2.5",
                                             children: [
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                    className: "text-sm font-semibold text-white leading-tight",
+                                                    className: "text-sm font-semibold text-zinc-900 leading-tight",
                                                     children: deal.title
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/pipeline/page.tsx",
@@ -212,7 +212,7 @@ async function PipelinePage() {
                                                     columnNumber: 21
                                                 }, this),
                                                 deal.value && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                    className: "text-xs text-zinc-400 mt-1",
+                                                    className: "text-xs text-zinc-500 mt-1",
                                                     children: [
                                                         deal.currency,
                                                         " ",

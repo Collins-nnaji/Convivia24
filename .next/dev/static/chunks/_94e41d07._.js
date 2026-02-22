@@ -132,7 +132,7 @@ function MessagesPage() {
                 className: "mb-6",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                        className: "inline-block bg-red-700 text-white text-[9px] font-black uppercase tracking-[0.2em] px-2 py-1 mb-3",
+                        className: "inline-block bg-red-600 text-white text-[9px] font-black uppercase tracking-[0.2em] px-2 py-1 mb-3",
                         children: "Messages"
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/messages/page.tsx",
@@ -140,7 +140,7 @@ function MessagesPage() {
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
-                        className: "text-3xl font-black tracking-tighter text-white uppercase italic",
+                        className: "text-3xl font-black tracking-tighter text-zinc-900 uppercase italic",
                         children: "Your Team"
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/messages/page.tsx",
@@ -148,7 +148,7 @@ function MessagesPage() {
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-zinc-500 text-sm mt-1",
+                        className: "text-zinc-600 text-sm mt-1",
                         children: "Direct line to Convivia24"
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/messages/page.tsx",
@@ -162,10 +162,10 @@ function MessagesPage() {
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "flex-1 bg-zinc-900 border border-zinc-800 mb-4 overflow-auto max-h-[55vh] p-4 space-y-3",
+                className: "flex-1 bg-white border border-zinc-200 rounded-lg mb-4 overflow-auto max-h-[55vh] p-4 space-y-3 shadow-sm",
                 children: [
                     loading && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-zinc-600 text-sm text-center py-8",
+                        className: "text-zinc-500 text-sm text-center py-8",
                         children: "Loading…"
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/messages/page.tsx",
@@ -173,7 +173,7 @@ function MessagesPage() {
                         columnNumber: 21
                     }, this),
                     !loading && messages.length === 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-zinc-600 text-sm text-center py-8",
+                        className: "text-zinc-500 text-sm text-center py-8",
                         children: "No messages yet. Say hello."
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/messages/page.tsx",
@@ -184,7 +184,7 @@ function MessagesPage() {
                         return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             className: "flex ".concat(msg.sender_role === 'client' ? 'justify-end' : 'justify-start'),
                             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "max-w-[75%] px-4 py-2.5 text-sm ".concat(msg.sender_role === 'client' ? 'bg-red-700 text-white' : 'bg-zinc-800 text-zinc-200'),
+                                className: "max-w-[75%] px-4 py-2.5 text-sm rounded-lg ".concat(msg.sender_role === 'client' ? 'bg-red-600 text-white' : 'bg-zinc-100 text-zinc-800'),
                                 children: [
                                     msg.sender_role === 'admin' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                         className: "text-[10px] font-black uppercase tracking-[0.1em] text-zinc-500 mb-1",
@@ -203,7 +203,7 @@ function MessagesPage() {
                                         columnNumber: 15
                                     }, _this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                        className: "text-[10px] opacity-50 mt-1 text-right",
+                                        className: "text-[10px] opacity-70 mt-1 text-right",
                                         children: new Date(msg.created_at).toLocaleTimeString('en-GB', {
                                             hour: '2-digit',
                                             minute: '2-digit'
@@ -248,7 +248,7 @@ function MessagesPage() {
                             return setBody(e.target.value);
                         },
                         placeholder: "Type a message…",
-                        className: "flex-1 bg-zinc-900 border border-zinc-700 text-white text-sm px-4 py-3 placeholder-zinc-600 focus:outline-none focus:border-red-700 transition-colors"
+                        className: "flex-1 bg-white border border-zinc-300 text-zinc-900 text-sm px-4 py-3 rounded-lg placeholder-zinc-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-colors"
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/messages/page.tsx",
                         lineNumber: 88,
@@ -257,7 +257,7 @@ function MessagesPage() {
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                         type: "submit",
                         disabled: sending || !body.trim(),
-                        className: "bg-red-700 hover:bg-red-800 text-white px-5 py-3 transition-colors disabled:opacity-50 flex items-center gap-2 text-sm font-black uppercase tracking-[0.1em]",
+                        className: "bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2 text-sm font-black uppercase tracking-[0.1em]",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$send$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Send$3e$__["Send"], {
                                 size: 14

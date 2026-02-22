@@ -1,13 +1,15 @@
 import { requireAuth, getAppUser } from '@/lib/auth/session';
 import { canAccessAdmin } from '@/lib/auth/access';
 import Link from 'next/link';
-import { LayoutDashboard, GitBranch, MessageSquare, FileText, LogOut, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, GitBranch, MessageSquare, FileText, Package, LogOut, ShieldCheck } from 'lucide-react';
+import { DashboardNav } from './DashboardNav';
 
 const navItems = [
-  { href: '/dashboard',           label: 'Overview',  icon: LayoutDashboard },
-  { href: '/dashboard/pipeline',  label: 'Pipeline',  icon: GitBranch },
-  { href: '/dashboard/messages',  label: 'Messages',  icon: MessageSquare },
-  { href: '/dashboard/documents', label: 'Documents', icon: FileText },
+  { href: '/dashboard',           label: 'Overview',     icon: LayoutDashboard },
+  { href: '/dashboard/pipeline',  label: 'Pipeline',    icon: GitBranch },
+  { href: '/dashboard/listings',  label: 'Items to sell', icon: Package },
+  { href: '/dashboard/messages',  label: 'Messages',    icon: MessageSquare },
+  { href: '/dashboard/documents', label: 'Documents',   icon: FileText },
 ];
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -33,18 +35,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           </div>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-0.5">
-          {navItems.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-semibold text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors rounded-sm"
-            >
-              <Icon size={15} className="shrink-0" />
-              {label}
-            </Link>
-          ))}
-        </nav>
+        <DashboardNav items={navItems} />
 
         <div className="px-3 py-4 border-t border-zinc-200">
           <div className="flex items-center gap-2.5 px-3 py-2 mb-1">

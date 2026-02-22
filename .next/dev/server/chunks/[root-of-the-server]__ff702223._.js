@@ -90,7 +90,8 @@ function getSql() {
     if (!_sql) _sql = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$neondatabase$2f$serverless$2f$index$2e$mjs__$5b$app$2d$route$5d$__$28$ecmascript$29$__["neon"])(process.env.DATABASE_URL);
     return _sql;
 }
-// Export a real function so Turbopack/bundler treats it as callable (Proxy can break in server bundle)
+// Export a real function so Turbopack/bundler treats it as callable (Proxy can break in server bundle).
+// Return type ensures destructuring (e.g. const [row] = await sql`...`) type-checks.
 function sql(strings, ...values) {
     return getSql()(strings, ...values);
 }

@@ -90,7 +90,8 @@ function getSql() {
     if (!_sql) _sql = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$neondatabase$2f$serverless$2f$index$2e$mjs__$5b$app$2d$route$5d$__$28$ecmascript$29$__["neon"])(process.env.DATABASE_URL);
     return _sql;
 }
-// Export a real function so Turbopack/bundler treats it as callable (Proxy can break in server bundle)
+// Export a real function so Turbopack/bundler treats it as callable (Proxy can break in server bundle).
+// Return type ensures destructuring (e.g. const [row] = await sql`...`) type-checks.
 function sql(strings, ...values) {
     return getSql()(strings, ...values);
 }
@@ -132,8 +133,9 @@ const ADMIN_EMAILS = [
     'collinsnnaji1@gmail.com',
     'speak2tojo@gmail.com'
 ];
+const ADMIN_EMAILS_LOWER = ADMIN_EMAILS.map((e)=>e.toLowerCase());
 function isAdmin(email) {
-    return !!email && ADMIN_EMAILS.includes(email);
+    return !!email && ADMIN_EMAILS_LOWER.includes(email.toLowerCase().trim());
 }
 async function getSession() {
     return __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$auth$2f$server$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["auth"].getSession();
@@ -145,26 +147,45 @@ async function requireAuth() {
 }
 async function requireAdmin() {
     const user = await requireAuth();
-    if (!isAdmin(user.email)) (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$components$2f$navigation$2e$react$2d$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["redirect"])('/dashboard');
+    const appUser = await getAppUser({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        image: user.image
+    });
+    if (appUser.role !== 'admin') (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$components$2f$navigation$2e$react$2d$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["redirect"])('/dashboard?admin=denied');
     return user;
 }
 async function syncUser(authUser) {
+    const emailNorm = (authUser.email ?? '').toLowerCase().trim();
     const role = isAdmin(authUser.email) ? 'admin' : 'client';
     const rows = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$index$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"]`
     INSERT INTO app_users (id, email, name, image, role)
-    VALUES (${authUser.id}, ${authUser.email}, ${authUser.name ?? null}, ${authUser.image ?? null}, ${role})
+    VALUES (${authUser.id}, ${emailNorm}, ${authUser.name ?? null}, ${authUser.image ?? null}, ${role})
     ON CONFLICT (email) DO UPDATE
       SET name  = EXCLUDED.name,
           image = EXCLUDED.image,
-          id    = EXCLUDED.id
+          id    = EXCLUDED.id,
+          role  = EXCLUDED.role
     RETURNING *
   `;
     return rows[0];
 }
 async function getAppUser(authUser) {
-    const rows = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$index$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"]`SELECT * FROM app_users WHERE email = ${authUser.email}`;
-    if (rows.length) return rows[0];
-    return syncUser(authUser);
+    const emailNorm = (authUser.email ?? '').toLowerCase().trim();
+    if (!emailNorm) return syncUser(authUser);
+    // Case-insensitive lookup so session email (e.g. "User@Email.com") matches DB ("user@email.com")
+    const rows = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$index$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"]`
+    SELECT * FROM app_users WHERE LOWER(TRIM(email)) = ${emailNorm}
+  `;
+    if (rows.length === 0) return syncUser(authUser);
+    const row = rows[0];
+    if (isAdmin(authUser.email) && row.role !== 'admin') {
+        await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$index$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"]`UPDATE app_users SET role = 'admin' WHERE id = ${row.id}`;
+        const updated = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$index$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"]`SELECT * FROM app_users WHERE id = ${row.id}`;
+        return updated[0];
+    }
+    return row;
 }
 }),
 "[project]/app/api/messages/route.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
@@ -191,7 +212,8 @@ async function getClientForUser(userId) {
     WHERE cu.user_id = ${userId}
     LIMIT 1
   `;
-    return rows[0]?.id ?? null;
+    const row = rows[0];
+    return row ? String(row.id) : null;
 }
 async function GET() {
     const session = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$auth$2f$server$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["auth"].getSession();

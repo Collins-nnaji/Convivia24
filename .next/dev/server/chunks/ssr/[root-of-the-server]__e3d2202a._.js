@@ -84,7 +84,7 @@ async function AdminPipelinePage() {
                 className: "mb-8",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                        className: "inline-block bg-red-700 text-white text-[9px] font-black uppercase tracking-[0.2em] px-2 py-1 mb-3",
+                        className: "inline-block bg-red-600 text-white text-[9px] font-black uppercase tracking-[0.2em] px-2 py-1 mb-3 rounded",
                         children: "Pipeline"
                     }, void 0, false, {
                         fileName: "[project]/app/admin/pipeline/page.tsx",
@@ -92,7 +92,7 @@ async function AdminPipelinePage() {
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
-                        className: "text-3xl font-black tracking-tighter text-white uppercase italic",
+                        className: "text-3xl font-black tracking-tighter text-zinc-900 uppercase italic",
                         children: "All Deals"
                     }, void 0, false, {
                         fileName: "[project]/app/admin/pipeline/page.tsx",
@@ -100,7 +100,7 @@ async function AdminPipelinePage() {
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-zinc-500 text-sm mt-1",
+                        className: "text-zinc-600 text-sm mt-1",
                         children: [
                             totalOpen.length,
                             " open deals · £",
@@ -121,13 +121,13 @@ async function AdminPipelinePage() {
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4",
                 children: STAGES.map(({ key, label, color })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: `bg-zinc-900 border-t-2 ${color} border-x border-b border-zinc-800`,
+                        className: `bg-white border-t-2 ${color} border-x border-b border-zinc-200 shadow-sm rounded-lg overflow-hidden`,
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "px-4 py-3 border-b border-zinc-800 flex items-center justify-between",
+                                className: "px-4 py-3 border-b border-zinc-200 flex items-center justify-between",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        className: "text-xs font-black uppercase tracking-[0.15em] text-zinc-300",
+                                        className: "text-xs font-black uppercase tracking-[0.15em] text-zinc-700",
                                         children: label
                                     }, void 0, false, {
                                         fileName: "[project]/app/admin/pipeline/page.tsx",
@@ -135,7 +135,7 @@ async function AdminPipelinePage() {
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        className: "text-xs text-zinc-600",
+                                        className: "text-xs text-zinc-500",
                                         children: byStage[key].length
                                     }, void 0, false, {
                                         fileName: "[project]/app/admin/pipeline/page.tsx",
@@ -152,7 +152,7 @@ async function AdminPipelinePage() {
                                 className: "p-3 space-y-2 min-h-[100px]",
                                 children: [
                                     byStage[key].length === 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                        className: "text-[11px] text-zinc-700 text-center pt-3",
+                                        className: "text-[11px] text-zinc-500 text-center pt-3",
                                         children: "Empty"
                                     }, void 0, false, {
                                         fileName: "[project]/app/admin/pipeline/page.tsx",
@@ -161,10 +161,10 @@ async function AdminPipelinePage() {
                                     }, this),
                                     byStage[key].map((deal)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$react$2d$server$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"], {
                                             href: `/admin/clients/${deal.client_id}`,
-                                            className: "block bg-zinc-800 border border-zinc-700 hover:border-zinc-600 px-3 py-2.5 transition-colors",
+                                            className: "block bg-zinc-50 border border-zinc-200 hover:bg-zinc-100 hover:border-zinc-300 px-3 py-2.5 rounded transition-colors",
                                             children: [
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                    className: "text-sm font-semibold text-white leading-tight",
+                                                    className: "text-sm font-semibold text-zinc-900 leading-tight",
                                                     children: deal.title
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/admin/pipeline/page.tsx",
@@ -180,7 +180,7 @@ async function AdminPipelinePage() {
                                                     columnNumber: 19
                                                 }, this),
                                                 deal.value && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                    className: "text-[11px] text-zinc-400 mt-1",
+                                                    className: "text-[11px] text-zinc-600 mt-1",
                                                     children: [
                                                         "£",
                                                         parseFloat(deal.value).toLocaleString()

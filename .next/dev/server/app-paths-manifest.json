@@ -1,1 +1,20 @@
-{}
+{
+  "/(public)/page": "app/(public)/page.js",
+  "/admin/clients/page": "app/admin/clients/page.js",
+  "/admin/leads/page": "app/admin/leads/page.js",
+  "/admin/listings/page": "app/admin/listings/page.js",
+  "/admin/messages/page": "app/admin/messages/page.js",
+  "/admin/page": "app/admin/page.js",
+  "/admin/pipeline/page": "app/admin/pipeline/page.js",
+  "/api/auth/[...path]/route": "app/api/auth/[...path]/route.js",
+  "/api/documents/route": "app/api/documents/route.js",
+  "/api/listings/route": "app/api/listings/route.js",
+  "/api/me/route": "app/api/me/route.js",
+  "/api/messages/route": "app/api/messages/route.js",
+  "/auth/sign-in/page": "app/auth/sign-in/page.js",
+  "/dashboard/documents/page": "app/dashboard/documents/page.js",
+  "/dashboard/listings/page": "app/dashboard/listings/page.js",
+  "/dashboard/messages/page": "app/dashboard/messages/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/dashboard/pipeline/page": "app/dashboard/pipeline/page.js"
+}

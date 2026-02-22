@@ -41,19 +41,19 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
     <div className="p-8 max-w-6xl">
       {/* Header */}
       <div className="mb-8">
-        <Link href="/admin/clients" className="text-[11px] text-zinc-500 hover:text-white transition-colors mb-4 block">
+        <Link href="/admin/clients" className="text-[11px] text-zinc-600 hover:text-zinc-900 transition-colors mb-4 block">
           ← All Clients
         </Link>
         <div className="flex items-start justify-between">
           <div>
-            <span className="inline-block bg-red-700 text-white text-[9px] font-black uppercase tracking-[0.2em] px-2 py-1 mb-3">
+            <span className="inline-block bg-red-600 text-white text-[9px] font-black uppercase tracking-[0.2em] px-2 py-1 mb-3 rounded">
               Client
             </span>
-            <h1 className="text-3xl font-black tracking-tighter text-white uppercase italic">{client.name}</h1>
+            <h1 className="text-3xl font-black tracking-tighter text-zinc-900 uppercase italic">{client.name}</h1>
             <div className="flex items-center gap-3 mt-2">
-              {client.industry && <span className="text-zinc-500 text-sm">{client.industry}</span>}
-              {client.contact_email && <span className="text-zinc-600 text-sm">{client.contact_email}</span>}
-              <span className={`text-[9px] font-black uppercase tracking-[0.1em] px-2 py-0.5 ${client.status === 'active' ? 'bg-green-900 text-green-400' : 'bg-zinc-800 text-zinc-500'}`}>
+              {client.industry && <span className="text-zinc-600 text-sm">{client.industry}</span>}
+              {client.contact_email && <span className="text-zinc-500 text-sm">{client.contact_email}</span>}
+              <span className={`text-[9px] font-black uppercase tracking-[0.1em] px-2 py-0.5 rounded ${client.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-zinc-200 text-zinc-600'}`}>
                 {client.status}
               </span>
             </div>
@@ -63,33 +63,33 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Deals */}
-        <div className="bg-zinc-900 border border-zinc-800">
-          <div className="px-6 py-4 border-b border-zinc-800">
-            <h2 className="text-sm font-black uppercase tracking-[0.15em] text-white">Pipeline Deals</h2>
+        <div className="bg-white border border-zinc-200 shadow-sm rounded-lg overflow-hidden">
+          <div className="px-6 py-4 border-b border-zinc-200">
+            <h2 className="text-sm font-black uppercase tracking-[0.15em] text-zinc-900">Pipeline Deals</h2>
           </div>
           <AdminDealManager clientId={id} deals={deals as any[]} />
         </div>
 
         {/* Messages */}
-        <div className="bg-zinc-900 border border-zinc-800">
-          <div className="px-6 py-4 border-b border-zinc-800">
-            <h2 className="text-sm font-black uppercase tracking-[0.15em] text-white">Messages</h2>
+        <div className="bg-white border border-zinc-200 shadow-sm rounded-lg overflow-hidden">
+          <div className="px-6 py-4 border-b border-zinc-200">
+            <h2 className="text-sm font-black uppercase tracking-[0.15em] text-zinc-900">Messages</h2>
           </div>
           <AdminClientMessages clientId={id} initialMessages={messages as any[]} />
         </div>
 
         {/* Documents */}
-        <div className="bg-zinc-900 border border-zinc-800">
-          <div className="px-6 py-4 border-b border-zinc-800">
-            <h2 className="text-sm font-black uppercase tracking-[0.15em] text-white">Documents ({docs.length})</h2>
+        <div className="bg-white border border-zinc-200 shadow-sm rounded-lg overflow-hidden">
+          <div className="px-6 py-4 border-b border-zinc-200">
+            <h2 className="text-sm font-black uppercase tracking-[0.15em] text-zinc-900">Documents ({docs.length})</h2>
           </div>
-          <div className="divide-y divide-zinc-800 max-h-64 overflow-auto">
-            {docs.length === 0 && <p className="text-zinc-600 text-sm text-center py-6">No documents</p>}
+          <div className="divide-y divide-zinc-100 max-h-64 overflow-auto">
+            {docs.length === 0 && <p className="text-zinc-500 text-sm text-center py-6">No documents</p>}
             {docs.map((doc: any) => (
               <div key={doc.id} className="flex items-center justify-between px-6 py-3">
-                <p className="text-sm text-zinc-300 truncate">{doc.name}</p>
+                <p className="text-sm text-zinc-700 truncate">{doc.name}</p>
                 <a href={doc.url} target="_blank" rel="noopener noreferrer"
-                  className="text-[11px] text-red-500 hover:text-red-400 shrink-0 ml-2">
+                  className="text-[11px] text-red-600 hover:text-red-700 shrink-0 ml-2">
                   Download →
                 </a>
               </div>
@@ -98,19 +98,19 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
         </div>
 
         {/* Linked Users */}
-        <div className="bg-zinc-900 border border-zinc-800">
-          <div className="px-6 py-4 border-b border-zinc-800">
-            <h2 className="text-sm font-black uppercase tracking-[0.15em] text-white">Linked Users</h2>
+        <div className="bg-white border border-zinc-200 shadow-sm rounded-lg overflow-hidden">
+          <div className="px-6 py-4 border-b border-zinc-200">
+            <h2 className="text-sm font-black uppercase tracking-[0.15em] text-zinc-900">Linked Users</h2>
           </div>
-          <div className="divide-y divide-zinc-800">
-            {linkedUsers.length === 0 && <p className="text-zinc-600 text-sm text-center py-6">No users linked</p>}
+          <div className="divide-y divide-zinc-100">
+            {linkedUsers.length === 0 && <p className="text-zinc-500 text-sm text-center py-6">No users linked</p>}
             {linkedUsers.map((u: any) => (
               <div key={u.id} className="flex items-center gap-3 px-6 py-3">
-                <div className="w-7 h-7 rounded-full bg-red-700 flex items-center justify-center text-white text-xs font-black shrink-0">
+                <div className="w-7 h-7 rounded-full bg-red-600 flex items-center justify-center text-white text-xs font-black shrink-0">
                   {(u.name || u.email || 'U')[0].toUpperCase()}
                 </div>
                 <div>
-                  <p className="text-sm text-white">{u.name || 'No name'}</p>
+                  <p className="text-sm text-zinc-900">{u.name || 'No name'}</p>
                   <p className="text-[11px] text-zinc-500">{u.email}</p>
                 </div>
               </div>

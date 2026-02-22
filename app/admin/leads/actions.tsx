@@ -34,19 +34,19 @@ export default function LeadActions({
   return (
     <div className="flex items-center gap-2 flex-wrap">
       <select value={currentStatus} onChange={handleStatus} disabled={saving}
-        className="bg-zinc-800 border border-zinc-700 text-white text-[11px] font-black uppercase px-2 py-1.5 focus:outline-none focus:border-red-700 disabled:opacity-50">
+        className="bg-white border border-zinc-300 text-zinc-900 text-[11px] font-black uppercase px-2 py-1.5 rounded focus:outline-none focus:ring-1 focus:ring-red-500 disabled:opacity-50">
         {['new','contacted','converted','rejected'].map((s) => (
           <option key={s} value={s}>{s}</option>
         ))}
       </select>
       <select value={selectedClient} onChange={handleAssign} disabled={saving}
-        className="bg-zinc-800 border border-zinc-700 text-zinc-400 text-[11px] px-2 py-1.5 focus:outline-none focus:border-red-700 disabled:opacity-50">
+        className="bg-white border border-zinc-300 text-zinc-700 text-[11px] px-2 py-1.5 rounded focus:outline-none focus:ring-1 focus:ring-red-500 disabled:opacity-50">
         <option value="">Assign to client…</option>
         {clients.map((c) => (
           <option key={c.id} value={c.id}>{c.name}</option>
         ))}
       </select>
-      {saving && <span className="text-[10px] text-zinc-600">Saving…</span>}
+      {saving && <span className="text-[10px] text-zinc-500">Saving…</span>}
     </div>
   );
 }

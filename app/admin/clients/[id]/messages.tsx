@@ -33,10 +33,10 @@ export default function AdminClientMessages({ clientId, initialMessages }: { cli
   return (
     <div className="flex flex-col">
       <div className="overflow-auto max-h-56 p-4 space-y-2">
-        {messages.length === 0 && <p className="text-zinc-600 text-sm text-center py-4">No messages</p>}
+        {messages.length === 0 && <p className="text-zinc-500 text-sm text-center py-4">No messages</p>}
         {messages.map((msg) => (
           <div key={msg.id} className={`flex ${msg.sender_role === 'admin' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[80%] px-3 py-2 text-sm ${msg.sender_role === 'admin' ? 'bg-red-700 text-white' : 'bg-zinc-800 text-zinc-200'}`}>
+            <div className={`max-w-[80%] px-3 py-2 text-sm rounded ${msg.sender_role === 'admin' ? 'bg-red-600 text-white' : 'bg-zinc-100 text-zinc-900'}`}>
               {msg.sender_role === 'client' && (
                 <p className="text-[10px] font-black uppercase tracking-[0.1em] text-zinc-500 mb-0.5">{msg.sender_name || 'Client'}</p>
               )}
@@ -46,15 +46,15 @@ export default function AdminClientMessages({ clientId, initialMessages }: { cli
         ))}
         <div ref={bottomRef} />
       </div>
-      <form onSubmit={send} className="flex gap-2 p-4 border-t border-zinc-800">
+      <form onSubmit={send} className="flex gap-2 p-4 border-t border-zinc-200">
         <input
           value={body}
           onChange={(e) => setBody(e.target.value)}
           placeholder="Reply to client…"
-          className="flex-1 bg-zinc-800 border border-zinc-700 text-white text-sm px-3 py-2 placeholder-zinc-600 focus:outline-none focus:border-red-700 transition-colors"
+          className="flex-1 bg-white border border-zinc-300 text-zinc-900 text-sm px-3 py-2 rounded placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-red-500 transition-colors"
         />
         <button type="submit" disabled={sending || !body.trim()}
-          className="bg-red-700 hover:bg-red-800 text-white px-4 py-2 transition-colors disabled:opacity-50">
+          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition-colors disabled:opacity-50">
           <Send size={14} />
         </button>
       </form>

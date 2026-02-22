@@ -51,7 +51,7 @@ async function AdminMessagesPage() {
                 className: "mb-8",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                        className: "inline-block bg-red-700 text-white text-[9px] font-black uppercase tracking-[0.2em] px-2 py-1 mb-3",
+                        className: "inline-block bg-red-600 text-white text-[9px] font-black uppercase tracking-[0.2em] px-2 py-1 mb-3 rounded",
                         children: "Messages"
                     }, void 0, false, {
                         fileName: "[project]/app/admin/messages/page.tsx",
@@ -59,7 +59,7 @@ async function AdminMessagesPage() {
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
-                        className: "text-3xl font-black tracking-tighter text-white uppercase italic",
+                        className: "text-3xl font-black tracking-tighter text-zinc-900 uppercase italic",
                         children: "All Threads"
                     }, void 0, false, {
                         fileName: "[project]/app/admin/messages/page.tsx",
@@ -67,7 +67,7 @@ async function AdminMessagesPage() {
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-zinc-500 text-sm mt-1",
+                        className: "text-zinc-600 text-sm mt-1",
                         children: [
                             threads.length,
                             " active conversation",
@@ -85,10 +85,10 @@ async function AdminMessagesPage() {
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "bg-zinc-900 border border-zinc-800",
+                className: "bg-white border border-zinc-200 shadow-sm rounded-lg overflow-hidden",
                 children: [
                     threads.length === 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-zinc-600 text-sm text-center py-12",
+                        className: "text-zinc-500 text-sm text-center py-12",
                         children: "No messages yet"
                     }, void 0, false, {
                         fileName: "[project]/app/admin/messages/page.tsx",
@@ -96,10 +96,10 @@ async function AdminMessagesPage() {
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "divide-y divide-zinc-800",
+                        className: "divide-y divide-zinc-100",
                         children: threads.map((t)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$react$2d$server$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"], {
                                 href: `/admin/clients/${t.id}`,
-                                className: "group flex items-center justify-between px-6 py-4 hover:bg-zinc-800 transition-colors",
+                                className: "group flex items-center justify-between px-6 py-4 hover:bg-zinc-50 transition-colors",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "flex items-center gap-3 min-w-0",
@@ -108,7 +108,7 @@ async function AdminMessagesPage() {
                                                 className: "relative shrink-0",
                                                 children: [
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                        className: "w-9 h-9 bg-zinc-700 flex items-center justify-center text-white text-sm font-black",
+                                                        className: "w-9 h-9 bg-red-600 flex items-center justify-center text-white text-sm font-black rounded",
                                                         children: t.name[0].toUpperCase()
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/admin/messages/page.tsx",
@@ -116,7 +116,7 @@ async function AdminMessagesPage() {
                                                         columnNumber: 19
                                                     }, this),
                                                     parseInt(t.unread_count) > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                        className: "absolute -top-1 -right-1 bg-red-700 text-white text-[9px] font-black rounded-full w-4 h-4 flex items-center justify-center",
+                                                        className: "absolute -top-1 -right-1 bg-red-600 text-white text-[9px] font-black rounded-full w-4 h-4 flex items-center justify-center",
                                                         children: t.unread_count
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/admin/messages/page.tsx",
@@ -133,7 +133,7 @@ async function AdminMessagesPage() {
                                                 className: "min-w-0",
                                                 children: [
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                        className: "text-sm font-semibold text-white",
+                                                        className: "text-sm font-semibold text-zinc-900",
                                                         children: t.name
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/admin/messages/page.tsx",
@@ -163,7 +163,7 @@ async function AdminMessagesPage() {
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "shrink-0 ml-4 text-right",
                                         children: t.last_message_at && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                            className: "text-[10px] text-zinc-600",
+                                            className: "text-[10px] text-zinc-500",
                                             children: new Date(t.last_message_at).toLocaleDateString('en-GB', {
                                                 day: 'numeric',
                                                 month: 'short'

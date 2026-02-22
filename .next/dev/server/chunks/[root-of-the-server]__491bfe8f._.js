@@ -102,8 +102,9 @@ function rewriteCookiePath(cookie) {
 }
 async function GET(request, context) {
     const { GET: handler } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$auth$2f$server$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getAuth"])().handler();
-    const response = await handler(request, context ?? {
-        params: {}
+    const params = await context.params;
+    const response = await handler(request, {
+        params
     });
     const setCookies = response.headers.getSetCookie?.() ?? [];
     if (setCookies.length === 0) return response;
@@ -120,8 +121,9 @@ async function GET(request, context) {
 }
 async function POST(request, context) {
     const { POST: handler } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$auth$2f$server$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getAuth"])().handler();
-    const response = await handler(request, context ?? {
-        params: {}
+    const params = await context.params;
+    const response = await handler(request, {
+        params
     });
     const setCookies = response.headers.getSetCookie?.() ?? [];
     if (setCookies.length === 0) return response;

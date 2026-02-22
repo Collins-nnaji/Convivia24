@@ -123,7 +123,7 @@ function DocumentsPage() {
                 className: "mb-8",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                        className: "inline-block bg-red-700 text-white text-[9px] font-black uppercase tracking-[0.2em] px-2 py-1 mb-3",
+                        className: "inline-block bg-red-600 text-white text-[9px] font-black uppercase tracking-[0.2em] px-2 py-1 mb-3",
                         children: "Documents"
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/documents/page.tsx",
@@ -131,7 +131,7 @@ function DocumentsPage() {
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
-                        className: "text-3xl font-black tracking-tighter text-white uppercase italic",
+                        className: "text-3xl font-black tracking-tighter text-zinc-900 uppercase italic",
                         children: "Files & Reports"
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/documents/page.tsx",
@@ -139,7 +139,7 @@ function DocumentsPage() {
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-zinc-500 text-sm mt-1",
+                        className: "text-zinc-600 text-sm mt-1",
                         children: "All documents shared with your account"
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/documents/page.tsx",
@@ -153,18 +153,18 @@ function DocumentsPage() {
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "bg-zinc-900 border border-zinc-800 border-dashed p-8 mb-6 text-center",
+                className: "bg-white border border-zinc-200 border-dashed rounded-lg p-8 mb-6 text-center shadow-sm",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$upload$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Upload$3e$__["Upload"], {
                         size: 24,
-                        className: "mx-auto text-zinc-600 mb-3"
+                        className: "mx-auto text-zinc-400 mb-3"
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/documents/page.tsx",
                         lineNumber: 127,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-sm text-zinc-400 mb-3",
+                        className: "text-sm text-zinc-600 mb-3",
                         children: "Upload a document"
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/documents/page.tsx",
@@ -185,7 +185,7 @@ function DocumentsPage() {
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
                                 value: selectedClientId,
                                 onChange: (e)=>setSelectedClientId(e.target.value),
-                                className: "bg-zinc-800 border border-zinc-700 text-white text-sm px-3 py-1.5 rounded focus:outline-none focus:border-red-700",
+                                className: "bg-white border border-zinc-300 text-zinc-900 text-sm px-3 py-1.5 rounded focus:outline-none focus:border-red-500",
                                 children: me.clients.map((c)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
                                         value: c.id,
                                         children: c.name
@@ -225,7 +225,7 @@ function DocumentsPage() {
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
                         htmlFor: "file-upload",
-                        className: `inline-flex items-center gap-2 bg-red-700 hover:bg-red-800 text-white text-sm font-black uppercase tracking-[0.1em] px-5 py-2.5 cursor-pointer transition-colors ${uploading ? 'opacity-50 pointer-events-none' : ''}`,
+                        className: `inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm font-black uppercase tracking-[0.1em] px-5 py-2.5 cursor-pointer transition-colors rounded ${uploading ? 'opacity-50 pointer-events-none' : ''}`,
                         children: uploading ? progress || 'Uploading…' : 'Choose File'
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/documents/page.tsx",
@@ -239,12 +239,12 @@ function DocumentsPage() {
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "bg-zinc-900 border border-zinc-800",
+                className: "bg-white border border-zinc-200 rounded-lg shadow-sm",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "px-6 py-4 border-b border-zinc-800",
+                        className: "px-6 py-4 border-b border-zinc-200",
                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                            className: "text-sm font-black uppercase tracking-[0.15em] text-white",
+                            className: "text-sm font-black uppercase tracking-[0.15em] text-zinc-900",
                             children: [
                                 docs.length,
                                 " Document",
@@ -261,7 +261,7 @@ function DocumentsPage() {
                         columnNumber: 9
                     }, this),
                     loading && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-zinc-600 text-sm text-center py-8",
+                        className: "text-zinc-500 text-sm text-center py-8",
                         children: "Loading…"
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/documents/page.tsx",
@@ -269,7 +269,7 @@ function DocumentsPage() {
                         columnNumber: 21
                     }, this),
                     !loading && docs.length === 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-zinc-600 text-sm text-center py-8",
+                        className: "text-zinc-500 text-sm text-center py-8",
                         children: "No documents yet."
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/documents/page.tsx",
@@ -277,7 +277,7 @@ function DocumentsPage() {
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "divide-y divide-zinc-800",
+                        className: "divide-y divide-zinc-100",
                         children: docs.map((doc)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "flex items-center justify-between px-6 py-4",
                                 children: [
@@ -286,7 +286,7 @@ function DocumentsPage() {
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$file$2d$text$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__FileText$3e$__["FileText"], {
                                                 size: 18,
-                                                className: "text-red-700 shrink-0"
+                                                className: "text-red-600 shrink-0"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/documents/page.tsx",
                                                 lineNumber: 171,
@@ -296,7 +296,7 @@ function DocumentsPage() {
                                                 className: "min-w-0",
                                                 children: [
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                        className: "text-sm font-semibold text-white truncate",
+                                                        className: "text-sm font-semibold text-zinc-900 truncate",
                                                         children: doc.name
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/documents/page.tsx",
@@ -334,7 +334,7 @@ function DocumentsPage() {
                                                 href: doc.url,
                                                 target: "_blank",
                                                 rel: "noopener noreferrer",
-                                                className: "p-2 text-zinc-500 hover:text-white transition-colors",
+                                                className: "p-2 text-zinc-400 hover:text-zinc-900 transition-colors",
                                                 title: "Download",
                                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$download$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Download$3e$__["Download"], {
                                                     size: 15
@@ -350,7 +350,7 @@ function DocumentsPage() {
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                                 onClick: ()=>deleteDoc(doc.id),
-                                                className: "p-2 text-zinc-600 hover:text-red-500 transition-colors",
+                                                className: "p-2 text-zinc-400 hover:text-red-600 transition-colors",
                                                 title: "Delete",
                                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$trash$2d$2$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Trash2$3e$__["Trash2"], {
                                                     size: 15
