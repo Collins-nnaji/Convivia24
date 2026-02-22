@@ -1,0 +1,256 @@
+module.exports = [
+"[externals]/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js [external] (next/dist/compiled/next-server/app-route-turbo.runtime.dev.js, cjs)", ((__turbopack_context__, module, exports) => {
+
+const mod = __turbopack_context__.x("next/dist/compiled/next-server/app-route-turbo.runtime.dev.js", () => require("next/dist/compiled/next-server/app-route-turbo.runtime.dev.js"));
+
+module.exports = mod;
+}),
+"[externals]/next/dist/compiled/@opentelemetry/api [external] (next/dist/compiled/@opentelemetry/api, cjs)", ((__turbopack_context__, module, exports) => {
+
+const mod = __turbopack_context__.x("next/dist/compiled/@opentelemetry/api", () => require("next/dist/compiled/@opentelemetry/api"));
+
+module.exports = mod;
+}),
+"[externals]/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js [external] (next/dist/compiled/next-server/app-page-turbo.runtime.dev.js, cjs)", ((__turbopack_context__, module, exports) => {
+
+const mod = __turbopack_context__.x("next/dist/compiled/next-server/app-page-turbo.runtime.dev.js", () => require("next/dist/compiled/next-server/app-page-turbo.runtime.dev.js"));
+
+module.exports = mod;
+}),
+"[externals]/next/dist/server/app-render/work-unit-async-storage.external.js [external] (next/dist/server/app-render/work-unit-async-storage.external.js, cjs)", ((__turbopack_context__, module, exports) => {
+
+const mod = __turbopack_context__.x("next/dist/server/app-render/work-unit-async-storage.external.js", () => require("next/dist/server/app-render/work-unit-async-storage.external.js"));
+
+module.exports = mod;
+}),
+"[externals]/next/dist/server/app-render/work-async-storage.external.js [external] (next/dist/server/app-render/work-async-storage.external.js, cjs)", ((__turbopack_context__, module, exports) => {
+
+const mod = __turbopack_context__.x("next/dist/server/app-render/work-async-storage.external.js", () => require("next/dist/server/app-render/work-async-storage.external.js"));
+
+module.exports = mod;
+}),
+"[externals]/next/dist/shared/lib/no-fallback-error.external.js [external] (next/dist/shared/lib/no-fallback-error.external.js, cjs)", ((__turbopack_context__, module, exports) => {
+
+const mod = __turbopack_context__.x("next/dist/shared/lib/no-fallback-error.external.js", () => require("next/dist/shared/lib/no-fallback-error.external.js"));
+
+module.exports = mod;
+}),
+"[externals]/next/dist/server/app-render/after-task-async-storage.external.js [external] (next/dist/server/app-render/after-task-async-storage.external.js, cjs)", ((__turbopack_context__, module, exports) => {
+
+const mod = __turbopack_context__.x("next/dist/server/app-render/after-task-async-storage.external.js", () => require("next/dist/server/app-render/after-task-async-storage.external.js"));
+
+module.exports = mod;
+}),
+"[project]/lib/auth/server.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "auth",
+    ()=>auth,
+    "getAuth",
+    ()=>getAuth
+]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$neondatabase$2f$auth$2f$dist$2f$next$2f$server$2f$index$2e$mjs__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@neondatabase/auth/dist/next/server/index.mjs [app-route] (ecmascript)");
+;
+function getAuth() {
+    return (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$neondatabase$2f$auth$2f$dist$2f$next$2f$server$2f$index$2e$mjs__$5b$app$2d$route$5d$__$28$ecmascript$29$__["createNeonAuth"])({
+        baseUrl: process.env.NEON_AUTH_BASE_URL,
+        cookies: {
+            secret: process.env.NEON_AUTH_COOKIE_SECRET
+        }
+    });
+}
+// Normalize Neon's { data, error } so session?.user works everywhere (dashboard, API routes)
+async function getSessionNormalized() {
+    const { data } = await getAuth().getSession();
+    const user = data?.user ?? data?.session?.user;
+    if (!user) return null;
+    return {
+        ...data,
+        user
+    };
+}
+const auth = {
+    getSession: getSessionNormalized,
+    handler: ()=>getAuth().handler(),
+    middleware: (config)=>getAuth().middleware(config)
+};
+}),
+"[project]/lib/db/index.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "default",
+    ()=>__TURBOPACK__default__export__
+]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$neondatabase$2f$serverless$2f$index$2e$mjs__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@neondatabase/serverless/index.mjs [app-route] (ecmascript)");
+;
+let _sql = null;
+function getSql() {
+    if (!_sql) _sql = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$neondatabase$2f$serverless$2f$index$2e$mjs__$5b$app$2d$route$5d$__$28$ecmascript$29$__["neon"])(process.env.DATABASE_URL);
+    return _sql;
+}
+// Export a real function so Turbopack/bundler treats it as callable (Proxy can break in server bundle)
+function sql(strings, ...values) {
+    return getSql()(strings, ...values);
+}
+const __TURBOPACK__default__export__ = sql;
+}),
+"[externals]/next/dist/server/app-render/action-async-storage.external.js [external] (next/dist/server/app-render/action-async-storage.external.js, cjs)", ((__turbopack_context__, module, exports) => {
+
+const mod = __turbopack_context__.x("next/dist/server/app-render/action-async-storage.external.js", () => require("next/dist/server/app-render/action-async-storage.external.js"));
+
+module.exports = mod;
+}),
+"[project]/lib/auth/session.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "getAppUser",
+    ()=>getAppUser,
+    "getSession",
+    ()=>getSession,
+    "requireAdmin",
+    ()=>requireAdmin,
+    "requireAuth",
+    ()=>requireAuth,
+    "syncUser",
+    ()=>syncUser
+]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$auth$2f$server$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/auth/server.ts [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$index$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/db/index.ts [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$api$2f$navigation$2e$react$2d$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__ = __turbopack_context__.i("[project]/node_modules/next/dist/api/navigation.react-server.js [app-route] (ecmascript) <locals>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$components$2f$navigation$2e$react$2d$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/client/components/navigation.react-server.js [app-route] (ecmascript)");
+;
+;
+;
+const ADMIN_EMAILS = [
+    'collinsnnaji1@gmail.com',
+    'speak2tojo@gmail.com'
+];
+async function getSession() {
+    return __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$auth$2f$server$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["auth"].getSession();
+}
+async function requireAuth() {
+    const session = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$auth$2f$server$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["auth"].getSession();
+    if (!session?.user) (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$components$2f$navigation$2e$react$2d$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["redirect"])('/auth/sign-in');
+    return session.user;
+}
+async function requireAdmin() {
+    const user = await requireAuth();
+    if (!ADMIN_EMAILS.includes(user.email ?? '')) (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$components$2f$navigation$2e$react$2d$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["redirect"])('/dashboard');
+    return user;
+}
+async function syncUser(authUser) {
+    const role = ADMIN_EMAILS.includes(authUser.email) ? 'admin' : 'client';
+    const rows = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$index$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"]`
+    INSERT INTO app_users (id, email, name, image, role)
+    VALUES (${authUser.id}, ${authUser.email}, ${authUser.name ?? null}, ${authUser.image ?? null}, ${role})
+    ON CONFLICT (email) DO UPDATE
+      SET name  = EXCLUDED.name,
+          image = EXCLUDED.image,
+          id    = EXCLUDED.id
+    RETURNING *
+  `;
+    return rows[0];
+}
+async function getAppUser(authUser) {
+    const rows = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$index$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"]`SELECT * FROM app_users WHERE email = ${authUser.email}`;
+    if (rows.length) return rows[0];
+    return syncUser(authUser);
+}
+}),
+"[project]/app/api/documents/route.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "GET",
+    ()=>GET,
+    "POST",
+    ()=>POST
+]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/server.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$auth$2f$server$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/auth/server.ts [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/auth/session.ts [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$index$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/db/index.ts [app-route] (ecmascript)");
+;
+;
+;
+;
+const IDRIVE_ENDPOINT = process.env.IDRIVE_ENDPOINT ?? '';
+const IDRIVE_BUCKET = process.env.IDRIVE_BUCKET ?? '';
+async function getClientForUser(userId) {
+    const rows = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$index$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"]`
+    SELECT c.id FROM clients c
+    JOIN client_users cu ON cu.client_id = c.id
+    WHERE cu.user_id = ${userId}
+    LIMIT 1
+  `;
+    return rows[0]?.id ?? null;
+}
+async function GET() {
+    const session = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$auth$2f$server$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["auth"].getSession();
+    if (!session?.user) return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+        error: 'Unauthorized'
+    }, {
+        status: 401
+    });
+    const appUser = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getAppUser"])({
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.name,
+        image: session.user.image
+    });
+    const clientId = await getClientForUser(appUser.id);
+    if (!clientId) return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json([]);
+    const docs = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$index$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"]`SELECT * FROM documents WHERE client_id = ${clientId} ORDER BY created_at DESC`;
+    return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(docs);
+}
+async function POST(req) {
+    const session = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$auth$2f$server$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["auth"].getSession();
+    if (!session?.user) return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+        error: 'Unauthorized'
+    }, {
+        status: 401
+    });
+    const appUser = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getAppUser"])({
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.name,
+        image: session.user.image
+    });
+    const { name, key, size, type, clientId: adminClientId } = await req.json();
+    let clientId;
+    if (appUser.role === 'admin') {
+        clientId = adminClientId ?? null;
+    } else {
+        clientId = await getClientForUser(appUser.id);
+    }
+    if (!clientId) {
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+            error: 'Your account is not linked to a client. Contact support to get access to document uploads.'
+        }, {
+            status: 400
+        });
+    }
+    if (!IDRIVE_ENDPOINT || !IDRIVE_BUCKET) {
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+            error: 'Storage not configured (IDRIVE_ENDPOINT / IDRIVE_BUCKET).'
+        }, {
+            status: 503
+        });
+    }
+    const url = `https://${IDRIVE_ENDPOINT}/${IDRIVE_BUCKET}/${key}`;
+    const [doc] = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$index$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"]`
+    INSERT INTO documents (client_id, uploaded_by, name, idrive_key, url, size_bytes, mime_type)
+    VALUES (${clientId}, ${appUser.id}, ${name}, ${key}, ${url}, ${size}, ${type})
+    RETURNING *
+  `;
+    return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(doc, {
+        status: 201
+    });
+}
+}),
+];
+
+//# sourceMappingURL=%5Broot-of-the-server%5D__15239304._.js.map

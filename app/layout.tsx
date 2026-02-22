@@ -1,7 +1,5 @@
 import './globals.css';
 import { Outfit } from 'next/font/google';
-import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
 
 const outfit = Outfit({
   subsets: ['latin'],
@@ -16,6 +14,11 @@ export const metadata = {
   }
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -24,11 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${outfit.className} bg-white text-zinc-900 antialiased selection:bg-red-700 selection:text-white`} suppressHydrationWarning>
-        <Navigation />
-        <div className="relative z-0">
-          {children}
-        </div>
-        <Footer />
+        {children}
       </body>
     </html>
   );
