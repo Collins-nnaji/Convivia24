@@ -10,4 +10,10 @@
   CI = "false"
   NODE_VERSION = "20.9.0"
 
-# Next.js handles all routing automatically - no redirects needed 
+# Redirect Netlify default host to your custom domain. Add your domain in Netlify → Domain management first.
+[[redirects]]
+  from = "/*"
+  to = "https://app.convivia24.com/:splat"
+  status = 301
+  force = true
+  conditions = {Host = ["convivia24app.netlify.app"]}
