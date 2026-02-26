@@ -1,9 +1,11 @@
 import Link from 'next/link';
+import WaitlistForm from './WaitlistForm';
 
 const footerLinks = [
   { label: 'Home',           href: '/' },
   { label: 'The Spaces',     href: '/spaces' },
   { label: 'The Convivium',  href: '/convivium' },
+  { label: 'Partnerships',  href: '/partnerships' },
   { label: 'Inquire',        href: '/inquire' },
 ];
 
@@ -27,16 +29,23 @@ export default function Footer() {
             </p>
           </div>
 
-          <div className="flex flex-col gap-4 sm:grid sm:grid-cols-3 sm:gap-x-12 sm:gap-y-4">
-            {footerLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="whitespace-nowrap text-sm text-cream/40 hover:text-cream transition-colors"
-              >
-                {link.label}
-              </Link>
-            ))}
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:gap-12">
+            <div className="flex flex-col gap-4 sm:grid sm:grid-cols-3 sm:gap-x-12 sm:gap-y-4">
+              {footerLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="whitespace-nowrap text-sm text-cream/40 hover:text-cream transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+
+            <div className="w-full sm:min-w-[280px] sm:max-w-[360px]">
+              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gold/50 mb-3">Join the Convivium Waitlist</p>
+              <WaitlistForm variant="footer" />
+            </div>
           </div>
         </div>
 

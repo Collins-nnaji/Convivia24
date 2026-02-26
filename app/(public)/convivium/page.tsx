@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
+import WaitlistForm from '@/components/WaitlistForm';
+import ConviviumCard from '@/components/ConviviumCard';
 
 const BENEFITS = [
   'Room-rate access across all Convivia24 properties',
@@ -160,31 +162,37 @@ export default function ConviviumPage() {
         </div>
       </section>
 
-      {/* ═══════════ MEMBERSHIP CARD — CREAM ═══════════ */}
+      {/* ═══════════ MEMBER ACCESS CARD — CREAM ═══════════ */}
       <section className="bg-cream py-28 sm:py-36">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: '-80px' }}
-            variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
-            className="flex justify-center"
+            variants={{ visible: { transition: { staggerChildren: 0.12 } } }}
+            className="flex flex-col lg:flex-row items-center gap-16 lg:gap-20"
           >
-            <motion.div
-              variants={fadeUp}
-              className="relative w-full max-w-md border-2 border-obsidian/10 p-6 sm:p-10 text-center"
-            >
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gold" />
+            {/* Card visual */}
+            <motion.div variants={fadeUp} className="flex-shrink-0">
+              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-obsidian/40 mb-6 text-center lg:text-left">
+                Member Access Card
+              </p>
+              <ConviviumCard />
+              <p className="text-obsidian/40 text-xs text-center lg:text-left mt-4 max-w-[340px] mx-auto lg:mx-0">
+                Your Convivium card. One card. Every table. Lagos, Abuja, London.
+              </p>
+            </motion.div>
 
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gold-dark mb-6">Annual Membership</p>
-              <p className="font-display text-4xl md:text-5xl italic text-obsidian mb-3">The Convivium</p>
-              <p className="text-obsidian/50 text-sm leading-relaxed mb-8">
-                Full access to every Convivia24 table, space, and introduction across Lagos, Abuja, and London.
+            {/* Copy + CTAs */}
+            <motion.div variants={fadeUp} className="flex-1 max-w-lg text-center lg:text-left">
+              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gold-dark mb-4">Annual Membership</p>
+              <h2 className="font-display text-3xl sm:text-4xl md:text-5xl italic text-obsidian mb-4">The Convivium</h2>
+              <p className="text-obsidian/60 text-base leading-relaxed mb-8">
+                Full access to every Convivia24 table, space, and introduction across Lagos, Abuja, and London. Membership is by application only.
               </p>
 
               <div className="border-t border-obsidian/10 pt-6 mb-8">
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 mb-1">Enquire for rates</p>
-                <p className="text-obsidian/30 text-xs">Membership is by application only.</p>
               </div>
 
               <Link
@@ -193,6 +201,12 @@ export default function ConviviumPage() {
               >
                 Apply for Membership <ArrowRight size={14} />
               </Link>
+
+              <div className="mt-10 pt-8 border-t border-obsidian/10">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 mb-3">Or join the waitlist</p>
+                <p className="text-obsidian/50 text-sm mb-4">Stay in the loop. No commitment. First access when we open.</p>
+                <WaitlistForm variant="convivium" />
+              </div>
             </motion.div>
           </motion.div>
         </div>

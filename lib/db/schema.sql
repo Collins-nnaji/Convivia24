@@ -52,3 +52,15 @@ CREATE INDEX IF NOT EXISTS idx_inquiries_email      ON inquiries(email);
 CREATE INDEX IF NOT EXISTS idx_inquiries_status     ON inquiries(status);
 CREATE INDEX IF NOT EXISTS idx_inquiries_created_at ON inquiries(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_inquiries_type       ON inquiries(inquiry_type);
+
+-- Waitlist: low-friction signup for Convivium interest
+CREATE TABLE IF NOT EXISTS waitlist (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email      TEXT NOT NULL,
+  company    TEXT,
+  name       TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_waitlist_email ON waitlist(LOWER(email));
+CREATE INDEX IF NOT EXISTS idx_waitlist_created_at ON waitlist(created_at DESC);
