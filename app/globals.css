@@ -3,12 +3,12 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 23, 23, 23;
+  --foreground-rgb: 245, 240, 232;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: #ffffff;
+  background: #0a0a0a;
 }
 
 /* Custom Utilities */
@@ -27,13 +27,14 @@ body {
   }
 }
 
-/* Glassmorphism for Light Theme */
-.glass-card {
-  @apply bg-white/70 backdrop-blur-md border border-zinc-200/50 shadow-sm;
+/* Selection */
+::selection {
+  background: #c9a84c;
+  color: #0a0a0a;
 }
 
-/* Red accent scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #ffffff; }
-::-webkit-scrollbar-thumb { background: #b91c1c; }
-::-webkit-scrollbar-thumb:hover { background: #991b1b; }
+/* Gold scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #0a0a0a; }
+::-webkit-scrollbar-thumb { background: #c9a84c; }
+::-webkit-scrollbar-thumb:hover { background: #e2c97e; }

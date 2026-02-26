@@ -1,14 +1,23 @@
 import './globals.css';
-import { Outfit } from 'next/font/google';
+import { Outfit, Cormorant_Garamond } from 'next/font/google';
 
 const outfit = Outfit({
   subsets: ['latin'],
   display: 'swap',
+  variable: '--font-outfit',
+});
+
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  style: ['normal', 'italic'],
+  display: 'swap',
+  variable: '--font-cormorant',
 });
 
 export const metadata = {
-  title: 'Convivia24 | Revenue Management, Redefined.',
-  description: 'Convivia24 manages the insights, planning, and execution that transform stagnant pipelines into high-velocity revenue engines.',
+  title: 'Convivia24 | Come to the Table.',
+  description: 'A luxury hotel and members club for African business. Lagos. Abuja. London.',
   icons: {
     icon: '/Logo2.png',
   }
@@ -26,7 +35,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${outfit.className} bg-white text-zinc-900 antialiased selection:bg-red-700 selection:text-white`} suppressHydrationWarning>
+      <body className={`${outfit.variable} ${cormorant.variable} font-sans bg-obsidian text-cream antialiased`} suppressHydrationWarning>
         {children}
       </body>
     </html>

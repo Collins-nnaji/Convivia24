@@ -2,18 +2,18 @@ import React from 'react';
 
 interface SectionLabelProps {
   children: React.ReactNode;
-  dark?: boolean;
+  variant?: 'dark' | 'light';
 }
 
-export function SectionLabel({ children, dark = false }: SectionLabelProps) {
+export function SectionLabel({ children, variant = 'dark' }: SectionLabelProps) {
   return (
-    <div className={`inline-flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] mb-8 ${
-      dark
-        ? 'bg-white text-zinc-900'
-        : 'bg-red-700 text-white'
+    <div className={`inline-flex items-center gap-2.5 mb-8 ${
+      variant === 'dark'
+        ? 'text-gold border-b border-gold/30 pb-1'
+        : 'text-obsidian border-b border-obsidian/20 pb-1'
     }`}>
-      <div className={`w-1.5 h-1.5 ${dark ? 'bg-red-700' : 'bg-white'}`} />
-      {children}
+      <div className={`w-4 h-px ${variant === 'dark' ? 'bg-gold' : 'bg-obsidian'}`} />
+      <span className="text-[9px] font-sans font-black uppercase tracking-[0.3em]">{children}</span>
     </div>
   );
 }

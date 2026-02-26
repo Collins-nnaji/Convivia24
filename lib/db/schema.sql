@@ -1,120 +1,54 @@
--- Convivia24 Pipeline Suite Schema
--- Run once against your Neon database
+-- Convivia24 — Drop all old tables and create only the inquiries table
+-- Run: npx tsx lib/db/migrate.ts
 
--- Users table (mirrors Neon Auth users, with role)
-CREATE TABLE IF NOT EXISTS app_users (
-  id          TEXT PRIMARY KEY,          -- matches Neon Auth user id
-  email       TEXT UNIQUE NOT NULL,
-  name        TEXT,
-  image       TEXT,
-  role        TEXT NOT NULL DEFAULT 'client' CHECK (role IN ('client', 'admin')),
-  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
+-- Drop old sales-firm tables (reverse dependency order)
+DROP TABLE IF EXISTS client_users CASCADE;
+DROP TABLE IF EXISTS listings CASCADE;
+DROP TABLE IF EXISTS audit_leads CASCADE;
+DROP TABLE IF EXISTS documents CASCADE;
+DROP TABLE IF EXISTS messages CASCADE;
+DROP TABLE IF EXISTS pipeline_deals CASCADE;
+DROP TABLE IF EXISTS clients CASCADE;
+DROP TABLE IF EXISTS app_users CASCADE;
 
--- Seed admin accounts
-INSERT INTO app_users (id, email, name, role)
-VALUES
-  ('admin-collins', 'collinsnnaji1@gmail.com', 'Collins Nnaji',  'admin'),
-  ('admin-tojo',    'speak2tojo@gmail.com',    'Tojo',           'admin')
-ON CONFLICT (email) DO UPDATE SET role = 'admin';
+-- Drop old enquiries table from previous era
+DROP TABLE IF EXISTS enquiries CASCADE;
 
--- Clients (businesses Convivia24 manages)
-CREATE TABLE IF NOT EXISTS clients (
-  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name            TEXT NOT NULL,
-  industry        TEXT,
-  contact_email   TEXT,
-  contact_phone   TEXT,
-  assigned_admin  TEXT REFERENCES app_users(id) ON DELETE SET NULL,
-  status          TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
-  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
+-- Drop old misc tables
+DROP TABLE IF EXISTS bookings CASCADE;
+DROP TABLE IF EXISTS businesses CASCADE;
+DROP TABLE IF EXISTS cleaning_checklists CASCADE;
+DROP TABLE IF EXISTS compliance_logs CASCADE;
+DROP TABLE IF EXISTS equipment CASCADE;
+DROP TABLE IF EXISTS invoices CASCADE;
+DROP TABLE IF EXISTS notifications CASCADE;
+DROP TABLE IF EXISTS reviews CASCADE;
+DROP TABLE IF EXISTS security_incidents CASCADE;
+DROP TABLE IF EXISTS security_patrol_logs CASCADE;
+DROP TABLE IF EXISTS security_patrol_routes CASCADE;
+DROP TABLE IF EXISTS service_bundles CASCADE;
+DROP TABLE IF EXISTS services CASCADE;
+DROP TABLE IF EXISTS shift_schedules CASCADE;
+DROP TABLE IF EXISTS staff_assignments CASCADE;
+DROP TABLE IF EXISTS training_records CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS signup_invites CASCADE;
 
--- Pipeline deals
-CREATE TABLE IF NOT EXISTS pipeline_deals (
-  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  client_id   UUID NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
-  title       TEXT NOT NULL,
-  stage       TEXT NOT NULL DEFAULT 'lead' CHECK (
-                stage IN ('lead','qualified','proposal','negotiation','closed_won','closed_lost')
-              ),
-  value       NUMERIC(12,2),
-  currency    TEXT NOT NULL DEFAULT 'GBP',
-  notes       TEXT,
-  due_date    DATE,
-  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- Messages (client <-> admin thread per client)
-CREATE TABLE IF NOT EXISTS messages (
-  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  client_id    UUID NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
-  sender_id    TEXT NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
-  sender_role  TEXT NOT NULL CHECK (sender_role IN ('client', 'admin')),
-  body         TEXT NOT NULL,
-  read_at      TIMESTAMPTZ,
-  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- Documents (stored on iDrive e2)
-CREATE TABLE IF NOT EXISTS documents (
+-- Create the only table we need
+CREATE TABLE IF NOT EXISTS inquiries (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  client_id     UUID NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
-  uploaded_by   TEXT NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
   name          TEXT NOT NULL,
-  idrive_key    TEXT NOT NULL UNIQUE,
-  url           TEXT NOT NULL,
-  size_bytes    BIGINT,
-  mime_type     TEXT,
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  email         TEXT NOT NULL,
+  company       TEXT,
+  inquiry_type  TEXT NOT NULL DEFAULT 'General Inquiry',
+  message       TEXT NOT NULL,
+  status        TEXT NOT NULL DEFAULT 'new'
+                  CHECK (status IN ('new', 'read', 'responded', 'archived')),
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Audit leads (from /audit form)
-CREATE TABLE IF NOT EXISTS audit_leads (
-  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email           TEXT NOT NULL,
-  company         TEXT,
-  answers         JSONB,
-  status          TEXT NOT NULL DEFAULT 'new' CHECK (
-                    status IN ('new','contacted','converted','rejected')
-                  ),
-  assigned_client UUID REFERENCES clients(id) ON DELETE SET NULL,
-  notes           TEXT,
-  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- Client user link (which app_user account belongs to which client)
-CREATE TABLE IF NOT EXISTS client_users (
-  client_id   UUID NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
-  user_id     TEXT NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
-  PRIMARY KEY (client_id, user_id)
-);
-
--- Listings (items to sell; partner companies submit, Convivia24 sells and earns commission)
-CREATE TABLE IF NOT EXISTS listings (
-  id                     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  client_id              UUID NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
-  title                  TEXT NOT NULL,
-  description             TEXT,
-  asking_price           NUMERIC(12,2),
-  currency               TEXT NOT NULL DEFAULT 'GBP',
-  commission_pct          NUMERIC(5,2),
-  status                 TEXT NOT NULL DEFAULT 'draft' CHECK (
-    status IN ('draft','submitted','price_agreed','listed','sold','withdrawn')
-  ),
-  agreed_price           NUMERIC(12,2),
-  agreed_commission_pct   NUMERIC(5,2),
-  sold_at                TIMESTAMPTZ,
-  sale_value             NUMERIC(12,2),
-  created_at             TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at             TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- Indexes
-CREATE INDEX IF NOT EXISTS idx_pipeline_client ON pipeline_deals(client_id);
-CREATE INDEX IF NOT EXISTS idx_messages_client ON messages(client_id);
-CREATE INDEX IF NOT EXISTS idx_documents_client ON documents(client_id);
-CREATE INDEX IF NOT EXISTS idx_audit_leads_status ON audit_leads(status);
-CREATE INDEX IF NOT EXISTS idx_listings_client ON listings(client_id);
-CREATE INDEX IF NOT EXISTS idx_listings_status ON listings(status);
+CREATE INDEX IF NOT EXISTS idx_inquiries_email      ON inquiries(email);
+CREATE INDEX IF NOT EXISTS idx_inquiries_status     ON inquiries(status);
+CREATE INDEX IF NOT EXISTS idx_inquiries_created_at ON inquiries(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_inquiries_type       ON inquiries(inquiry_type);

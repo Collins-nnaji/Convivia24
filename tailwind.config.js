@@ -7,6 +7,29 @@ module.exports = {
     ],
     theme: {
       extend: {
+        colors: {
+          obsidian: {
+            DEFAULT: '#0a0a0a',
+            50:  '#1a1a1a',
+            100: '#141414',
+            200: '#111111',
+          },
+          gold: {
+            DEFAULT: '#c9a84c',
+            light:   '#e2c97e',
+            dark:    '#a07c28',
+            muted:   '#8b6914',
+          },
+          cream: {
+            DEFAULT: '#f5f0e8',
+            dark:    '#ede5d4',
+            muted:   '#d9cebb',
+          },
+        },
+        fontFamily: {
+          display: ['var(--font-cormorant)', 'Georgia', 'serif'],
+          sans:    ['var(--font-outfit)', 'sans-serif'],
+        },
         animation: {
           blob: "blob 7s infinite",
           'spin-slow': 'spin 12s linear infinite',

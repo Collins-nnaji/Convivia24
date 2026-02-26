@@ -1,780 +1,368 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
-import { motion, useInView, useMotionValue, useSpring } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowRight, TrendingUp, Target, Zap, Users, Network, BarChart2, CheckCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
+import { SectionLabel } from '@/components/ui/SectionLabel';
 
-/* ── Animated Counter ─────────────────────────────────────────── */
-function AnimatedCounter({ target, decimals = 0, prefix = '', suffix = '' }: { target: number; decimals?: number; prefix?: string; suffix?: string }) {
-  const [count, setCount] = useState(0);
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true });
-
-  useEffect(() => {
-    if (!inView) return;
-    let start = 0;
-    const duration = 2000;
-    const steps = duration / 16;
-    const step = target / steps;
-    const timer = setInterval(() => {
-      start += step;
-      if (start >= target) { setCount(target); clearInterval(timer); }
-      else setCount(start);
-    }, 16);
-    return () => clearInterval(timer);
-  }, [inView, target]);
-
-  return (
-    <span ref={ref}>
-      {prefix}{decimals > 0 ? count.toFixed(decimals) : Math.round(count)}{suffix}
-    </span>
-  );
-}
-
-/* ── Ticker Tape ──────────────────────────────────────────────── */
+/* ── Ticker items ── */
 const TICKER_ITEMS = [
-  'Revenue Doesn\'t Sleep',
-  'Pipeline Managed 24 Hours a Day',
-  'Always On · Always Closing',
-  'Convivia: We Bring the Right People Together',
-  'Cold Leads Become Closed Deals',
-  'Sales Audit · Network · Execution · 24h',
-  'We Sell. You Scale.',
-  '47 Clients · 6 Industries · Zero Excuses',
+  'Come to the Table',
+  'Lagos · Abuja · London',
+  'The Convivium',
+  'Where African Business Convenes',
+  'The Floor · The Table · Wellness',
+  'Chambers · Deal Rooms · The Library',
+  'A Hotel. A Club. A Network.',
+  'Come to the Table',
 ];
 
-function TickerTape() {
-  const doubled = [...TICKER_ITEMS, ...TICKER_ITEMS];
-  return (
-    <div className="overflow-hidden border-y border-red-700/20 bg-red-700 py-2.5">
-      <motion.div
-        className="flex whitespace-nowrap"
-        animate={{ x: ['0%', '-50%'] }}
-        transition={{ duration: 28, repeat: Infinity, ease: 'linear' }}
-      >
-        {doubled.map((item, i) => (
-          <span key={i} className="inline-flex items-center gap-4 px-8 text-[11px] font-black uppercase tracking-[0.18em] text-white/90">
-            {item}
-            <span className="text-white/40">·</span>
-          </span>
-        ))}
-      </motion.div>
-    </div>
-  );
-}
+/* ── Spaces data ── */
+const SPACES = [
+  { num: '01', name: 'The Floor', desc: 'Not a lobby. A living room for the continent\'s most ambitious.' },
+  { num: '02', name: 'The Table', desc: 'A destination restaurant. Open to the city. Reserved for the serious.' },
+  { num: '03', name: 'Chambers', desc: 'Rooms built for recovery and performance. Zero clutter. Total command.' },
+  { num: '04', name: 'Deal Rooms', desc: 'Private meeting rooms named after African cities. Every conversation matters.' },
+  { num: '05', name: 'The Library', desc: 'A quiet floor for thinking. No phones. Just ideas.' },
+  { num: '06', name: 'Wellness & Relaxation', desc: 'A sanctuary for recovery. Spa, plunge pool, and quiet spaces to restore.' },
+];
 
-/* ── Rotating Logo ────────────────────────────────────────────── */
-function RotatingLogo() {
+/* ── Locations ── */
+const LOCATIONS = [
+  { city: 'Lagos', label: 'The Flagship', desc: 'Victoria Island. The mother house. Where the deals move and the culture is loudest.' },
+  { city: 'Abuja', label: 'The Capital', desc: 'Political energy. Diplomatic corridors. A different table, the same philosophy.' },
+  { city: 'London', label: 'The Bridge', desc: 'Mayfair. The diaspora\'s home. The bridge for international partners engaging Africa.' },
+];
+
+/* ── Brand pillars ── */
+const PILLARS = [
+  { num: '01', title: 'The Hotel', desc: 'Not just accommodation. A headquarters for ambition. Every guest is here because they\'re building, closing, or celebrating.' },
+  { num: '02', title: 'The Club', desc: 'The Convivium. A members\' network with a hotel attached. Annual access to every table, every room, every introduction.' },
+  { num: '03', title: 'The Network', desc: 'You will leave with more than you arrived with. More relationships, more ideas, more deals, more energy.' },
+];
+
+/* ── Fade-up animation variant ── */
+const fadeUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: 'easeOut' } },
+};
+
+export default function HomePage() {
   return (
-    <div className="relative flex items-center justify-center">
-      {/* Outer ring pulse */}
-      <motion.div
-        className="absolute w-48 h-48 rounded-full border border-red-700/20"
-        animate={{ scale: [1, 1.08, 1], opacity: [0.4, 0.1, 0.4] }}
-        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-      />
-      <motion.div
-        className="absolute w-36 h-36 rounded-full border border-red-700/30"
-        animate={{ scale: [1, 1.12, 1], opacity: [0.3, 0.05, 0.3] }}
-        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
-      />
-      <motion.img
-        src="/Logo2.png"
-        alt="Convivia24"
-        className="w-28 h-28 object-contain relative z-10"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 16, repeat: Infinity, ease: 'linear' }}
-      />
-      {/* Always On badge */}
-      <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1 bg-red-700 text-white text-[9px] font-black uppercase tracking-[0.2em] whitespace-nowrap shadow-lg">
-        <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-        Always On
+    <>
+      {/* ═══════════════════════════ HERO ═══════════════════════════ */}
+      <section className="relative min-h-[90vh] sm:min-h-[100vh] bg-obsidian flex items-center overflow-hidden -mt-16 pt-16">
+        {/* Background image */}
+        <div className="absolute inset-0">
+          <img
+            src="/Homepage.png"
+            alt=""
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-obsidian via-obsidian/80 to-obsidian/40" />
+          <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-transparent to-obsidian/60" />
+        </div>
+
+        <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-8 py-20 sm:py-32 w-full">
+          <div className="max-w-2xl">
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={{ visible: { transition: { staggerChildren: 0.12 } } }}
+            >
+              <motion.div variants={fadeUp}>
+                <SectionLabel>A Hotel. A Club. A Table.</SectionLabel>
+              </motion.div>
+
+              <motion.h1
+                variants={fadeUp}
+                className="font-display text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-light italic tracking-tight text-cream leading-[0.9] mb-6 sm:mb-8"
+              >
+                Come to<br />the Table.
+              </motion.h1>
+
+              <motion.div variants={fadeUp} className="flex items-center gap-2 mb-4 sm:mb-6">
+                <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gold">Lagos &middot; Abuja &middot; London</span>
+              </motion.div>
+
+              <motion.p variants={fadeUp} className="text-base sm:text-lg text-cream/70 max-w-lg leading-relaxed mb-8 sm:mb-10">
+                Convivia24 is a luxury hotel and members club built for the people shaping African business.
+                Every person who walks through the door is here because they&apos;re building something,
+                closing something, or celebrating something.
+              </motion.p>
+
+              <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <Link
+                  href="/inquire"
+                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.2em] transition-colors"
+                >
+                  Inquire <ArrowRight size={14} />
+                </Link>
+                <Link
+                  href="/spaces"
+                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 border border-cream/30 text-cream text-[11px] font-black uppercase tracking-[0.2em] hover:border-cream/60 hover:bg-cream/5 transition-colors backdrop-blur-sm"
+                >
+                  The Spaces
+                </Link>
+              </motion.div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════ TICKER ═══════════════════════════ */}
+      <div className="bg-obsidian border-y border-gold/10 overflow-hidden py-4">
+        <div className="flex animate-[scroll_30s_linear_infinite] whitespace-nowrap">
+          {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
+            <span key={i} className="mx-8 text-[11px] font-black uppercase tracking-[0.3em] text-cream/20">
+              {item}
+            </span>
+          ))}
+        </div>
+        <style jsx>{`
+          @keyframes scroll {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+          }
+        `}</style>
       </div>
-    </div>
-  );
-}
 
-/* ── Data ─────────────────────────────────────────────────────── */
-const pillars = [
-  {
-    num: '01', label: 'DIAGNOSE', headline: 'The Sales Audit',
-    desc: 'We expose exactly where your pipeline leaks, why deals stall, and which prospects are worth pursuing. No guesswork.',
-    icon: Target, iconBg: 'bg-red-700', iconColor: 'text-white',
-    metric: '+340%', metricLabel: 'avg pipeline velocity',
-    tag: 'We find what\'s broken',
-  },
-  {
-    num: '02', label: 'CONNECT', headline: 'The Network',
-    desc: 'After auditing, we connect you to a vetted network of buyers, partners, and decision-makers — people your competition can\'t reach.',
-    icon: Network, iconBg: 'bg-zinc-900', iconColor: 'text-white',
-    metric: '3.2×', metricLabel: 'more qualified introductions',
-    tag: 'We open the right doors',
-  },
-  {
-    num: '03', label: 'EXECUTE', headline: 'The 24 Cycle',
-    desc: 'We manage your full pipeline 24 hours a day — outreach, follow-up, and close — so no lead goes cold and no opportunity goes missed.',
-    icon: Zap, iconBg: 'bg-red-700', iconColor: 'text-white',
-    metric: '94%', metricLabel: 'client retention rate',
-    tag: 'We run it around the clock',
-  },
-];
-
-const painPoints = [
-  { icon: '📉', label: 'Sales cycles that drag on and never close', fix: 'We cut average cycle time by 60%' },
-  { icon: '🧊', label: 'Cold leads rotting in your CRM unfollowed', fix: 'We revive, qualify, and move them' },
-  { icon: '🚪', label: 'No access to the buyers who actually decide', fix: 'We open doors through the Convivia network' },
-  { icon: '🔁', label: 'Inconsistent follow-up killing warm deals', fix: 'We run structured 24-hour cadences' },
-  { icon: '📊', label: 'Zero visibility into where your pipeline stands', fix: 'We surface what\'s real — live diagnostics' },
-  { icon: '📋', label: 'No repeatable process — different result every month', fix: 'We build the playbook, then we run it' },
-];
-
-const proofStats = [
-  { value: 340, suffix: '%', label: 'Pipeline velocity increase', icon: TrendingUp },
-  { value: 47, suffix: '+', label: 'Clients actively managed', icon: Users },
-  { value: 94, suffix: '%', label: 'Client retention rate', icon: CheckCircle },
-  { value: 60, suffix: '%', label: 'Shorter sales cycles', icon: BarChart2 },
-];
-
-/* ── Page ─────────────────────────────────────────────────────── */
-export default function Home() {
-  return (
-    <div className="min-h-screen bg-white overflow-x-hidden">
-
-      {/* ── Hero ──────────────────────────────────────────────── */}
-      <section className="pt-24 pb-0 px-6 bg-white relative overflow-hidden">
-        {/* Grid background */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(185,28,28,0.04) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(185,28,28,0.04) 1px, transparent 1px)
-            `,
-            backgroundSize: '64px 64px',
-          }}
-        />
-        {/* Red corner wash */}
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-bl from-red-700/[0.06] to-transparent pointer-events-none" />
-
-        <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-[1fr_380px] gap-12 items-center min-h-[78vh]">
-
-            {/* Left */}
-            <motion.div
-              initial={{ opacity: 0, y: 28 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7 }}
-              className="pb-16 lg:pb-24"
-            >
-              {/* Live badge */}
-              <motion.div
-                initial={{ opacity: 0, x: -12 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 }}
-                className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-700 text-white text-[10px] font-black uppercase tracking-[0.2em] mb-7"
-              >
-                <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-                Sales Management · Always On
-              </motion.div>
-
-              <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.9] text-zinc-900 mb-6">
-                Your Pipeline<br />
-                <span className="text-red-700 italic">Doesn&apos;t Rest.</span><br />
-                <span className="text-zinc-400">Neither Do We.</span>
-              </h1>
-
-              <p className="text-lg md:text-xl text-zinc-500 leading-relaxed max-w-xl mb-4">
-                Sales volumes stalling? Pipeline leaking? Can&apos;t reach the buyers who actually matter?
-              </p>
-              <p className="text-lg md:text-xl text-zinc-900 font-semibold leading-relaxed max-w-xl mb-9">
-                Convivia24 is your managed sales partner. We audit your operation, introduce you to our private network of decision-makers, and run your full revenue cycle around the clock — 24 hours a day — until the numbers move.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-3 mb-12">
-                <Link
-                  href="/briefing"
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-red-700 text-white text-sm font-black uppercase tracking-[0.15em] hover:bg-red-800 transition-colors group"
-                >
-                  Get Your Free Sales Audit
-                  <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
-                </Link>
-                <Link
-                  href="/collective"
-                  className="inline-flex items-center gap-2 px-8 py-4 border-2 border-zinc-200 text-zinc-700 text-sm font-black uppercase tracking-[0.15em] hover:border-zinc-900 hover:text-zinc-900 transition-colors"
-                >
-                  See How We Work
-                </Link>
-              </div>
-
-              {/* Mini metric row */}
-              <div className="flex items-center gap-8 border-t-2 border-red-700/10 pt-7">
-                {[
-                  { target: 340, suffix: '%', label: 'Pipeline velocity' },
-                  { target: 47, suffix: '+', label: 'Active clients' },
-                  { target: 94, suffix: '%', label: 'Retention rate' },
-                ].map((m, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 + i * 0.1 }}
-                  >
-                    <p className="text-3xl font-black text-zinc-900 leading-none">
-                      <AnimatedCounter target={m.target} suffix={m.suffix} />
-                    </p>
-                    <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500 mt-1">{m.label}</p>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Right — rotating logo panel */}
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.25 }}
-              className="hidden lg:flex flex-col items-center gap-8 self-center pb-16"
-            >
-              <RotatingLogo />
-
-              <div className="w-full space-y-3 mt-2">
-                {[
-                  'We diagnose your pipeline before we touch anything',
-                  'We introduce you to buyers your competitors can\'t reach',
-                  'We run the full sell cycle — 24 hours a day, every day',
-                ].map((item, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: 12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.6 + i * 0.12 }}
-                    className="flex items-start gap-3 p-3 bg-zinc-50 border border-zinc-100"
-                  >
-                    <span className="mt-1 h-2 w-2 rounded-full bg-red-700 flex-shrink-0" />
-                    <p className="text-sm text-zinc-700 leading-snug">{item}</p>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* ── Ticker Tape ───────────────────────────────────────── */}
-      <TickerTape />
-
-      {/* ── Pain Points (Who We Help) ─────────────────────────── */}
-      <section className="py-20 px-6 bg-zinc-900 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-red-700" />
-        {/* Ghost text */}
-        <div className="absolute right-0 top-0 bottom-0 flex items-center pointer-events-none select-none opacity-[0.03]">
-          <span className="text-[18rem] font-black text-white leading-none">?</span>
-        </div>
-        <div className="max-w-6xl mx-auto">
+      {/* ═══════════════════════════ CONCEPT — CREAM BG WITH IMAGE ═══════════════════════════ */}
+      <section className="bg-cream py-28 sm:py-36">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-14"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-80px' }}
+            variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
           >
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-red-500 mb-3">Sound Familiar?</p>
-            <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-white leading-tight">
-              If your sales are<br />
-              <span className="text-red-500 italic">stuck</span> — we know why.
-            </h2>
-            <p className="text-zinc-400 text-base max-w-2xl mt-4 leading-relaxed">
-              Every business we&apos;ve taken on faced at least one of these. Most faced all of them. This is exactly what Convivia24 was built to fix.
-            </p>
-          </motion.div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {painPoints.map((p, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
-                className="group p-5 border border-zinc-800 hover:border-red-700/50 transition-all duration-200 bg-zinc-900 hover:bg-zinc-800/60"
-              >
-                <span className="text-2xl mb-3 block">{p.icon}</span>
-                <p className="text-sm font-semibold text-zinc-300 mb-2 leading-snug">{p.label}</p>
-                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-zinc-800">
-                  <span className="h-1.5 w-1.5 rounded-full bg-red-700 flex-shrink-0" />
-                  <p className="text-xs font-bold text-red-400 uppercase tracking-wider">{p.fix}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.4 }}
-            className="mt-10"
-          >
-            <Link
-              href="/briefing"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-red-700 text-white text-sm font-black uppercase tracking-[0.15em] hover:bg-red-600 transition-colors group"
-            >
-              Start with a Free Audit
-              <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── Three Pillars ─────────────────────────────────────── */}
-      <section className="py-20 px-6 bg-white border-t border-red-200 relative overflow-hidden">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: 'repeating-linear-gradient(0deg, rgba(185,28,28,0.035) 0px, rgba(185,28,28,0.035) 1px, transparent 1px, transparent 60px)'
-          }}
-        />
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-14"
-          >
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-red-700 mb-3">How We Work</p>
-            <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-zinc-900 leading-tight">
-              Audit. Connect. Execute.<br />
-              <span className="text-red-700 italic">24 hours a day.</span>
-            </h2>
-            <p className="text-zinc-500 text-base max-w-2xl mt-4 leading-relaxed">
-              We don&apos;t hand you a report and leave. We become your sales function — auditing what&apos;s broken, introducing you to the right buyers through the Convivia network, and running your full pipeline every single day until revenue moves.
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-0 border border-zinc-200">
-            {pillars.map((pillar, idx) => {
-              const Icon = pillar.icon;
-              return (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.15, duration: 0.5 }}
-                  className={`p-8 relative ${idx < 2 ? 'border-r border-zinc-200' : ''} group hover:bg-red-700/[0.02] transition-colors`}
-                >
-                  {/* Number watermark */}
-                  <p className="absolute top-4 right-5 text-7xl font-black text-zinc-100 leading-none select-none group-hover:text-red-700/10 transition-colors">
-                    {pillar.num}
-                  </p>
-                  {/* Top accent line */}
-                  <motion.div
-                    className="absolute top-0 left-0 h-1 bg-red-700"
-                    initial={{ width: 0 }}
-                    whileInView={{ width: idx === 0 ? '100%' : '0%' }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.3 + idx * 0.2, duration: 0.6 }}
-                  />
-                  <motion.div
-                    className="absolute top-0 left-0 h-1 bg-red-700"
-                    initial={{ width: 0 }}
-                    whileInView={{ width: '100%' }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.3 + idx * 0.2, duration: 0.6 }}
-                  />
-
-                  <div className={`w-12 h-12 ${pillar.iconBg} flex items-center justify-center ${pillar.iconColor} mb-6 relative z-10`}>
-                    <Icon size={22} />
-                  </div>
-
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-700 mb-2 relative z-10">{pillar.label}</p>
-                  <h3 className="text-2xl font-black text-zinc-900 mb-3 relative z-10">{pillar.headline}</h3>
-                  <p className="text-zinc-500 text-sm leading-relaxed mb-6 relative z-10">{pillar.desc}</p>
-
-                  {/* Tag */}
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-100 text-zinc-700 text-[10px] font-black uppercase tracking-[0.15em] mb-6 relative z-10">
-                    <span className="w-1 h-1 rounded-full bg-red-700" />
-                    {pillar.tag}
-                  </div>
-
-                  <div className="border-t border-zinc-100 pt-5 relative z-10">
-                    <p className="text-3xl font-black text-zinc-900 leading-none">{pillar.metric}</p>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-zinc-500 mt-1">{pillar.metricLabel}</p>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-
-          <div className="mt-8 flex justify-end">
-            <Link href="/collective" className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-400 hover:text-red-700 transition-colors">
-              Full methodology <ArrowRight size={13} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Proof Numbers ─────────────────────────────────────── */}
-      <section className="py-20 px-6 bg-zinc-50 border-t border-red-200 relative overflow-hidden">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-14"
-          >
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-red-700 mb-3">The Numbers</p>
-            <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-zinc-900">
-              Results that speak<br />for themselves.
-            </h2>
-          </motion.div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-200">
-            {proofStats.map((stat, i) => {
-              const Icon = stat.icon;
-              return (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                  className="bg-white p-8 flex flex-col gap-4"
-                >
-                  <div className="w-10 h-10 bg-red-700/10 flex items-center justify-center">
-                    <Icon size={18} className="text-red-700" />
-                  </div>
-                  <div>
-                    <p className="text-4xl font-black text-zinc-900 leading-none">
-                      <AnimatedCounter target={stat.value} suffix={stat.suffix} />
-                    </p>
-                    <p className="text-xs uppercase tracking-widest text-zinc-500 mt-2">{stat.label}</p>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ── 24-Hour Cycle ─────────────────────────────────────── */}
-      <section className="py-20 px-6 bg-zinc-900 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-red-700" />
-        {/* Ghost 24 */}
-        <div className="absolute -right-8 top-0 bottom-0 flex items-center pointer-events-none select-none opacity-[0.04]">
-          <span className="text-[22rem] font-black text-white leading-none">24</span>
-        </div>
-        <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <p className="text-[10px] font-black uppercase tracking-[0.25em] text-red-500 mb-3">Always On</p>
-              <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-white leading-tight mb-5">
-                While you sleep,<br />
-                <span className="text-red-500 italic">we&apos;re closing.</span>
-              </h2>
-              <p className="text-zinc-400 text-base leading-relaxed mb-8 max-w-lg">
-                Revenue doesn&apos;t pause at 5pm. &ldquo;24&rdquo; isn&apos;t a slogan — it&apos;s the operating model. Convivia24 runs a continuous three-phase sell cycle every day: analytics, outreach, close. No cold leads. No missed follow-ups. No excuses.
-              </p>
-              <p className="text-white font-black text-lg mb-2">
-                &ldquo;We are the sales team that never clocks out.&rdquo;
-              </p>
-              <p className="text-zinc-600 text-sm">— Convivia24 Operating Principle</p>
+            <motion.div variants={fadeUp}>
+              <SectionLabel variant="light">The Vision</SectionLabel>
             </motion.div>
 
-            <div className="space-y-0">
-              {[
-                { hour: '00 — 08', phase: 'Analytics & Insights', desc: 'Pipeline reviewed. Data scored. Opportunities ranked by close probability. You wake up to a prioritised hit-list — we\'ve already done the thinking.' },
-                { hour: '08 — 16', phase: 'Outreach & Follow-Up', desc: 'Live outreach, warm-up sequences, and structured follow-up cadences run across your entire pipeline. No lead sits untouched.' },
-                { hour: '16 — 24', phase: 'Closing & Reporting', desc: 'Deals pushed to close. Convivia network introductions logged. Day-end performance report delivered. Cycle repeats — 365 days a year.' },
-              ].map((phase, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.15 }}
-                  className="border-b border-zinc-800 last:border-0 py-7 pl-6 border-l-2 border-l-red-700"
-                >
-                  <p className="text-2xl font-black text-red-500 leading-none mb-1">{phase.hour}</p>
-                  <p className="text-base font-black text-white mb-2">{phase.phase}</p>
-                  <p className="text-sm text-zinc-500 leading-relaxed">{phase.desc}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Network Section ───────────────────────────────────── */}
-      <section className="py-20 px-6 bg-white border-t border-red-200 relative overflow-hidden">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: 'repeating-linear-gradient(90deg, rgba(185,28,28,0.04) 0px, rgba(185,28,28,0.04) 1px, transparent 1px, transparent 64px)'
-          }}
-        />
-        <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            {/* Left — network visual */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="relative"
-            >
-              {/* Network dot grid */}
-              <div className="relative h-64 bg-zinc-900 p-8 overflow-hidden">
-                <div className="absolute inset-0 pointer-events-none" style={{
-                  backgroundImage: 'radial-gradient(circle, rgba(185,28,28,0.15) 1px, transparent 1px)',
-                  backgroundSize: '28px 28px',
-                }} />
-                {/* Animated connection lines */}
-                {[
-                  { x1: '20%', y1: '30%', x2: '50%', y2: '50%', delay: 0 },
-                  { x1: '80%', y1: '20%', x2: '50%', y2: '50%', delay: 0.3 },
-                  { x1: '70%', y1: '75%', x2: '50%', y2: '50%', delay: 0.6 },
-                  { x1: '15%', y1: '70%', x2: '50%', y2: '50%', delay: 0.9 },
-                ].map((line, i) => (
-                  <motion.div
-                    key={i}
-                    className="absolute top-0 left-0 w-full h-full"
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: line.delay, duration: 0.5 }}
-                  >
-                    <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                      <motion.line
-                        x1={line.x1} y1={line.y1} x2={line.x2} y2={line.y2}
-                        stroke="rgba(185,28,28,0.5)" strokeWidth="0.5"
-                        initial={{ pathLength: 0 }}
-                        whileInView={{ pathLength: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: line.delay + 0.2, duration: 0.8 }}
-                      />
-                    </svg>
-                  </motion.div>
-                ))}
-                {/* Center node */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                  <motion.div
-                    animate={{ scale: [1, 1.15, 1] }}
-                    transition={{ duration: 2.5, repeat: Infinity }}
-                    className="w-10 h-10 bg-red-700 flex items-center justify-center"
-                  >
-                    <Network size={18} className="text-white" />
-                  </motion.div>
-                </div>
-                {/* Outer nodes */}
-                {[
-                  { top: '25%', left: '15%', label: 'Buyers' },
-                  { top: '15%', left: '75%', label: 'Partners' },
-                  { top: '68%', left: '65%', label: 'Decision-Makers' },
-                  { top: '65%', left: '10%', label: 'Investors' },
-                ].map((node, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, scale: 0 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.2 + i * 0.2, type: 'spring' }}
-                    className="absolute"
-                    style={{ top: node.top, left: node.left }}
-                  >
-                    <div className="w-2 h-2 bg-red-500 rounded-full" />
-                    <p className="text-[8px] text-zinc-400 font-semibold uppercase tracking-wider mt-1 whitespace-nowrap">{node.label}</p>
-                  </motion.div>
-                ))}
-                <p className="absolute bottom-4 right-4 text-[9px] text-zinc-600 font-semibold uppercase tracking-widest">Convivia Network</p>
-              </div>
-            </motion.div>
-
-            {/* Right — copy */}
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <p className="text-[10px] font-black uppercase tracking-[0.25em] text-red-700 mb-3">The Network Advantage</p>
-              <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-zinc-900 leading-tight mb-5">
-                Your next deal is<br />
-                <span className="text-red-700 italic">one introduction away.</span>
-              </h2>
-              <p className="text-zinc-500 text-base leading-relaxed mb-6">
-                &ldquo;Convivia&rdquo; means the act of bringing people together — and that is exactly what we do. After auditing your operation, we open doors into a private network of vetted buyers, strategic partners, and senior decision-makers across multiple markets.
-              </p>
-              <p className="text-zinc-900 font-semibold text-base leading-relaxed mb-8">
-                Not cold outreach. Not spray-and-pray. Warm, context-rich introductions where both sides are briefed before the first conversation.
-              </p>
-              <div className="space-y-3">
-                {[
-                  'Active network across Lagos, Abuja, and London',
-                  'Warm, briefed introductions — not cold names on a list',
-                  'Partner and channel connections that actually convert',
-                  '3.2× more qualified meetings than cold outreach alone',
-                ].map((item, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: 12 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.1 }}
-                    className="flex items-center gap-3"
-                  >
-                    <div className="w-4 h-4 bg-red-700 flex items-center justify-center flex-shrink-0">
-                      <ArrowRight size={9} className="text-white" />
-                    </div>
-                    <p className="text-sm text-zinc-700">{item}</p>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 47 Clients / Industries ───────────────────────────── */}
-      <section className="py-20 px-6 bg-zinc-50 border-t border-red-200">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <p className="text-[10px] font-black uppercase tracking-[0.25em] text-red-700 mb-3">Client Portfolio</p>
-              <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-zinc-900 leading-tight mb-5">
-                <AnimatedCounter target={47} suffix="+" /> clients.<br />
-                <AnimatedCounter target={6} /> industries.<br />
-                <span className="text-red-700 italic">One standard.</span>
-              </h2>
-              <p className="text-zinc-500 text-base leading-relaxed max-w-xl">
-                We sell for B2B technology companies, financial services firms, retailers, professional service providers, and fast-growing operators across West Africa and the UK. Every client gets the same obsessive, around-the-clock sell cycle — no exceptions.
-              </p>
-            </motion.div>
-
-            <div className="grid grid-cols-3 gap-px bg-zinc-200">
-              {[
-                { value: 94, suffix: '%', label: 'Retention rate' },
-                { value: 68, suffix: '%', label: 'Hit 2× target' },
-                { value: 87, suffix: '%', label: 'Renew annually' },
-                { value: 60, suffix: '%', label: 'Shorter sales cycles' },
-                { value: 340, suffix: '%', label: 'Avg pipeline velocity' },
-                { value: 24, suffix: 'h', label: 'Audit response time' },
-              ].map((item, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 12 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.07 }}
-                  className="bg-white p-5 flex flex-col justify-between"
-                >
-                  <p className="text-2xl font-black text-zinc-900 leading-none">
-                    <AnimatedCounter target={item.value} suffix={item.suffix} />
-                  </p>
-                  <p className="text-[10px] uppercase tracking-widest text-zinc-500 mt-2">{item.label}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Final CTA ─────────────────────────────────────────── */}
-      <section className="py-20 px-6 bg-white border-t border-red-200 relative overflow-hidden">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(185,28,28,0.04) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(185,28,28,0.04) 1px, transparent 1px)
-            `,
-            backgroundSize: '64px 64px',
-          }}
-        />
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="relative bg-zinc-900 p-10 md:p-16 overflow-hidden"
-          >
-            {/* Animated red top line */}
-            <motion.div
-              className="absolute top-0 left-0 h-1 bg-red-700"
-              initial={{ width: 0 }}
-              whileInView={{ width: '100%' }}
-              viewport={{ once: true }}
-              transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }}
-            />
-            <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-gradient-to-l from-red-700/10 to-transparent pointer-events-none" />
-            {/* Ghost 24 */}
-            <div className="absolute bottom-0 right-8 opacity-[0.05] select-none pointer-events-none">
-              <span className="text-[10rem] font-black text-white leading-none">24</span>
-            </div>
-
-            <div className="relative z-10 grid lg:grid-cols-2 gap-12 items-center">
+            <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center mb-12 sm:mb-16">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-red-400 mb-4">Next Step</p>
-                <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-white leading-tight mb-5">
-                  Stop leaving<br />
-                  <span className="text-red-500 italic">revenue on the table.</span>
-                </h2>
-                <p className="text-zinc-400 text-base leading-relaxed mb-8">
-                  The Sales Health Audit is how every Convivia24 engagement begins. We review your submission within 24 hours and come back with a personalised revenue roadmap — free, with no obligation to continue.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Link
-                    href="/briefing"
-                    className="inline-flex items-center gap-2 px-8 py-4 bg-red-700 text-white text-sm font-black uppercase tracking-[0.15em] hover:bg-red-600 transition-colors group"
-                  >
-                    Get Free Sales Audit
-                    <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                  <Link
-                    href="/intel"
-                    className="inline-flex items-center gap-2 px-8 py-4 border border-zinc-700 text-zinc-300 text-sm font-black uppercase tracking-[0.15em] hover:border-zinc-500 hover:text-white transition-colors"
-                  >
-                    View Intel
-                  </Link>
-                </div>
+                <motion.h2
+                  variants={fadeUp}
+                  className="font-display text-3xl sm:text-5xl md:text-7xl font-light italic text-obsidian tracking-tight mb-4 sm:mb-6"
+                >
+                  Where African business<br />is done.
+                </motion.h2>
+
+                <motion.p variants={fadeUp} className="text-obsidian/60 text-base sm:text-lg max-w-2xl leading-relaxed">
+                  Other hotels offer stillness. Others perfect the art of service. Convivia24 is built for encounter &mdash;
+                  the kind that turns a corridor conversation into a joint venture, and a dinner into a decade-long partnership.
+                </motion.p>
               </div>
 
-              <div className="space-y-3">
-                {[
-                  { icon: '⚡', label: '24-hour response, guaranteed', sub: 'Every audit reviewed the same day — no exceptions, no bots' },
-                  { icon: '🔗', label: 'Convivia network introductions', sub: 'After your audit we connect you to the buyers who fit' },
-                  { icon: '📋', label: 'Full pipeline diagnostic — free', sub: 'Know exactly what\'s broken before committing a penny' },
-                  { icon: '🔒', label: 'Zero commitment required', sub: 'We earn your continued business by delivering results first' },
-                ].map((item, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: 16 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.3 + i * 0.1 }}
-                    className="flex items-start gap-4 p-4 border border-zinc-800 hover:border-red-700/40 transition-colors bg-zinc-900/50"
-                  >
-                    <span className="text-lg leading-none mt-0.5">{item.icon}</span>
-                    <div>
-                      <p className="text-sm font-bold text-white">{item.label}</p>
-                      <p className="text-xs text-zinc-500 mt-0.5">{item.sub}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+              <motion.div variants={fadeUp} className="relative">
+                <img
+                  src="/Homepage2.png"
+                  alt="Convivia24 exterior"
+                  className="w-full aspect-[4/3] object-cover"
+                />
+                <div className="absolute top-0 left-0 w-full h-1 bg-gold" />
+              </motion.div>
+            </div>
+
+            {/* Three pillars */}
+            <div className="grid md:grid-cols-3 gap-8">
+              {PILLARS.map((p) => (
+                <motion.div
+                  key={p.num}
+                  variants={fadeUp}
+                  className="border-t border-obsidian/10 pt-6"
+                >
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gold-dark mb-3 block">{p.num}</span>
+                  <h3 className="font-display text-2xl md:text-3xl italic text-obsidian mb-3">{p.title}</h3>
+                  <p className="text-obsidian/50 text-sm leading-relaxed">{p.desc}</p>
+                </motion.div>
+              ))}
             </div>
           </motion.div>
         </div>
       </section>
 
-    </div>
+      {/* ═══════════════════════════ SPACES PREVIEW ═══════════════════════════ */}
+      <section className="bg-obsidian py-28 sm:py-36">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-80px' }}
+            variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
+          >
+            <motion.div variants={fadeUp}>
+              <SectionLabel>The Spaces</SectionLabel>
+            </motion.div>
+
+            <motion.h2
+              variants={fadeUp}
+              className="font-display text-3xl sm:text-5xl md:text-7xl font-light italic text-cream tracking-tight mb-4 sm:mb-6"
+            >
+              Six spaces. One philosophy.
+            </motion.h2>
+
+            <motion.p variants={fadeUp} className="text-cream/50 text-base sm:text-lg max-w-2xl leading-relaxed mb-10 sm:mb-14">
+              Every design decision asks one question: does this create the conditions for a great conversation?
+            </motion.p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+              {SPACES.map((space) => (
+                <motion.div
+                  key={space.num}
+                  variants={fadeUp}
+                  className="group relative bg-obsidian-50 border border-gold/10 hover:border-gold/30 p-7 transition-colors duration-300"
+                >
+                  <span className="absolute top-4 right-5 font-display text-6xl italic text-gold/[0.06] leading-none select-none">
+                    {space.num}
+                  </span>
+
+                  <span className="text-[9px] font-black uppercase tracking-[0.3em] text-gold/50 block mb-3">{space.num}</span>
+                  <h3 className="font-display text-xl italic text-cream mb-2">{space.name}</h3>
+                  <p className="text-cream/40 text-sm leading-relaxed mb-5">{space.desc}</p>
+
+                  <Link
+                    href="/spaces"
+                    className="text-gold/60 hover:text-gold text-[10px] font-black uppercase tracking-[0.2em] transition-colors inline-flex items-center gap-1.5"
+                  >
+                    Explore <ArrowRight size={11} />
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════ FULL-WIDTH IMAGE BREAK ═══════════════════════════ */}
+      <section className="relative bg-obsidian">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+        >
+          <img
+            src="/Convivium2.png"
+            alt="Convivia24 arched corridor"
+            className="w-full h-[40vh] sm:h-[50vh] object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-cream via-transparent to-obsidian/40" />
+        </motion.div>
+      </section>
+
+      {/* ═══════════════════════════ CONVIVIUM TEASER — CREAM ═══════════════════════════ */}
+      <section className="bg-cream py-28 sm:py-36">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-80px' }}
+            variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
+          >
+            <motion.div variants={fadeUp}>
+              <SectionLabel variant="light">Membership</SectionLabel>
+            </motion.div>
+
+            <motion.h2
+              variants={fadeUp}
+              className="font-display text-3xl sm:text-5xl md:text-7xl font-light italic text-obsidian tracking-tight mb-4 sm:mb-6"
+            >
+              Not a membership.<br />A table.
+            </motion.h2>
+
+            <motion.p variants={fadeUp} className="text-obsidian/60 text-lg leading-relaxed mb-10 max-w-3xl">
+              The Convivium is Convivia24&apos;s members club &mdash; open to non-staying guests who want permanent access
+              to The Floor, The Table, the Deal Rooms, and The Roof. Your recurring seat at the table. Your network with a hotel attached.
+            </motion.p>
+
+            <motion.div variants={fadeUp} className="space-y-4 mb-10 max-w-3xl">
+              {[
+                'Priority booking across all properties and spaces',
+                'Introductions to fellow members — operators, founders, executives',
+                'Invitations to private Convivia Dinners and The Gathering',
+              ].map((benefit) => (
+                <div key={benefit} className="flex items-start gap-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gold mt-2 shrink-0" />
+                  <p className="text-obsidian/70 text-sm">{benefit}</p>
+                </div>
+              ))}
+            </motion.div>
+
+            <motion.div variants={fadeUp}>
+              <Link
+                href="/convivium"
+                className="inline-flex items-center gap-2 px-7 py-3.5 bg-obsidian hover:bg-obsidian-50 text-cream text-[11px] font-black uppercase tracking-[0.2em] transition-colors"
+              >
+                The Convivium <ArrowRight size={14} />
+              </Link>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════ LOCATIONS ═══════════════════════════ */}
+      <section className="bg-obsidian py-28 sm:py-36">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-80px' }}
+            variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
+          >
+            <motion.div variants={fadeUp}>
+              <SectionLabel>Locations</SectionLabel>
+            </motion.div>
+
+            <motion.h2
+              variants={fadeUp}
+              className="font-display text-3xl sm:text-5xl md:text-7xl font-light italic text-cream tracking-tight mb-10 sm:mb-14"
+            >
+              Where the money moves.
+            </motion.h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10 sm:mb-14">
+              {LOCATIONS.map((loc) => (
+                <motion.div
+                  key={loc.city}
+                  variants={fadeUp}
+                  className="border-t border-gold/20 pt-6"
+                >
+                  <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gold/50 mb-2">{loc.label}</p>
+                  <h3 className="font-display text-4xl md:text-5xl italic text-cream mb-3">{loc.city}</h3>
+                  <p className="text-cream/40 text-sm leading-relaxed">{loc.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+
+            <motion.div variants={fadeUp} className="border-t border-gold/10 pt-8">
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-cream/30">
+                Coming &middot; Accra &middot; Nairobi &middot; Kigali
+              </p>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════ FINAL CTA ═══════════════════════════ */}
+      <section className="bg-gold">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-12 sm:py-16 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
+          <div>
+            <h2 className="font-display text-2xl sm:text-4xl italic text-obsidian mb-2">
+              Reserve your place at the table.
+            </h2>
+            <p className="text-obsidian/60 text-sm">Lagos &middot; Abuja &middot; London</p>
+          </div>
+          <Link
+            href="/inquire"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-obsidian hover:bg-obsidian-50 text-cream text-[11px] font-black uppercase tracking-[0.2em] transition-colors shrink-0"
+          >
+            Inquire <ArrowRight size={14} />
+          </Link>
+        </div>
+      </section>
+    </>
   );
 }
