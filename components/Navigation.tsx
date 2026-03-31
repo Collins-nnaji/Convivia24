@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, LogIn } from 'lucide-react';
 
 const LINKS = [
   { label: 'The Spaces',    href: '/spaces' },
@@ -23,6 +23,9 @@ export default function Navigation() {
   }, []);
 
   useEffect(() => { setOpen(false); }, [pathname]);
+
+  // Don't show top Nav on the dashboard (root /)
+  if (pathname === '/') return null;
 
   return (
     <>
@@ -76,6 +79,14 @@ export default function Navigation() {
               className="ml-2 px-5 py-2 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.15em] transition-colors duration-150"
             >
               Inquire
+            </Link>
+
+            {/* Sign In / Dashboard */}
+            <Link
+              href="/auth/sign-in"
+              className="ml-3 px-4 py-2 border border-cream/20 hover:border-gold/40 text-cream/70 hover:text-gold text-[11px] font-black uppercase tracking-[0.15em] transition-all flex items-center gap-2"
+            >
+              <LogIn size={14} /> Sign In
             </Link>
           </nav>
 
@@ -140,12 +151,18 @@ export default function Navigation() {
                   );
                 })}
 
-                <div className="pt-4 pb-2">
+                <div className="pt-4 space-y-3 pb-2">
                   <Link
                     href="/inquire"
                     className="block w-full text-center py-3.5 bg-gold hover:bg-gold-light text-obsidian text-[12px] font-black uppercase tracking-[0.15em] transition-colors"
                   >
                     Inquire
+                  </Link>
+                  <Link
+                    href="/auth/sign-in"
+                    className="block w-full text-center py-3.5 border border-cream/20 text-cream/70 text-[12px] font-black uppercase tracking-[0.15em] transition-colors hover:border-gold/40 hover:text-gold"
+                  >
+                    Sign In →
                   </Link>
                 </div>
               </nav>

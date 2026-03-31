@@ -1,40 +1,119 @@
--- Convivia24 — Drop all old tables and create only the inquiries table
+-- Convivia24 App Schema
 -- Run: npx tsx lib/db/migrate.ts
 
--- Drop old sales-firm tables (reverse dependency order)
-DROP TABLE IF EXISTS client_users CASCADE;
-DROP TABLE IF EXISTS listings CASCADE;
-DROP TABLE IF EXISTS audit_leads CASCADE;
-DROP TABLE IF EXISTS documents CASCADE;
-DROP TABLE IF EXISTS messages CASCADE;
-DROP TABLE IF EXISTS pipeline_deals CASCADE;
-DROP TABLE IF EXISTS clients CASCADE;
-DROP TABLE IF EXISTS app_users CASCADE;
-
--- Drop old enquiries table from previous era
-DROP TABLE IF EXISTS enquiries CASCADE;
-
--- Drop old misc tables
-DROP TABLE IF EXISTS bookings CASCADE;
-DROP TABLE IF EXISTS businesses CASCADE;
-DROP TABLE IF EXISTS cleaning_checklists CASCADE;
-DROP TABLE IF EXISTS compliance_logs CASCADE;
-DROP TABLE IF EXISTS equipment CASCADE;
-DROP TABLE IF EXISTS invoices CASCADE;
-DROP TABLE IF EXISTS notifications CASCADE;
-DROP TABLE IF EXISTS reviews CASCADE;
-DROP TABLE IF EXISTS security_incidents CASCADE;
-DROP TABLE IF EXISTS security_patrol_logs CASCADE;
-DROP TABLE IF EXISTS security_patrol_routes CASCADE;
-DROP TABLE IF EXISTS service_bundles CASCADE;
-DROP TABLE IF EXISTS services CASCADE;
-DROP TABLE IF EXISTS shift_schedules CASCADE;
-DROP TABLE IF EXISTS staff_assignments CASCADE;
-DROP TABLE IF EXISTS training_records CASCADE;
+-- Drop old tables that are no longer needed
+DROP TABLE IF EXISTS connections CASCADE;
+DROP TABLE IF EXISTS circle_members CASCADE;
+DROP TABLE IF EXISTS circles CASCADE;
+DROP TABLE IF EXISTS attendees CASCADE;
+DROP TABLE IF EXISTS hangouts CASCADE;
+DROP TABLE IF EXISTS venues CASCADE;
+DROP TABLE IF EXISTS inquiries CASCADE;
+DROP TABLE IF EXISTS waitlist CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
-DROP TABLE IF EXISTS signup_invites CASCADE;
 
--- Create the only table we need
+-- ─────────────────────────────────────
+-- USERS
+-- ─────────────────────────────────────
+CREATE TABLE IF NOT EXISTS users (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  auth_id       TEXT UNIQUE,                          -- Neon Auth user ID
+  name          TEXT NOT NULL,
+  email         TEXT UNIQUE NOT NULL,
+  avatar_url    TEXT,
+  bio           TEXT,
+  location      TEXT DEFAULT 'Lagos',
+  tier          TEXT NOT NULL DEFAULT 'standard'      -- 'standard' or 'black'
+                  CHECK (tier IN ('standard', 'black')),
+  rating        NUMERIC(3, 2) DEFAULT 0,
+  hangouts_count INT DEFAULT 0,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ─────────────────────────────────────
+-- VENUES (stored in DB, not hardcoded)
+-- ─────────────────────────────────────
+CREATE TABLE IF NOT EXISTS venues (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name          TEXT NOT NULL,
+  type          TEXT NOT NULL,                        -- e.g. 'Arrival Lounge', 'Curated Dining'
+  tagline       TEXT,
+  description   TEXT,
+  image_url     TEXT,
+  capacity      TEXT,
+  city          TEXT NOT NULL DEFAULT 'Lagos',        -- Lagos, Abuja, London
+  is_active     BOOLEAN DEFAULT true,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ─────────────────────────────────────
+-- HANGOUTS (The Gathering / Event)
+-- ─────────────────────────────────────
+CREATE TABLE IF NOT EXISTS hangouts (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  host_id       UUID REFERENCES users(id) ON DELETE CASCADE,
+  title         TEXT NOT NULL,
+  vibe          TEXT NOT NULL,                        -- e.g. "Dinner & Drinks", "Deal Room Session"
+  type          TEXT NOT NULL DEFAULT 'open'           -- 'open' or 'curated'
+                  CHECK (type IN ('open', 'curated')),
+  status        TEXT NOT NULL DEFAULT 'pending'       -- 'pending', 'confirmed', 'completed', 'dissolved'
+                  CHECK (status IN ('pending', 'confirmed', 'completed', 'dissolved')),
+  event_time    TIMESTAMPTZ NOT NULL,
+  location      TEXT NOT NULL,
+  venue_id      UUID REFERENCES venues(id),
+  cover_image   TEXT,                                 -- Azure Blob URL
+  max_guests    INT NOT NULL DEFAULT 6,
+  current_guests INT NOT NULL DEFAULT 1,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ─────────────────────────────────────
+-- ATTENDEES (RSVP)
+-- ─────────────────────────────────────
+CREATE TABLE IF NOT EXISTS attendees (
+  hangout_id    UUID REFERENCES hangouts(id) ON DELETE CASCADE,
+  user_id       UUID REFERENCES users(id) ON DELETE CASCADE,
+  status        TEXT NOT NULL DEFAULT 'attending'     -- 'attending', 'ghosted'
+                  CHECK (status IN ('attending', 'ghosted')),
+  joined_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (hangout_id, user_id)
+);
+
+-- ─────────────────────────────────────
+-- CIRCLES (6–24 person groups)
+-- ─────────────────────────────────────
+CREATE TABLE IF NOT EXISTS circles (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name          TEXT NOT NULL,
+  description   TEXT,
+  created_by    UUID REFERENCES users(id) ON DELETE CASCADE,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ─────────────────────────────────────
+-- CIRCLE MEMBERS
+-- ─────────────────────────────────────
+CREATE TABLE IF NOT EXISTS circle_members (
+  circle_id     UUID REFERENCES circles(id) ON DELETE CASCADE,
+  user_id       UUID REFERENCES users(id) ON DELETE CASCADE,
+  joined_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (circle_id, user_id)
+);
+
+-- ─────────────────────────────────────
+-- CONNECTIONS (People You've Met)
+-- ─────────────────────────────────────
+CREATE TABLE IF NOT EXISTS connections (
+  user_id_1     UUID REFERENCES users(id) ON DELETE CASCADE,
+  user_id_2     UUID REFERENCES users(id) ON DELETE CASCADE,
+  rating        INT,
+  connected_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (user_id_1, user_id_2)
+);
+
+-- ─────────────────────────────────────
+-- INQUIRIES
+-- ─────────────────────────────────────
 CREATE TABLE IF NOT EXISTS inquiries (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name          TEXT NOT NULL,
@@ -48,19 +127,27 @@ CREATE TABLE IF NOT EXISTS inquiries (
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_inquiries_email      ON inquiries(email);
-CREATE INDEX IF NOT EXISTS idx_inquiries_status     ON inquiries(status);
-CREATE INDEX IF NOT EXISTS idx_inquiries_created_at ON inquiries(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_inquiries_type       ON inquiries(inquiry_type);
-
--- Waitlist: low-friction signup for Convivium interest
+-- ─────────────────────────────────────
+-- WAITLIST
+-- ─────────────────────────────────────
 CREATE TABLE IF NOT EXISTS waitlist (
-  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email      TEXT NOT NULL,
-  company    TEXT,
-  name       TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email         TEXT NOT NULL,
+  company       TEXT,
+  name          TEXT,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- ─────────────────────────────────────
+-- INDEXES
+-- ─────────────────────────────────────
+CREATE INDEX IF NOT EXISTS idx_users_auth ON users(auth_id);
+CREATE INDEX IF NOT EXISTS idx_hangouts_status ON hangouts(status);
+CREATE INDEX IF NOT EXISTS idx_hangouts_type ON hangouts(type);
+CREATE INDEX IF NOT EXISTS idx_hangouts_time ON hangouts(event_time);
+CREATE INDEX IF NOT EXISTS idx_attendees_user ON attendees(user_id);
+CREATE INDEX IF NOT EXISTS idx_circle_members_user ON circle_members(user_id);
+CREATE INDEX IF NOT EXISTS idx_venues_city ON venues(city);
+CREATE INDEX IF NOT EXISTS idx_inquiries_email ON inquiries(email);
+CREATE INDEX IF NOT EXISTS idx_inquiries_status ON inquiries(status);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_waitlist_email ON waitlist(LOWER(email));
-CREATE INDEX IF NOT EXISTS idx_waitlist_created_at ON waitlist(created_at DESC);

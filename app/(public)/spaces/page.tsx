@@ -9,53 +9,36 @@ const SPACES = [
   {
     num: '01',
     name: 'The Floor',
-    tagline: 'The arrival experience.',
-    desc: 'Not a lobby — it\'s called The Floor. Open plan, warm lighting, low furniture, the smell of good coffee and something cooking. You don\'t rush through it. You slow down. There\'s a bar visible from the entrance. People are already talking.',
-    details: ['Open-plan arrival lounge', 'Full-service bar from 7am', 'Concierge and introductions desk', 'The first impression of the brand'],
+    tagline: 'Where the handshake begins.',
+    desc: 'Not a lobby. Open-plan, warm light, low furniture. The Floor is where your first app-matched introduction becomes a real conversation over a great drink.',
+    details: ['Open-plan arrival lounge with full-service bar', 'Convivia Black concierge desk', 'Designed for first impressions that land', 'Walk-in energy, members-only exclusivity'],
     image: '/The Spaces.png',
   },
   {
     num: '02',
     name: 'The Table',
-    tagline: 'A destination restaurant.',
-    desc: 'The Table is a destination independent of the hotel. Open to non-guests, reservations-only in the evening, walk-in for breakfast and lunch. Long communal tables alongside private booths. The menu rotates around the host city\'s food culture interpreted at the highest level.',
-    details: ['Communal and private dining', 'Reservations-only evenings', 'Rotating seasonal menu', 'Where the city comes to be seen'],
+    tagline: 'Six to twenty-four, no strangers.',
+    desc: 'Communal dining built for depth. Reserved exclusively through the app for curated groups. Rotating menus, intentional seating, and conversations that outlast dessert.',
+    details: ['Communal dining for 6–24 guests', 'App-only reservations', 'Rotating chef-curated menus', 'Where connections become partnerships'],
     image: '/Convivium3.png',
   },
   {
     num: '03',
     name: 'Chambers',
-    tagline: 'Built for recovery and performance.',
-    desc: 'Not "deluxe" or "superior" — Chambers, Suites, and Residences. Inside: a proper desk that feels like a command centre, a reading chair, blackout blinds, a bed engineered for recovery, and zero unnecessary decoration. Functional beauty. No clutter.',
-    details: ['Command-centre desk', 'Blackout recovery environment', 'Reading chair and curated library', 'The room exists to restore you'],
+    tagline: 'Silence before the storm.',
+    desc: 'Zero-distraction private suites. Command-centre desks, blackout blinds, and nothing to break your focus. Book by the hour via the app.',
+    details: ['Command-centre desk setup', 'Blackout focus environment', 'Book by the hour, in-app', 'Built for deep work between connections'],
     image: '/The Spaces2.png',
   },
   {
     num: '04',
     name: 'Deal Rooms',
     tagline: 'Where conversations become commitments.',
-    desc: 'A floor of private meeting rooms available to guests and members. Each one named after an African city. Each one designed differently — some for boardroom energy, some for informal creative sessions, some for one-on-ones. Whiteboards, great AV, and someone who brings you excellent coffee without being asked.',
-    details: ['Named after African cities', 'Boardroom and creative configurations', 'Full AV and whiteboard setup', 'Dedicated service without interruption'],
+    desc: 'Private, high-fidelity meeting rooms for Convivia Black members. When a hangout turns into a joint venture, this is where you close it. Whiteboards, full AV, excellent coffee.',
+    details: ['Named after African cities', 'Boardroom and creative configurations', 'Full AV for remote pitches', 'Dedicated service, zero interruption'],
     image: '/dealrooms.png',
   },
-  {
-    num: '05',
-    name: 'The Library',
-    tagline: 'A quiet floor for thinking.',
-    desc: 'A quiet floor with curated books on business, history, philosophy, and African literature. No phones on this floor. A place to think before the meeting or decompress after it.',
-    details: ['Curated business and African literature', 'No-phone policy', 'Pre-meeting preparation space', 'Post-meeting decompression'],
-    image: '/Convivium.png',
-  },
-  {
-    num: '06',
-    name: 'Wellness & Relaxation',
-    tagline: 'Restoration between the work.',
-    desc: 'A sanctuary designed for recovery. Spa treatments rooted in African botanicals, a plunge pool, steam rooms, and quiet spaces to decompress after the deal or prepare for the next one. Performance starts with restoration.',
-    details: ['Spa with African botanical treatments', 'Plunge pool and steam rooms', 'Quiet decompression spaces', 'Designed for recovery and renewal'],
-    image: '/The Spaces3.png',
-  },
 ];
-
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: 'easeOut' } },
@@ -64,12 +47,11 @@ const fadeUp = {
 export default function SpacesPage() {
   return (
     <>
-      {/* ═══════════ HERO WITH IMAGE ═══════════ */}
       <section className="relative bg-obsidian -mt-16 pt-16 overflow-hidden">
         <div className="relative">
           <img
             src="/The Spaces.png"
-            alt="The Floor — Convivia24 lobby"
+            alt="The Floor — Convivia24 lounge"
             className="w-full h-[50vh] sm:h-[60vh] object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/40 to-transparent" />
@@ -83,19 +65,19 @@ export default function SpacesPage() {
             variants={{ visible: { transition: { staggerChildren: 0.12 } } }}
           >
             <motion.div variants={fadeUp}>
-              <SectionLabel>The Property</SectionLabel>
+              <SectionLabel>The Venues</SectionLabel>
             </motion.div>
 
             <motion.h1
               variants={fadeUp}
               className="font-display text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-light italic tracking-tight text-cream leading-[0.9] mb-6 sm:mb-8"
             >
-              The Spaces.
+              Where Digital<br/>Meets Physical.
             </motion.h1>
 
             <motion.p variants={fadeUp} className="text-cream/60 text-base sm:text-lg max-w-2xl leading-relaxed">
-              Every design decision asks one question: does this create the conditions for a great conversation?
-              Six distinct spaces, each built with purpose.
+              Every venue is designed around one question: does this space make the people in it more valuable to each other?
+              Four distinct environments. Built for connection.
             </motion.p>
           </motion.div>
         </div>
@@ -162,7 +144,7 @@ export default function SpacesPage() {
                   </motion.div>
                 </div>
 
-                {/* Visual side — image if available, styled card otherwise */}
+                {/* Visual side */}
                 <motion.div
                   variants={fadeUp}
                   className={`relative overflow-hidden ${i % 2 === 1 ? 'md:col-start-1' : ''}`}
@@ -205,20 +187,19 @@ export default function SpacesPage() {
         );
       })}
 
-      {/* ═══════════ CTA ═══════════ */}
       <section className="bg-gold">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-12 sm:py-16 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
           <div>
             <h2 className="font-display text-2xl sm:text-4xl italic text-obsidian mb-2">
-              Interested in a space?
+              Your table is waiting.
             </h2>
-            <p className="text-obsidian/60 text-sm">Stays, memberships, and private bookings.</p>
+            <p className="text-obsidian/60 text-sm">Sign in. Browse the venues. Book your seat.</p>
           </div>
           <Link
             href="/inquire"
             className="inline-flex items-center gap-2 px-8 py-4 bg-obsidian hover:bg-obsidian-50 text-cream text-[11px] font-black uppercase tracking-[0.2em] transition-colors shrink-0"
           >
-            Inquire <ArrowRight size={14} />
+            Apply for App Access <ArrowRight size={14} />
           </Link>
         </div>
       </section>

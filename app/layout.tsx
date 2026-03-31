@@ -17,7 +17,7 @@ const cormorant = Cormorant_Garamond({
 
 export const metadata = {
   title: 'Convivia24 | Come to the Table.',
-  description: 'A luxury hotel and members club for African business. Lagos. Abuja. London.',
+  description: 'The members platform for African business. Curated gatherings, venues, and connections across Lagos, Abuja, and London.',
   icons: {
     icon: '/Logo2.png',
   }

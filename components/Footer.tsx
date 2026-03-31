@@ -1,11 +1,9 @@
 import Link from 'next/link';
-import WaitlistForm from './WaitlistForm';
 
 const footerLinks = [
   { label: 'Home',           href: '/' },
   { label: 'The Spaces',     href: '/spaces' },
   { label: 'The Convivium',  href: '/convivium' },
-  { label: 'Partnerships',  href: '/partnerships' },
   { label: 'Inquire',        href: '/inquire' },
 ];
 
@@ -25,7 +23,7 @@ export default function Footer() {
               <p className="text-[9px] font-black uppercase tracking-[0.3em] text-cream/40">Come to the Table</p>
             </div>
             <p className="text-xs text-cream/40 max-w-xs leading-relaxed">
-              A luxury hotel and members club for African business. Where operators, founders, and executives convene.
+              A members club and business hotel for operators, founders, and executives building across Africa.
             </p>
           </div>
 
@@ -43,8 +41,13 @@ export default function Footer() {
             </div>
 
             <div className="w-full sm:min-w-[280px] sm:max-w-[360px]">
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gold/50 mb-3">Join the Convivium Waitlist</p>
-              <WaitlistForm variant="footer" />
+              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gold/50 mb-3">Access the Platform</p>
+              <Link
+                href="/auth/sign-in"
+                className="block w-full text-center py-3 border border-gold/30 text-gold text-[10px] font-black uppercase tracking-[0.2em] hover:bg-gold/10 transition-colors"
+              >
+                Sign In → Dashboard
+              </Link>
             </div>
           </div>
         </div>

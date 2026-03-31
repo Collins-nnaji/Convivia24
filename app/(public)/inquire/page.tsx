@@ -92,20 +92,19 @@ export default function InquirePage() {
               variants={fadeUp}
               className="font-display text-4xl sm:text-6xl md:text-7xl font-light italic tracking-tight text-cream leading-[0.9] mb-6"
             >
-              Let us set a place<br />for you.
+              Start a<br />conversation.
             </motion.h1>
 
             <motion.p variants={fadeUp} className="text-cream/50 text-base leading-relaxed mb-12 max-w-md">
-              Whether you&apos;re enquiring about a stay, membership, an event, or a partnership &mdash;
-              we read every inquiry personally.
+              Membership, events, partnerships, or just curiosity — every inquiry is read personally and responded to within 48 hours.
             </motion.p>
 
             {/* What happens next */}
             <motion.div variants={fadeUp} className="space-y-6 mb-12">
               {[
-                { num: '01', text: 'We read every inquiry personally.' },
-                { num: '02', text: 'We follow up within 48 hours.' },
-                { num: '03', text: 'We find the right table for you.' },
+                { num: '01', text: 'Your inquiry is read by a real person.' },
+                { num: '02', text: 'We respond within 48 hours.' },
+                { num: '03', text: 'We match you with the right experience.' },
               ].map((step) => (
                 <div key={step.num} className="flex items-start gap-4">
                   <span className="text-[10px] font-black text-gold/50 mt-0.5 shrink-0">{step.num}</span>
