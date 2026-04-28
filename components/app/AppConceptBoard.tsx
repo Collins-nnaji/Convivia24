@@ -67,7 +67,7 @@ export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
       </div>
 
       {/* ────────────────── BOTTOM NAV (MOBILE) ────────────────── */}
-      <div className="md:hidden absolute bottom-0 w-full h-20 bg-[#0d0d0d]/90 backdrop-blur-xl border-t border-cream/5 px-6 flex items-center justify-between pb-4 z-50">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 h-20 bg-[#0d0d0d]/95 backdrop-blur-xl border-t border-cream/5 px-6 flex items-center justify-between pb-4 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
         <NavIcon icon={<Compass size={24} />} active={activeTab === 'discover'} onClick={() => setActiveTab('discover')} />
         <NavIcon icon={<PlusSquare size={24} />} active={activeTab === 'host'} onClick={() => setActiveTab('host')} />
         
