@@ -14,7 +14,7 @@ import { SectionLabel } from '@/components/ui/SectionLabel';
    MAIN COMPONENT
    ══════════════════════════════════════════════════════════════════════ */
 export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
-  const [activeTab, setActiveTab] = useState<'discover' | 'host' | 'venues' | 'circles' | 'profile'>('discover');
+  const [activeTab, setActiveTab] = useState<'discover' | 'host' | 'venues' | 'circles' | 'profile'>('venues');
   
   const renderContent = () => {
     switch(activeTab) {
@@ -469,12 +469,14 @@ function HostTab() {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   VENUES TAB — From Database
+   VENUES TAB — Partner Venue Marketplace (Homepage)
    ══════════════════════════════════════════════════════════════════════ */
 function VenuesTab() {
   const [venues, setVenues] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [cityFilter, setCityFilter] = useState<string>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [reservingId, setReservingId] = useState<string | null>(null);
+  const [reservedId, setReservedId] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/venues')
@@ -486,62 +488,155 @@ function VenuesTab() {
       .catch(() => setLoading(false));
   }, []);
 
-  const cities = ['all', ...Array.from(new Set(venues.map(v => v.city)))];
-  const filtered = cityFilter === 'all' ? venues : venues.filter(v => v.city === cityFilter);
+  const categories = [
+    { key: 'all', label: 'All Spaces', icon: '✦' },
+    { key: 'dining', label: 'Dining', icon: '🍽' },
+    { key: 'lounge', label: 'Lounge', icon: '🥂' },
+    { key: 'boardroom', label: 'Deal Rooms', icon: '💼' },
+    { key: 'accommodations', label: 'Stay', icon: '🛏' },
+    { key: 'wellness', label: 'Wellness', icon: '🧖' },
+  ];
+
+  const filtered = categoryFilter === 'all' ? venues : venues.filter(v => v.category === categoryFilter);
+
+  const handleReserve = (venueId: string) => {
+    setReservingId(venueId);
+    setTimeout(() => {
+      setReservingId(null);
+      setReservedId(venueId);
+      setTimeout(() => setReservedId(null), 3000);
+    }, 1500);
+  };
+
+  const formatSpend = (amount: number) => {
+    return `₦${(amount / 1000).toFixed(0)}k`;
+  };
 
   return (
     <div className="space-y-8">
-      <div className="mb-8 md:mb-12">
-        <h1 className="font-display text-5xl md:text-6xl italic mb-2">Venues</h1>
-        <p className="text-cream/50 text-base md:text-lg">Where digital connections become real conversations.</p>
+      {/* Hero Header */}
+      <div className="mb-6 md:mb-10">
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gold/60 mb-3">Partner Venues</p>
+        <h1 className="font-display text-4xl sm:text-5xl md:text-6xl italic mb-3">Find Your Table.</h1>
+        <p className="text-cream/50 text-base md:text-lg max-w-2xl">
+          Curated seats at Lagos and Abuja&apos;s finest spaces. We don&apos;t own the venues — we unlock them for you.
+        </p>
       </div>
 
-      {/* City Filter */}
-      {cities.length > 2 && (
-        <div className="flex gap-3 mb-8">
-          {cities.map(city => (
-            <button 
-              key={city}
-              onClick={() => setCityFilter(city)}
-              className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
-                cityFilter === city 
-                  ? 'bg-gold/20 text-gold border border-gold/40' 
-                  : 'text-cream/40 border border-cream/10 hover:border-cream/30'
-              }`}
-            >
-              {city === 'all' ? 'All Cities' : city}
-            </button>
-          ))}
-        </div>
-      )}
+      {/* Category Filter */}
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-2 px-2">
+        {categories.map(cat => (
+          <button
+            key={cat.key}
+            onClick={() => setCategoryFilter(cat.key)}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap shrink-0 ${
+              categoryFilter === cat.key
+                ? 'bg-gold/15 text-gold border border-gold/40 shadow-[0_0_15px_rgba(201,168,76,0.15)]'
+                : 'text-cream/40 border border-cream/10 hover:border-cream/25 hover:text-cream/60'
+            }`}
+          >
+            <span className="text-sm">{cat.icon}</span>
+            {cat.label}
+          </button>
+        ))}
+      </div>
 
+      {/* Venue Grid */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
           <Loader2 size={32} className="text-gold animate-spin" />
         </div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-20 text-cream/30">
+          <Building2 size={48} className="mx-auto mb-4 opacity-50" />
+          <p className="font-display text-2xl italic mb-2">No venues in this category yet.</p>
+          <p className="text-sm">Check back soon — we&apos;re always adding new partner spaces.</p>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
           {filtered.map((venue) => (
-            <div key={venue.id} className="bg-obsidian-100/50 backdrop-blur-md rounded-[32px] overflow-hidden border border-cream/10 shadow-xl group cursor-pointer hover:border-gold/40 transition-all flex flex-col md:flex-row">
-              <div className="md:w-2/5 h-48 md:h-auto overflow-hidden relative">
-                 <img src={venue.image_url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt=""/>
-                 <div className="absolute inset-0 bg-gradient-to-t from-obsidian/80 via-transparent to-transparent md:bg-gradient-to-r" />
-                 <span className="absolute bottom-4 left-4 bg-obsidian-200/80 backdrop-blur text-[9px] text-cream uppercase tracking-widest font-black px-2 py-1 rounded">
-                   {venue.capacity}
-                 </span>
-              </div>
-              <div className="p-6 md:p-8 flex flex-col justify-center flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[9px] font-black uppercase tracking-[0.3em] text-gold/60">{venue.type}</span>
-                  {venue.city !== 'Lagos' && <span className="text-[8px] bg-cream/10 text-cream/50 px-1.5 py-0.5 rounded font-black">{venue.city}</span>}
+            <div key={venue.id} className="bg-obsidian-100/50 backdrop-blur-md rounded-[28px] overflow-hidden border border-cream/10 shadow-xl group hover:border-gold/30 transition-all duration-300 flex flex-col">
+              {/* Image */}
+              <div className="relative h-48 overflow-hidden">
+                <img src={venue.image_url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="" />
+                <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/30 to-transparent" />
+
+                {/* Top badges */}
+                <div className="absolute top-4 left-4 flex items-center gap-2">
+                  <span className="bg-obsidian/80 backdrop-blur-md text-[9px] text-gold uppercase tracking-[0.2em] font-black px-3 py-1.5 rounded-full border border-gold/20">
+                    {venue.category}
+                  </span>
                 </div>
-                <h3 className="font-display text-3xl italic text-cream mb-3">{venue.name}</h3>
-                <p className="text-cream/50 text-sm leading-relaxed mb-4">{venue.tagline}</p>
-                <p className="text-cream/35 text-xs leading-relaxed mb-6 line-clamp-2">{venue.description}</p>
-                
-                <button className="text-[10px] uppercase font-bold tracking-widest text-gold hover:text-gold-light transition-colors flex items-center gap-1.5 w-max">
-                  Book for next drop <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                </button>
+                {venue.rating && (
+                  <div className="absolute top-4 right-4 flex items-center gap-1 bg-obsidian/80 backdrop-blur-md px-2.5 py-1.5 rounded-full">
+                    <Star size={10} fill="currentColor" className="text-gold" />
+                    <span className="text-[10px] font-black text-gold">{Number(venue.rating).toFixed(1)}</span>
+                  </div>
+                )}
+
+                {/* Bottom info overlay */}
+                <div className="absolute bottom-4 left-4 right-4">
+                  <h3 className="font-display text-2xl md:text-3xl italic text-cream mb-1 drop-shadow-lg">{venue.name}</h3>
+                  {venue.partner_name && (
+                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gold/70">
+                      Powered by {venue.partner_name}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 flex flex-col flex-1">
+                <p className="text-cream/50 text-sm leading-relaxed mb-5 line-clamp-2">{venue.tagline}</p>
+
+                {/* Info chips */}
+                <div className="flex flex-wrap gap-2 mb-5">
+                  {venue.minimum_spend && (
+                    <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-cream/50 bg-cream/5 px-3 py-1.5 rounded-full border border-cream/10">
+                      From {formatSpend(venue.minimum_spend)}/person
+                    </span>
+                  )}
+                  {venue.capacity && (
+                    <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-cream/50 bg-cream/5 px-3 py-1.5 rounded-full border border-cream/10">
+                      <Users size={10} /> {venue.capacity}
+                    </span>
+                  )}
+                </div>
+
+                {/* Address & Availability */}
+                <div className="space-y-2 mb-6 text-cream/35">
+                  {venue.address && (
+                    <p className="text-xs flex items-center gap-1.5">
+                      <MapPin size={11} className="shrink-0 text-cream/25" /> {venue.address}
+                    </p>
+                  )}
+                  {venue.availability && (
+                    <p className="text-xs flex items-center gap-1.5">
+                      <Clock size={11} className="shrink-0 text-cream/25" /> {venue.availability}
+                    </p>
+                  )}
+                </div>
+
+                {/* Reserve Button */}
+                <div className="mt-auto">
+                  {reservedId === venue.id ? (
+                    <div className="w-full flex items-center justify-center gap-2 py-3 bg-green-900/30 border border-green-500/30 rounded-full text-green-400 text-[10px] font-black uppercase tracking-widest">
+                      <Check size={14} /> Reservation Requested
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleReserve(venue.id)}
+                      disabled={reservingId === venue.id}
+                      className="w-full flex items-center justify-center gap-2 py-3 bg-cream text-obsidian rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-gold hover:shadow-[0_0_20px_rgba(201,168,76,0.3)] transition-all disabled:opacity-50"
+                    >
+                      {reservingId === venue.id ? (
+                        <Loader2 size={14} className="animate-spin" />
+                      ) : (
+                        <>Reserve a Seat <ArrowRight size={12} /></>
+                      )}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))}

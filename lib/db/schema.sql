@@ -31,16 +31,23 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- ─────────────────────────────────────
--- VENUES (stored in DB, not hardcoded)
+-- VENUES (partner spaces, not owned)
 -- ─────────────────────────────────────
 CREATE TABLE IF NOT EXISTS venues (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name          TEXT NOT NULL,
   type          TEXT NOT NULL,                        -- e.g. 'Arrival Lounge', 'Curated Dining'
+  category      TEXT NOT NULL DEFAULT 'dining'        -- 'dining', 'lounge', 'boardroom', 'accommodations', 'wellness'
+                  CHECK (category IN ('dining', 'lounge', 'boardroom', 'accommodations', 'wellness')),
   tagline       TEXT,
   description   TEXT,
   image_url     TEXT,
   capacity      TEXT,
+  partner_name  TEXT,                                 -- real outlet name e.g. "Noir Lagos"
+  address       TEXT,                                 -- physical address
+  minimum_spend INT,                                  -- per-person minimum in Naira
+  availability  TEXT,                                 -- e.g. "Mon–Wed evenings"
+  rating        NUMERIC(2, 1) DEFAULT 4.5,
   city          TEXT NOT NULL DEFAULT 'Lagos',        -- Lagos, Abuja, London
   is_active     BOOLEAN DEFAULT true,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
