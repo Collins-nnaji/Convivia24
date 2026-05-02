@@ -4,6 +4,7 @@ const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING!;
 const containerName = process.env.AZURE_STORAGE_CONTAINER || 'convivia24-images';
 
 function getContainerClient() {
+  if (!connectionString) throw new Error('AZURE_STORAGE_CONNECTION_STRING is not configured.');
   const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
   return blobServiceClient.getContainerClient(containerName);
 }

@@ -15,22 +15,15 @@ export default async function AppRootPage() {
   };
 
   return (
-    <main className="min-h-[100dvh] bg-obsidian text-cream flex flex-col font-sans overflow-hidden">
-      {/* Global Background Layer */}
-      <div className="fixed inset-0 z-0 select-none pointer-events-none">
-        <img
-          src="/Homepage.png"
-          alt=""
-          className="w-full h-full object-cover opacity-40 mix-blend-screen"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/85 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-obsidian/80 via-transparent to-obsidian/60" />
+    <main className="min-h-[100dvh] bg-[#0a0a0a] text-cream flex flex-col font-sans overflow-hidden">
+      {/* Subtle ambient glow — no busy photo */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full bg-gold/[0.04] blur-[120px]" />
+        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-gold/[0.03] blur-[100px]" />
       </div>
 
-      <div className="relative z-10 w-full h-[100dvh] flex flex-col bg-transparent">
-        <AppConceptBoard
-          initialUser={dummyUser}
-        />
+      <div className="relative z-10 w-full h-[100dvh] flex flex-col">
+        <AppConceptBoard initialUser={dummyUser} />
       </div>
     </main>
   );

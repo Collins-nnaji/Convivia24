@@ -27,6 +27,8 @@ CREATE TABLE IF NOT EXISTS users (
                   CHECK (tier IN ('standard', 'black')),
   rating        NUMERIC(3, 2) DEFAULT 0,
   hangouts_count INT DEFAULT 0,
+  verified      BOOLEAN NOT NULL DEFAULT false,       -- identity verified (stub — wire to Twilio/KYC later)
+  open_to_meet  BOOLEAN NOT NULL DEFAULT false,       -- user is actively open to meeting people now
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -60,15 +62,20 @@ CREATE TABLE IF NOT EXISTS hangouts (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   host_id       UUID REFERENCES users(id) ON DELETE CASCADE,
   title         TEXT NOT NULL,
-  vibe          TEXT NOT NULL,                        -- e.g. "Dinner & Drinks", "Deal Room Session"
+  vibe          TEXT NOT NULL,
+  category      TEXT NOT NULL DEFAULT 'social'        -- 'nightlife','dining','sports','fitness','gigs','outdoors','arts','social'
+                  CHECK (category IN ('nightlife','dining','sports','fitness','gigs','outdoors','arts','social')),
   type          TEXT NOT NULL DEFAULT 'open'           -- 'open' or 'curated'
                   CHECK (type IN ('open', 'curated')),
   status        TEXT NOT NULL DEFAULT 'pending'       -- 'pending', 'confirmed', 'completed', 'dissolved'
                   CHECK (status IN ('pending', 'confirmed', 'completed', 'dissolved')),
   event_time    TIMESTAMPTZ NOT NULL,
   location      TEXT NOT NULL,
+  city          TEXT,                                 -- detected city from Places autocomplete
   venue_id      UUID REFERENCES venues(id),
   cover_image   TEXT,                                 -- Azure Blob URL
+  ticket_url    TEXT,                                 -- external ticket link (Eventbrite etc.)
+  ticket_price  INT,                                  -- price in Naira, NULL = free
   max_guests    INT NOT NULL DEFAULT 6,
   current_guests INT NOT NULL DEFAULT 1,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()

@@ -47,14 +47,17 @@ export async function PATCH(req: NextRequest) {
 
     const user = await getOrCreateUser(authUser);
     const body = await req.json();
-    const { name, bio, avatar_url, location } = body;
+    const { name, bio, avatar_url, location, open_to_meet } = body;
 
     const updated = await sql`
       UPDATE users SET
         name = COALESCE(${name?.trim() || null}, name),
         bio = COALESCE(${bio?.trim() || null}, bio),
         avatar_url = COALESCE(${avatar_url || null}, avatar_url),
-        location = COALESCE(${location?.trim() || null}, location)
+        location = COALESCE(${location?.trim() || null}, location),
+        open_to_meet = CASE WHEN ${open_to_meet}::boolean IS NOT NULL
+                       THEN ${open_to_meet}::boolean
+                       ELSE open_to_meet END
       WHERE id = ${user.id}
       RETURNING *
     `;
