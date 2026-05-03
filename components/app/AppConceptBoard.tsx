@@ -88,15 +88,16 @@ const CATEGORIES = [
    MAIN COMPONENT
    ══════════════════════════════════════════════════════════════════════ */
 export function AppConceptBoard({ initialUser: _initialUser }: { initialUser?: any }) {
-  const [activeTab, setActiveTab] = useState<'discover' | 'host' | 'going-out' | 'profile'>('discover');
+  const [activeTab, setActiveTab] = useState<'discover' | 'host' | 'going-out' | 'people' | 'profile'>('discover');
   const location = useCityLocation();
 
   const renderContent = () => {
     switch (activeTab) {
       case 'discover':  return <DiscoverTab location={location} onEnter={() => setActiveTab('going-out')} />;
       case 'going-out': return <GoingOutTab location={location} />;
+      case 'people':    return <PeopleTab location={location} />;
       case 'host':      return <HostTab />;
-      case 'profile':   return <ProfileTab />;
+      case 'profile':   return <ProfileTab gpsCity={location.city} />;
     }
   };
 
@@ -114,10 +115,11 @@ export function AppConceptBoard({ initialUser: _initialUser }: { initialUser?: a
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-6">
-          <DesktopNavLink label="Home"       active={activeTab === 'discover'}  onClick={() => setActiveTab('discover')} />
-          <DesktopNavLink label="Going Out"  active={activeTab === 'going-out'} onClick={() => setActiveTab('going-out')} />
-          <DesktopNavLink label="Host"       active={activeTab === 'host'}      onClick={() => setActiveTab('host')} />
-          <DesktopNavLink label="Profile"    active={activeTab === 'profile'}   onClick={() => setActiveTab('profile')} />
+          <DesktopNavLink label="Home"      active={activeTab === 'discover'}  onClick={() => setActiveTab('discover')} />
+          <DesktopNavLink label="Going Out" active={activeTab === 'going-out'} onClick={() => setActiveTab('going-out')} />
+          <DesktopNavLink label="People"    active={activeTab === 'people'}    onClick={() => setActiveTab('people')} />
+          <DesktopNavLink label="Host"      active={activeTab === 'host'}      onClick={() => setActiveTab('host')} />
+          <DesktopNavLink label="Profile"   active={activeTab === 'profile'}   onClick={() => setActiveTab('profile')} />
         </nav>
 
         <LocationPill location={location} />
@@ -145,24 +147,22 @@ export function AppConceptBoard({ initialUser: _initialUser }: { initialUser?: a
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         <div className="flex items-end justify-around px-2 pt-2 pb-3">
-          <NavIcon label="Home"    icon={<Compass size={21} />}   active={activeTab === 'discover'}  onClick={() => setActiveTab('discover')} />
-          <NavIcon label="Going Out" icon={<UserCheck size={21} />} active={activeTab === 'going-out'} onClick={() => setActiveTab('going-out')} />
+          <NavIcon label="Home"      icon={<Compass size={21} />}    active={activeTab === 'discover'}  onClick={() => setActiveTab('discover')} />
+          <NavIcon label="Going Out" icon={<Zap size={21} />}         active={activeTab === 'going-out'} onClick={() => setActiveTab('going-out')} />
 
-          {/* Centre — Host CTA */}
-          <div className="flex flex-col items-center -mt-4">
+          {/* Centre — Host FAB */}
+          <div className="flex flex-col items-center -mt-5">
             <button
               onClick={() => setActiveTab('host')}
               className={`w-14 h-14 rounded-full bg-gold flex items-center justify-center text-obsidian shadow-[0_0_24px_rgba(201,168,76,0.5)] hover:scale-105 active:scale-95 transition-transform ${activeTab === 'host' ? 'ring-4 ring-gold/30' : ''}`}
             >
               <PlusSquare size={22} strokeWidth={2.5} />
             </button>
-            <span className={`text-[9px] font-black uppercase tracking-widest mt-1 ${activeTab === 'host' ? 'text-gold' : 'text-cream/30'}`}>Host</span>
+            <span className={`text-[9px] font-black uppercase tracking-widest mt-1.5 ${activeTab === 'host' ? 'text-gold' : 'text-cream/30'}`}>Host</span>
           </div>
 
-          <NavIcon label="Profile" icon={<UserIcon size={21} />} active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} />
-
-          {/* Placeholder 5th slot — keeps layout symmetric */}
-          <div className="min-w-[44px]" />
+          <NavIcon label="People"  icon={<UserCheck size={21} />}   active={activeTab === 'people'}   onClick={() => setActiveTab('people')} />
+          <NavIcon label="Profile" icon={<UserIcon size={21} />}    active={activeTab === 'profile'}  onClick={() => setActiveTab('profile')} />
         </div>
       </nav>
     </div>
@@ -213,6 +213,19 @@ function LocationPill({ location }: { location: ReturnType<typeof useCityLocatio
 /* ══ VERIFIED BADGE ══ */
 function VerifiedBadge({ size = 12 }: { size?: number }) {
   return <ShieldCheck size={size} className="text-gold shrink-0" />;
+}
+
+/* ══ BLANK AVATAR — shown when no photo has been set ══ */
+function BlankAvatar({ size, name }: { size: number; name?: string }) {
+  const initial = (name || '?')[0].toUpperCase();
+  return (
+    <div
+      style={{ width: size, height: size }}
+      className="rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center shrink-0 text-cream/30 font-black select-none"
+    >
+      <span style={{ fontSize: size * 0.38 }}>{initial}</span>
+    </div>
+  );
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -312,9 +325,11 @@ function DiscoverTab({ location, onEnter }: { location: ReturnType<typeof useCit
                 </div>
                 {h.attendees?.length > 0 && (
                   <div className="flex -space-x-1.5 shrink-0">
-                    {h.attendees.slice(0, 3).map((a: any) => (
-                      <img key={a.user_id} src={a.avatar_url || `https://i.pravatar.cc/32?u=${a.user_id}`} className="w-7 h-7 rounded-full border-2 border-[#0a0a0a] object-cover" alt="" />
-                    ))}
+                    {h.attendees.slice(0, 3).map((a: any) =>
+                      a.avatar_url
+                        ? <img key={a.user_id} src={a.avatar_url} className="w-7 h-7 rounded-full border-2 border-[#0a0a0a] object-cover" alt="" />
+                        : <BlankAvatar key={a.user_id} size={28} name={a.name} />
+                    )}
                   </div>
                 )}
                 <ChevronRight size={16} className="text-cream/20 group-hover:text-gold transition-colors shrink-0" />
@@ -455,11 +470,10 @@ function ActivityCard({ h, joiningId, onJoin }: { h: any; joiningId: string | nu
                 <div className="flex -space-x-2">
                   {h.attendees.slice(0, 5).map((a: any) => (
                     <div key={a.user_id} className="relative">
-                      <img
-                        src={a.avatar_url || `https://i.pravatar.cc/40?u=${a.user_id}`}
-                        className="w-8 h-8 rounded-full border-2 border-[#0a0a0a] object-cover"
-                        alt=""
-                      />
+                      {a.avatar_url
+                        ? <img src={a.avatar_url} className="w-8 h-8 rounded-full border-2 border-[#0a0a0a] object-cover" alt="" />
+                        : <BlankAvatar size={32} name={a.name} />
+                      }
                       {a.verified && (
                         <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-gold rounded-full border border-[#0a0a0a] flex items-center justify-center">
                           <Check size={6} className="text-obsidian" />
@@ -759,10 +773,9 @@ function HostTab() {
    ══════════════════════════════════════════════════════════════════════ */
 function GoingOutTab({ location }: { location: ReturnType<typeof useCityLocation> }) {
   const { city, detecting } = location;
-  const [tab, setTab] = useState<'activities' | 'people' | 'groups'>('activities');
+  const [tab, setTab] = useState<'activities' | 'groups'>('activities');
   const [category, setCategory] = useState('all');
   const [hangouts, setHangouts] = useState<any[]>([]);
-  const [openToMeet, setOpenToMeet] = useState<any[]>([]);
   const [circles, setCircles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [joiningId, setJoiningId] = useState<string | null>(null);
@@ -785,23 +798,15 @@ function GoingOutTab({ location }: { location: ReturnType<typeof useCityLocation
     finally { setLoading(false); }
   }, []);
 
-  const loadPeopleAndGroups = useCallback(async () => {
+  const loadGroups = useCallback(async () => {
     try {
-      const p = new URLSearchParams();
-      if (city) p.set('city', city);
-      const [pr, cr] = await Promise.all([
-        fetch('/api/people?' + p.toString()),
-        fetch('/api/circles'),
-      ]);
-      const pd = await pr.json();
-      const cd = await cr.json();
-      setOpenToMeet(pd.open_to_meet || []);
+      const cd = await fetch('/api/circles').then(r => r.json());
       setCircles(cd.circles || []);
     } catch { /* ignore */ }
-  }, [city]);
+  }, []);
 
   useEffect(() => {
-    if (!detecting) { loadHangouts(city, category); loadPeopleAndGroups(); loadedRef.current = true; }
+    if (!detecting) { loadHangouts(city, category); loadGroups(); loadedRef.current = true; }
   }, [city, detecting]); // eslint-disable-line
 
   useEffect(() => {
@@ -828,7 +833,7 @@ function GoingOutTab({ location }: { location: ReturnType<typeof useCityLocation
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newName, description: newDesc }),
       });
-      if (res.ok) { setNewName(''); setNewDesc(''); setShowCreate(false); loadPeopleAndGroups(); }
+      if (res.ok) { setNewName(''); setNewDesc(''); setShowCreate(false); loadGroups(); }
     } catch { /* ignore */ }
     setCreating(false);
   };
@@ -862,7 +867,6 @@ function GoingOutTab({ location }: { location: ReturnType<typeof useCityLocation
       <div className="flex gap-1 bg-white/[0.04] rounded-full p-1 w-fit">
         {([
           { key: 'activities', label: 'Activities' },
-          { key: 'people',     label: 'People' },
           { key: 'groups',     label: 'My Crew' },
         ] as const).map(t => (
           <button
@@ -878,7 +882,6 @@ function GoingOutTab({ location }: { location: ReturnType<typeof useCityLocation
       {/* ── ACTIVITIES ── */}
       {tab === 'activities' && (
         <>
-          {/* Category filter */}
           <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
             {CATEGORIES.map(({ key, label, Icon }) => (
               <button
@@ -911,43 +914,6 @@ function GoingOutTab({ location }: { location: ReturnType<typeof useCityLocation
             </div>
           )}
         </>
-      )}
-
-      {/* ── PEOPLE ── */}
-      {tab === 'people' && (
-        <div className="space-y-5">
-          <p className="text-cream/35 text-sm">
-            People in {city || 'your city'} who are open to meeting up — no event needed.
-          </p>
-          {openToMeet.length === 0 ? (
-            <div className="text-center py-16 text-cream/25">
-              <UserCheck size={40} className="mx-auto mb-4 opacity-40" />
-              <p className="font-display text-xl italic mb-2">No one is flagged as open to meet yet.</p>
-              <p className="text-sm">Toggle "Open to Meet" in your Profile to appear here.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {openToMeet.map((p: any) => (
-                <div key={p.id} className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-4 flex flex-col items-center text-center gap-3 hover:border-gold/25 hover:-translate-y-0.5 transition-all cursor-pointer group">
-                  <div className="relative">
-                    <img src={p.avatar_url || `https://i.pravatar.cc/80?u=${p.id}`} alt="" className="w-14 h-14 rounded-full object-cover border-2 border-white/10 group-hover:border-gold/30 transition-colors" />
-                    {p.verified && <div className="absolute -top-1 -right-1"><VerifiedBadge size={13} /></div>}
-                    {p.tier === 'black' && <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-gold rounded-full flex items-center justify-center border border-[#0a0a0a]"><Star size={8} fill="currentColor" className="text-obsidian" /></div>}
-                  </div>
-                  <div>
-                    <p className="font-bold text-sm leading-tight">{p.name}</p>
-                    {p.location && <p className="text-[9px] text-cream/25 mt-0.5 flex items-center gap-1 justify-center"><MapPin size={8} /> {p.location}</p>}
-                    {p.bio && <p className="text-[9px] text-cream/35 mt-1 line-clamp-2">{p.bio}</p>}
-                  </div>
-                  <div className="flex items-center gap-2 text-[9px] text-cream/25 font-black uppercase tracking-widest">
-                    <span>{p.hangouts_count || 0} activities</span>
-                    {Number(p.rating) > 0 && <span className="flex items-center gap-0.5"><Star size={8} fill="currentColor" className="text-gold/50" /> {Number(p.rating).toFixed(1)}</span>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
       )}
 
       {/* ── GROUPS / CREW ── */}
@@ -989,9 +955,218 @@ function GoingOutTab({ location }: { location: ReturnType<typeof useCityLocation
 }
 
 /* ══════════════════════════════════════════════════════════════════════
+   PEOPLE TAB — Users open to meeting up
+   ══════════════════════════════════════════════════════════════════════ */
+function PeopleTab({ location }: { location: ReturnType<typeof useCityLocation> }) {
+  const { city, detecting } = location;
+  const [openToMeet, setOpenToMeet] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (detecting) return;
+    const p = new URLSearchParams();
+    if (city) p.set('city', city);
+    fetch('/api/people?' + p.toString())
+      .then(r => r.json())
+      .then(d => { setOpenToMeet(d.open_to_meet || []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [city, detecting]);
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gold/50 mb-1 flex items-center gap-1.5">
+          {city && !detecting ? <><Navigation size={8} /> {city}</> : detecting ? <><Loader2 size={8} className="animate-spin" /> Locating…</> : 'Everywhere'}
+        </p>
+        <h1 className="font-display text-3xl sm:text-4xl md:text-5xl italic leading-tight">People</h1>
+        <p className="text-cream/40 text-sm mt-1">
+          {city ? `People in ${city} open to meeting up — no event needed.` : 'People open to meeting up near you.'}
+        </p>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-20"><Loader2 size={28} className="text-gold animate-spin" /></div>
+      ) : openToMeet.length === 0 ? (
+        <div className="text-center py-20 text-cream/25">
+          <UserCheck size={40} className="mx-auto mb-4 opacity-40" />
+          <p className="font-display text-xl italic mb-2">No one is open to meet yet{city ? ` in ${city}` : ''}.</p>
+          <p className="text-sm">Toggle "Open to Meet" in your Profile to appear here.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {openToMeet.map((p: any) => (
+            <div key={p.id} className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-4 flex flex-col items-center text-center gap-3 hover:border-gold/25 hover:-translate-y-0.5 transition-all cursor-pointer group">
+              <div className="relative">
+                {p.avatar_url
+                  ? <img src={p.avatar_url} alt="" className="w-14 h-14 rounded-full object-cover border-2 border-white/10 group-hover:border-gold/30 transition-colors" />
+                  : <BlankAvatar size={56} name={p.name} />
+                }
+                {p.verified && <div className="absolute -top-1 -right-1"><VerifiedBadge size={13} /></div>}
+                {p.tier === 'black' && <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-gold rounded-full flex items-center justify-center border border-[#0a0a0a]"><Star size={8} fill="currentColor" className="text-obsidian" /></div>}
+              </div>
+              <div>
+                <p className="font-bold text-sm leading-tight">{p.name}</p>
+                {p.location && <p className="text-[9px] text-cream/25 mt-0.5 flex items-center gap-1 justify-center"><MapPin size={8} /> {p.location}</p>}
+                {p.bio && <p className="text-[9px] text-cream/35 mt-1 line-clamp-2">{p.bio}</p>}
+              </div>
+              <div className="flex items-center gap-2 text-[9px] text-cream/25 font-black uppercase tracking-widest">
+                <span>{p.hangouts_count || 0} activities</span>
+                {Number(p.rating) > 0 && <span className="flex items-center gap-0.5"><Star size={8} fill="currentColor" className="text-gold/50" /> {Number(p.rating).toFixed(1)}</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   VERIFICATION SECTION — Azure Face API face-match
+   ══════════════════════════════════════════════════════════════════════ */
+function VerificationSection({ user, onVerified }: { user: any; onVerified: (u: any) => void }) {
+  const [phase, setPhase] = useState<'idle' | 'capturing' | 'uploading' | 'checking' | 'done' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  const stopCamera = () => {
+    streamRef.current?.getTracks().forEach(t => t.stop());
+    streamRef.current = null;
+  };
+
+  const startCamera = async () => {
+    setPhase('capturing');
+    setErrorMsg('');
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+      streamRef.current = stream;
+      if (videoRef.current) { videoRef.current.srcObject = stream; videoRef.current.play(); }
+    } catch {
+      setPhase('error');
+      setErrorMsg('Camera access denied. Please allow camera to verify.');
+    }
+  };
+
+  const capture = async () => {
+    if (!videoRef.current || !canvasRef.current) return;
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d')?.drawImage(video, 0, 0);
+    stopCamera();
+    setPhase('uploading');
+
+    canvas.toBlob(async (blob) => {
+      if (!blob) { setPhase('error'); setErrorMsg('Could not capture image.'); return; }
+      try {
+        const fd = new FormData();
+        fd.append('file', blob, 'selfie.jpg');
+        setPhase('checking');
+        const res = await fetch('/api/profile/verify-face', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (res.ok && data.verified) {
+          setPhase('done');
+          onVerified(data.user);
+        } else {
+          setPhase('error');
+          setErrorMsg(data.error || 'Face did not match your profile photo. Try again.');
+        }
+      } catch {
+        setPhase('error');
+        setErrorMsg('Verification failed. Try again.');
+      }
+    }, 'image/jpeg', 0.92);
+  };
+
+  useEffect(() => () => stopCamera(), []);
+
+  if (user?.verified) {
+    return (
+      <div className="mb-4 flex items-center justify-between p-4 bg-white/[0.03] border border-gold/20 rounded-2xl">
+        <div className="flex items-center gap-3">
+          <ShieldCheck size={18} className="text-gold" />
+          <div>
+            <p className="text-sm font-bold">Verified</p>
+            <p className="text-[10px] text-gold/60 uppercase tracking-wider font-black">Identity confirmed</p>
+          </div>
+        </div>
+        <VerifiedBadge size={18} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="mb-4 p-4 bg-white/[0.03] border border-white/[0.07] rounded-2xl space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <ShieldCheck size={18} className="text-cream/30" />
+          <div>
+            <p className="text-sm font-bold">Get Verified</p>
+            <p className="text-[10px] text-cream/30 uppercase tracking-wider font-black">Face-match with your profile photo</p>
+          </div>
+        </div>
+        {phase === 'idle' && (
+          <button
+            onClick={startCamera}
+            disabled={!user?.avatar_url}
+            className="text-[9px] text-obsidian bg-gold px-3 py-1.5 rounded-full font-black uppercase tracking-widest disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gold-light transition-colors"
+          >
+            Verify Now
+          </button>
+        )}
+      </div>
+
+      {!user?.avatar_url && phase === 'idle' && (
+        <p className="text-[10px] text-cream/25">Upload a profile photo first, then come back to verify.</p>
+      )}
+
+      {phase === 'capturing' && (
+        <div className="space-y-3">
+          <p className="text-[10px] text-cream/40">Position your face in the frame and take a selfie.</p>
+          <div className="relative rounded-xl overflow-hidden bg-black aspect-video max-w-xs mx-auto">
+            <video ref={videoRef} className="w-full h-full object-cover" muted playsInline />
+            <div className="absolute inset-0 border-2 border-gold/30 rounded-xl pointer-events-none" />
+          </div>
+          <canvas ref={canvasRef} className="hidden" />
+          <div className="flex gap-2 justify-center">
+            <button onClick={capture} className="bg-gold text-obsidian px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-gold-light transition-colors">
+              Take Selfie
+            </button>
+            <button onClick={() => { stopCamera(); setPhase('idle'); }} className="text-cream/30 hover:text-cream text-[10px] font-black uppercase tracking-widest transition-colors">Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {(phase === 'uploading' || phase === 'checking') && (
+        <div className="flex items-center gap-2 text-cream/40 text-[11px]">
+          <Loader2 size={14} className="animate-spin text-gold" />
+          {phase === 'uploading' ? 'Uploading…' : 'Matching face to your photo…'}
+        </div>
+      )}
+
+      {phase === 'done' && (
+        <div className="flex items-center gap-2 text-gold text-[11px] font-bold">
+          <Check size={14} /> Verified! Your badge is now active.
+        </div>
+      )}
+
+      {phase === 'error' && (
+        <div className="space-y-2">
+          <p className="text-red-400 text-[11px]">{errorMsg}</p>
+          <button onClick={() => setPhase('idle')} className="text-[9px] text-cream/40 hover:text-gold font-black uppercase tracking-widest transition-colors">Try Again</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════
    PROFILE TAB
    ══════════════════════════════════════════════════════════════════════ */
-function ProfileTab() {
+function ProfileTab({ gpsCity }: { gpsCity?: string | null }) {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -1001,10 +1176,21 @@ function ProfileTab() {
   const [saving, setSaving] = useState(false);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState('');
 
   useEffect(() => {
     fetch('/api/profile').then(r => r.json()).then(d => {
-      if (d.user) { setUser(d.user); setEditName(d.user.name || ''); setEditBio(d.user.bio || ''); setEditLocation(d.user.location || ''); }
+      if (d.user) {
+        setUser(d.user);
+        setEditName(d.user.name || '');
+        setEditBio(d.user.bio || '');
+        // If user has no location set (null or the schema default 'Lagos' and GPS says otherwise), use GPS city
+        const dbLocation = d.user.location || '';
+        const effectiveLocation = (!dbLocation || dbLocation === 'Lagos') && gpsCity && gpsCity !== 'Lagos'
+          ? gpsCity
+          : dbLocation;
+        setEditLocation(effectiveLocation);
+      }
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
@@ -1023,16 +1209,24 @@ function ProfileTab() {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploadingAvatar(true);
+    setAvatarError('');
     try {
-      const fd = new FormData(); fd.append('file', file);
+      const fd = new FormData();
+      fd.append('file', file);
       const res = await fetch('/api/upload', { method: 'POST', body: fd });
       const d = await res.json();
-      if (res.ok) {
-        const u2 = await fetch('/api/profile', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ avatar_url: d.url }) });
-        const d2 = await u2.json();
-        if (u2.ok && d2.user) setUser(d2.user);
+      if (!res.ok) { setAvatarError(d.error || 'Upload failed.'); setUploadingAvatar(false); return; }
+
+      const u2 = await fetch('/api/profile', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ avatar_url: d.url }) });
+      const d2 = await u2.json();
+      if (u2.ok && d2.user) {
+        setUser(d2.user);
+      } else {
+        setAvatarError(d2.error || 'Photo saved to storage but profile update failed.');
       }
-    } catch { /* ignore */ }
+    } catch (err) {
+      setAvatarError('Network error — check your connection and try again.');
+    }
     setUploadingAvatar(false);
   };
 
@@ -1071,24 +1265,35 @@ function ProfileTab() {
         {/* Avatar + name */}
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8">
           <div className="relative shrink-0">
-            <label className="cursor-pointer relative block">
-              <img src={user?.avatar_url || `https://i.pravatar.cc/100?u=${user?.id}`} alt="" className="w-24 h-24 rounded-full border-2 border-gold/40 object-cover" />
+            <label className="cursor-pointer relative block w-24 h-24">
+              {user?.avatar_url
+                ? <img src={user.avatar_url} alt="" className="w-24 h-24 rounded-full border-2 border-gold/40 object-cover" />
+                : <div className="w-24 h-24 rounded-full border-2 border-dashed border-gold/30 bg-white/[0.04] flex items-center justify-center"><Camera size={20} className="text-gold/40" /></div>
+              }
               <input type="file" accept="image/*" onChange={uploadAvatar} className="hidden" />
               {uploadingAvatar ? (
                 <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center"><Loader2 size={20} className="text-gold animate-spin" /></div>
               ) : (
-                <div className="absolute inset-0 bg-black/0 hover:bg-black/40 rounded-full flex items-center justify-center transition-colors opacity-0 hover:opacity-100"><Camera size={18} className="text-white" /></div>
+                <div className="absolute inset-0 bg-black/0 hover:bg-black/40 rounded-full flex items-center justify-center transition-colors opacity-0 hover:opacity-100 rounded-full"><Camera size={18} className="text-white" /></div>
               )}
             </label>
             {user?.verified && <div className="absolute -bottom-1 -right-1"><VerifiedBadge size={18} /></div>}
           </div>
+          {avatarError && <p className="text-red-400 text-[10px] text-center mt-1 max-w-[96px]">{avatarError}</p>}
 
           <div className="flex-1 text-center sm:text-left w-full">
             {editing ? (
               <div className="space-y-3">
                 <input value={editName} onChange={e => setEditName(e.target.value)} className="bg-transparent border-b border-white/10 pb-2 text-2xl font-display italic focus:outline-none focus:border-gold w-full" />
                 <textarea value={editBio} onChange={e => setEditBio(e.target.value)} rows={2} className="bg-transparent border-b border-white/10 pb-2 text-sm focus:outline-none focus:border-gold w-full resize-none text-cream/50" placeholder="Tell people about you…" />
-                <input value={editLocation} onChange={e => setEditLocation(e.target.value)} className="bg-transparent border-b border-white/10 pb-2 text-sm focus:outline-none focus:border-gold w-full text-cream/50" placeholder="City" />
+                <div>
+                  <p className="text-[9px] font-black text-cream/25 uppercase tracking-[0.2em] mb-1.5 flex items-center gap-1"><MapPin size={9} /> Your City</p>
+                  <PlacesAutocomplete
+                    value={editLocation}
+                    onChange={(val) => setEditLocation(val)}
+                    placeholder="Search your city or neighbourhood…"
+                  />
+                </div>
                 <div className="flex gap-3 pt-1">
                   <button onClick={save} disabled={saving} className="bg-gold text-obsidian px-5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest disabled:opacity-50">{saving ? 'Saving…' : 'Save'}</button>
                   <button onClick={() => setEditing(false)} className="text-cream/30 hover:text-cream text-[10px] font-black uppercase tracking-widest transition-colors">Cancel</button>
@@ -1102,7 +1307,11 @@ function ProfileTab() {
                   <button onClick={() => setEditing(true)} className="text-cream/25 hover:text-gold transition-colors ml-1"><Edit3 size={14} /></button>
                 </div>
                 <p className="text-cream/50 text-sm mb-1 max-w-sm">{user?.bio || 'No bio yet.'}</p>
-                {user?.location && <p className="text-cream/25 text-xs flex items-center gap-1 justify-center sm:justify-start"><MapPin size={10} /> {user.location}</p>}
+                {(user?.location || gpsCity) && (
+                  <p className="text-cream/25 text-xs flex items-center gap-1 justify-center sm:justify-start">
+                    <MapPin size={10} /> {user?.location || gpsCity}
+                  </p>
+                )}
               </>
             )}
           </div>
@@ -1141,19 +1350,8 @@ function ProfileTab() {
           </button>
         </div>
 
-        {/* Verification stub */}
-        {!user?.verified && (
-          <div className="mb-4 flex items-center justify-between p-4 bg-white/[0.03] border border-white/[0.07] rounded-2xl">
-            <div className="flex items-center gap-3">
-              <ShieldCheck size={18} className="text-cream/30" />
-              <div>
-                <p className="text-sm font-bold">Get Verified</p>
-                <p className="text-[10px] text-cream/30 uppercase tracking-wider font-black">Verify your identity — coming soon</p>
-              </div>
-            </div>
-            <button disabled className="text-[9px] text-cream/20 border border-white/[0.08] px-3 py-1.5 rounded-full font-black uppercase tracking-widest cursor-not-allowed">Coming Soon</button>
-          </div>
-        )}
+        {/* Face Verification */}
+        <VerificationSection user={user} onVerified={(updatedUser) => setUser(updatedUser)} />
 
         {/* Tier */}
         <div onClick={() => setShowUpgrade(true)} className="mb-4 flex items-center justify-between p-4 bg-gradient-to-r from-white/[0.03] to-white/[0.01] border border-gold/20 rounded-2xl cursor-pointer group hover:border-gold/40 transition-colors">

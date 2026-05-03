@@ -62,6 +62,8 @@ function PlacesInput({ value, onChange, placeholder, className }: Props) {
   const autocompleteRef = useRef<any>(null);
   const [ready, setReady] = useState(false);
   const [loading, setLoading] = useState(true);
+  // Track whether the current value came from a Places selection (not free-text)
+  const selectedRef = useRef(false);
 
   useEffect(() => {
     if (!GKEY) return;
@@ -69,6 +71,14 @@ function PlacesInput({ value, onChange, placeholder, className }: Props) {
       .then(() => { setReady(true); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
+
+  // Sync external value into the input when it changes (e.g. pre-populated GPS city)
+  useEffect(() => {
+    if (inputRef.current && !selectedRef.current) {
+      inputRef.current.value = value;
+    }
+    selectedRef.current = false;
+  }, [value]);
 
   useEffect(() => {
     if (!ready || !inputRef.current) return;
@@ -91,6 +101,7 @@ function PlacesInput({ value, onChange, placeholder, className }: Props) {
       const displayValue = place.name
         ? `${place.name}, ${city || place.formatted_address}`
         : place.formatted_address;
+      selectedRef.current = true;
       onChange(displayValue, result);
     });
   }, [ready, onChange]);
@@ -100,7 +111,7 @@ function PlacesInput({ value, onChange, placeholder, className }: Props) {
       <div className={`relative flex items-center ${className ?? ''}`}>
         <input
           type="text"
-          value={value}
+          defaultValue={value}
           onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
           className="w-full bg-transparent border-b border-cream/20 pb-3 text-base focus:outline-none focus:border-gold placeholder:text-cream/10 transition-colors pr-8"
@@ -117,6 +128,7 @@ function PlacesInput({ value, onChange, placeholder, className }: Props) {
         ref={inputRef}
         type="text"
         defaultValue={value}
+        onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
         className="w-full bg-transparent border-b border-cream/20 pb-3 text-base focus:outline-none focus:border-gold placeholder:text-cream/10 transition-colors pl-5"
       />

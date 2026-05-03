@@ -19,14 +19,14 @@ export async function getOrCreateUser(authUser: {
     return existing[0];
   }
 
-  // Create new user linked to auth
+  // Create new user linked to auth — no default avatar, user sets their own
   const created = await sql`
     INSERT INTO users (auth_id, name, email, avatar_url)
     VALUES (
       ${authUser.id},
       ${authUser.name || 'Member'},
       ${authUser.email || ''},
-      ${authUser.image || `https://api.dicebear.com/7.x/initials/svg?seed=${authUser.name || 'C24'}`}
+      ${authUser.image || null}
     )
     RETURNING *
   `;

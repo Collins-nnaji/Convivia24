@@ -4,11 +4,11 @@ export const dynamic = 'force-dynamic';
 
 export default async function AppRootPage() {
   // Temporary: Dummy user to bypass auth blocker for development
+  // avatar_url intentionally omitted — ProfileTab fetches fresh data from /api/profile
   const dummyUser = {
     id: 'dummy-id',
     name: 'Collins Nnaji (Preview)',
     email: 'preview@convivia24.com',
-    avatar_url: 'https://i.pravatar.cc/150?u=collins',
     tier: 'black',
     location: 'Lagos',
     created_at: new Date().toISOString(),
