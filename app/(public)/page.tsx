@@ -15,11 +15,11 @@ export default async function AppRootPage() {
   };
 
   return (
-    <main className="min-h-[100dvh] bg-[#0a0a0a] text-cream flex flex-col font-sans overflow-hidden">
-      {/* Subtle ambient glow — no busy photo */}
+    <main className="min-h-[100dvh] bg-white flex flex-col font-sans overflow-hidden">
+      {/* Subtle warm tint for depth */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full bg-gold/[0.04] blur-[120px]" />
-        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-gold/[0.03] blur-[100px]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-gold/[0.06] blur-[140px]" />
+        <div className="absolute bottom-1/3 right-0 w-[350px] h-[350px] rounded-full bg-gold/[0.04] blur-[120px]" />
       </div>
 
       <div className="relative z-10 w-full h-[100dvh] flex flex-col">

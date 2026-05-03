@@ -10,10 +10,10 @@ module.exports = {
       extend: {
         colors: {
           obsidian: {
-            DEFAULT: '#0a0a0a',
-            50:  '#1a1a1a',
-            100: '#141414',
-            200: '#111111',
+            DEFAULT: '#0f0f14',
+            50:  '#1a1a24',
+            100: '#141420',
+            200: '#111118',
           },
           gold: {
             DEFAULT: '#c9a84c',
@@ -25,6 +25,20 @@ module.exports = {
             DEFAULT: '#f5f0e8',
             dark:    '#ede5d4',
             muted:   '#d9cebb',
+          },
+          // Light theme tokens
+          surface: {
+            DEFAULT: '#ffffff',
+            50:  '#fafaf8',
+            100: '#f8f7f5',
+            200: '#f2f0eb',
+            300: '#e8e4db',
+          },
+          ink: {
+            DEFAULT: '#0f0f14',
+            muted:   '#6b6880',
+            subtle:  '#9997a8',
+            faint:   '#c4c2cf',
           },
         },
         fontFamily: {
