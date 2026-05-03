@@ -1,10 +1,8 @@
 import Link from 'next/link';
 
 const footerLinks = [
-  { label: 'Home',           href: '/' },
-  { label: 'The Spaces',     href: '/spaces' },
-  { label: 'The Convivium',  href: '/convivium' },
-  { label: 'Inquire',        href: '/inquire' },
+  { label: 'Home',    href: '/' },
+  { label: 'Inquire', href: '/inquire' },
 ];
 
 export default function Footer() {
@@ -23,7 +21,7 @@ export default function Footer() {
               <p className="text-[9px] font-black uppercase tracking-[0.3em] text-cream/40">Come to the Table</p>
             </div>
             <p className="text-xs text-cream/40 max-w-xs leading-relaxed">
-              A members club and business hotel for operators, founders, and executives building across Africa.
+              Find what's happening, see who's going, and never go out alone again. Lagos · Abuja · London.
             </p>
           </div>
 

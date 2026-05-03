@@ -3,7 +3,6 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { neon } from '@neondatabase/serverless';
 
-// Load .env manually
 const envPath = join(process.cwd(), '.env');
 try {
   const envContent = readFileSync(envPath, 'utf-8');
@@ -21,6 +20,19 @@ try {
   }
 } catch { /* no .env file */ }
 
+function hoursFromNow(h: number) {
+  const d = new Date();
+  d.setTime(d.getTime() + h * 60 * 60 * 1000);
+  return d.toISOString();
+}
+
+function daysFromNow(days: number, hour = 20, min = 0) {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  d.setHours(hour, min, 0, 0);
+  return d.toISOString();
+}
+
 async function seed() {
   if (!process.env.DATABASE_URL) {
     console.error('DATABASE_URL not set');
@@ -28,136 +40,426 @@ async function seed() {
   }
 
   const sql = neon(process.env.DATABASE_URL);
-  
+
   console.log('🌱 Seeding Convivia24 Database...\n');
 
-  // 1. Clear existing data
   await sql`TRUNCATE TABLE attendees, connections, circle_members, circles, hangouts, venues, inquiries, waitlist, users CASCADE`;
-  
-  // ─────────────────────────────────────
-  // 2. VENUES
-  // ─────────────────────────────────────
+
+  // ─── VENUES ────────────────────────────────────────────────────────────────
   console.log('🏛  Inserting Venues...');
-  
   const venueData = [
-    { name: 'The Table at Noir', type: 'Curated Dining', category: 'dining', tagline: 'Six to twenty-four, no strangers.', description: 'Private dining room reserved exclusively for Convivia24 curated groups. Rotating tasting menus, intentional seating, and conversations that outlast dessert. Powered by one of Lagos\' most celebrated kitchens.', image_url: '/Convivium3.png', capacity: '6-24', partner_name: 'Noir Lagos', address: 'Victoria Island, Lagos', minimum_spend: 25000, availability: 'Mon–Wed, 7pm–11pm', rating: 4.9, city: 'Lagos' },
-    { name: 'The Floor at Wheatbaker', type: 'Arrival Lounge', category: 'lounge', tagline: 'Where the handshake begins.', description: 'A reserved VIP corner inside one of Ikoyi\'s most iconic hotels. Full-service bar, warm lighting, and the energy of a first impression that lands. Your app-matched introduction starts here.', image_url: '/The Spaces.png', capacity: 'Open', partner_name: 'The Wheatbaker Hotel', address: '4 Lawrence Rd, Ikoyi, Lagos', minimum_spend: 15000, availability: 'Daily, 5pm–12am', rating: 4.8, city: 'Lagos' },
-    { name: 'Deal Room — Continental', type: 'Boardroom', category: 'boardroom', tagline: 'Where conversations become commitments.', description: 'High-fidelity private meeting suite on the executive floor. Whiteboards, full AV for remote pitches, excellent coffee, and zero interruptions. When a hangout turns into a joint venture, this is where you close it.', image_url: '/dealrooms.png', capacity: '4-12', partner_name: 'Lagos Continental Hotel', address: 'Plot 52A, Kofo Abayomi St, V.I.', minimum_spend: 50000, availability: 'Weekdays, 9am–6pm', rating: 4.7, city: 'Lagos' },
-    { name: 'Chambers Residency', type: 'Boutique Suite', category: 'accommodations', tagline: 'Luxury overnight stay for operators.', description: 'Boutique hotel-style overnight suites with command-centre desks. King bed, rainfall shower, zero distraction. For visiting founders who need a base between deal rooms and dinner tables.', image_url: '/The Spaces2.png', capacity: '1-2', partner_name: 'Eko Hotels & Suites', address: 'Plot 1415, Adetokunbo Ademola St, V.I.', minimum_spend: 80000, availability: 'Daily, check-in from 2pm', rating: 4.6, city: 'Lagos' },
-    { name: 'Wellness & Recovery', type: 'Day Spa', category: 'wellness', tagline: 'Unwind, reset, and recover.', description: 'Private wellness oasis: premium soaking tub, thermal treatments, and space to disconnect. An essential counterbalance to high-velocity business. Book between meetings or after a long week.', image_url: '/The Spaces3.png', capacity: '1-4', partner_name: 'The Spa at Oriental', address: '3 Lekki Rd, V.I., Lagos', minimum_spend: 35000, availability: 'Daily, 10am–8pm', rating: 4.8, city: 'Lagos' },
-    { name: 'The Table at Bukka Hut', type: 'Curated Dining', category: 'dining', tagline: 'Authentic flavour, elevated company.', description: 'Private group dining in one of Abuja\'s most loved restaurants. Nigerian cuisine done right — jollof, suya, and real conversation. Reserved for Convivia24 curated groups of 6 to 12.', image_url: '/Convivium3.png', capacity: '6-12', partner_name: 'Bukka Hut Abuja', address: 'Wuse 2, Abuja', minimum_spend: 15000, availability: 'Thu–Sat, 7pm–11pm', rating: 4.5, city: 'Abuja' },
+    { name: 'The Table at Noir', type: 'Curated Dining', category: 'dining', tagline: 'Six to twenty-four, no strangers.', description: 'Private dining reserved exclusively for Convivia24 curated groups. Rotating tasting menus, intentional seating.', image_url: '/Convivium3.png', capacity: '6-24', partner_name: 'Noir Lagos', address: 'Victoria Island, Lagos', minimum_spend: 25000, availability: 'Mon–Wed, 7pm–11pm', rating: 4.9, city: 'Lagos' },
+    { name: 'The Floor at Wheatbaker', type: 'Arrival Lounge', category: 'lounge', tagline: 'Where the handshake begins.', description: 'A reserved VIP corner inside one of Ikoyi\'s most iconic hotels.', image_url: '/The Spaces.png', capacity: 'Open', partner_name: 'The Wheatbaker Hotel', address: '4 Lawrence Rd, Ikoyi, Lagos', minimum_spend: 15000, availability: 'Daily, 5pm–12am', rating: 4.8, city: 'Lagos' },
+    { name: 'Deal Room — Continental', type: 'Boardroom', category: 'boardroom', tagline: 'Where conversations become commitments.', description: 'High-fidelity private meeting suite on the executive floor.', image_url: '/dealrooms.png', capacity: '4-12', partner_name: 'Lagos Continental Hotel', address: 'Plot 52A, Kofo Abayomi St, V.I.', minimum_spend: 50000, availability: 'Weekdays, 9am–6pm', rating: 4.7, city: 'Lagos' },
+    { name: 'The Floor Abuja', type: 'Arrival Lounge', category: 'lounge', tagline: 'Abuja\'s gathering point.', description: 'Premium lounge space in the capital.', image_url: '/The Spaces2.png', capacity: 'Open', partner_name: 'Transcorp Hilton', address: 'Plot 1096, Aguiyi Ironsi St, Maitama', minimum_spend: 12000, availability: 'Daily, 5pm–12am', rating: 4.6, city: 'Abuja' },
+    { name: 'Shoreditch Social Club', type: 'Lounge Bar', category: 'lounge', tagline: 'Where African creatives meet in London.', description: 'A curated space for the diaspora and their network.', image_url: '/The Spaces3.png', capacity: 'Open', partner_name: 'Box Park Shoreditch', address: '2 Bethnal Green Rd, London E1 6GY', minimum_spend: 0, availability: 'Thu–Sun, 6pm–1am', rating: 4.7, city: 'London' },
   ];
 
   for (const v of venueData) {
-    await sql`INSERT INTO venues (name, type, category, tagline, description, image_url, capacity, partner_name, address, minimum_spend, availability, rating, city) VALUES (${v.name}, ${v.type}, ${v.category}, ${v.tagline}, ${v.description}, ${v.image_url}, ${v.capacity}, ${v.partner_name}, ${v.address}, ${v.minimum_spend}, ${v.availability}, ${v.rating}, ${v.city})`;
+    await sql`INSERT INTO venues (name, type, category, tagline, description, image_url, capacity, partner_name, address, minimum_spend, availability, rating, city)
+      VALUES (${v.name}, ${v.type}, ${v.category}, ${v.tagline}, ${v.description}, ${v.image_url}, ${v.capacity}, ${v.partner_name}, ${v.address}, ${v.minimum_spend}, ${v.availability}, ${v.rating}, ${v.city})`;
   }
 
-  // ─────────────────────────────────────
-  // 3. USERS
-  // ─────────────────────────────────────
+  // ─── USERS ─────────────────────────────────────────────────────────────────
   console.log('👤 Inserting Users...');
-  
-  const usersResult = [];
   const userData = [
-    { name: 'Collins Nnaji', email: 'collins@convivia24.com', avatar_url: 'https://i.pravatar.cc/150?u=collins', bio: 'Building the infrastructure for African business over dinner.', location: 'Lagos', tier: 'black', rating: 4.9, hangouts_count: 12 },
-    { name: 'Amara Okafor', email: 'amara@example.com', avatar_url: 'https://i.pravatar.cc/150?u=amara', bio: 'Venture partner. Backing founders who build for the continent.', location: 'Lagos', tier: 'black', rating: 4.8, hangouts_count: 8 },
-    { name: 'Tunde Adeyemi', email: 'tunde@example.com', avatar_url: 'https://i.pravatar.cc/150?u=tunde', bio: 'Creative director blending Afro-futurism with brand strategy.', location: 'Abuja', tier: 'standard', rating: 4.7, hangouts_count: 5 },
-    { name: 'Nkechi Eze', email: 'nkechi@example.com', avatar_url: 'https://i.pravatar.cc/150?u=nkechi', bio: 'Fintech operator. Making payments invisible across West Africa.', location: 'Lagos', tier: 'standard', rating: 4.6, hangouts_count: 3 },
-    { name: 'David Mensah', email: 'david@example.com', avatar_url: 'https://i.pravatar.cc/150?u=david', bio: 'Diaspora returnee. Scaling agri-tech from London to Accra to Lagos.', location: 'London', tier: 'black', rating: 4.9, hangouts_count: 18 },
+    // Lagos crew
+    { name: 'Collins Nnaji',    email: 'collins@convivia24.com',  avatar_url: 'https://i.pravatar.cc/150?u=collins24', bio: 'Building the social infrastructure for Africa, one night out at a time.', location: 'Lagos',  tier: 'black',    verified: true,  open_to_meet: true,  rating: 4.9, hangouts_count: 14 },
+    { name: 'Amara Okafor',     email: 'amara@example.com',       avatar_url: 'https://i.pravatar.cc/150?u=amara24',   bio: 'VC partner. If you\'re building something real, let\'s talk over dinner.',   location: 'Lagos',  tier: 'black',    verified: true,  open_to_meet: true,  rating: 4.8, hangouts_count: 11 },
+    { name: 'Nkechi Eze',       email: 'nkechi@example.com',      avatar_url: 'https://i.pravatar.cc/150?u=nkechi24',  bio: 'Fintech operator. Making payments invisible across West Africa.',          location: 'Lagos',  tier: 'standard', verified: true,  open_to_meet: true,  rating: 4.6, hangouts_count: 6  },
+    { name: 'Emeka Obi',        email: 'emeka@example.com',       avatar_url: 'https://i.pravatar.cc/150?u=emeka24',   bio: 'Club promoter & creative. If there\'s a vibe, I found it.',               location: 'Lagos',  tier: 'standard', verified: false, open_to_meet: true,  rating: 4.5, hangouts_count: 9  },
+    { name: 'Zainab Bello',     email: 'zainab@example.com',      avatar_url: 'https://i.pravatar.cc/150?u=zainab24',  bio: 'Fashion designer. Always at the best spots before they blow up.',         location: 'Lagos',  tier: 'standard', verified: false, open_to_meet: false, rating: 4.4, hangouts_count: 4  },
+    { name: 'Femi Adebayo',     email: 'femi@example.com',        avatar_url: 'https://i.pravatar.cc/150?u=femi24',    bio: 'Football lad. Looking for a 5-a-side crew every Sunday.',                 location: 'Lagos',  tier: 'standard', verified: false, open_to_meet: true,  rating: 4.3, hangouts_count: 7  },
+    // Abuja crew
+    { name: 'Tunde Adeyemi',    email: 'tunde@example.com',       avatar_url: 'https://i.pravatar.cc/150?u=tunde24',   bio: 'Creative director. Afro-futurism is the brand strategy.',                 location: 'Abuja',  tier: 'standard', verified: true,  open_to_meet: true,  rating: 4.7, hangouts_count: 5  },
+    { name: 'Halima Yusuf',     email: 'halima@example.com',      avatar_url: 'https://i.pravatar.cc/150?u=halima24',  bio: 'Civil servant by day, DJ by night. Abuja\'s best kept secret.',           location: 'Abuja',  tier: 'standard', verified: false, open_to_meet: true,  rating: 4.5, hangouts_count: 3  },
+    { name: 'Ibrahim Musa',     email: 'ibrahim@example.com',     avatar_url: 'https://i.pravatar.cc/150?u=ibrahim24', bio: 'Policy analyst. The best conversations happen over shawarma.',            location: 'Abuja',  tier: 'standard', verified: false, open_to_meet: false, rating: 4.2, hangouts_count: 2  },
+    // London crew
+    { name: 'David Mensah',     email: 'david@example.com',       avatar_url: 'https://i.pravatar.cc/150?u=david24',   bio: 'Diaspora returnee. Scaling agri-tech from London to Accra to Lagos.',     location: 'London', tier: 'black',    verified: true,  open_to_meet: true,  rating: 4.9, hangouts_count: 18 },
+    { name: 'Adaeze Igwe',      email: 'adaeze@example.com',      avatar_url: 'https://i.pravatar.cc/150?u=adaeze24',  bio: 'Barrister. Big 4 alumni. Knows every Nigerian restaurant in London.',      location: 'London', tier: 'black',    verified: true,  open_to_meet: true,  rating: 4.7, hangouts_count: 8  },
+    { name: 'Kofi Mensah',      email: 'kofi@example.com',        avatar_url: 'https://i.pravatar.cc/150?u=kofi24',    bio: 'Music producer. If the playlist isn\'t right, I\'ll fix it.',            location: 'London', tier: 'standard', verified: false, open_to_meet: true,  rating: 4.5, hangouts_count: 5  },
+    { name: 'Sade Williams',    email: 'sade@example.com',        avatar_url: 'https://i.pravatar.cc/150?u=sade24',    bio: 'NHS doctor + Afrobeats dancer. Work hard, play harder.',                  location: 'London', tier: 'standard', verified: false, open_to_meet: true,  rating: 4.4, hangouts_count: 6  },
   ];
 
+  const userIds: string[] = [];
   for (const u of userData) {
-    const rows = await sql`INSERT INTO users (name, email, avatar_url, bio, location, tier, rating, hangouts_count) VALUES (${u.name}, ${u.email}, ${u.avatar_url}, ${u.bio}, ${u.location}, ${u.tier}, ${u.rating}, ${u.hangouts_count}) RETURNING id`;
-    usersResult.push(rows[0].id);
+    const rows = await sql`
+      INSERT INTO users (name, email, avatar_url, bio, location, tier, verified, open_to_meet, rating, hangouts_count)
+      VALUES (${u.name}, ${u.email}, ${u.avatar_url}, ${u.bio}, ${u.location}, ${u.tier}, ${u.verified}, ${u.open_to_meet}, ${u.rating}, ${u.hangouts_count})
+      RETURNING id`;
+    userIds.push(rows[0].id as string);
   }
 
-  const [collins, amara, tunde, nkechi, david] = usersResult;
+  const [collins, amara, nkechi, emeka, zainab, femi, tunde, halima, ibrahim, david, adaeze, kofi, sade] = userIds;
 
-  // ─────────────────────────────────────
-  // 4. HANGOUTS
-  // ─────────────────────────────────────
+  // ─── HANGOUTS ──────────────────────────────────────────────────────────────
   console.log('🎯 Inserting Hangouts...');
-  const tonight = new Date();
-  tonight.setHours(tonight.getHours() + 4);
-  
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(19, 0, 0, 0);
-  
-  const weekend = new Date();
-  weekend.setDate(weekend.getDate() + (6 - weekend.getDay()));
-  weekend.setHours(13, 0, 0, 0);
 
   const hangoutData = [
-    { host_id: amara, title: 'Founders After Dark', vibe: 'Whisky, ideas, and honest conversations about what is actually working.', type: 'curated', status: 'confirmed', event_time: tonight.toISOString(), location: 'The Table, Victoria Island', max_guests: 6, current_guests: 4 },
-    { host_id: david, title: 'Sunday Roast and Roadmaps', vibe: 'Long lunch for operators serious about scaling across borders.', type: 'open', status: 'pending', event_time: weekend.toISOString(), location: 'The Floor, Ikoyi', max_guests: 12, current_guests: 3 },
-    { host_id: collins, title: 'Creative x Capital Mixer', vibe: 'Where art directors meet angel investors. No pitches, just presence.', type: 'curated', status: 'pending', event_time: tomorrow.toISOString(), location: 'The Floor, Victoria Island', max_guests: 24, current_guests: 7 },
-    { host_id: tunde, title: 'Morning Fuel: Abuja Edition', vibe: 'Coffee and clarity. Bringing Abuja founders together before the day starts.', type: 'open', status: 'confirmed', event_time: tomorrow.toISOString(), location: 'The Floor, Abuja', max_guests: 8, current_guests: 2 },
-    { host_id: nkechi, title: 'Fintech Roundtable', vibe: 'Payments, lending, infrastructure - the builders sit together.', type: 'curated', status: 'pending', event_time: weekend.toISOString(), location: 'Deal Rooms, Victoria Island', max_guests: 10, current_guests: 5 },
+    // ── LAGOS — TONIGHT ──
+    {
+      host_id: emeka, city: 'Lagos', category: 'nightlife',
+      title: 'Afrobeats Night at Quilox',
+      vibe: 'Biggest club in Lagos tonight. Looking for 4 people to roll with — proper vibe only.',
+      type: 'open', status: 'confirmed',
+      event_time: hoursFromNow(3),
+      location: 'Quilox Club, Victoria Island, Lagos',
+      max_guests: 8, current_guests: 3,
+      ticket_price: 10000,
+    },
+    {
+      host_id: amara, city: 'Lagos', category: 'dining',
+      title: 'Founders After Dark',
+      vibe: 'Whisky, jollof, and honest conversations about what is actually working. No pitches.',
+      type: 'curated', status: 'confirmed',
+      event_time: hoursFromNow(4),
+      location: 'The Table at Noir, Victoria Island, Lagos',
+      max_guests: 6, current_guests: 4,
+      ticket_price: null,
+    },
+    {
+      host_id: zainab, city: 'Lagos', category: 'social',
+      title: 'Rooftop Sundowner — VI',
+      vibe: 'Golden hour drinks on the best rooftop in Lagos. Fashion, music, good people.',
+      type: 'open', status: 'confirmed',
+      event_time: hoursFromNow(2),
+      location: 'Sky Bar, Eko Hotel, Victoria Island, Lagos',
+      max_guests: 15, current_guests: 6,
+      ticket_price: 5000,
+    },
+
+    // ── LAGOS — TOMORROW ──
+    {
+      host_id: collins, city: 'Lagos', category: 'social',
+      title: 'Creative × Capital Mixer',
+      vibe: 'Where art directors meet angel investors. No pitches, just presence and good conversation.',
+      type: 'curated', status: 'pending',
+      event_time: daysFromNow(1, 19, 0),
+      location: 'The Floor, Wheatbaker Hotel, Ikoyi, Lagos',
+      max_guests: 24, current_guests: 7,
+      ticket_price: null,
+    },
+    {
+      host_id: femi, city: 'Lagos', category: 'sports',
+      title: 'Sunday 5-a-side — Lekki',
+      vibe: 'Casual football, any level welcome. Ballers, joggers, all good. Just show up.',
+      type: 'open', status: 'confirmed',
+      event_time: daysFromNow(1, 9, 0),
+      location: 'Astroturf, Admiralty Way, Lekki Phase 1, Lagos',
+      max_guests: 10, current_guests: 4,
+      ticket_price: 2000,
+    },
+    {
+      host_id: nkechi, city: 'Lagos', category: 'dining',
+      title: 'Sunday Brunch at Nok',
+      vibe: 'Pan-African brunch, bottomless drinks, great company. Lagos Sundays done right.',
+      type: 'open', status: 'pending',
+      event_time: daysFromNow(1, 12, 30),
+      location: 'Nok by Alara, Victoria Island, Lagos',
+      max_guests: 10, current_guests: 3,
+      ticket_price: 15000,
+    },
+
+    // ── LAGOS — THIS WEEK ──
+    {
+      host_id: amara, city: 'Lagos', category: 'gigs',
+      title: 'Burna Boy at Eko Convention',
+      vibe: 'Concert run. Looking for 5 people who actually know the lyrics. No tourists.',
+      type: 'open', status: 'confirmed',
+      event_time: daysFromNow(3, 20, 0),
+      location: 'Eko Convention Centre, Victoria Island, Lagos',
+      max_guests: 8, current_guests: 5,
+      ticket_price: 35000,
+      ticket_url: 'https://nairabox.com',
+    },
+    {
+      host_id: emeka, city: 'Lagos', category: 'nightlife',
+      title: 'Section 808 — Bar Night',
+      vibe: 'Low-key bar night for people who can hold a conversation. Section 808 is intimate, no tourists.',
+      type: 'curated', status: 'pending',
+      event_time: daysFromNow(2, 21, 0),
+      location: 'Section 808, Lekki Phase 1, Lagos',
+      max_guests: 6, current_guests: 2,
+      ticket_price: null,
+    },
+    {
+      host_id: femi, city: 'Lagos', category: 'fitness',
+      title: 'Early Morning Run — Ikoyi',
+      vibe: '5km along the Ikoyi Link Bridge. All paces welcome. Healthy breakfast after.',
+      type: 'open', status: 'confirmed',
+      event_time: daysFromNow(4, 6, 30),
+      location: 'Ikoyi Link Bridge, Lagos',
+      max_guests: 20, current_guests: 8,
+      ticket_price: null,
+    },
+    {
+      host_id: collins, city: 'Lagos', category: 'arts',
+      title: 'Nike Art Gallery Opening Night',
+      vibe: 'New exhibition opening at Nike Gallery. Contemporary African art, champagne, conversation.',
+      type: 'open', status: 'confirmed',
+      event_time: daysFromNow(5, 18, 0),
+      location: 'Nike Art Gallery, Lekki, Lagos',
+      max_guests: 20, current_guests: 9,
+      ticket_price: null,
+    },
+    {
+      host_id: nkechi, city: 'Lagos', category: 'outdoors',
+      title: 'Lekki Conservation Centre Hike',
+      vibe: 'Canopy walk + nature trail at Lekki Conservation. Peaceful, earthy, beautiful.',
+      type: 'open', status: 'confirmed',
+      event_time: daysFromNow(6, 8, 0),
+      location: 'Lekki Conservation Centre, Lekki, Lagos',
+      max_guests: 12, current_guests: 5,
+      ticket_price: 3000,
+    },
+
+    // ── ABUJA — TONIGHT ──
+    {
+      host_id: tunde, city: 'Abuja', category: 'social',
+      title: 'Abuja Founders Linkup',
+      vibe: 'Casual drinks for anyone building something in Abuja. No agenda, just good energy.',
+      type: 'open', status: 'confirmed',
+      event_time: hoursFromNow(5),
+      location: 'Transcorp Hilton Lounge, Maitama, Abuja',
+      max_guests: 12, current_guests: 4,
+      ticket_price: null,
+    },
+    {
+      host_id: halima, city: 'Abuja', category: 'nightlife',
+      title: 'Club Havana Tonight',
+      vibe: 'Havana is the move tonight. Looking for 5 people who dance properly. Afrobeats + Amapiano.',
+      type: 'open', status: 'confirmed',
+      event_time: hoursFromNow(4),
+      location: 'Club Havana, Wuse 2, Abuja',
+      max_guests: 8, current_guests: 3,
+      ticket_price: 5000,
+    },
+
+    // ── ABUJA — THIS WEEK ──
+    {
+      host_id: ibrahim, city: 'Abuja', category: 'dining',
+      title: 'Shawarma + Debate Night',
+      vibe: 'Best shawarma in Wuse 2, then we argue about politics, tech, and life. Who\'s in?',
+      type: 'open', status: 'pending',
+      event_time: daysFromNow(2, 20, 0),
+      location: 'Lebanese Corner, Wuse 2, Abuja',
+      max_guests: 6, current_guests: 2,
+      ticket_price: null,
+    },
+    {
+      host_id: tunde, city: 'Abuja', category: 'arts',
+      title: 'Abuja Art Week Meetup',
+      vibe: 'Gallery walk across 3 spaces in Maitama. Art lovers, collectors, curious people welcome.',
+      type: 'open', status: 'confirmed',
+      event_time: daysFromNow(3, 17, 0),
+      location: 'Thought Pyramid Art Centre, Maitama, Abuja',
+      max_guests: 15, current_guests: 6,
+      ticket_price: null,
+    },
+    {
+      host_id: halima, city: 'Abuja', category: 'fitness',
+      title: 'Millenium Park Morning Walk',
+      vibe: 'Easy 4km walk around Millenium Park. Best way to start a weekday in Abuja.',
+      type: 'open', status: 'confirmed',
+      event_time: daysFromNow(1, 7, 0),
+      location: 'Millennium Park, Abuja',
+      max_guests: 25, current_guests: 7,
+      ticket_price: null,
+    },
+
+    // ── LONDON — TONIGHT ──
+    {
+      host_id: david, city: 'London', category: 'nightlife',
+      title: 'Afrobeats at XOYO',
+      vibe: 'XOYO has the best Afrobeats night in London. Getting a table — who wants in?',
+      type: 'curated', status: 'confirmed',
+      event_time: hoursFromNow(4),
+      location: 'XOYO, 32-37 Cowper St, Shoreditch, London',
+      max_guests: 8, current_guests: 5,
+      ticket_price: 15000,
+      ticket_url: 'https://ra.co',
+    },
+    {
+      host_id: adaeze, city: 'London', category: 'dining',
+      title: 'West African Dining — Chuku\'s',
+      vibe: 'The best Nigerian tapas in London. Puff puff, pepper soup, great wine. Let\'s go.',
+      type: 'open', status: 'confirmed',
+      event_time: hoursFromNow(3),
+      location: 'Chuku\'s Nigerian Tapas, Tottenham, London',
+      max_guests: 8, current_guests: 4,
+      ticket_price: null,
+    },
+
+    // ── LONDON — THIS WEEK ──
+    {
+      host_id: kofi, city: 'London', category: 'gigs',
+      title: 'Wizkid at the O2 — Group Run',
+      vibe: 'Already have tickets. Looking for a group to go together. Pre-drinks in Shoreditch first.',
+      type: 'open', status: 'confirmed',
+      event_time: daysFromNow(2, 19, 0),
+      location: 'The O2 Arena, Greenwich, London',
+      max_guests: 10, current_guests: 6,
+      ticket_price: 20000,
+    },
+    {
+      host_id: sade, city: 'London', category: 'fitness',
+      title: 'Victoria Park Run + Brunch',
+      vibe: '5k run in Victoria Park then brunch at the cafe. Sundays done right in East London.',
+      type: 'open', status: 'confirmed',
+      event_time: daysFromNow(1, 9, 0),
+      location: 'Victoria Park, Hackney, London',
+      max_guests: 12, current_guests: 5,
+      ticket_price: null,
+    },
+    {
+      host_id: david, city: 'London', category: 'social',
+      title: 'Diaspora Drinks — Brixton',
+      vibe: 'Drinks for Africans in London doing big things. No formality, just good people.',
+      type: 'open', status: 'confirmed',
+      event_time: daysFromNow(3, 19, 30),
+      location: 'Electric Brixton, Brixton, London',
+      max_guests: 20, current_guests: 11,
+      ticket_price: null,
+    },
+    {
+      host_id: adaeze, city: 'London', category: 'outdoors',
+      title: 'Hampstead Heath Sunday Walk',
+      vibe: 'Long walk on Hampstead Heath. Great views, fresh air, interesting conversation.',
+      type: 'open', status: 'confirmed',
+      event_time: daysFromNow(4, 11, 0),
+      location: 'Hampstead Heath, North London',
+      max_guests: 15, current_guests: 4,
+      ticket_price: null,
+    },
+    {
+      host_id: kofi, city: 'London', category: 'arts',
+      title: 'Tate Modern — Afro Art Exhibition',
+      vibe: 'New contemporary African exhibition at Tate Modern. Free entry, café after.',
+      type: 'open', status: 'confirmed',
+      event_time: daysFromNow(5, 14, 0),
+      location: 'Tate Modern, Bankside, London',
+      max_guests: 10, current_guests: 3,
+      ticket_price: null,
+    },
   ];
 
-  const hangoutIds = [];
+  const hangoutIds: string[] = [];
   for (const h of hangoutData) {
-    const rows = await sql`INSERT INTO hangouts (host_id, title, vibe, type, status, event_time, location, max_guests, current_guests) VALUES (${h.host_id}, ${h.title}, ${h.vibe}, ${h.type}, ${h.status}, ${h.event_time}, ${h.location}, ${h.max_guests}, ${h.current_guests}) RETURNING id`;
-    hangoutIds.push(rows[0].id);
+    const rows = await sql`
+      INSERT INTO hangouts (host_id, title, vibe, category, type, status, event_time, location, city, max_guests, current_guests, ticket_price, ticket_url)
+      VALUES (
+        ${h.host_id}, ${h.title}, ${h.vibe}, ${h.category}, ${h.type}, ${h.status},
+        ${h.event_time}, ${h.location}, ${h.city}, ${h.max_guests}, ${h.current_guests},
+        ${(h as any).ticket_price ?? null}, ${(h as any).ticket_url ?? null}
+      )
+      RETURNING id`;
+    hangoutIds.push(rows[0].id as string);
   }
 
-  // ─────────────────────────────────────
-  // 5. ATTENDEES
-  // ─────────────────────────────────────
+  // ─── ATTENDEES ─────────────────────────────────────────────────────────────
   console.log('🙋 Inserting Attendees...');
-  const attendeeData = [
-    [hangoutIds[0], amara], [hangoutIds[0], collins], [hangoutIds[0], nkechi], [hangoutIds[0], david],
-    [hangoutIds[1], david], [hangoutIds[1], tunde], [hangoutIds[1], nkechi],
-    [hangoutIds[2], collins], [hangoutIds[2], amara], [hangoutIds[2], tunde],
-    [hangoutIds[3], tunde], [hangoutIds[3], nkechi],
-    [hangoutIds[4], nkechi], [hangoutIds[4], collins], [hangoutIds[4], amara], [hangoutIds[4], david],
+
+  // [hangout_index, ...user_ids]
+  const attendeeGroups: [number, string[]][] = [
+    // Lagos tonight
+    [0,  [emeka, nkechi, zainab]],
+    [1,  [amara, collins, nkechi, david]],
+    [2,  [zainab, emeka, nkechi, femi, amara, collins]],
+    // Lagos tomorrow
+    [3,  [collins, amara, tunde, nkechi, david, emeka, zainab]],
+    [4,  [femi, emeka, nkechi, collins]],
+    [5,  [nkechi, amara, zainab]],
+    // Lagos this week
+    [6,  [amara, david, nkechi, emeka, collins]],
+    [7,  [emeka, nkechi]],
+    [8,  [femi, nkechi, collins, amara, zainab, emeka, tunde, david]],
+    [9,  [collins, amara, zainab, nkechi, emeka, david, femi, tunde, halima]],
+    [10, [nkechi, femi, amara, collins, emeka]],
+    // Abuja tonight
+    [11, [tunde, halima, ibrahim, emeka]],
+    [12, [halima, tunde, ibrahim]],
+    // Abuja this week
+    [13, [ibrahim, tunde]],
+    [14, [tunde, halima, ibrahim, nkechi, emeka, femi]],
+    [15, [halima, tunde, ibrahim, nkechi, amara, femi, collins]],
+    // London tonight
+    [16, [david, adaeze, kofi, sade, emeka]],
+    [17, [adaeze, david, kofi, sade]],
+    // London this week
+    [18, [kofi, david, adaeze, sade, nkechi, emeka]],
+    [19, [sade, adaeze, kofi, david, nkechi]],
+    [20, [david, adaeze, kofi, sade, emeka, nkechi, femi, zainab, amara, tunde, collins]],
+    [21, [adaeze, kofi, david, sade]],
+    [22, [kofi, sade, adaeze]],
   ];
-  for (const [hid, uid] of attendeeData) {
-    await sql`INSERT INTO attendees (hangout_id, user_id, status) VALUES (${hid}, ${uid}, 'attending')`;
+
+  for (const [idx, users] of attendeeGroups) {
+    const hid = hangoutIds[idx];
+    if (!hid) continue;
+    const seen = new Set<string>();
+    for (const uid of users) {
+      if (!uid || seen.has(uid)) continue;
+      seen.add(uid);
+      try {
+        await sql`INSERT INTO attendees (hangout_id, user_id, status) VALUES (${hid}, ${uid}, 'attending')`;
+      } catch { /* skip duplicate */ }
+    }
   }
 
-  // ─────────────────────────────────────
-  // 6. CIRCLES
-  // ─────────────────────────────────────
+  // ─── CIRCLES ───────────────────────────────────────────────────────────────
   console.log('⭕ Inserting Circles...');
   const circleData = [
-    { name: 'Founders Friday', description: 'Weekly gathering for builders scaling businesses across Africa.', created_by: collins },
-    { name: 'The Palate', description: 'Foodies, chefs, and hospitality operators exploring Lagos dining.', created_by: david },
-    { name: 'Deal Flow', description: 'Investors and founders exchanging leads and doing due diligence together.', created_by: amara },
+    { name: 'Founders Friday',    description: 'Weekly gathering for builders scaling businesses across Africa.', created_by: collins },
+    { name: 'The Palate',         description: 'Foodies, chefs, and hospitality operators exploring Lagos dining.', created_by: david },
+    { name: 'Deal Flow',          description: 'Investors and founders exchanging leads and due diligence.', created_by: amara },
+    { name: 'Lagos Night Crew',   description: 'The group that always finds the best spot on a Friday night.', created_by: emeka },
+    { name: 'Diaspora Links',     description: 'Africans in London doing great things. Regular meetups.',        created_by: david },
+    { name: 'Abuja Connect',      description: 'Abuja professionals linking up for dinners, events, and more.',  created_by: tunde },
   ];
-  const circleIds = [];
+
+  const circleIds: string[] = [];
   for (const c of circleData) {
     const rows = await sql`INSERT INTO circles (name, description, created_by) VALUES (${c.name}, ${c.description}, ${c.created_by}) RETURNING id`;
-    circleIds.push(rows[0].id);
+    circleIds.push(rows[0].id as string);
   }
 
-  // ─────────────────────────────────────
-  // 7. CIRCLE MEMBERS
-  // ─────────────────────────────────────
+  // ─── CIRCLE MEMBERS ────────────────────────────────────────────────────────
   console.log('👥 Inserting Circle Members...');
-  const memberData = [
-    [circleIds[0], collins], [circleIds[0], amara], [circleIds[0], david],
-    [circleIds[1], david], [circleIds[1], nkechi], [circleIds[1], collins],
-    [circleIds[2], amara], [circleIds[2], collins], [circleIds[2], tunde],
+  const memberData: [string, string][] = [
+    [circleIds[0], collins], [circleIds[0], amara], [circleIds[0], david], [circleIds[0], nkechi],
+    [circleIds[1], david],   [circleIds[1], nkechi], [circleIds[1], collins], [circleIds[1], adaeze],
+    [circleIds[2], amara],   [circleIds[2], collins], [circleIds[2], tunde], [circleIds[2], david],
+    [circleIds[3], emeka],   [circleIds[3], zainab], [circleIds[3], nkechi], [circleIds[3], femi],
+    [circleIds[4], david],   [circleIds[4], adaeze], [circleIds[4], kofi],  [circleIds[4], sade],
+    [circleIds[5], tunde],   [circleIds[5], halima], [circleIds[5], ibrahim],
   ];
+
   for (const [cid, uid] of memberData) {
-    await sql`INSERT INTO circle_members (circle_id, user_id) VALUES (${cid}, ${uid})`;
+    if (!cid || !uid) continue;
+    try {
+      await sql`INSERT INTO circle_members (circle_id, user_id) VALUES (${cid}, ${uid})`;
+    } catch { /* skip */ }
   }
 
-  // ─────────────────────────────────────
-  // 8. CONNECTIONS
-  // ─────────────────────────────────────
+  // ─── CONNECTIONS ───────────────────────────────────────────────────────────
   console.log('🤝 Inserting Connections...');
-  const connectionData = [
+  const connectionData: [string, string, number][] = [
     [collins, amara, 5], [collins, david, 5], [collins, nkechi, 4],
-    [amara, collins, 5], [david, collins, 5], [tunde, collins, 4],
+    [amara, collins, 5], [david, collins, 5], [david, adaeze, 5],
+    [emeka, zainab, 4], [emeka, nkechi, 4], [tunde, halima, 5],
+    [kofi, sade, 4],    [adaeze, kofi, 4],
   ];
   for (const [u1, u2, rating] of connectionData) {
-    await sql`INSERT INTO connections (user_id_1, user_id_2, rating) VALUES (${u1}, ${u2}, ${rating})`;
+    if (!u1 || !u2) continue;
+    try {
+      await sql`INSERT INTO connections (user_id_1, user_id_2, rating) VALUES (${u1}, ${u2}, ${rating})`;
+    } catch { /* skip */ }
   }
 
   console.log('\n✅ Seeding Complete!');
+  console.log(`   ${userIds.length} users`);
+  console.log(`   ${hangoutIds.length} hangouts (Lagos, Abuja, London)`);
+  console.log(`   ${circleIds.length} circles`);
 }
 
 seed().catch((err) => {

@@ -6,10 +6,7 @@ import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, X, LogIn } from 'lucide-react';
 
-const LINKS = [
-  { label: 'The Spaces',    href: '/spaces' },
-  { label: 'The Convivium',  href: '/convivium' },
-];
+const LINKS: { label: string; href: string }[] = [];
 
 export default function Navigation() {
   const pathname = usePathname();

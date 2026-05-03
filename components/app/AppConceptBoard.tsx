@@ -4,17 +4,47 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Compass, PlusSquare, User as UserIcon, Zap,
-  Clock, Users, Star, ArrowRight, Building2, Ticket,
+  Clock, Users, Star, ArrowRight, Ticket,
   MapPin, Camera, Calendar, LogOut, Edit3, Check, X, Loader2,
   UserCheck, Navigation, Wifi, WifiOff, ShieldCheck, Link as LinkIcon,
-  Music, Utensils, Dumbbell, TreePine, Palette, Wine, Globe, Flame
+  Music, Utensils, Dumbbell, TreePine, Palette, Wine, Globe, Flame,
+  ChevronRight, Sparkles, PartyPopper
 } from 'lucide-react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { PlacesAutocomplete } from '@/components/PlacesAutocomplete';
 
 /* ══════════════════════════════════════════════════════════════════════
-   LOCATION HOOK
+   LOCATION HOOK — reverse geocode via Nominatim, fallback to bounding box
    ══════════════════════════════════════════════════════════════════════ */
+const SUPPORTED_CITIES = ['Lagos', 'Abuja', 'London'];
+
+function cityFromCoords(lat: number, lng: number): string {
+  // Bounding boxes as fallback when geocoder doesn't match a supported city
+  if (lat >= 8.0 && lat <= 10.5 && lng >= 6.5 && lng <= 8.0) return 'Abuja';
+  if (lat >= 6.0 && lat <= 7.0 && lng >= 2.8 && lng <= 4.0) return 'Lagos';
+  if (lat >= 51.2 && lat <= 51.8 && lng >= -0.6 && lng <= 0.4) return 'London';
+  return 'Lagos'; // default
+}
+
+async function reverseGeocode(lat: number, lng: number): Promise<string> {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
+      { headers: { 'Accept-Language': 'en', 'User-Agent': 'Convivia24App/1.0' } }
+    );
+    if (!res.ok) throw new Error('nominatim error');
+    const data = await res.json();
+    const addr = data.address || {};
+    // Try city > town > county > state in order
+    const raw: string = addr.city || addr.town || addr.county || addr.state || '';
+    // Match to one of our supported cities (case-insensitive substring)
+    const match = SUPPORTED_CITIES.find(c => raw.toLowerCase().includes(c.toLowerCase()));
+    return match || cityFromCoords(lat, lng);
+  } catch {
+    return cityFromCoords(lat, lng);
+  }
+}
+
 function useCityLocation() {
   const [city, setCity] = useState<string | null>(null);
   const [detecting, setDetecting] = useState(false);
@@ -24,16 +54,14 @@ function useCityLocation() {
     if (!navigator.geolocation) { setDenied(true); return; }
     setDetecting(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
         const { latitude: lat, longitude: lng } = pos.coords;
-        let detected = 'Lagos';
-        if (lat >= 8.0 && lat <= 10.5 && lng >= 6.5 && lng <= 8.0) detected = 'Abuja';
-        else if (lat >= 51.0 && lat <= 52.0 && lng >= -0.6 && lng <= 0.4) detected = 'London';
+        const detected = await reverseGeocode(lat, lng);
         setCity(detected);
         setDetecting(false);
       },
       () => { setDetecting(false); setDenied(true); },
-      { timeout: 6000 }
+      { timeout: 8000, enableHighAccuracy: false }
     );
   }, []);
 
@@ -45,31 +73,30 @@ function useCityLocation() {
    ACTIVITY CATEGORIES
    ══════════════════════════════════════════════════════════════════════ */
 const CATEGORIES = [
-  { key: 'all',       label: 'All',       Icon: Globe,    color: 'text-cream/60' },
-  { key: 'nightlife', label: 'Nightlife', Icon: Wine,     color: 'text-purple-400' },
-  { key: 'dining',    label: 'Dining',    Icon: Utensils, color: 'text-orange-400' },
-  { key: 'gigs',      label: 'Gigs',      Icon: Music,    color: 'text-pink-400' },
-  { key: 'sports',    label: 'Sports',    Icon: Dumbbell, color: 'text-blue-400' },
-  { key: 'fitness',   label: 'Fitness',   Icon: Flame,    color: 'text-red-400' },
-  { key: 'outdoors',  label: 'Outdoors',  Icon: TreePine, color: 'text-green-400' },
-  { key: 'arts',      label: 'Arts',      Icon: Palette,  color: 'text-yellow-400' },
-  { key: 'social',    label: 'Social',    Icon: Users,    color: 'text-gold/80' },
+  { key: 'all',       label: 'Everything',  Icon: Globe,    color: 'text-cream/60' },
+  { key: 'nightlife', label: 'Turn Up',     Icon: Wine,     color: 'text-purple-400' },
+  { key: 'dining',    label: 'Dining',      Icon: Utensils, color: 'text-orange-400' },
+  { key: 'gigs',      label: 'Live Gigs',   Icon: Music,    color: 'text-pink-400' },
+  { key: 'sports',    label: 'Sports',      Icon: Dumbbell, color: 'text-blue-400' },
+  { key: 'fitness',   label: 'Fitness',     Icon: Flame,    color: 'text-red-400' },
+  { key: 'outdoors',  label: 'Outdoors',    Icon: TreePine, color: 'text-green-400' },
+  { key: 'arts',      label: 'Arts & Cult', Icon: Palette,  color: 'text-yellow-400' },
+  { key: 'social',    label: 'Social',      Icon: Users,    color: 'text-gold/80' },
 ];
 
 /* ══════════════════════════════════════════════════════════════════════
    MAIN COMPONENT
    ══════════════════════════════════════════════════════════════════════ */
 export function AppConceptBoard({ initialUser: _initialUser }: { initialUser?: any }) {
-  const [activeTab, setActiveTab] = useState<'discover' | 'host' | 'venues' | 'connect' | 'profile'>('discover');
+  const [activeTab, setActiveTab] = useState<'discover' | 'host' | 'going-out' | 'profile'>('discover');
   const location = useCityLocation();
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'discover': return <DiscoverTab location={location} />;
-      case 'host':     return <HostTab />;
-      case 'venues':   return <VenuesTab />;
-      case 'connect':  return <ConnectTab location={location} />;
-      case 'profile':  return <ProfileTab />;
+      case 'discover':  return <DiscoverTab location={location} onEnter={() => setActiveTab('going-out')} />;
+      case 'going-out': return <GoingOutTab location={location} />;
+      case 'host':      return <HostTab />;
+      case 'profile':   return <ProfileTab />;
     }
   };
 
@@ -78,8 +105,7 @@ export function AppConceptBoard({ initialUser: _initialUser }: { initialUser?: a
 
       {/* ── TOP BAR ── */}
       <header className="flex items-center justify-between px-5 md:px-10 py-3 md:py-4 border-b border-white/[0.06] bg-[#0a0a0a]/80 backdrop-blur-md sticky top-0 z-50">
-        {/* Logo — links to marketing homepage */}
-        <a href="/spaces" className="flex items-center gap-2.5 shrink-0 group">
+        <a href="/" className="flex items-center gap-2.5 shrink-0 group">
           <img src="/convivia24.png" alt="Convivia24" className="h-6 w-auto group-hover:opacity-70 transition-opacity" style={{ filter: 'brightness(0) invert(1)' }} />
           <span className="hidden sm:block text-[8px] font-black uppercase tracking-[0.3em] text-cream/30">
             Lagos · Abuja · London
@@ -88,14 +114,12 @@ export function AppConceptBoard({ initialUser: _initialUser }: { initialUser?: a
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-6">
-          <DesktopNavLink label="Discover" active={activeTab === 'discover'} onClick={() => setActiveTab('discover')} />
-          <DesktopNavLink label="Host"     active={activeTab === 'host'}     onClick={() => setActiveTab('host')} />
-          <DesktopNavLink label="Connect"  active={activeTab === 'connect'}  onClick={() => setActiveTab('connect')} />
-          <DesktopNavLink label="Venues"   active={activeTab === 'venues'}   onClick={() => setActiveTab('venues')} />
-          <DesktopNavLink label="Profile"  active={activeTab === 'profile'}  onClick={() => setActiveTab('profile')} />
+          <DesktopNavLink label="Home"       active={activeTab === 'discover'}  onClick={() => setActiveTab('discover')} />
+          <DesktopNavLink label="Going Out"  active={activeTab === 'going-out'} onClick={() => setActiveTab('going-out')} />
+          <DesktopNavLink label="Host"       active={activeTab === 'host'}      onClick={() => setActiveTab('host')} />
+          <DesktopNavLink label="Profile"    active={activeTab === 'profile'}   onClick={() => setActiveTab('profile')} />
         </nav>
 
-        {/* Location pill */}
         <LocationPill location={location} />
       </header>
 
@@ -121,8 +145,8 @@ export function AppConceptBoard({ initialUser: _initialUser }: { initialUser?: a
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         <div className="flex items-end justify-around px-2 pt-2 pb-3">
-          <NavIcon label="Discover" icon={<Compass size={21} />}   active={activeTab === 'discover'} onClick={() => setActiveTab('discover')} />
-          <NavIcon label="Connect"  icon={<UserCheck size={21} />} active={activeTab === 'connect'}  onClick={() => setActiveTab('connect')} />
+          <NavIcon label="Home"    icon={<Compass size={21} />}   active={activeTab === 'discover'}  onClick={() => setActiveTab('discover')} />
+          <NavIcon label="Going Out" icon={<UserCheck size={21} />} active={activeTab === 'going-out'} onClick={() => setActiveTab('going-out')} />
 
           {/* Centre — Host CTA */}
           <div className="flex flex-col items-center -mt-4">
@@ -135,8 +159,10 @@ export function AppConceptBoard({ initialUser: _initialUser }: { initialUser?: a
             <span className={`text-[9px] font-black uppercase tracking-widest mt-1 ${activeTab === 'host' ? 'text-gold' : 'text-cream/30'}`}>Host</span>
           </div>
 
-          <NavIcon label="Venues"  icon={<Building2 size={21} />} active={activeTab === 'venues'}  onClick={() => setActiveTab('venues')} />
-          <NavIcon label="Profile" icon={<UserIcon size={21} />}  active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} />
+          <NavIcon label="Profile" icon={<UserIcon size={21} />} active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} />
+
+          {/* Placeholder 5th slot — keeps layout symmetric */}
+          <div className="min-w-[44px]" />
         </div>
       </nav>
     </div>
@@ -190,129 +216,216 @@ function VerifiedBadge({ size = 12 }: { size?: number }) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   DISCOVER TAB — Location-aware activity feed
+   DISCOVER TAB — App landing / intro screen
    ══════════════════════════════════════════════════════════════════════ */
-function DiscoverTab({ location }: { location: ReturnType<typeof useCityLocation> }) {
+const HOW_IT_WORKS = [
+  {
+    icon: <MapPin size={20} className="text-gold" />,
+    step: '01',
+    title: 'See what\'s happening',
+    body: 'Concerts, dinners, football, club nights, hikes — everything going on near you, right now.',
+  },
+  {
+    icon: <Users size={20} className="text-gold" />,
+    step: '02',
+    title: 'See who\'s going',
+    body: 'Real people, real faces. Know who you\'ll be with before you show up.',
+  },
+  {
+    icon: <UserCheck size={20} className="text-gold" />,
+    step: '03',
+    title: 'Join or host',
+    body: 'Tap in on someone\'s plan, or post your own. Find your people in minutes.',
+  },
+];
+
+const VIBE_PILLS = [
+  { label: 'Club night in VI', Icon: Wine,     color: 'text-purple-400', bg: 'bg-purple-400/10 border-purple-400/20' },
+  { label: 'Wizkid at the O2', Icon: Music,    color: 'text-pink-400',   bg: 'bg-pink-400/10 border-pink-400/20' },
+  { label: 'Sunday 5-a-side',  Icon: Dumbbell, color: 'text-blue-400',   bg: 'bg-blue-400/10 border-blue-400/20' },
+  { label: 'Founders dinner',  Icon: Utensils, color: 'text-orange-400', bg: 'bg-orange-400/10 border-orange-400/20' },
+  { label: 'Morning run crew', Icon: Flame,    color: 'text-red-400',    bg: 'bg-red-400/10 border-red-400/20' },
+  { label: 'Art gallery walk', Icon: Palette,  color: 'text-yellow-400', bg: 'bg-yellow-400/10 border-yellow-400/20' },
+];
+
+function DiscoverTab({ location, onEnter }: { location: ReturnType<typeof useCityLocation>; onEnter: () => void }) {
   const { city, detecting } = location;
-  const [category, setCategory] = useState('all');
-  const [hangouts, setHangouts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [joiningId, setJoiningId] = useState<string | null>(null);
-  const loadedRef = useRef(false);
+  const [previewHangouts, setPreviewHangouts] = useState<any[]>([]);
 
-  const load = useCallback(async (targetCity: string | null, cat: string) => {
-    setLoading(true);
-    try {
-      const p = new URLSearchParams();
-      if (targetCity) p.set('city', targetCity);
-      if (cat !== 'all') p.set('category', cat);
-      const r = await fetch('/api/hangouts?' + p.toString());
-      const data = await r.json();
-      setHangouts(data.hangouts || []);
-    } catch { /* ignore */ }
-    finally { setLoading(false); }
-  }, []);
-
-  // load on mount (city may be null if still detecting)
   useEffect(() => {
-    if (!detecting) { load(city, category); loadedRef.current = true; }
-  }, [city, detecting]); // eslint-disable-line
-
-  // reload when category changes
-  useEffect(() => {
-    if (loadedRef.current) load(city, category);
-  }, [category]); // eslint-disable-line
-
-  const join = async (id: string) => {
-    setJoiningId(id);
-    try {
-      const res = await fetch(`/api/hangouts/${id}/join`, { method: 'POST' });
-      const data = await res.json();
-      if (res.ok) load(city, category);
-      else alert(data.error || 'Could not join.');
-    } catch { alert('Network error.'); }
-    finally { setJoiningId(null); }
-  };
+    if (detecting) return;
+    const p = new URLSearchParams();
+    if (city) p.set('city', city);
+    fetch('/api/hangouts?' + p.toString())
+      .then(r => r.json())
+      .then(d => setPreviewHangouts((d.hangouts || []).slice(0, 3)))
+      .catch(() => {});
+  }, [city, detecting]);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gold/50 mb-1 flex items-center gap-1.5">
-            {city && !detecting ? <><Navigation size={8} /> {city}</> : detecting ? <><Loader2 size={8} className="animate-spin" /> Detecting…</> : 'Activities'}
-          </p>
-          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl italic leading-tight">
-            {city ? `What's On in ${city}` : "What's On Near You"}
-          </h1>
-          <p className="text-cream/40 text-sm mt-1">Find your activity buddy. Just show up together.</p>
+    <div className="max-w-3xl mx-auto space-y-16 pb-8">
+
+      {/* ── HERO ── */}
+      <div className="text-center pt-6 sm:pt-10">
+        <div className="inline-flex items-center gap-2 bg-gold/10 border border-gold/25 text-gold text-[9px] font-black uppercase tracking-[0.25em] px-3.5 py-1.5 rounded-full mb-6">
+          <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
+          {city && !detecting ? `Live in ${city}` : 'Lagos · Abuja · London'}
         </div>
-        <button onClick={() => load(city, category)} className="shrink-0 mt-1 text-[9px] text-cream/30 hover:text-gold uppercase tracking-widest font-black transition-colors flex items-center gap-1">
-          <Wifi size={10} /> Refresh
+
+        <h1 className="font-display text-4xl sm:text-5xl md:text-6xl italic leading-tight mb-4">
+          Never go out<br />alone again.
+        </h1>
+
+        <p className="text-cream/50 text-base sm:text-lg max-w-md mx-auto leading-relaxed mb-8">
+          Find what's happening near you. See who's going. Join their plan or post your own.
+        </p>
+
+        <button
+          onClick={onEnter}
+          className="inline-flex items-center gap-2.5 bg-gold text-obsidian px-8 py-4 rounded-full font-black uppercase tracking-[0.15em] text-[12px] hover:bg-gold-light active:scale-[0.98] transition-all shadow-[0_0_32px_rgba(201,168,76,0.3)]"
+        >
+          <PartyPopper size={16} /> See What's On Tonight
         </button>
       </div>
 
-      {/* Category pills */}
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
-        {CATEGORIES.map(({ key, label, Icon }) => (
-          <button
-            key={key}
-            onClick={() => setCategory(key)}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap shrink-0 ${
-              category === key
-                ? 'bg-gold/15 text-gold border border-gold/40'
-                : 'text-cream/40 border border-white/[0.08] hover:border-white/20 hover:text-cream/60'
-            }`}
-          >
-            <Icon size={11} /> {label}
+      {/* ── LIVE PREVIEW TEASERS ── */}
+      {previewHangouts.length > 0 && (
+        <div>
+          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-cream/30 mb-4 flex items-center gap-2">
+            <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
+            Happening {city ? `in ${city}` : 'near you'}
+          </p>
+          <div className="space-y-3">
+            {previewHangouts.map((h: any) => (
+              <button
+                key={h.id}
+                onClick={onEnter}
+                className="w-full text-left bg-white/[0.03] border border-white/[0.07] hover:border-gold/30 rounded-2xl p-4 transition-all group flex items-center gap-4"
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="font-display text-lg italic leading-tight truncate">{h.title}</p>
+                  <p className="text-[10px] text-cream/35 flex items-center gap-1.5 mt-1">
+                    <Clock size={9} /> {h.formatted_time} · {h.formatted_date}
+                    <span className="text-cream/20">·</span>
+                    <MapPin size={9} /> {h.location?.split(',')[0]}
+                  </p>
+                </div>
+                {h.attendees?.length > 0 && (
+                  <div className="flex -space-x-1.5 shrink-0">
+                    {h.attendees.slice(0, 3).map((a: any) => (
+                      <img key={a.user_id} src={a.avatar_url || `https://i.pravatar.cc/32?u=${a.user_id}`} className="w-7 h-7 rounded-full border-2 border-[#0a0a0a] object-cover" alt="" />
+                    ))}
+                  </div>
+                )}
+                <ChevronRight size={16} className="text-cream/20 group-hover:text-gold transition-colors shrink-0" />
+              </button>
+            ))}
+          </div>
+          <button onClick={onEnter} className="mt-3 w-full text-center text-[10px] font-black uppercase tracking-widest text-gold/60 hover:text-gold transition-colors py-2">
+            See all activities →
           </button>
-        ))}
-      </div>
-
-      {/* Feed */}
-      {loading ? (
-        <div className="flex items-center justify-center py-20"><Loader2 size={28} className="text-gold animate-spin" /></div>
-      ) : hangouts.length === 0 ? (
-        <div className="text-center py-20 text-cream/25">
-          <Compass size={40} className="mx-auto mb-4 opacity-40" />
-          <p className="font-display text-2xl italic mb-2">Nothing happening yet.</p>
-          <p className="text-sm mb-4">Be the first to post an activity{city ? ` in ${city}` : ''}.</p>
-          <p className="text-[9px] uppercase tracking-widest font-black text-cream/20">Try a different category or check back later.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {hangouts.map((h: any) => (
-            <ActivityCard key={h.id} h={h} joiningId={joiningId} onJoin={join} />
-          ))}
         </div>
       )}
+
+      {/* ── HOW IT WORKS ── */}
+      <div>
+        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-cream/30 mb-8 flex items-center gap-2">
+          <Sparkles size={10} className="text-gold" /> How it works
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {HOW_IT_WORKS.map((item) => (
+            <div key={item.step} className="relative">
+              <div className="text-[8px] font-black text-gold/30 tracking-[0.4em] mb-3">{item.step}</div>
+              <div className="mb-3">{item.icon}</div>
+              <h3 className="font-display text-xl italic mb-1">{item.title}</h3>
+              <p className="text-cream/40 text-sm leading-relaxed">{item.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── VIBE PILLS ── */}
+      <div>
+        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-cream/30 mb-5 flex items-center gap-2">
+          <Globe size={10} className="text-gold" /> Every kind of night out
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {VIBE_PILLS.map(({ label, Icon, color, bg }) => (
+            <button
+              key={label}
+              onClick={onEnter}
+              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-full text-[11px] font-bold border transition-all hover:-translate-y-0.5 ${bg} ${color}`}
+            >
+              <Icon size={12} /> {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── FINAL CTA ── */}
+      <div className="text-center pb-4">
+        <p className="text-cream/30 text-sm mb-5">It's {new Date().toLocaleString('en-US', { weekday: 'long' })} night. What's the move?</p>
+        <button
+          onClick={onEnter}
+          className="inline-flex items-center gap-2 border border-gold/40 text-gold px-7 py-3.5 rounded-full font-black uppercase tracking-[0.15em] text-[11px] hover:bg-gold/10 transition-all"
+        >
+          Find my crew <ArrowRight size={14} />
+        </button>
+      </div>
+
     </div>
   );
 }
 
 /* ══ ACTIVITY CARD ══ */
+function isTonight(dateStr: string) {
+  if (!dateStr) return false;
+  const eventDate = new Date(dateStr);
+  const now = new Date();
+  return eventDate.toDateString() === now.toDateString();
+}
+
 function ActivityCard({ h, joiningId, onJoin }: { h: any; joiningId: string | null; onJoin: (id: string) => void }) {
   const cat = CATEGORIES.find(c => c.key === h.category) || CATEGORIES[0];
   const CatIcon = cat.Icon;
   const isFull = h.current_guests >= h.max_guests;
   const spotsLeft = h.max_guests - h.current_guests;
+  const goingCount = h.attendees?.length || 0;
+  const tonight = isTonight(h.event_time);
 
   return (
     <div className="bg-white/[0.04] backdrop-blur-sm rounded-2xl border border-white/[0.07] hover:border-gold/30 hover:-translate-y-0.5 transition-all duration-200 flex flex-col overflow-hidden group">
       {/* Cover image */}
-      {h.cover_image && (
-        <div className="h-32 overflow-hidden">
+      <div className={`relative ${h.cover_image ? 'h-36' : 'h-0'} overflow-hidden`}>
+        {h.cover_image && (
           <img src={h.cover_image} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-        </div>
-      )}
+        )}
+        {/* Tonight badge */}
+        {tonight && (
+          <div className="absolute top-2.5 left-2.5 flex items-center gap-1 bg-gold text-obsidian text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-lg">
+            <Flame size={9} /> Tonight
+          </div>
+        )}
+        {/* Spots left badge on image */}
+        {h.cover_image && !isFull && (
+          <div className="absolute top-2.5 right-2.5 bg-black/60 backdrop-blur-sm text-[9px] font-black text-cream/80 px-2.5 py-1 rounded-full">
+            {spotsLeft} spot{spotsLeft !== 1 ? 's' : ''} left
+          </div>
+        )}
+      </div>
 
       <div className="p-5 flex flex-col flex-1">
-        {/* Category + type row */}
+        {/* Category + badges */}
         <div className="flex items-center justify-between mb-3">
           <span className={`flex items-center gap-1 text-[9px] font-black uppercase tracking-widest ${cat.color}`}>
             <CatIcon size={10} /> {cat.label}
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            {tonight && !h.cover_image && (
+              <span className="flex items-center gap-0.5 text-[9px] font-black uppercase tracking-widest text-gold bg-gold/10 border border-gold/30 px-2 py-0.5 rounded-full">
+                <Flame size={8} /> Tonight
+              </span>
+            )}
             {h.ticket_price != null && (
               <span className="text-[9px] font-black uppercase tracking-widest text-cream/50 flex items-center gap-0.5">
                 <Ticket size={9} /> ₦{(h.ticket_price / 1000).toFixed(0)}k
@@ -321,25 +434,80 @@ function ActivityCard({ h, joiningId, onJoin }: { h: any; joiningId: string | nu
             {h.ticket_price == null && h.ticket_url && (
               <span className="text-[9px] font-black text-green-400 uppercase tracking-widest">Free</span>
             )}
-            <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border ${h.type === 'curated' ? 'border-gold/30 text-gold/70' : 'border-blue-400/30 text-blue-400/70'}`}>
-              {h.type === 'curated' ? 'Curated' : 'Open'}
-            </span>
           </div>
         </div>
 
         {/* Title */}
         <h3 className="font-display text-xl sm:text-2xl italic leading-tight mb-1">{h.title}</h3>
-        <p className="text-cream/45 text-xs mb-4 line-clamp-2">{h.vibe}</p>
+        <p className="text-cream/45 text-xs mb-3 line-clamp-2">{h.vibe}</p>
 
         {/* Meta */}
-        <div className="space-y-1.5 mb-4 text-cream/40 text-xs">
+        <div className="space-y-1 mb-4 text-cream/40 text-xs">
           <div className="flex items-center gap-1.5"><Clock size={11} /> {h.formatted_time} <span className="text-cream/20">· {h.formatted_date}</span></div>
           <div className="flex items-center gap-1.5"><MapPin size={11} /> {h.location}</div>
-          {h.host_name && (
-            <div className="flex items-center gap-1.5 text-cream/50">
-              <span>By {h.host_name}</span>
-              {h.host_verified && <VerifiedBadge size={10} />}
-              {h.host_tier === 'black' && <span className="text-[8px] bg-gold/15 text-gold px-1.5 py-0.5 rounded font-black">BLACK</span>}
+        </div>
+
+        {/* ── WHO'S GOING — social proof hero ── */}
+        <div className="mb-4 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+          {goingCount > 0 ? (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="flex -space-x-2">
+                  {h.attendees.slice(0, 5).map((a: any) => (
+                    <div key={a.user_id} className="relative">
+                      <img
+                        src={a.avatar_url || `https://i.pravatar.cc/40?u=${a.user_id}`}
+                        className="w-8 h-8 rounded-full border-2 border-[#0a0a0a] object-cover"
+                        alt=""
+                      />
+                      {a.verified && (
+                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-gold rounded-full border border-[#0a0a0a] flex items-center justify-center">
+                          <Check size={6} className="text-obsidian" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {goingCount > 5 && (
+                    <div className="w-8 h-8 rounded-full border-2 border-[#0a0a0a] bg-white/10 flex items-center justify-center text-[9px] font-black text-cream/60">
+                      +{goingCount - 5}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <p className="text-[11px] font-bold text-cream/80 leading-tight">
+                    {goingCount === 1 ? '1 person going' : `${goingCount} people going`}
+                  </p>
+                  {h.attendees[0]?.name && (
+                    <p className="text-[9px] text-cream/35 leading-tight">
+                      {h.attendees[0].name}{goingCount > 1 ? ` + ${goingCount - 1} more` : ''}
+                    </p>
+                  )}
+                </div>
+              </div>
+              {h.host_name && (
+                <div className="text-right shrink-0">
+                  <p className="text-[8px] text-cream/25 uppercase tracking-widest font-black">Hosted by</p>
+                  <p className="text-[10px] font-bold text-cream/60 flex items-center gap-1 justify-end">
+                    {h.host_name}
+                    {h.host_verified && <VerifiedBadge size={10} />}
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-cream/25">
+                <div className="w-8 h-8 rounded-full border border-dashed border-white/10 flex items-center justify-center">
+                  <Users size={14} />
+                </div>
+                <div>
+                  <p className="text-[11px] font-bold text-cream/40">Be the first to join</p>
+                  <p className="text-[9px] text-cream/20">No one's signed up yet</p>
+                </div>
+              </div>
+              {h.host_name && (
+                <p className="text-[9px] text-cream/30 font-black">by {h.host_name}</p>
+              )}
             </div>
           )}
         </div>
@@ -351,30 +519,26 @@ function ActivityCard({ h, joiningId, onJoin }: { h: any; joiningId: string | nu
           </a>
         )}
 
-        {/* Attendees + join */}
-        <div className="mt-auto flex items-center justify-between pt-3 border-t border-white/[0.06]">
-          <div className="flex items-center gap-2">
-            <div className="flex -space-x-1.5">
-              {h.attendees?.slice(0, 4).map((a: any) => (
-                <div key={a.user_id} className="relative">
-                  <img src={a.avatar_url || `https://i.pravatar.cc/32?u=${a.user_id}`} className="w-6 h-6 rounded-full border border-[#0a0a0a] object-cover" alt="" />
-                  {a.verified && <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-gold rounded-full border border-[#0a0a0a] flex items-center justify-center"><Check size={5} className="text-obsidian" /></div>}
-                </div>
-              ))}
-            </div>
-            <span className="text-[10px] text-cream/30 font-black">
-              {isFull ? 'Full' : `${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left`}
-            </span>
-          </div>
+        {/* Join CTA */}
+        <div className="mt-auto pt-3 border-t border-white/[0.06]">
           {isFull ? (
-            <span className="text-[9px] text-cream/25 font-black uppercase tracking-widest">Full</span>
+            <div className="flex items-center justify-between">
+              <span className="text-[9px] text-cream/25 font-black uppercase tracking-widest">This one's full</span>
+              <span className="text-[9px] text-cream/20">Check back for cancellations</span>
+            </div>
           ) : (
             <button
               onClick={() => onJoin(h.id)}
               disabled={joiningId === h.id}
-              className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest bg-gold text-obsidian px-3.5 py-1.5 rounded-full hover:bg-gold-light active:scale-95 transition-all disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 text-[11px] font-black uppercase tracking-widest bg-gold text-obsidian py-3 rounded-xl hover:bg-gold-light active:scale-[0.98] transition-all disabled:opacity-50 shadow-[0_0_16px_rgba(201,168,76,0.2)]"
             >
-              {joiningId === h.id ? <Loader2 size={11} className="animate-spin" /> : <>Join <ArrowRight size={10} /></>}
+              {joiningId === h.id ? (
+                <Loader2 size={13} className="animate-spin" />
+              ) : (
+                <>
+                  <Users size={13} /> Join {goingCount > 0 ? 'the group' : 'as first'} <ArrowRight size={12} />
+                </>
+              )}
             </button>
           )}
         </div>
@@ -591,129 +755,69 @@ function HostTab() {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   VENUES TAB
+   GOING OUT TAB — Main feed: activities + join + people + groups
    ══════════════════════════════════════════════════════════════════════ */
-function VenuesTab() {
-  const [venues, setVenues] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [catFilter, setCatFilter] = useState('all');
-  const [reservingId, setReservingId] = useState<string | null>(null);
-  const [reservedId, setReservedId] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch('/api/venues').then(r => r.json()).then(d => { setVenues(d.venues || []); setLoading(false); }).catch(() => setLoading(false));
-  }, []);
-
-  const venueCats = [
-    { key: 'all', label: 'All', icon: '✦' },
-    { key: 'dining', label: 'Dining', icon: '🍽' },
-    { key: 'lounge', label: 'Lounge', icon: '🥂' },
-    { key: 'boardroom', label: 'Deal Rooms', icon: '💼' },
-    { key: 'accommodations', label: 'Stay', icon: '🛏' },
-    { key: 'wellness', label: 'Wellness', icon: '🧖' },
-  ];
-
-  const filtered = catFilter === 'all' ? venues : venues.filter(v => v.category === catFilter);
-  const fmt = (n: number) => `₦${(n / 1000).toFixed(0)}k`;
-
-  const reserve = (id: string) => {
-    setReservingId(id);
-    setTimeout(() => { setReservingId(null); setReservedId(id); setTimeout(() => setReservedId(null), 3000); }, 1500);
-  };
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl sm:text-4xl md:text-5xl italic mb-1">Partner Venues</h1>
-        <p className="text-cream/40 text-sm">Curated spaces we&apos;ve unlocked for you.</p>
-      </div>
-
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
-        {venueCats.map(c => (
-          <button key={c.key} onClick={() => setCatFilter(c.key)} className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap shrink-0 border transition-all ${catFilter === c.key ? 'bg-gold/15 text-gold border-gold/40' : 'text-cream/40 border-white/[0.08] hover:border-white/20'}`}>
-            <span>{c.icon}</span> {c.label}
-          </button>
-        ))}
-      </div>
-
-      {loading ? (
-        <div className="flex justify-center py-20"><Loader2 size={28} className="text-gold animate-spin" /></div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {filtered.map(v => (
-            <div key={v.id} className="bg-white/[0.03] border border-white/[0.07] rounded-2xl overflow-hidden hover:border-gold/25 transition-all group flex flex-col">
-              <div className="relative h-44 overflow-hidden">
-                <img src={v.image_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/20 to-transparent" />
-                <span className="absolute top-3 left-3 text-[9px] font-black uppercase tracking-[0.2em] text-gold bg-black/60 backdrop-blur-sm px-2.5 py-1 rounded-full border border-gold/20">{v.category}</span>
-                {v.rating && <span className="absolute top-3 right-3 flex items-center gap-1 text-[10px] font-black text-gold bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full"><Star size={9} fill="currentColor" /> {Number(v.rating).toFixed(1)}</span>}
-                <div className="absolute bottom-3 left-3">
-                  <h3 className="font-display text-2xl italic text-cream drop-shadow">{v.name}</h3>
-                  {v.partner_name && <p className="text-[9px] uppercase tracking-widest text-gold/60 font-black">by {v.partner_name}</p>}
-                </div>
-              </div>
-              <div className="p-5 flex flex-col flex-1">
-                <p className="text-cream/40 text-sm mb-4 line-clamp-2">{v.tagline}</p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {v.minimum_spend && <span className="text-[9px] font-black uppercase tracking-widest text-cream/40 bg-white/[0.04] px-2.5 py-1 rounded-full border border-white/[0.06]">From {fmt(v.minimum_spend)}/person</span>}
-                  {v.capacity && <span className="text-[9px] font-black uppercase tracking-widest text-cream/40 bg-white/[0.04] px-2.5 py-1 rounded-full border border-white/[0.06]">{v.capacity} guests</span>}
-                </div>
-                <div className="space-y-1 mb-4 text-cream/30 text-xs">
-                  {v.address && <p className="flex items-center gap-1.5"><MapPin size={10} /> {v.address}</p>}
-                  {v.availability && <p className="flex items-center gap-1.5"><Clock size={10} /> {v.availability}</p>}
-                </div>
-                <div className="mt-auto">
-                  {reservedId === v.id ? (
-                    <div className="w-full flex items-center justify-center gap-2 py-2.5 bg-green-900/20 border border-green-500/25 rounded-full text-green-400 text-[10px] font-black uppercase tracking-widest"><Check size={12} /> Requested</div>
-                  ) : (
-                    <button onClick={() => reserve(v.id)} disabled={reservingId === v.id} className="w-full flex items-center justify-center gap-2 py-2.5 bg-cream text-obsidian rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-gold transition-all disabled:opacity-50">
-                      {reservingId === v.id ? <Loader2 size={12} className="animate-spin" /> : <>Reserve a Seat <ArrowRight size={11} /></>}
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════════
-   CONNECT TAB — People nearby + Groups
-   ══════════════════════════════════════════════════════════════════════ */
-function ConnectTab({ location }: { location: ReturnType<typeof useCityLocation> }) {
-  const { city } = location;
-  const [activityGroups, setActivityGroups] = useState<any[]>([]);
+function GoingOutTab({ location }: { location: ReturnType<typeof useCityLocation> }) {
+  const { city, detecting } = location;
+  const [tab, setTab] = useState<'activities' | 'people' | 'groups'>('activities');
+  const [category, setCategory] = useState('all');
+  const [hangouts, setHangouts] = useState<any[]>([]);
   const [openToMeet, setOpenToMeet] = useState<any[]>([]);
   const [circles, setCircles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<'activity' | 'open' | 'groups'>('activity');
+  const [joiningId, setJoiningId] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [creating, setCreating] = useState(false);
+  const loadedRef = useRef(false);
 
-  const loadData = useCallback(async () => {
+  const loadHangouts = useCallback(async (targetCity: string | null, cat: string) => {
     setLoading(true);
     try {
       const p = new URLSearchParams();
+      if (targetCity) p.set('city', targetCity);
+      if (cat !== 'all') p.set('category', cat);
+      const r = await fetch('/api/hangouts?' + p.toString());
+      const data = await r.json();
+      setHangouts(data.hangouts || []);
+    } catch { /* ignore */ }
+    finally { setLoading(false); }
+  }, []);
+
+  const loadPeopleAndGroups = useCallback(async () => {
+    try {
+      const p = new URLSearchParams();
       if (city) p.set('city', city);
-      const [peopleRes, circlesRes] = await Promise.all([
+      const [pr, cr] = await Promise.all([
         fetch('/api/people?' + p.toString()),
         fetch('/api/circles'),
       ]);
-      const peopleData = await peopleRes.json();
-      const circlesData = await circlesRes.json();
-      setActivityGroups(peopleData.activity_groups || []);
-      setOpenToMeet(peopleData.open_to_meet || []);
-      setCircles(circlesData.circles || []);
+      const pd = await pr.json();
+      const cd = await cr.json();
+      setOpenToMeet(pd.open_to_meet || []);
+      setCircles(cd.circles || []);
     } catch { /* ignore */ }
-    finally { setLoading(false); }
   }, [city]);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => {
+    if (!detecting) { loadHangouts(city, category); loadPeopleAndGroups(); loadedRef.current = true; }
+  }, [city, detecting]); // eslint-disable-line
+
+  useEffect(() => {
+    if (loadedRef.current) loadHangouts(city, category);
+  }, [category]); // eslint-disable-line
+
+  const join = async (id: string) => {
+    setJoiningId(id);
+    try {
+      const res = await fetch(`/api/hangouts/${id}/join`, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) loadHangouts(city, category);
+      else alert(data.error || 'Could not join.');
+    } catch { alert('Network error.'); }
+    finally { setJoiningId(null); }
+  };
 
   const createGroup = async () => {
     if (!newName.trim()) return;
@@ -724,28 +828,42 @@ function ConnectTab({ location }: { location: ReturnType<typeof useCityLocation>
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newName, description: newDesc }),
       });
-      if (res.ok) { setNewName(''); setNewDesc(''); setShowCreate(false); loadData(); }
+      if (res.ok) { setNewName(''); setNewDesc(''); setShowCreate(false); loadPeopleAndGroups(); }
     } catch { /* ignore */ }
     setCreating(false);
   };
 
-  const catMeta = (key: string) => CATEGORIES.find(c => c.key === key) || CATEGORIES[0];
-
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl sm:text-4xl md:text-5xl italic mb-1">Connect</h1>
-        <p className="text-cream/40 text-sm">
-          {city ? `Who's out in ${city} — grouped by where they're going.` : 'People grouped by where they\'re going.'}
-        </p>
+    <div className="space-y-5">
+
+      {/* ── Header ── */}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gold/50 mb-1 flex items-center gap-1.5">
+            {city && !detecting
+              ? <><Navigation size={8} /> {city}</>
+              : detecting
+              ? <><Loader2 size={8} className="animate-spin" /> Locating…</>
+              : 'Everywhere'}
+          </p>
+          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl italic leading-tight">Going Out</h1>
+          <p className="text-cream/40 text-sm mt-1">
+            {city ? `What's on in ${city} — join a plan or post your own.` : 'Find a plan or post your own.'}
+          </p>
+        </div>
+        {tab === 'activities' && (
+          <button onClick={() => loadHangouts(city, category)} className="shrink-0 mt-1 text-[9px] text-cream/30 hover:text-gold uppercase tracking-widest font-black transition-colors flex items-center gap-1">
+            <Wifi size={10} /> Refresh
+          </button>
+        )}
       </div>
 
-      {/* Sub tabs */}
+      {/* ── Sub-tabs ── */}
       <div className="flex gap-1 bg-white/[0.04] rounded-full p-1 w-fit">
         {([
-          { key: 'activity', label: 'By Activity' },
-          { key: 'open',     label: 'Open to Meet' },
-          { key: 'groups',   label: 'My Groups' },
+          { key: 'activities', label: 'Activities' },
+          { key: 'people',     label: 'People' },
+          { key: 'groups',     label: 'My Crew' },
         ] as const).map(t => (
           <button
             key={t.key}
@@ -757,99 +875,54 @@ function ConnectTab({ location }: { location: ReturnType<typeof useCityLocation>
         ))}
       </div>
 
-      {loading ? (
-        <div className="flex justify-center py-20"><Loader2 size={28} className="text-gold animate-spin" /></div>
-      ) : tab === 'activity' ? (
-        /* ── Grouped by upcoming event ── */
-        activityGroups.length === 0 ? (
-          <div className="text-center py-20 text-cream/25">
-            <Users size={40} className="mx-auto mb-4 opacity-40" />
-            <p className="font-display text-2xl italic mb-2">No upcoming activities{city ? ` in ${city}` : ''}.</p>
-            <p className="text-sm">Post one and others will appear here.</p>
+      {/* ── ACTIVITIES ── */}
+      {tab === 'activities' && (
+        <>
+          {/* Category filter */}
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+            {CATEGORIES.map(({ key, label, Icon }) => (
+              <button
+                key={key}
+                onClick={() => setCategory(key)}
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap shrink-0 ${
+                  category === key
+                    ? 'bg-gold/15 text-gold border border-gold/40'
+                    : 'text-cream/40 border border-white/[0.08] hover:border-white/20 hover:text-cream/60'
+                }`}
+              >
+                <Icon size={11} /> {label}
+              </button>
+            ))}
           </div>
-        ) : (
-          <div className="space-y-4">
-            {activityGroups.map((group: any) => {
-              const cat = catMeta(group.category);
-              const CatIcon = cat.Icon;
-              const spotsLeft = group.max_guests - group.current_guests;
-              return (
-                <div key={group.hangout_id} className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-5 hover:border-gold/25 transition-all">
-                  {/* Location header */}
-                  <div className="flex items-start justify-between gap-3 mb-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className={`flex items-center gap-1 text-[9px] font-black uppercase tracking-widest ${cat.color}`}>
-                          <CatIcon size={10} /> {cat.label}
-                        </span>
-                        <span className="text-cream/20 text-[9px]">·</span>
-                        <span className="text-[9px] text-cream/30 font-black uppercase tracking-widest flex items-center gap-1">
-                          <Clock size={9} /> {group.formatted_time} {group.formatted_date}
-                        </span>
-                      </div>
-                      <h3 className="font-display text-xl italic leading-tight truncate">{group.title}</h3>
-                      <p className="text-[10px] text-cream/35 flex items-center gap-1 mt-0.5">
-                        <MapPin size={9} /> {group.location}
-                      </p>
-                    </div>
-                    <div className="shrink-0 text-right">
-                      <p className="text-[9px] font-black text-cream/30 uppercase tracking-widest">
-                        {spotsLeft > 0 ? `${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left` : 'Full'}
-                      </p>
-                      {group.ticket_price != null && (
-                        <p className="text-[9px] text-gold/60 font-black mt-0.5">₦{(group.ticket_price / 1000).toFixed(0)}k</p>
-                      )}
-                    </div>
-                  </div>
 
-                  {/* Attendee avatars + names */}
-                  {group.attendees.length > 0 ? (
-                    <div className="flex flex-wrap gap-3">
-                      {group.attendees.map((a: any) => (
-                        <div key={a.id} className="flex items-center gap-2 bg-white/[0.04] rounded-full px-2.5 py-1.5 border border-white/[0.06]">
-                          <div className="relative">
-                            <img
-                              src={a.avatar_url || `https://i.pravatar.cc/32?u=${a.id}`}
-                              alt=""
-                              className="w-6 h-6 rounded-full object-cover"
-                            />
-                            {a.verified && (
-                              <div className="absolute -bottom-0.5 -right-0.5">
-                                <VerifiedBadge size={10} />
-                              </div>
-                            )}
-                          </div>
-                          <span className="text-[11px] font-bold text-cream/70 whitespace-nowrap">{a.name}</span>
-                          {a.tier === 'black' && (
-                            <span className="text-[8px] bg-gold/15 text-gold px-1 py-0.5 rounded font-black">BLACK</span>
-                          )}
-                        </div>
-                      ))}
-                      {spotsLeft > 0 && (
-                        <div className="flex items-center gap-1.5 bg-gold/10 border border-gold/25 rounded-full px-3 py-1.5 cursor-pointer hover:bg-gold/15 transition-colors">
-                          <PlusSquare size={11} className="text-gold" />
-                          <span className="text-[11px] font-black text-gold">Join them</span>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="text-[10px] text-cream/20 italic">No attendees yet — be the first.</p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )
-      ) : tab === 'open' ? (
-        /* ── Open to meet ── */
+          {loading ? (
+            <div className="flex items-center justify-center py-20"><Loader2 size={28} className="text-gold animate-spin" /></div>
+          ) : hangouts.length === 0 ? (
+            <div className="text-center py-20 text-cream/25">
+              <Compass size={40} className="mx-auto mb-4 opacity-40" />
+              <p className="font-display text-2xl italic mb-2">Nothing on yet{city ? ` in ${city}` : ''}.</p>
+              <p className="text-sm">Be the first — tap Host to post something.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {hangouts.map((h: any) => (
+                <ActivityCard key={h.id} h={h} joiningId={joiningId} onJoin={join} />
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ── PEOPLE ── */}
+      {tab === 'people' && (
         <div className="space-y-5">
-          <p className="text-cream/30 text-sm">
-            People in {city || 'your city'} who are open to meeting up — no specific event needed.
+          <p className="text-cream/35 text-sm">
+            People in {city || 'your city'} who are open to meeting up — no event needed.
           </p>
           {openToMeet.length === 0 ? (
             <div className="text-center py-16 text-cream/25">
               <UserCheck size={40} className="mx-auto mb-4 opacity-40" />
-              <p className="font-display text-xl italic mb-2">No one flagged as open to meet yet.</p>
+              <p className="font-display text-xl italic mb-2">No one is flagged as open to meet yet.</p>
               <p className="text-sm">Toggle "Open to Meet" in your Profile to appear here.</p>
             </div>
           ) : (
@@ -875,10 +948,12 @@ function ConnectTab({ location }: { location: ReturnType<typeof useCityLocation>
             </div>
           )}
         </div>
-      ) : (
-        /* ── My Groups ── */
-        <div className="space-y-5">
-          <p className="text-cream/30 text-sm">Your groups — people you regularly go out with.</p>
+      )}
+
+      {/* ── GROUPS / CREW ── */}
+      {tab === 'groups' && (
+        <div className="space-y-4">
+          <p className="text-cream/35 text-sm">Your groups — people you regularly go out with.</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {circles.map((c: any) => (
               <div key={c.id} className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-5 flex flex-col items-center text-center gap-3 hover:border-gold/25 hover:-translate-y-0.5 transition-all group cursor-pointer">
@@ -908,6 +983,7 @@ function ConnectTab({ location }: { location: ReturnType<typeof useCityLocation>
           </div>
         </div>
       )}
+
     </div>
   );
 }

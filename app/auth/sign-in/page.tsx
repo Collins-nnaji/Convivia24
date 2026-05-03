@@ -18,7 +18,7 @@ export default function SignInPage() {
       <div className="relative z-10 w-full max-w-md mx-auto px-6">
         {/* Logo */}
         <div className="text-center mb-10">
-          <Link href="/spaces">
+          <Link href="/">
             <img
               src="/convivia24.png"
               alt="Convivia24"
@@ -51,16 +51,10 @@ export default function SignInPage() {
         {/* Explore links */}
         <div className="mt-8 flex gap-3 justify-center">
           <Link
-            href="/spaces"
+            href="/"
             className="px-5 py-2.5 border border-cream/15 rounded-xl text-cream/50 text-[11px] font-bold uppercase tracking-widest hover:border-cream/30 hover:text-cream transition-colors"
           >
-            Explore Venues
-          </Link>
-          <Link
-            href="/convivium"
-            className="px-5 py-2.5 border border-gold/20 rounded-xl text-gold/60 text-[11px] font-bold uppercase tracking-widest hover:border-gold/40 hover:text-gold transition-colors"
-          >
-            Black Tier
+            Explore the App
           </Link>
         </div>
       </div>
