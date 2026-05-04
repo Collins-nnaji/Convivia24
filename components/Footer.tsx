@@ -21,7 +21,7 @@ export default function Footer() {
               <p className="text-[9px] font-black uppercase tracking-[0.3em] text-cream/40">Come to the Table</p>
             </div>
             <p className="text-xs text-cream/40 max-w-xs leading-relaxed">
-              Find what's happening, see who's going, and never go out alone again. Lagos · Abuja · London.
+              Daily check-ins, small squads, and healthy group activities across Lagos, Abuja, and London.
             </p>
           </div>
 
@@ -44,7 +44,7 @@ export default function Footer() {
                 href="/auth/sign-in"
                 className="block w-full text-center py-3 border border-gold/30 text-gold text-[10px] font-black uppercase tracking-[0.2em] hover:bg-gold/10 transition-colors"
               >
-                Sign In → Dashboard
+                Open Your 24
               </Link>
             </div>
           </div>

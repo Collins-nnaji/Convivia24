@@ -3,76 +3,60 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 15, 15, 20;
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8f7f5;
-  --border-subtle: rgba(0,0,0,0.07);
+  --brand:    #E8181A;
+  --brand-dk: #B91215;
+  --fg:       #0f0f0f;
+  --bg:       #ffffff;
 }
 
-html {
-  background: #ffffff;
-}
+html { background: #ffffff; }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: #ffffff;
+  color: var(--fg);
+  background: var(--bg);
   -webkit-font-smoothing: antialiased;
 }
 
-/* Custom Utilities */
-.animate-spin-slow {
-  animation: spin 12s linear infinite;
-}
+/* Selection */
+::selection { background: #E8181A; color: #ffffff; }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #f5f5f5; }
+::-webkit-scrollbar-thumb { background: #E8181A; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #B91215; }
 
+/* Utilities */
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+  .text-balance { text-wrap: balance; }
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
 }
 
-/* Selection */
-::selection {
-  background: #c9a84c;
-  color: #ffffff;
-}
-
-/* Subtle scrollbar */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: #f8f7f5; }
-::-webkit-scrollbar-thumb { background: #d4b86a; border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: #c9a84c; }
-
-/* Mobile app feel */
+/* Mobile feel */
 * { -webkit-tap-highlight-color: transparent; }
 button, a { touch-action: manipulation; }
 
-/* Page transition base */
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-.animate-slide-up { animation: slideUp 0.35s cubic-bezier(0.22,1,0.36,1) both; }
-.animate-fade-in  { animation: fadeIn 0.25s ease both; }
+/* ── Splash screen ── */
+.splash-enter { animation: splashEnter 0.9s cubic-bezier(0.22,1,0.36,1) forwards; }
+.splash-exit  { animation: splashExit  0.5s cubic-bezier(0.4,0,1,1) forwards; }
 
-/* Card press effect */
-.card-press { transition: transform 0.12s ease, box-shadow 0.12s ease; }
-.card-press:active { transform: scale(0.975); }
+@keyframes splashEnter {
+  from { opacity: 0; transform: scale(0.82); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes splashExit {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(1.08); }
+}
 
-/* Pill button press */
-.pill-press:active { transform: scale(0.94); }
+/* ── Stagger helpers ── */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.12s; }
+.stagger-3 { animation-delay: 0.19s; }
+.stagger-4 { animation-delay: 0.26s; }
+.stagger-5 { animation-delay: 0.33s; }
+.stagger-6 { animation-delay: 0.40s; }

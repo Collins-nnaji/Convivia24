@@ -8,6 +8,54 @@ const FACE_ENDPOINT = process.env.AZURE_FACE_ENDPOINT;
 const FACE_KEY = process.env.AZURE_FACE_KEY;
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const MIN_CONFIDENCE = 0.55;
+
+function faceApiUrl(path: string) {
+  return `${FACE_ENDPOINT?.replace(/\/+$/, '')}/face/v1.0/${path}`;
+}
+
+async function azureErrorMessage(res: Response) {
+  try {
+    const data = await res.json();
+    return data?.error?.message || data?.message || JSON.stringify(data);
+  } catch {
+    return res.text();
+  }
+}
+
+async function detectFace(buffer: Buffer, label: string) {
+  const res = await fetch(
+    `${faceApiUrl('detect')}?returnFaceId=true&recognitionModel=recognition_04&detectionModel=detection_03`,
+    {
+      method: 'POST',
+      headers: {
+        'Ocp-Apim-Subscription-Key': FACE_KEY!,
+        'Content-Type': 'application/octet-stream',
+      },
+      body: buffer,
+    }
+  );
+
+  if (!res.ok) {
+    const err = await azureErrorMessage(res);
+    console.error(`Face detect (${label}) error:`, err);
+    return { error: `Could not detect a face in the ${label}. Try a clear, front-facing photo in better light.` };
+  }
+
+  const faces: any[] = await res.json();
+  if (faces.length === 0) {
+    return { error: `No face detected in the ${label}. Look directly at the camera and try again.` };
+  }
+
+  if (!faces[0].faceId) {
+    return {
+      error:
+        'Azure detected a face but did not return a faceId. Your Face resource may need Face Identify/Verify limited-access approval enabled in Azure.',
+    };
+  }
+
+  return { faceId: faces[0].faceId as string };
+}
 
 export async function POST(req: NextRequest) {
   if (!FACE_ENDPOINT || !FACE_KEY) {
@@ -37,84 +85,55 @@ export async function POST(req: NextRequest) {
 
     const selfieBuffer = Buffer.from(await selfie.arrayBuffer());
 
-    // Detect face in the selfie (uploaded as binary)
-    const selfieDetect = await fetch(
-      `${FACE_ENDPOINT}/face/v1.0/detect?returnFaceId=true&recognitionModel=recognition_04&detectionModel=detection_03`,
-      {
-        method: 'POST',
-        headers: {
-          'Ocp-Apim-Subscription-Key': FACE_KEY,
-          'Content-Type': 'application/octet-stream',
-        },
-        body: selfieBuffer,
-      }
-    );
-
-    if (!selfieDetect.ok) {
-      const err = await selfieDetect.text();
-      console.error('Face detect (selfie) error:', err);
-      return NextResponse.json({ error: 'Could not detect a face in the selfie. Try again in better light.' }, { status: 422 });
+    const avatarRes = await fetch(String(user.avatar_url));
+    if (!avatarRes.ok) {
+      return NextResponse.json(
+        { error: 'Could not read your profile photo. Upload it again and try verification.' },
+        { status: 422 }
+      );
     }
 
-    const selfieFaces: any[] = await selfieDetect.json();
-    if (selfieFaces.length === 0) {
-      return NextResponse.json({ error: 'No face detected in the selfie. Look directly at the camera.' }, { status: 422 });
-    }
-    const selfieFaceId = selfieFaces[0].faceId;
-
-    // Detect face in the profile photo (fetch it as a URL)
-    const dpDetect = await fetch(
-      `${FACE_ENDPOINT}/face/v1.0/detect?returnFaceId=true&recognitionModel=recognition_04&detectionModel=detection_03`,
-      {
-        method: 'POST',
-        headers: {
-          'Ocp-Apim-Subscription-Key': FACE_KEY,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url: user.avatar_url }),
-      }
-    );
-
-    if (!dpDetect.ok) {
-      const err = await dpDetect.text();
-      console.error('Face detect (dp) error:', err);
-      return NextResponse.json({ error: 'Could not read face from your profile photo. Try a clearer headshot.' }, { status: 422 });
+    const avatarBuffer = Buffer.from(await avatarRes.arrayBuffer());
+    if (avatarBuffer.length > MAX_FILE_SIZE) {
+      return NextResponse.json({ error: 'Profile photo is too large. Upload a smaller headshot.' }, { status: 400 });
     }
 
-    const dpFaces: any[] = await dpDetect.json();
-    if (dpFaces.length === 0) {
-      return NextResponse.json({ error: 'No face found in your profile photo. Update your photo with a clear headshot and try again.' }, { status: 422 });
-    }
-    const dpFaceId = dpFaces[0].faceId;
+    const selfieDetect = await detectFace(selfieBuffer, 'selfie');
+    if (selfieDetect.error) return NextResponse.json({ error: selfieDetect.error }, { status: 422 });
+
+    const profileDetect = await detectFace(avatarBuffer, 'profile photo');
+    if (profileDetect.error) return NextResponse.json({ error: profileDetect.error }, { status: 422 });
 
     // Compare the two face IDs
-    const verifyRes = await fetch(`${FACE_ENDPOINT}/face/v1.0/verify`, {
+    const verifyRes = await fetch(faceApiUrl('verify'), {
       method: 'POST',
       headers: {
         'Ocp-Apim-Subscription-Key': FACE_KEY,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ faceId1: selfieFaceId, faceId2: dpFaceId }),
+      body: JSON.stringify({ faceId1: selfieDetect.faceId, faceId2: profileDetect.faceId }),
     });
 
     if (!verifyRes.ok) {
-      const err = await verifyRes.text();
+      const err = await azureErrorMessage(verifyRes);
       console.error('Face verify error:', err);
-      return NextResponse.json({ error: 'Verification service error. Try again shortly.' }, { status: 502 });
+      return NextResponse.json({ error: `Verification service error: ${err}` }, { status: 502 });
     }
 
     const result = await verifyRes.json();
 
-    // Azure returns isIdentical + confidence (0–1). Require ≥ 0.6 confidence.
-    if (!result.isIdentical || result.confidence < 0.6) {
+    // Azure returns isIdentical + confidence (0-1). Keep threshold practical for mobile selfies.
+    if (!result.isIdentical || result.confidence < MIN_CONFIDENCE) {
       return NextResponse.json(
         { error: `Face did not match your profile photo (confidence: ${Math.round((result.confidence || 0) * 100)}%). Make sure your profile photo is a clear headshot.` },
         { status: 422 }
       );
     }
 
-    // Upload the selfie to Azure Blob for audit trail
-    await uploadFile(selfieBuffer, `verify-${user.id}-${Date.now()}.jpg`, 'image/jpeg');
+    // Store audit selfie if Blob Storage is configured, but do not fail a successful face match.
+    uploadFile(selfieBuffer, `verify-${user.id}-${Date.now()}.jpg`, 'image/jpeg').catch((err) => {
+      console.error('Verification audit upload failed:', err);
+    });
 
     // Mark the user as verified
     const updated = await sql`

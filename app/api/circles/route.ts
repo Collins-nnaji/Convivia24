@@ -43,15 +43,15 @@ export async function POST(req: NextRequest) {
     }
 
     const user = await getOrCreateUser(authUser);
-    const { name, description } = await req.json();
+    const { name, description, intention } = await req.json();
 
     if (!name?.trim()) {
       return NextResponse.json({ error: 'Circle name is required.' }, { status: 400 });
     }
 
     const rows = await sql`
-      INSERT INTO circles (name, description, created_by)
-      VALUES (${name.trim()}, ${description?.trim() || null}, ${user.id})
+      INSERT INTO circles (name, description, intention, created_by)
+      VALUES (${name.trim()}, ${description?.trim() || null}, ${intention?.trim() || 'morning'}, ${user.id})
       RETURNING *
     `;
 

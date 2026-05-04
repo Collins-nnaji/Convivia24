@@ -29,6 +29,11 @@ CREATE TABLE IF NOT EXISTS users (
   hangouts_count INT DEFAULT 0,
   verified      BOOLEAN NOT NULL DEFAULT false,       -- identity verified (stub — wire to Twilio/KYC later)
   open_to_meet  BOOLEAN NOT NULL DEFAULT false,       -- user is actively open to meeting people now
+  company       TEXT,
+  role          TEXT,
+  website       TEXT,
+  product_category TEXT,
+  target_markets TEXT[] NOT NULL DEFAULT '{}',
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -63,8 +68,8 @@ CREATE TABLE IF NOT EXISTS hangouts (
   host_id       UUID REFERENCES users(id) ON DELETE CASCADE,
   title         TEXT NOT NULL,
   vibe          TEXT NOT NULL,
-  category      TEXT NOT NULL DEFAULT 'social'        -- 'nightlife','dining','sports','fitness','gigs','outdoors','arts','social'
-                  CHECK (category IN ('nightlife','dining','sports','fitness','gigs','outdoors','arts','social')),
+  category      TEXT NOT NULL DEFAULT 'walk'          -- healthy lifestyle activity category
+                  CHECK (category IN ('walk','run','cook','workout','stretch','mindful','nightlife','dining','sports','fitness','gigs','outdoors','arts','social')),
   type          TEXT NOT NULL DEFAULT 'open'           -- 'open' or 'curated'
                   CHECK (type IN ('open', 'curated')),
   status        TEXT NOT NULL DEFAULT 'pending'       -- 'pending', 'confirmed', 'completed', 'dissolved'
@@ -94,12 +99,25 @@ CREATE TABLE IF NOT EXISTS attendees (
 );
 
 -- ─────────────────────────────────────
+-- DAILY CHECK-INS
+-- ─────────────────────────────────────
+CREATE TABLE IF NOT EXISTS checkins (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id       UUID REFERENCES users(id) ON DELETE CASCADE,
+  pillars       TEXT[] NOT NULL DEFAULT '{}',
+  feel          TEXT,
+  reflection    TEXT,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ─────────────────────────────────────
 -- CIRCLES (6–24 person groups)
 -- ─────────────────────────────────────
 CREATE TABLE IF NOT EXISTS circles (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name          TEXT NOT NULL,
   description   TEXT,
+  intention     TEXT NOT NULL DEFAULT 'morning',
   created_by    UUID REFERENCES users(id) ON DELETE CASCADE,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -153,6 +171,151 @@ CREATE TABLE IF NOT EXISTS waitlist (
 );
 
 -- ─────────────────────────────────────
+-- CLIENT MARKET ENTRY PROFILES
+-- ─────────────────────────────────────
+CREATE TABLE IF NOT EXISTS client_profiles (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id         UUID UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+  company         TEXT,
+  role            TEXT,
+  website         TEXT,
+  product_category TEXT,
+  target_markets  TEXT[] NOT NULL DEFAULT '{}',
+  launch_goal     TEXT,
+  budget_range    TEXT,
+  logo_url        TEXT,
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ─────────────────────────────────────
+-- MARKET ENTRY SPRINTS
+-- ─────────────────────────────────────
+CREATE TABLE IF NOT EXISTS market_sprints (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id         UUID REFERENCES users(id) ON DELETE CASCADE,
+  title           TEXT NOT NULL,
+  product_name    TEXT NOT NULL,
+  market          TEXT NOT NULL DEFAULT 'Nigeria',
+  category        TEXT,
+  stage           TEXT NOT NULL DEFAULT 'idea'
+                    CHECK (stage IN ('idea','research','testing','activation','report','complete')),
+  goal            TEXT,
+  audience        TEXT,
+  budget          TEXT,
+  asset_url       TEXT,
+  status          TEXT NOT NULL DEFAULT 'active'
+                    CHECK (status IN ('active','paused','complete','archived')),
+  start_date      DATE,
+  end_date        DATE,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ─────────────────────────────────────
+-- MARKET INSIGHTS
+-- ─────────────────────────────────────
+CREATE TABLE IF NOT EXISTS market_insights (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  sprint_id       UUID REFERENCES market_sprints(id) ON DELETE CASCADE,
+  user_id         UUID REFERENCES users(id) ON DELETE CASCADE,
+  title           TEXT NOT NULL,
+  market          TEXT NOT NULL DEFAULT 'Nigeria',
+  insight_type    TEXT NOT NULL DEFAULT 'consumer'
+                    CHECK (insight_type IN ('consumer','pricing','competitor','channel','culture','risk')),
+  summary         TEXT NOT NULL,
+  recommendation  TEXT,
+  confidence      INT NOT NULL DEFAULT 70,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ─────────────────────────────────────
+-- BRAND ACTIVATIONS
+-- ─────────────────────────────────────
+CREATE TABLE IF NOT EXISTS brand_activations (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  sprint_id       UUID REFERENCES market_sprints(id) ON DELETE CASCADE,
+  user_id         UUID REFERENCES users(id) ON DELETE CASCADE,
+  title           TEXT NOT NULL,
+  city            TEXT NOT NULL DEFAULT 'Lagos',
+  channel         TEXT NOT NULL DEFAULT 'sampling',
+  venue           TEXT,
+  activation_date DATE,
+  target_leads    INT DEFAULT 100,
+  actual_leads    INT DEFAULT 0,
+  status          TEXT NOT NULL DEFAULT 'planned'
+                    CHECK (status IN ('planned','live','complete','cancelled')),
+  notes           TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ─────────────────────────────────────
+-- BULK DRINKS SUPPLY
+-- ─────────────────────────────────────
+CREATE TABLE IF NOT EXISTS outlet_profiles (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id         UUID UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+  outlet_name     TEXT,
+  outlet_type     TEXT NOT NULL DEFAULT 'nightlife',
+  city            TEXT NOT NULL DEFAULT 'Lagos',
+  address         TEXT,
+  contact_name    TEXT,
+  phone           TEXT,
+  logo_url        TEXT,
+  delivery_window TEXT,
+  credit_terms    BOOLEAN NOT NULL DEFAULT false,
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS drink_products (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  sku             TEXT UNIQUE NOT NULL,
+  brand           TEXT NOT NULL,
+  name            TEXT NOT NULL,
+  category        TEXT NOT NULL
+                    CHECK (category IN ('beer','spirits','wine','non_alcoholic','water','energy','mixer')),
+  pack_size       TEXT NOT NULL,
+  unit            TEXT NOT NULL DEFAULT 'case',
+  price_ngn       INT NOT NULL,
+  market_price_ngn INT,
+  moq             NUMERIC(8, 2) NOT NULL DEFAULT 1,
+  stock_status    TEXT NOT NULL DEFAULT 'in_stock'
+                    CHECK (stock_status IN ('in_stock','low_stock','preorder','out_of_stock')),
+  image_url       TEXT,
+  tags            TEXT[] NOT NULL DEFAULT '{}',
+  is_active       BOOLEAN NOT NULL DEFAULT true,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS drink_orders (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id          UUID REFERENCES users(id) ON DELETE CASCADE,
+  outlet_profile_id UUID REFERENCES outlet_profiles(id),
+  order_type       TEXT NOT NULL DEFAULT 'regular'
+                     CHECK (order_type IN ('regular','emergency')),
+  status           TEXT NOT NULL DEFAULT 'pending'
+                     CHECK (status IN ('pending','confirmed','dispatching','delivered','cancelled')),
+  delivery_city    TEXT NOT NULL DEFAULT 'Lagos',
+  delivery_address TEXT,
+  delivery_window  TEXT,
+  subtotal_ngn     INT NOT NULL DEFAULT 0,
+  notes            TEXT,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS drink_order_items (
+  order_id       UUID REFERENCES drink_orders(id) ON DELETE CASCADE,
+  product_id     UUID REFERENCES drink_products(id),
+  quantity       NUMERIC(8, 2) NOT NULL,
+  unit_price_ngn INT NOT NULL,
+  line_total_ngn INT NOT NULL,
+  PRIMARY KEY (order_id, product_id)
+);
+
+-- ─────────────────────────────────────
 -- INDEXES
 -- ─────────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_users_auth ON users(auth_id);
@@ -160,8 +323,14 @@ CREATE INDEX IF NOT EXISTS idx_hangouts_status ON hangouts(status);
 CREATE INDEX IF NOT EXISTS idx_hangouts_type ON hangouts(type);
 CREATE INDEX IF NOT EXISTS idx_hangouts_time ON hangouts(event_time);
 CREATE INDEX IF NOT EXISTS idx_attendees_user ON attendees(user_id);
+CREATE INDEX IF NOT EXISTS idx_checkins_user_created ON checkins(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_circle_members_user ON circle_members(user_id);
 CREATE INDEX IF NOT EXISTS idx_venues_city ON venues(city);
 CREATE INDEX IF NOT EXISTS idx_inquiries_email ON inquiries(email);
 CREATE INDEX IF NOT EXISTS idx_inquiries_status ON inquiries(status);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_waitlist_email ON waitlist(LOWER(email));
+CREATE INDEX IF NOT EXISTS idx_market_sprints_user ON market_sprints(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_market_insights_user ON market_insights(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_brand_activations_user ON brand_activations(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_drink_products_category ON drink_products(category);
+CREATE INDEX IF NOT EXISTS idx_drink_orders_user ON drink_orders(user_id, created_at DESC);

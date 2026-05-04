@@ -1,16 +1,19 @@
-import { AppConceptBoard } from '@/components/app/AppConceptBoard';
-
-export const dynamic = 'force-dynamic';
+import { BulkDrinksSupplyApp } from '@/components/app/BulkDrinksSupplyApp';
 
 export default async function AppRootPage() {
-  // Temporary: Dummy user to bypass auth blocker for development
-  // avatar_url intentionally omitted — ProfileTab fetches fresh data from /api/profile
   const dummyUser = {
     id: 'dummy-id',
     name: 'Collins Nnaji (Preview)',
     email: 'preview@convivia24.com',
-    tier: 'black',
+    tier: 'standard',
     location: 'Lagos',
+    bio: 'Bulk drinks supply for nightlife and HORECA.',
+    company: 'Preview Lounge',
+    role: 'Outlet Manager',
+    product_category: 'Drinks supply',
+    target_markets: ['Nigeria'],
+    open_to_meet: false,
+    verified: false,
     created_at: new Date().toISOString(),
   };
 
@@ -23,7 +26,7 @@ export default async function AppRootPage() {
       </div>
 
       <div className="relative z-10 w-full h-[100dvh] flex flex-col">
-        <AppConceptBoard initialUser={dummyUser} />
+        <BulkDrinksSupplyApp initialUser={dummyUser} />
       </div>
     </main>
   );

@@ -8,10 +8,10 @@ import { SectionLabel } from '@/components/ui/SectionLabel';
 
 const INQUIRY_TYPES = [
   'General Inquiry',
-  'Membership — The Convivium',
-  'Dining & Events — The Table',
-  'Stay — Chambers',
-  'Programming — Founder Residency / The Gathering',
+  'Join a Squad',
+  'Start a Squad — for my community',
+  'Convivia Black — Upgrade',
+  'Corporate Wellness — Team squads',
   'Partnerships & Press',
 ];
 
@@ -96,7 +96,7 @@ export default function InquirePage() {
             </motion.h1>
 
             <motion.p variants={fadeUp} className="text-cream/50 text-base leading-relaxed mb-12 max-w-md">
-              Membership, events, partnerships, or just curiosity — every inquiry is read personally and responded to within 48 hours.
+              Squads, partnerships, corporate wellness, or just curiosity — every inquiry is read personally and responded to within 48 hours.
             </motion.p>
 
             {/* What happens next */}
@@ -138,10 +138,10 @@ export default function InquirePage() {
                   Your inquiry has been received. We respond to every message within 48 hours.
                 </p>
                 <Link
-                  href="/spaces"
+                  href="/"
                   className="inline-flex items-center gap-2 text-gold/60 hover:text-gold text-[10px] font-black uppercase tracking-[0.2em] transition-colors"
                 >
-                  Explore The Spaces <ArrowRight size={11} />
+                  Back to Your 24 <ArrowRight size={11} />
                 </Link>
               </div>
             ) : (

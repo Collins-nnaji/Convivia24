@@ -23,12 +23,17 @@ export async function GET() {
       SELECT COUNT(*) as count FROM circle_members WHERE user_id = ${user.id}
     `;
 
+    const checkinsResult = await sql`
+      SELECT COUNT(*) as count FROM checkins WHERE user_id = ${user.id}
+    `;
+
     return NextResponse.json({
       user: {
         ...user,
         created_at: user.created_at instanceof Date ? user.created_at.toISOString() : user.created_at,
         connections_count: Number(connectionsResult[0]?.count || 0),
         circles_count: Number(circlesResult[0]?.count || 0),
+        checkins_count: Number(checkinsResult[0]?.count || 0),
       },
     });
   } catch (err) {
