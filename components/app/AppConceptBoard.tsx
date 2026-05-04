@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Compass, PlusSquare, User as UserIcon, Zap,
@@ -8,7 +9,7 @@ import {
   MapPin, Camera, Calendar, LogOut, Edit3, Check, X, Loader2,
   UserCheck, Navigation, Wifi, WifiOff, ShieldCheck, Link as LinkIcon,
   Music, Utensils, Dumbbell, TreePine, Palette, Wine, Globe, Flame,
-  ChevronRight, Sparkles, PartyPopper
+  ChevronRight, Sparkles, PartyPopper, Sun, AlertCircle, RefreshCw
 } from 'lucide-react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { PlacesAutocomplete } from '@/components/PlacesAutocomplete';
@@ -118,12 +119,12 @@ export function AppConceptBoard({ initialUser: _initialUser }: { initialUser?: a
     <div className="flex flex-col h-full w-full relative bg-white text-ink">
 
       {/* ── TOP BAR ── */}
-      <header className="flex items-center justify-between px-5 md:px-10 py-3 md:py-4 border-b border-black/[0.06] bg-white/90 backdrop-blur-xl sticky top-0 z-50 shadow-[0_1px_0_0_rgba(0,0,0,0.05)]">
+      <header className="flex items-center justify-between px-5 md:px-10 py-3 md:py-4 border-b border-black/[0.06] bg-white/95 backdrop-blur-xl sticky top-0 z-50 shadow-[0_1px_0_0_rgba(0,0,0,0.05)]">
         <a href="/" className="flex items-center gap-2.5 shrink-0 group">
           <img
             src="/convivia24.png"
             alt="Convivia24"
-            className="h-6 w-auto transition-opacity group-hover:opacity-60"
+            className="h-7 w-auto transition-opacity group-hover:opacity-60"
             style={{ filter: 'brightness(0)' }}
           />
           <span className="hidden sm:block text-[8px] font-black uppercase tracking-[0.3em] text-ink/30">
@@ -144,7 +145,7 @@ export function AppConceptBoard({ initialUser: _initialUser }: { initialUser?: a
       </header>
 
       {/* ── CONTENT ── */}
-      <div className="flex-1 overflow-y-auto px-5 md:px-10 pt-6 pb-28 md:pb-10 scrollbar-hide bg-surface-50">
+      <div className="flex-1 overflow-y-auto pb-28 md:pb-10 scrollbar-hide bg-surface-50">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -267,32 +268,35 @@ function BlankAvatar({ size, name }: { size: number; name?: string }) {
    ══════════════════════════════════════════════════════════════════════ */
 const HOW_IT_WORKS = [
   {
-    icon: <MapPin size={20} className="text-gold" />,
+    icon: <MapPin size={24} className="text-gold" />,
     step: '01',
     title: "See what's happening",
     body: 'Concerts, dinners, football, club nights, hikes — everything going on near you, right now.',
+    accent: 'from-amber-900/80 to-obsidian',
   },
   {
-    icon: <Users size={20} className="text-gold" />,
+    icon: <Users size={24} className="text-pink-400" />,
     step: '02',
     title: "See who's going",
     body: "Real people, real faces. Know who you'll be with before you show up.",
+    accent: 'from-pink-900/80 to-obsidian',
   },
   {
-    icon: <UserCheck size={20} className="text-gold" />,
+    icon: <UserCheck size={24} className="text-emerald-400" />,
     step: '03',
     title: 'Join or host',
     body: "Tap in on someone's plan, or post your own. Find your people in minutes.",
+    accent: 'from-emerald-900/80 to-obsidian',
   },
 ];
 
 const VIBE_PILLS = [
-  { label: 'Club night in VI', Icon: Wine,     color: 'text-purple-700', bg: 'bg-purple-50 border-purple-200' },
-  { label: 'Wizkid at the O2', Icon: Music,    color: 'text-pink-700',   bg: 'bg-pink-50 border-pink-200' },
-  { label: 'Sunday 5-a-side',  Icon: Dumbbell, color: 'text-blue-700',   bg: 'bg-blue-50 border-blue-200' },
-  { label: 'Founders dinner',  Icon: Utensils, color: 'text-orange-700', bg: 'bg-orange-50 border-orange-200' },
-  { label: 'Morning run crew', Icon: Flame,    color: 'text-red-700',    bg: 'bg-red-50 border-red-200' },
-  { label: 'Art gallery walk', Icon: Palette,  color: 'text-yellow-700', bg: 'bg-yellow-50 border-yellow-200' },
+  { label: 'Club night in VI', Icon: Wine,     color: 'text-purple-200', bg: 'bg-purple-900/80 border-purple-700' },
+  { label: 'Wizkid at the O2', Icon: Music,    color: 'text-pink-200',   bg: 'bg-pink-900/80 border-pink-700' },
+  { label: 'Sunday 5-a-side',  Icon: Dumbbell, color: 'text-blue-200',   bg: 'bg-blue-900/80 border-blue-700' },
+  { label: 'Founders dinner',  Icon: Utensils, color: 'text-orange-200', bg: 'bg-orange-900/80 border-orange-700' },
+  { label: 'Morning run crew', Icon: Flame,    color: 'text-red-200',    bg: 'bg-red-900/80 border-red-700' },
+  { label: 'Art gallery walk', Icon: Palette,  color: 'text-yellow-200', bg: 'bg-yellow-900/80 border-yellow-700' },
 ];
 
 function DiscoverTab({ location, onEnter }: { location: ReturnType<typeof useCityLocation>; onEnter: () => void }) {
@@ -310,141 +314,164 @@ function DiscoverTab({ location, onEnter }: { location: ReturnType<typeof useCit
   }, [city, detecting]);
 
   return (
-    <div className="max-w-3xl mx-auto space-y-16 pb-8">
+    <div className="space-y-0 pb-8">
 
-      {/* ── HERO ── */}
-      <motion.div
-        className="text-center pt-6 sm:pt-10"
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1, duration: 0.35 }}
-          className="inline-flex items-center gap-2 bg-gold/10 border border-gold/30 text-gold-dark text-[9px] font-black uppercase tracking-[0.25em] px-3.5 py-1.5 rounded-full mb-6"
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
-          {city && !detecting ? `Live in ${city}` : 'Lagos · Abuja · London'}
-        </motion.div>
+      {/* ── DARK HERO ── */}
+      <section className="relative bg-obsidian text-cream px-5 md:px-10 pt-14 pb-16 md:pt-20 md:pb-20 overflow-hidden">
+        {/* Background glow */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] rounded-full bg-gold/[0.12] blur-[100px]" />
+          <div className="absolute bottom-0 right-0 w-[300px] h-[300px] rounded-full bg-purple-900/30 blur-[120px]" />
+        </div>
+        <div className="relative z-10 max-w-3xl mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1, duration: 0.35 }}
+            className="inline-flex items-center gap-2 bg-gold/15 border border-gold/40 text-gold text-[10px] font-black uppercase tracking-[0.25em] px-4 py-2 rounded-full mb-8"
+          >
+            <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
+            {city && !detecting ? `Live in ${city}` : 'Lagos · Abuja · London'}
+          </motion.div>
 
-        <h1 className="font-display text-4xl sm:text-5xl md:text-6xl italic leading-tight mb-4 text-ink">
-          Never go out<br />alone again.
-        </h1>
+          <motion.h1
+            className="font-display text-5xl sm:text-6xl md:text-7xl italic leading-tight mb-6 text-cream"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          >
+            Your city.<br />Your people.<br />Tonight.
+          </motion.h1>
 
-        <p className="text-ink/50 text-base sm:text-lg max-w-md mx-auto leading-relaxed mb-8">
-          Find what's happening near you. See who's going. Join their plan or post your own.
-        </p>
+          <motion.p
+            className="text-cream/70 text-lg sm:text-xl max-w-md mx-auto leading-relaxed mb-10"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.4 }}
+          >
+            Find what's happening near you. See who's going. Join their plan or post your own.
+          </motion.p>
 
-        <motion.button
-          whileTap={{ scale: 0.96 }}
-          whileHover={{ scale: 1.02 }}
-          onClick={onEnter}
-          className="inline-flex items-center gap-2.5 bg-gold text-white px-8 py-4 rounded-full font-black uppercase tracking-[0.15em] text-[12px] active:scale-[0.97] transition-all shadow-[0_4px_24px_rgba(201,168,76,0.35)]"
-        >
-          <PartyPopper size={16} /> See What's On Tonight
-        </motion.button>
-      </motion.div>
+          <motion.button
+            whileTap={{ scale: 0.96 }}
+            whileHover={{ scale: 1.03 }}
+            onClick={onEnter}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25, duration: 0.35 }}
+            className="inline-flex items-center gap-3 bg-gold text-obsidian px-10 py-4 rounded-full font-black uppercase tracking-[0.15em] text-[13px] shadow-[0_6px_32px_rgba(201,168,76,0.5)] hover:shadow-[0_8px_40px_rgba(201,168,76,0.6)] transition-all"
+          >
+            <PartyPopper size={18} /> See What's On Tonight
+          </motion.button>
+        </div>
+      </section>
 
       {/* ── LIVE PREVIEW TEASERS ── */}
       {previewHangouts.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.35 }}
-        >
-          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ink/30 mb-4 flex items-center gap-2">
-            <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
-            Happening {city ? `in ${city}` : 'near you'}
-          </p>
-          <motion.div className="space-y-3" variants={listVariants} animate="animate">
-            {previewHangouts.map((h: any) => (
-              <motion.button
-                key={h.id}
-                variants={itemVariants}
-                whileTap={{ scale: 0.985 }}
-                onClick={onEnter}
-                className="w-full text-left bg-white border border-black/[0.07] hover:border-gold/40 rounded-2xl p-4 transition-all group flex items-center gap-4 shadow-sm hover:shadow-md"
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="font-display text-lg italic leading-tight truncate text-ink">{h.title}</p>
-                  <p className="text-[10px] text-ink/40 flex items-center gap-1.5 mt-1">
-                    <Clock size={9} /> {h.formatted_time} · {h.formatted_date}
-                    <span className="text-ink/20">·</span>
-                    <MapPin size={9} /> {h.location?.split(',')[0]}
-                  </p>
-                </div>
-                {h.attendees?.length > 0 && (
-                  <div className="flex -space-x-1.5 shrink-0">
-                    {h.attendees.slice(0, 3).map((a: any) =>
-                      a.avatar_url
-                        ? <img key={a.user_id} src={a.avatar_url} className="w-7 h-7 rounded-full border-2 border-white object-cover" alt="" />
-                        : <BlankAvatar key={a.user_id} size={28} name={a.name} />
-                    )}
+        <section className="bg-white px-5 md:px-10 py-10">
+          <div className="max-w-3xl mx-auto">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-ink/40 mb-5 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
+              Happening {city ? `in ${city}` : 'near you'}
+            </p>
+            <motion.div className="space-y-3" variants={listVariants} animate="animate">
+              {previewHangouts.map((h: any) => (
+                <motion.button
+                  key={h.id}
+                  variants={itemVariants}
+                  whileTap={{ scale: 0.985 }}
+                  onClick={onEnter}
+                  className="w-full text-left bg-white border border-black/[0.07] hover:border-gold/40 rounded-2xl p-4 transition-all group flex items-center gap-4 shadow-sm hover:shadow-md"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="font-display text-xl italic leading-tight truncate text-ink">{h.title}</p>
+                    <p className="text-[11px] text-ink/40 flex items-center gap-1.5 mt-1">
+                      <Clock size={10} /> {h.formatted_time} · {h.formatted_date}
+                      <span className="text-ink/20">·</span>
+                      <MapPin size={10} /> {h.location?.split(',')[0]}
+                    </p>
                   </div>
-                )}
-                <ChevronRight size={16} className="text-ink/20 group-hover:text-gold transition-colors shrink-0" />
-              </motion.button>
-            ))}
-          </motion.div>
-          <button onClick={onEnter} className="mt-3 w-full text-center text-[10px] font-black uppercase tracking-widest text-gold/70 hover:text-gold transition-colors py-2">
-            See all activities →
-          </button>
-        </motion.div>
+                  {h.attendees?.length > 0 && (
+                    <div className="flex -space-x-1.5 shrink-0">
+                      {h.attendees.slice(0, 3).map((a: any) =>
+                        a.avatar_url
+                          ? <img key={a.user_id} src={a.avatar_url} className="w-7 h-7 rounded-full border-2 border-white object-cover" alt="" />
+                          : <BlankAvatar key={a.user_id} size={28} name={a.name} />
+                      )}
+                    </div>
+                  )}
+                  <ChevronRight size={16} className="text-ink/20 group-hover:text-gold transition-colors shrink-0" />
+                </motion.button>
+              ))}
+            </motion.div>
+            <button onClick={onEnter} className="mt-4 w-full text-center text-[11px] font-black uppercase tracking-widest text-gold/70 hover:text-gold transition-colors py-2">
+              See all activities →
+            </button>
+          </div>
+        </section>
       )}
 
-      {/* ── HOW IT WORKS ── */}
-      <div>
-        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ink/30 mb-8 flex items-center gap-2">
-          <Sparkles size={10} className="text-gold" /> How it works
-        </p>
-        <motion.div
-          className="grid grid-cols-1 sm:grid-cols-3 gap-6"
-          variants={listVariants}
-          animate="animate"
-        >
-          {HOW_IT_WORKS.map((item) => (
-            <motion.div key={item.step} variants={itemVariants} className="relative bg-white rounded-2xl p-5 border border-black/[0.06] shadow-sm">
-              <div className="text-[8px] font-black text-gold/40 tracking-[0.4em] mb-3">{item.step}</div>
-              <div className="mb-3">{item.icon}</div>
-              <h3 className="font-display text-xl italic mb-1 text-ink">{item.title}</h3>
-              <p className="text-ink/45 text-sm leading-relaxed">{item.body}</p>
-            </motion.div>
-          ))}
-        </motion.div>
-      </div>
-
-      {/* ── VIBE PILLS ── */}
-      <div>
-        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ink/30 mb-5 flex items-center gap-2">
-          <Globe size={10} className="text-gold" /> Every kind of night out
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {VIBE_PILLS.map(({ label, Icon, color, bg }) => (
-            <motion.button
-              key={label}
-              whileTap={{ scale: 0.93 }}
-              onClick={onEnter}
-              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-full text-[11px] font-bold border transition-all hover:-translate-y-0.5 shadow-sm ${bg} ${color}`}
-            >
-              <Icon size={12} /> {label}
-            </motion.button>
-          ))}
+      {/* ── HOW IT WORKS — DARK SECTION ── */}
+      <section className="bg-obsidian-50 px-5 md:px-10 py-14 md:py-20">
+        <div className="max-w-3xl mx-auto">
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gold/70 mb-10 flex items-center gap-2">
+            <Sparkles size={11} className="text-gold" /> How it works
+          </p>
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-3 gap-5"
+            variants={listVariants}
+            animate="animate"
+          >
+            {HOW_IT_WORKS.map((item) => (
+              <motion.div
+                key={item.step}
+                variants={itemVariants}
+                className={`relative bg-gradient-to-br ${item.accent} rounded-2xl p-6 border border-white/[0.08] overflow-hidden`}
+              >
+                <div className="text-[9px] font-black text-gold/50 tracking-[0.4em] mb-4">{item.step}</div>
+                <div className="mb-4">{item.icon}</div>
+                <h3 className="font-display text-2xl italic mb-2 text-white">{item.title}</h3>
+                <p className="text-white/70 text-sm leading-relaxed">{item.body}</p>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
-      </div>
+      </section>
 
-      {/* ── FINAL CTA ── */}
-      <div className="text-center pb-4">
-        <p className="text-ink/30 text-sm mb-5">It's {new Date().toLocaleString('en-US', { weekday: 'long' })} night. What's the move?</p>
-        <motion.button
-          whileTap={{ scale: 0.96 }}
-          onClick={onEnter}
-          className="inline-flex items-center gap-2 border border-gold/50 text-gold-dark bg-gold/5 px-7 py-3.5 rounded-full font-black uppercase tracking-[0.15em] text-[11px] hover:bg-gold/10 transition-all shadow-sm"
-        >
-          Find my crew <ArrowRight size={14} />
-        </motion.button>
-      </div>
+      {/* ── VIBE PILLS — WHITE SECTION ── */}
+      <section className="bg-white px-5 md:px-10 py-14">
+        <div className="max-w-3xl mx-auto">
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-ink/35 mb-6 flex items-center gap-2">
+            <Globe size={11} className="text-gold" /> Every kind of night out
+          </p>
+          <div className="flex flex-wrap gap-2.5">
+            {VIBE_PILLS.map(({ label, Icon, color, bg }) => (
+              <motion.button
+                key={label}
+                whileTap={{ scale: 0.93 }}
+                onClick={onEnter}
+                className={`flex items-center gap-2 px-5 py-3 rounded-full text-[12px] font-bold border transition-all hover:-translate-y-0.5 shadow-md ${bg} ${color}`}
+              >
+                <Icon size={13} /> {label}
+              </motion.button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FINAL CTA — DARK ── */}
+      <section className="bg-obsidian px-5 md:px-10 py-14 md:py-20">
+        <div className="max-w-3xl mx-auto text-center">
+          <p className="text-cream/40 text-base mb-6">{new Date().toLocaleString('en-US', { weekday: 'long' })} night. What's the move?</p>
+          <motion.button
+            whileTap={{ scale: 0.96 }}
+            onClick={onEnter}
+            className="inline-flex items-center gap-2.5 border-2 border-gold/60 text-gold bg-gold/10 px-9 py-4 rounded-full font-black uppercase tracking-[0.15em] text-[12px] hover:bg-gold/20 transition-all shadow-sm"
+          >
+            Find my crew <ArrowRight size={16} />
+          </motion.button>
+        </div>
+      </section>
 
     </div>
   );
@@ -473,17 +500,17 @@ function ActivityCard({ h, joiningId, onJoin }: { h: any; joiningId: string | nu
       className="bg-white rounded-2xl border border-black/[0.07] hover:border-gold/40 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 flex flex-col overflow-hidden group shadow-sm"
     >
       {/* Cover image */}
-      <div className={`relative ${h.cover_image ? 'h-36' : 'h-0'} overflow-hidden`}>
+      <div className={`relative ${h.cover_image ? 'h-40' : 'h-0'} overflow-hidden`}>
         {h.cover_image && (
           <img src={h.cover_image} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         )}
         {tonight && (
-          <div className="absolute top-2.5 left-2.5 flex items-center gap-1 bg-gold text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-lg">
-            <Flame size={9} /> Tonight
+          <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-gold text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg">
+            <Flame size={10} /> Tonight
           </div>
         )}
         {h.cover_image && !isFull && (
-          <div className="absolute top-2.5 right-2.5 bg-white/80 backdrop-blur-sm text-[9px] font-black text-ink/70 px-2.5 py-1 rounded-full">
+          <div className="absolute top-3 right-3 bg-obsidian/80 backdrop-blur-sm text-[10px] font-black text-cream px-3 py-1 rounded-full">
             {spotsLeft} spot{spotsLeft !== 1 ? 's' : ''} left
           </div>
         )}
@@ -492,41 +519,41 @@ function ActivityCard({ h, joiningId, onJoin }: { h: any; joiningId: string | nu
       <div className="p-5 flex flex-col flex-1">
         {/* Category + badges */}
         <div className="flex items-center justify-between mb-3">
-          <span className={`flex items-center gap-1 text-[9px] font-black uppercase tracking-widest ${cat.color}`}>
-            <CatIcon size={10} /> {cat.label}
+          <span className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest ${cat.color}`}>
+            <CatIcon size={11} /> {cat.label}
           </span>
           <div className="flex items-center gap-1.5">
             {tonight && !h.cover_image && (
-              <span className="flex items-center gap-0.5 text-[9px] font-black uppercase tracking-widest text-gold-dark bg-gold/10 border border-gold/25 px-2 py-0.5 rounded-full">
-                <Flame size={8} /> Tonight
+              <span className="flex items-center gap-0.5 text-[10px] font-black uppercase tracking-widest text-gold-dark bg-gold/10 border border-gold/25 px-2.5 py-0.5 rounded-full">
+                <Flame size={9} /> Tonight
               </span>
             )}
             {h.ticket_price != null && (
-              <span className="text-[9px] font-black uppercase tracking-widest text-ink/40 flex items-center gap-0.5">
-                <Ticket size={9} /> ₦{(h.ticket_price / 1000).toFixed(0)}k
+              <span className="text-[10px] font-black uppercase tracking-widest text-ink/50 flex items-center gap-0.5">
+                <Ticket size={10} /> ₦{(h.ticket_price / 1000).toFixed(0)}k
               </span>
             )}
             {h.ticket_price == null && h.ticket_url && (
-              <span className="text-[9px] font-black text-green-600 uppercase tracking-widest">Free</span>
+              <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">Free</span>
             )}
           </div>
         </div>
 
         {/* Title */}
-        <h3 className="font-display text-xl sm:text-2xl italic leading-tight mb-1 text-ink">{h.title}</h3>
-        <p className="text-ink/45 text-xs mb-3 line-clamp-2">{h.vibe}</p>
+        <h3 className="font-display text-2xl sm:text-3xl italic leading-tight mb-1.5 text-ink">{h.title}</h3>
+        <p className="text-ink/50 text-sm mb-4 line-clamp-2">{h.vibe}</p>
 
         {/* Meta */}
-        <div className="space-y-1 mb-4 text-ink/40 text-xs">
-          <div className="flex items-center gap-1.5"><Clock size={11} /> {h.formatted_time} <span className="text-ink/20">· {h.formatted_date}</span></div>
-          <div className="flex items-center gap-1.5"><MapPin size={11} /> {h.location}</div>
+        <div className="space-y-1.5 mb-4 text-ink/45 text-[13px]">
+          <div className="flex items-center gap-2"><Clock size={12} /> {h.formatted_time} <span className="text-ink/25">· {h.formatted_date}</span></div>
+          <div className="flex items-center gap-2"><MapPin size={12} /> {h.location}</div>
         </div>
 
         {/* WHO'S GOING */}
-        <div className="mb-4 p-3 rounded-xl bg-surface-100 border border-black/[0.05]">
+        <div className="mb-4 p-3.5 rounded-xl bg-surface-100 border border-black/[0.05]">
           {goingCount > 0 ? (
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-3">
                 <div className="flex -space-x-2">
                   {h.attendees.slice(0, 5).map((a: any) => (
                     <div key={a.user_id} className="relative">
@@ -548,11 +575,11 @@ function ActivityCard({ h, joiningId, onJoin }: { h: any; joiningId: string | nu
                   )}
                 </div>
                 <div>
-                  <p className="text-[11px] font-bold text-ink/80 leading-tight">
+                  <p className="text-[12px] font-bold text-ink/80 leading-tight">
                     {goingCount === 1 ? '1 person going' : `${goingCount} people going`}
                   </p>
                   {h.attendees[0]?.name && (
-                    <p className="text-[9px] text-ink/35 leading-tight">
+                    <p className="text-[10px] text-ink/35 leading-tight">
                       {h.attendees[0].name}{goingCount > 1 ? ` + ${goingCount - 1} more` : ''}
                     </p>
                   )}
@@ -560,8 +587,8 @@ function ActivityCard({ h, joiningId, onJoin }: { h: any; joiningId: string | nu
               </div>
               {h.host_name && (
                 <div className="text-right shrink-0">
-                  <p className="text-[8px] text-ink/25 uppercase tracking-widest font-black">Hosted by</p>
-                  <p className="text-[10px] font-bold text-ink/55 flex items-center gap-1 justify-end">
+                  <p className="text-[9px] text-ink/25 uppercase tracking-widest font-black">Hosted by</p>
+                  <p className="text-[11px] font-bold text-ink/55 flex items-center gap-1 justify-end">
                     {h.host_name}
                     {h.host_verified && <VerifiedBadge size={10} />}
                   </p>
@@ -575,12 +602,12 @@ function ActivityCard({ h, joiningId, onJoin }: { h: any; joiningId: string | nu
                   <Users size={14} />
                 </div>
                 <div>
-                  <p className="text-[11px] font-bold text-ink/40">Be the first to join</p>
-                  <p className="text-[9px] text-ink/20">No one's signed up yet</p>
+                  <p className="text-[12px] font-bold text-ink/40">Be the first to join</p>
+                  <p className="text-[10px] text-ink/20">No one's signed up yet</p>
                 </div>
               </div>
               {h.host_name && (
-                <p className="text-[9px] text-ink/30 font-black">by {h.host_name}</p>
+                <p className="text-[10px] text-ink/30 font-black">by {h.host_name}</p>
               )}
             </div>
           )}
@@ -588,8 +615,8 @@ function ActivityCard({ h, joiningId, onJoin }: { h: any; joiningId: string | nu
 
         {/* Ticket link */}
         {h.ticket_url && (
-          <a href={h.ticket_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[10px] text-gold-dark hover:text-gold font-black uppercase tracking-widest mb-3 transition-colors">
-            <LinkIcon size={10} /> Get Tickets
+          <a href={h.ticket_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[11px] text-gold-dark hover:text-gold font-black uppercase tracking-widest mb-3 transition-colors">
+            <LinkIcon size={11} /> Get Tickets
           </a>
         )}
 
@@ -597,20 +624,20 @@ function ActivityCard({ h, joiningId, onJoin }: { h: any; joiningId: string | nu
         <div className="mt-auto pt-3 border-t border-black/[0.05]">
           {isFull ? (
             <div className="flex items-center justify-between">
-              <span className="text-[9px] text-ink/25 font-black uppercase tracking-widest">This one's full</span>
-              <span className="text-[9px] text-ink/20">Check back for cancellations</span>
+              <span className="text-[10px] text-ink/25 font-black uppercase tracking-widest">This one's full</span>
+              <span className="text-[10px] text-ink/20">Check back for cancellations</span>
             </div>
           ) : (
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={() => onJoin(h.id)}
               disabled={joiningId === h.id}
-              className="w-full flex items-center justify-center gap-2 text-[11px] font-black uppercase tracking-widest bg-gold text-white py-3 rounded-xl hover:bg-gold-dark active:scale-[0.98] transition-all disabled:opacity-50 shadow-[0_2px_12px_rgba(201,168,76,0.3)]"
+              className="w-full flex items-center justify-center gap-2 text-[12px] font-black uppercase tracking-widest bg-gold text-white py-3.5 rounded-xl hover:bg-gold-dark active:scale-[0.98] transition-all disabled:opacity-50 shadow-[0_2px_12px_rgba(201,168,76,0.3)]"
             >
               {joiningId === h.id ? (
-                <Loader2 size={13} className="animate-spin" />
+                <Loader2 size={14} className="animate-spin" />
               ) : (
-                <><Users size={13} /> Join {goingCount > 0 ? 'the group' : 'as first'} <ArrowRight size={12} /></>
+                <><Users size={14} /> Join {goingCount > 0 ? 'the group' : 'as first'} <ArrowRight size={13} /></>
               )}
             </motion.button>
           )}
@@ -700,75 +727,75 @@ function HostTab() {
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.1 }}
-        className="w-16 h-16 rounded-full bg-gold/15 border border-gold/30 flex items-center justify-center mx-auto mb-6"
+        className="w-20 h-20 rounded-full bg-gold/15 border border-gold/30 flex items-center justify-center mx-auto mb-6"
       >
-        <Check size={28} className="text-gold" />
+        <Check size={32} className="text-gold" />
       </motion.div>
-      <h2 className="font-display text-3xl italic mb-2 text-ink">Activity posted.</h2>
-      <p className="text-ink/40 text-sm mb-8">People nearby can now find it and join you.</p>
-      <button onClick={reset} className="text-gold text-[10px] uppercase tracking-widest font-black hover:text-gold-dark transition-colors">Post Another →</button>
+      <h2 className="font-display text-4xl italic mb-2 text-ink">Activity posted.</h2>
+      <p className="text-ink/40 text-base mb-8">People nearby can now find it and join you.</p>
+      <button onClick={reset} className="text-gold text-[11px] uppercase tracking-widest font-black hover:text-gold-dark transition-colors">Post Another →</button>
     </motion.div>
   );
 
-  // Field style helpers
-  const fieldBase = "w-full bg-white border border-black/[0.08] rounded-xl px-4 pb-2.5 pt-2.5 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/20 transition-all placeholder:text-ink/25 text-ink";
-
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="mb-8 text-center">
-        <h1 className="font-display text-3xl sm:text-4xl md:text-5xl italic mb-1 text-ink">Post an Activity</h1>
-        <p className="text-ink/40 text-sm">Gig, dinner, football match, club night — find your people.</p>
+      {/* Dark header band */}
+      <div className="bg-obsidian text-cream -mx-5 md:-mx-10 px-5 md:px-10 pt-10 pb-10 mb-8">
+        <div className="max-w-2xl mx-auto">
+          <h1 className="font-display text-4xl sm:text-5xl italic mb-2 text-cream">Post an Activity</h1>
+          <p className="text-cream/50 text-base">Gig, dinner, football match, club night — find your people.</p>
+        </div>
       </div>
 
       <div className="bg-white border border-black/[0.07] rounded-3xl p-6 md:p-10 space-y-8 shadow-sm">
 
         {/* Cover photo */}
         <div>
-          <label className="text-[9px] font-black text-ink/30 uppercase tracking-[0.25em] block mb-3">
-            <Camera size={10} className="inline mr-1" /> Cover Photo <span className="text-ink/15">(optional)</span>
+          <label className="text-[10px] font-black text-ink/40 uppercase tracking-[0.25em] block mb-3">
+            <Camera size={11} className="inline mr-1" /> Cover Photo <span className="text-ink/20">(optional)</span>
           </label>
           {coverImage ? (
-            <div className="relative rounded-xl overflow-hidden h-36">
+            <div className="relative rounded-xl overflow-hidden h-40">
               <img src={coverImage} alt="" className="w-full h-full object-cover" />
               <button onClick={() => setCoverImage(null)} className="absolute top-2 right-2 bg-white/90 text-ink p-1.5 rounded-full hover:bg-red-50 hover:text-red-500 transition-colors shadow"><X size={13} /></button>
             </div>
           ) : (
-            <label className="flex items-center justify-center gap-2 border-2 border-dashed border-black/10 rounded-xl p-5 cursor-pointer hover:border-gold/40 hover:bg-gold/5 transition-all text-ink/25 hover:text-ink/50">
+            <label className="flex items-center justify-center gap-2 border-2 border-dashed border-black/10 rounded-xl p-6 cursor-pointer hover:border-gold/40 hover:bg-gold/5 transition-all text-ink/25 hover:text-ink/50">
               <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-              {uploading ? <Loader2 size={18} className="animate-spin text-gold" /> : <Camera size={18} />}
-              <span className="text-sm">{uploading ? 'Uploading…' : 'Add a cover photo'}</span>
+              {uploading ? <Loader2 size={20} className="animate-spin text-gold" /> : <Camera size={20} />}
+              <span className="text-base">{uploading ? 'Uploading…' : 'Add a cover photo'}</span>
             </label>
           )}
         </div>
 
         {/* Title */}
         <div>
-          <label className="text-[9px] font-black text-ink/30 uppercase tracking-[0.25em] block mb-2">Activity Name</label>
+          <label className="text-[10px] font-black text-ink/40 uppercase tracking-[0.25em] block mb-2">Activity Name</label>
           <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Anyone for the Wizkid concert?"
-            className="w-full bg-transparent border-b-2 border-black/10 pb-2.5 text-xl md:text-2xl font-display italic focus:outline-none focus:border-gold placeholder:text-ink/15 transition-colors text-ink" />
+            className="w-full bg-transparent border-b-2 border-black/10 pb-3 text-2xl md:text-3xl font-display italic focus:outline-none focus:border-gold placeholder:text-ink/15 transition-colors text-ink" />
         </div>
 
         {/* Vibe */}
         <div>
-          <label className="text-[9px] font-black text-ink/30 uppercase tracking-[0.25em] block mb-2">Describe It</label>
+          <label className="text-[10px] font-black text-ink/40 uppercase tracking-[0.25em] block mb-2">Describe It</label>
           <input type="text" value={vibe} onChange={e => setVibe(e.target.value)} placeholder="e.g. Looking for 3-4 people to go together, casual vibe."
-            className="w-full bg-transparent border-b-2 border-black/10 pb-2.5 text-base focus:outline-none focus:border-gold placeholder:text-ink/15 transition-colors text-ink" />
+            className="w-full bg-transparent border-b-2 border-black/10 pb-3 text-base focus:outline-none focus:border-gold placeholder:text-ink/15 transition-colors text-ink" />
         </div>
 
         {/* Category */}
         <div>
-          <label className="text-[9px] font-black text-ink/30 uppercase tracking-[0.25em] block mb-3">Category</label>
+          <label className="text-[10px] font-black text-ink/40 uppercase tracking-[0.25em] block mb-3">Category</label>
           <div className="flex flex-wrap gap-2">
             {CATEGORIES.filter(c => c.key !== 'all').map(({ key, label, Icon, color, bg }) => (
               <motion.button
                 key={key}
                 whileTap={{ scale: 0.93 }}
                 onClick={() => setCategory(key)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all ${
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[11px] font-black uppercase tracking-widest border transition-all ${
                   category === key ? `${bg} border-gold/40 text-gold-dark` : 'border-black/[0.08] text-ink/35 hover:border-black/20 bg-white'
                 }`}
               >
-                <Icon size={10} className={category === key ? 'text-gold' : color} /> {label}
+                <Icon size={11} className={category === key ? 'text-gold' : color} /> {label}
               </motion.button>
             ))}
           </div>
@@ -776,7 +803,7 @@ function HostTab() {
 
         {/* Location */}
         <div>
-          <label className="text-[9px] font-black text-ink/30 uppercase tracking-[0.25em] block mb-2">Where</label>
+          <label className="text-[10px] font-black text-ink/40 uppercase tracking-[0.25em] block mb-2">Where</label>
           <PlacesAutocomplete
             value={location}
             onChange={(val, place) => { setLocation(val); if (place?.city) setPlaceCity(place.city); }}
@@ -787,66 +814,66 @@ function HostTab() {
         {/* Date + Time */}
         <div className="grid grid-cols-2 gap-5">
           <div>
-            <label className="text-[9px] font-black text-ink/30 uppercase tracking-[0.25em] block mb-2"><Calendar size={9} className="inline mr-1" /> Date</label>
+            <label className="text-[10px] font-black text-ink/40 uppercase tracking-[0.25em] block mb-2"><Calendar size={10} className="inline mr-1" /> Date</label>
             <input type="date" value={eventDate} onChange={e => setEventDate(e.target.value)}
-              className="w-full bg-transparent border-b-2 border-black/10 pb-2.5 text-sm focus:outline-none focus:border-gold transition-colors text-ink [color-scheme:light]" />
+              className="w-full bg-transparent border-b-2 border-black/10 pb-3 text-base focus:outline-none focus:border-gold transition-colors text-ink [color-scheme:light]" />
           </div>
           <div>
-            <label className="text-[9px] font-black text-ink/30 uppercase tracking-[0.25em] block mb-2"><Clock size={9} className="inline mr-1" /> Time</label>
+            <label className="text-[10px] font-black text-ink/40 uppercase tracking-[0.25em] block mb-2"><Clock size={10} className="inline mr-1" /> Time</label>
             <input type="time" value={eventTime} onChange={e => setEventTime(e.target.value)}
-              className="w-full bg-transparent border-b-2 border-black/10 pb-2.5 text-sm focus:outline-none focus:border-gold transition-colors text-ink [color-scheme:light]" />
+              className="w-full bg-transparent border-b-2 border-black/10 pb-3 text-base focus:outline-none focus:border-gold transition-colors text-ink [color-scheme:light]" />
           </div>
         </div>
 
         {/* Tickets */}
-        <div className="p-4 rounded-2xl border border-black/[0.06] bg-surface-100 space-y-4">
-          <p className="text-[9px] font-black text-ink/30 uppercase tracking-[0.25em] flex items-center gap-1.5"><Ticket size={10} /> Tickets (optional)</p>
+        <div className="p-5 rounded-2xl border border-black/[0.06] bg-surface-100 space-y-4">
+          <p className="text-[10px] font-black text-ink/40 uppercase tracking-[0.25em] flex items-center gap-1.5"><Ticket size={11} /> Tickets (optional)</p>
           <div>
-            <label className="text-[9px] text-ink/25 uppercase tracking-widest font-black block mb-1.5">Ticket Link</label>
+            <label className="text-[10px] text-ink/30 uppercase tracking-widest font-black block mb-2">Ticket Link</label>
             <input type="url" value={ticketUrl} onChange={e => setTicketUrl(e.target.value)} placeholder="https://eventbrite.com/..."
-              className="w-full bg-transparent border-b border-black/10 pb-2 text-sm focus:outline-none focus:border-gold placeholder:text-ink/15 transition-colors text-ink" />
+              className="w-full bg-transparent border-b border-black/10 pb-2.5 text-sm focus:outline-none focus:border-gold placeholder:text-ink/15 transition-colors text-ink" />
           </div>
           <div>
-            <label className="text-[9px] text-ink/25 uppercase tracking-widest font-black block mb-1.5">Price (₦) — leave blank if free</label>
+            <label className="text-[10px] text-ink/30 uppercase tracking-widest font-black block mb-2">Price (₦) — leave blank if free</label>
             <input type="number" min="0" value={ticketPrice} onChange={e => setTicketPrice(e.target.value)} placeholder="e.g. 15000"
-              className="w-full bg-transparent border-b border-black/10 pb-2 text-sm focus:outline-none focus:border-gold placeholder:text-ink/15 transition-colors text-ink" />
+              className="w-full bg-transparent border-b border-black/10 pb-2.5 text-sm focus:outline-none focus:border-gold placeholder:text-ink/15 transition-colors text-ink" />
           </div>
         </div>
 
         {/* Who can join */}
         <div>
-          <label className="text-[9px] font-black text-ink/30 uppercase tracking-[0.25em] block mb-3">Who Can Join</label>
+          <label className="text-[10px] font-black text-ink/40 uppercase tracking-[0.25em] block mb-3">Who Can Join</label>
           <div className="grid grid-cols-2 gap-3">
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={() => setType('open')}
-              className={`py-4 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all flex flex-col items-center gap-2 ${
+              className={`py-5 rounded-xl border text-[11px] font-black uppercase tracking-widest transition-all flex flex-col items-center gap-2 ${
                 type === 'open' ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-black/[0.08] text-ink/35 hover:border-black/20 bg-white'
               }`}
             >
-              <Users size={18} /> Anyone
+              <Users size={20} /> Anyone
             </motion.button>
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={() => setType('curated')}
-              className={`py-4 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all flex flex-col items-center gap-2 ${
+              className={`py-5 rounded-xl border text-[11px] font-black uppercase tracking-widest transition-all flex flex-col items-center gap-2 ${
                 type === 'curated' ? 'border-gold/40 bg-gold/8 text-gold-dark' : 'border-black/[0.08] text-ink/35 hover:border-black/20 bg-white'
               }`}
             >
-              <Zap size={18} /> By Request
+              <Zap size={20} /> By Request
             </motion.button>
           </div>
         </div>
 
         {/* Group size */}
         <div>
-          <label className="text-[9px] font-black text-ink/30 uppercase tracking-[0.25em] flex justify-between items-end mb-4">
+          <label className="text-[10px] font-black text-ink/40 uppercase tracking-[0.25em] flex justify-between items-end mb-4">
             <span>Max Group Size</span>
-            <span className="text-base font-display italic text-gold-dark">{size} people</span>
+            <span className="text-xl font-display italic text-gold-dark">{size} people</span>
           </label>
           <input type="range" min="2" max="50" value={size} onChange={e => setSize(Number(e.target.value))}
-            className="w-full h-1.5 bg-surface-200 rounded-full appearance-none cursor-pointer accent-gold" />
-          <div className="flex justify-between text-[9px] text-ink/20 mt-2 font-black uppercase tracking-widest">
+            className="w-full h-2 bg-surface-200 rounded-full appearance-none cursor-pointer accent-gold" />
+          <div className="flex justify-between text-[10px] text-ink/20 mt-2 font-black uppercase tracking-widest">
             <span>2</span><span>50</span>
           </div>
         </div>
@@ -855,7 +882,7 @@ function HostTab() {
           <motion.p
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-red-500 text-sm text-center bg-red-50 border border-red-200 rounded-xl p-3"
+            className="text-red-600 text-sm text-center bg-red-50 border border-red-200 rounded-xl p-4 font-bold"
           >
             {error}
           </motion.p>
@@ -865,9 +892,9 @@ function HostTab() {
           whileTap={{ scale: 0.98 }}
           onClick={handleSubmit}
           disabled={submitting}
-          className="w-full bg-gold text-white py-4 rounded-full font-black uppercase tracking-[0.18em] text-[11px] hover:bg-gold-dark active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-[0_4px_20px_rgba(201,168,76,0.3)]"
+          className="w-full bg-gold text-white py-4 rounded-full font-black uppercase tracking-[0.18em] text-[13px] hover:bg-gold-dark active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-[0_4px_20px_rgba(201,168,76,0.3)]"
         >
-          {submitting ? <Loader2 size={16} className="animate-spin" /> : <><span>Post Activity</span><ArrowRight size={15} /></>}
+          {submitting ? <Loader2 size={18} className="animate-spin" /> : <><span>Post Activity</span><ArrowRight size={16} /></>}
         </motion.button>
       </div>
     </div>
@@ -945,146 +972,150 @@ function GoingOutTab({ location }: { location: ReturnType<typeof useCityLocation
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-0">
 
-      {/* ── Header ── */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gold/70 mb-1 flex items-center gap-1.5">
-            {city && !detecting
-              ? <><Navigation size={8} /> {city}</>
-              : detecting
-              ? <><Loader2 size={8} className="animate-spin" /> Locating…</>
-              : 'Everywhere'}
-          </p>
-          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl italic leading-tight text-ink">Going Out</h1>
-          <p className="text-ink/40 text-sm mt-1">
-            {city ? `What's on in ${city} — join a plan or post your own.` : 'Find a plan or post your own.'}
-          </p>
-        </div>
-        {tab === 'activities' && (
-          <button onClick={() => loadHangouts(city, category)} className="shrink-0 mt-1 text-[9px] text-ink/30 hover:text-gold uppercase tracking-widest font-black transition-colors flex items-center gap-1">
-            <Wifi size={10} /> Refresh
-          </button>
-        )}
-      </div>
-
-      {/* ── Sub-tabs ── */}
-      <div className="flex gap-1 bg-surface-100 rounded-full p-1 w-fit border border-black/[0.06]">
-        {([
-          { key: 'activities', label: 'Activities' },
-          { key: 'groups',     label: 'My Crew' },
-        ] as const).map(t => (
-          <motion.button
-            key={t.key}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setTab(t.key)}
-            className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
-              tab === t.key ? 'bg-gold text-white shadow-sm' : 'text-ink/40 hover:text-ink/70'
-            }`}
-          >
-            {t.label}
-          </motion.button>
-        ))}
-      </div>
-
-      {/* ── ACTIVITIES ── */}
-      {tab === 'activities' && (
-        <>
-          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
-            {CATEGORIES.map(({ key, label, Icon, color, bg }) => (
-              <motion.button
-                key={key}
-                whileTap={{ scale: 0.93 }}
-                onClick={() => setCategory(key)}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap shrink-0 border ${
-                  category === key
-                    ? `${bg} text-gold-dark border-gold/40`
-                    : 'text-ink/40 border-black/[0.08] hover:border-black/20 hover:text-ink/60 bg-white'
-                }`}
-              >
-                <Icon size={11} className={category === key ? 'text-gold' : color} /> {label}
-              </motion.button>
-            ))}
+      {/* ── Dark header ── */}
+      <div className="bg-obsidian text-cream -mx-0 px-5 md:px-10 pt-10 pb-10">
+        <div className="max-w-6xl mx-auto flex items-start justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gold/70 mb-2 flex items-center gap-1.5">
+              {city && !detecting
+                ? <><Navigation size={9} /> {city}</>
+                : detecting
+                ? <><Loader2 size={9} className="animate-spin" /> Locating…</>
+                : 'Everywhere'}
+            </p>
+            <h1 className="font-display text-4xl sm:text-5xl md:text-6xl italic leading-tight text-cream">Going Out</h1>
+            <p className="text-cream/50 text-base mt-2">
+              {city ? `What's on in ${city} — join a plan or post your own.` : 'Find a plan or post your own.'}
+            </p>
           </div>
+          {tab === 'activities' && (
+            <button onClick={() => loadHangouts(city, category)} className="shrink-0 mt-2 text-[10px] text-cream/30 hover:text-gold uppercase tracking-widest font-black transition-colors flex items-center gap-1.5">
+              <Wifi size={11} /> Refresh
+            </button>
+          )}
+        </div>
+      </div>
 
-          {loading ? (
-            <div className="flex items-center justify-center py-20"><Loader2 size={28} className="text-gold animate-spin" /></div>
-          ) : hangouts.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-20 text-ink/25"
+      <div className="px-5 md:px-10 pt-6 space-y-5">
+        {/* ── Sub-tabs ── */}
+        <div className="flex gap-1 bg-surface-100 rounded-full p-1 w-fit border border-black/[0.06]">
+          {([
+            { key: 'activities', label: 'Activities' },
+            { key: 'groups',     label: 'My Crew' },
+          ] as const).map(t => (
+            <motion.button
+              key={t.key}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setTab(t.key)}
+              className={`px-5 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-all ${
+                tab === t.key ? 'bg-gold text-white shadow-sm' : 'text-ink/40 hover:text-ink/70'
+              }`}
             >
-              <Compass size={40} className="mx-auto mb-4 opacity-30" />
-              <p className="font-display text-2xl italic mb-2 text-ink/40">Nothing on yet{city ? ` in ${city}` : ''}.</p>
-              <p className="text-sm">Be the first — tap Host to post something.</p>
-            </motion.div>
-          ) : (
+              {t.label}
+            </motion.button>
+          ))}
+        </div>
+
+        {/* ── ACTIVITIES ── */}
+        {tab === 'activities' && (
+          <>
+            <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+              {CATEGORIES.map(({ key, label, Icon, color, bg }) => (
+                <motion.button
+                  key={key}
+                  whileTap={{ scale: 0.93 }}
+                  onClick={() => setCategory(key)}
+                  className={`flex items-center gap-1.5 px-4 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap shrink-0 border ${
+                    category === key
+                      ? `${bg} text-gold-dark border-gold/40`
+                      : 'text-ink/40 border-black/[0.08] hover:border-black/20 hover:text-ink/60 bg-white'
+                  }`}
+                >
+                  <Icon size={12} className={category === key ? 'text-gold' : color} /> {label}
+                </motion.button>
+              ))}
+            </div>
+
+            {loading ? (
+              <div className="flex items-center justify-center py-20"><Loader2 size={32} className="text-gold animate-spin" /></div>
+            ) : hangouts.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-20 text-ink/25"
+              >
+                <Compass size={44} className="mx-auto mb-5 opacity-30" />
+                <p className="font-display text-3xl italic mb-2 text-ink/40">Nothing on yet{city ? ` in ${city}` : ''}.</p>
+                <p className="text-base">Be the first — tap Host to post something.</p>
+              </motion.div>
+            ) : (
+              <motion.div
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+                variants={listVariants}
+                animate="animate"
+              >
+                {hangouts.map((h: any) => (
+                  <ActivityCard key={h.id} h={h} joiningId={joiningId} onJoin={join} />
+                ))}
+              </motion.div>
+            )}
+          </>
+        )}
+
+        {/* ── GROUPS / CREW ── */}
+        {tab === 'groups' && (
+          <div className="space-y-4">
+            <p className="text-ink/45 text-base">Your groups — people you regularly go out with.</p>
             <motion.div
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+              className="grid grid-cols-2 sm:grid-cols-3 gap-4"
               variants={listVariants}
               animate="animate"
             >
-              {hangouts.map((h: any) => (
-                <ActivityCard key={h.id} h={h} joiningId={joiningId} onJoin={join} />
+              {circles.map((c: any) => (
+                <motion.div
+                  key={c.id}
+                  variants={itemVariants}
+                  whileTap={{ scale: 0.97 }}
+                  className="bg-white border border-black/[0.07] rounded-2xl p-5 flex flex-col items-center text-center gap-3 hover:border-gold/30 hover:-translate-y-0.5 hover:shadow-md transition-all group cursor-pointer shadow-sm"
+                >
+                  <div className="w-14 h-14 rounded-full border border-gold/25 flex items-center justify-center bg-gold/8 text-gold group-hover:scale-110 transition-transform"><Users size={22} /></div>
+                  <div>
+                    <h4 className="font-display text-xl italic leading-tight mb-0.5 text-ink">{c.name}</h4>
+                    {c.description && <p className="text-[10px] text-ink/30 line-clamp-2">{c.description}</p>}
+                    <span className="text-[10px] text-ink/25 uppercase tracking-widest font-black">{c.member_count || 0} members</span>
+                  </div>
+                </motion.div>
               ))}
+              {showCreate ? (
+                <div className="border border-gold/25 rounded-2xl p-4 flex flex-col gap-3 bg-gold/5 shadow-sm">
+                  <input type="text" value={newName} onChange={e => setNewName(e.target.value)} placeholder="Group name"
+                    className="bg-white border border-black/10 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-gold text-ink placeholder:text-ink/25" />
+                  <input type="text" value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="What's it about?"
+                    className="bg-white border border-black/10 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-gold text-ink placeholder:text-ink/25" />
+                  <div className="flex gap-2">
+                    <button onClick={createGroup} disabled={creating}
+                      className="flex-1 bg-gold text-white text-[10px] font-black uppercase tracking-widest py-2.5 rounded-full disabled:opacity-50">
+                      {creating ? '…' : 'Create'}
+                    </button>
+                    <button onClick={() => setShowCreate(false)} className="px-2 text-ink/30 hover:text-ink"><X size={14} /></button>
+                  </div>
+                </div>
+              ) : (
+                <motion.div
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => setShowCreate(true)}
+                  className="border-2 border-dashed border-black/10 rounded-2xl p-5 flex flex-col items-center justify-center gap-2 text-ink/25 hover:text-ink/50 hover:border-gold/30 hover:bg-gold/5 transition-all cursor-pointer min-h-[120px]"
+                >
+                  <PlusSquare size={26} />
+                  <span className="text-[10px] uppercase tracking-widest font-black">New Group</span>
+                </motion.div>
+              )}
             </motion.div>
-          )}
-        </>
-      )}
-
-      {/* ── GROUPS / CREW ── */}
-      {tab === 'groups' && (
-        <div className="space-y-4">
-          <p className="text-ink/35 text-sm">Your groups — people you regularly go out with.</p>
-          <motion.div
-            className="grid grid-cols-2 sm:grid-cols-3 gap-4"
-            variants={listVariants}
-            animate="animate"
-          >
-            {circles.map((c: any) => (
-              <motion.div
-                key={c.id}
-                variants={itemVariants}
-                whileTap={{ scale: 0.97 }}
-                className="bg-white border border-black/[0.07] rounded-2xl p-5 flex flex-col items-center text-center gap-3 hover:border-gold/30 hover:-translate-y-0.5 hover:shadow-md transition-all group cursor-pointer shadow-sm"
-              >
-                <div className="w-12 h-12 rounded-full border border-gold/25 flex items-center justify-center bg-gold/8 text-gold group-hover:scale-110 transition-transform"><Users size={20} /></div>
-                <div>
-                  <h4 className="font-display text-lg italic leading-tight mb-0.5 text-ink">{c.name}</h4>
-                  {c.description && <p className="text-[9px] text-ink/30 line-clamp-2">{c.description}</p>}
-                  <span className="text-[9px] text-ink/25 uppercase tracking-widest font-black">{c.member_count || 0} members</span>
-                </div>
-              </motion.div>
-            ))}
-            {showCreate ? (
-              <div className="border border-gold/25 rounded-2xl p-4 flex flex-col gap-3 bg-gold/5 shadow-sm">
-                <input type="text" value={newName} onChange={e => setNewName(e.target.value)} placeholder="Group name"
-                  className="bg-white border border-black/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gold text-ink placeholder:text-ink/25" />
-                <input type="text" value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="What's it about?"
-                  className="bg-white border border-black/10 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-gold text-ink placeholder:text-ink/25" />
-                <div className="flex gap-2">
-                  <button onClick={createGroup} disabled={creating}
-                    className="flex-1 bg-gold text-white text-[9px] font-black uppercase tracking-widest py-2 rounded-full disabled:opacity-50">
-                    {creating ? '…' : 'Create'}
-                  </button>
-                  <button onClick={() => setShowCreate(false)} className="px-2 text-ink/30 hover:text-ink"><X size={13} /></button>
-                </div>
-              </div>
-            ) : (
-              <motion.div
-                whileTap={{ scale: 0.97 }}
-                onClick={() => setShowCreate(true)}
-                className="border-2 border-dashed border-black/10 rounded-2xl p-5 flex flex-col items-center justify-center gap-2 text-ink/25 hover:text-ink/50 hover:border-gold/30 hover:bg-gold/5 transition-all cursor-pointer"
-              >
-                <PlusSquare size={24} />
-                <span className="text-[9px] uppercase tracking-widest font-black">New Group</span>
-              </motion.div>
-            )}
-          </motion.div>
-        </div>
-      )}
+          </div>
+        )}
+      </div>
 
     </div>
   );
@@ -1109,73 +1140,87 @@ function PeopleTab({ location }: { location: ReturnType<typeof useCityLocation> 
   }, [city, detecting]);
 
   return (
-    <div className="space-y-5">
-      <div>
-        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gold/70 mb-1 flex items-center gap-1.5">
-          {city && !detecting ? <><Navigation size={8} /> {city}</> : detecting ? <><Loader2 size={8} className="animate-spin" /> Locating…</> : 'Everywhere'}
-        </p>
-        <h1 className="font-display text-3xl sm:text-4xl md:text-5xl italic leading-tight text-ink">People</h1>
-        <p className="text-ink/40 text-sm mt-1">
-          {city ? `People in ${city} open to meeting up — no event needed.` : 'People open to meeting up near you.'}
-        </p>
+    <div className="space-y-0">
+      {/* Dark header */}
+      <div className="bg-obsidian-50 text-cream px-5 md:px-10 pt-10 pb-10">
+        <div className="max-w-6xl mx-auto">
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gold/70 mb-2 flex items-center gap-1.5">
+            {city && !detecting ? <><Navigation size={9} /> {city}</> : detecting ? <><Loader2 size={9} className="animate-spin" /> Locating…</> : 'Everywhere'}
+          </p>
+          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl italic leading-tight text-cream">People</h1>
+          <p className="text-cream/50 text-base mt-2">
+            {city ? `People in ${city} open to meeting up — no event needed.` : 'People open to meeting up near you.'}
+          </p>
+        </div>
       </div>
 
-      {loading ? (
-        <div className="flex items-center justify-center py-20"><Loader2 size={28} className="text-gold animate-spin" /></div>
-      ) : openToMeet.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center py-20 text-ink/25"
-        >
-          <UserCheck size={40} className="mx-auto mb-4 opacity-30" />
-          <p className="font-display text-xl italic mb-2 text-ink/40">No one is open to meet yet{city ? ` in ${city}` : ''}.</p>
-          <p className="text-sm">Toggle "Open to Meet" in your Profile to appear here.</p>
-        </motion.div>
-      ) : (
-        <motion.div
-          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"
-          variants={listVariants}
-          animate="animate"
-        >
-          {openToMeet.map((p: any) => (
-            <motion.div
-              key={p.id}
-              variants={itemVariants}
-              whileTap={{ scale: 0.97 }}
-              className="bg-white border border-black/[0.07] rounded-2xl p-4 flex flex-col items-center text-center gap-3 hover:border-gold/30 hover:-translate-y-0.5 hover:shadow-md transition-all cursor-pointer group shadow-sm"
-            >
-              <div className="relative">
-                {p.avatar_url
-                  ? <img src={p.avatar_url} alt="" className="w-14 h-14 rounded-full object-cover border-2 border-black/[0.06] group-hover:border-gold/30 transition-colors" />
-                  : <BlankAvatar size={56} name={p.name} />
-                }
-                {p.verified && <div className="absolute -top-1 -right-1"><VerifiedBadge size={13} /></div>}
-                {p.tier === 'black' && <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-gold rounded-full flex items-center justify-center border border-white"><Star size={8} fill="currentColor" className="text-white" /></div>}
-              </div>
-              <div>
-                <p className="font-bold text-sm leading-tight text-ink">{p.name}</p>
-                {p.location && <p className="text-[9px] text-ink/25 mt-0.5 flex items-center gap-1 justify-center"><MapPin size={8} /> {p.location}</p>}
-                {p.bio && <p className="text-[9px] text-ink/35 mt-1 line-clamp-2">{p.bio}</p>}
-              </div>
-              <div className="flex items-center gap-2 text-[9px] text-ink/25 font-black uppercase tracking-widest">
-                <span>{p.hangouts_count || 0} activities</span>
-                {Number(p.rating) > 0 && <span className="flex items-center gap-0.5"><Star size={8} fill="currentColor" className="text-gold/60" /> {Number(p.rating).toFixed(1)}</span>}
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
-      )}
+      <div className="px-5 md:px-10 pt-6">
+        {loading ? (
+          <div className="flex items-center justify-center py-20"><Loader2 size={32} className="text-gold animate-spin" /></div>
+        ) : openToMeet.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-20 text-ink/25"
+          >
+            <UserCheck size={44} className="mx-auto mb-5 opacity-30" />
+            <p className="font-display text-2xl italic mb-2 text-ink/40">No one is open to meet yet{city ? ` in ${city}` : ''}.</p>
+            <p className="text-base">Toggle "Open to Meet" in your Profile to appear here.</p>
+          </motion.div>
+        ) : (
+          <motion.div
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"
+            variants={listVariants}
+            animate="animate"
+          >
+            {openToMeet.map((p: any) => (
+              <motion.div
+                key={p.id}
+                variants={itemVariants}
+                whileTap={{ scale: 0.97 }}
+                className="bg-white border border-black/[0.07] rounded-2xl p-4 flex flex-col items-center text-center gap-3 hover:border-gold/30 hover:-translate-y-0.5 hover:shadow-md transition-all cursor-pointer group shadow-sm"
+              >
+                <div className="relative">
+                  {p.avatar_url
+                    ? <img src={p.avatar_url} alt="" className="w-16 h-16 rounded-full object-cover border-2 border-black/[0.06] group-hover:border-gold/30 transition-colors" />
+                    : <BlankAvatar size={64} name={p.name} />
+                  }
+                  {p.verified && <div className="absolute -top-1 -right-1"><VerifiedBadge size={14} /></div>}
+                  {p.tier === 'black' && <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gold rounded-full flex items-center justify-center border border-white"><Star size={9} fill="currentColor" className="text-white" /></div>}
+                </div>
+                <div>
+                  <p className="font-bold text-base leading-tight text-ink">{p.name}</p>
+                  {p.location && <p className="text-[10px] text-ink/25 mt-0.5 flex items-center gap-1 justify-center"><MapPin size={9} /> {p.location}</p>}
+                  {p.bio && <p className="text-[10px] text-ink/40 mt-1 line-clamp-2">{p.bio}</p>}
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-ink/25 font-black uppercase tracking-widest">
+                  <span>{p.hangouts_count || 0} activities</span>
+                  {Number(p.rating) > 0 && <span className="flex items-center gap-0.5"><Star size={9} fill="currentColor" className="text-gold/60" /> {Number(p.rating).toFixed(1)}</span>}
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   VERIFICATION SECTION
+   FACE VERIFICATION — full-screen modal flow
    ══════════════════════════════════════════════════════════════════════ */
-function VerificationSection({ user, onVerified }: { user: any; onVerified: (u: any) => void }) {
-  const [phase, setPhase] = useState<'idle' | 'capturing' | 'uploading' | 'checking' | 'done' | 'error'>('idle');
+function FaceVerificationModal({
+  user: _user,
+  onVerified,
+  onClose,
+}: {
+  user: any;
+  onVerified: (u: any) => void;
+  onClose: () => void;
+}) {
+  const [phase, setPhase] = useState<'intro' | 'capturing' | 'preview' | 'checking' | 'done' | 'error'>('intro');
   const [errorMsg, setErrorMsg] = useState('');
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -1189,31 +1234,49 @@ function VerificationSection({ user, onVerified }: { user: any; onVerified: (u: 
     setPhase('capturing');
     setErrorMsg('');
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+      });
       streamRef.current = stream;
-      if (videoRef.current) { videoRef.current.srcObject = stream; videoRef.current.play(); }
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+      }
     } catch {
       setPhase('error');
-      setErrorMsg('Camera access denied. Please allow camera to verify.');
+      setErrorMsg('Camera access denied. Please allow camera access in your browser settings, then try again.');
     }
   };
 
-  const capture = async () => {
+  const capture = () => {
     if (!videoRef.current || !canvasRef.current) return;
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext('2d')?.drawImage(video, 0, 0);
+    canvas.width = video.videoWidth || 1280;
+    canvas.height = video.videoHeight || 720;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.filter = 'brightness(1.15) contrast(1.05)';
+    ctx.drawImage(video, 0, 0);
+    ctx.filter = 'none';
     stopCamera();
-    setPhase('uploading');
+    setPreviewUrl(canvas.toDataURL('image/jpeg', 0.95));
+    setPhase('preview');
+  };
 
-    canvas.toBlob(async (blob) => {
+  const retake = () => {
+    setPreviewUrl(null);
+    startCamera();
+  };
+
+  const submit = async () => {
+    if (!canvasRef.current) return;
+    setPhase('checking');
+    canvasRef.current.toBlob(async (blob) => {
       if (!blob) { setPhase('error'); setErrorMsg('Could not capture image.'); return; }
       try {
         const fd = new FormData();
         fd.append('file', blob, 'selfie.jpg');
-        setPhase('checking');
         const res = await fetch('/api/profile/verify-face', { method: 'POST', body: fd });
         const data = await res.json();
         if (res.ok && data.verified) {
@@ -1221,94 +1284,320 @@ function VerificationSection({ user, onVerified }: { user: any; onVerified: (u: 
           onVerified(data.user);
         } else {
           setPhase('error');
-          setErrorMsg(data.error || 'Face did not match your profile photo. Try again.');
+          setErrorMsg(data.error || 'Face did not match your profile photo. Try again in better lighting.');
         }
       } catch {
         setPhase('error');
-        setErrorMsg('Verification failed. Try again.');
+        setErrorMsg('Verification failed. Check your connection and try again.');
       }
-    }, 'image/jpeg', 0.92);
+    }, 'image/jpeg', 0.95);
   };
 
-  useEffect(() => () => stopCamera(), []);
+  // Close with Escape key
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { stopCamera(); onClose(); } };
+    window.addEventListener('keydown', onKey);
+    return () => { window.removeEventListener('keydown', onKey); stopCamera(); };
+  }, []);
+
+  const modal = (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[200] bg-obsidian flex flex-col"
+        style={{ touchAction: 'none' }}
+      >
+        {/* Top bar */}
+        <div className="flex items-center justify-between px-5 pt-safe pt-4 pb-4 shrink-0">
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={18} className="text-gold" />
+            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-cream/60">Identity Verification</span>
+          </div>
+          <button
+            onClick={() => { stopCamera(); onClose(); }}
+            className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-cream/60 hover:bg-white/20 hover:text-cream transition-all"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* ── INTRO ── */}
+        {phase === 'intro' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex-1 flex flex-col items-center justify-center px-8 text-center gap-6"
+          >
+            <div className="w-24 h-24 rounded-full bg-gold/15 border border-gold/30 flex items-center justify-center mb-2">
+              <ShieldCheck size={40} className="text-gold" />
+            </div>
+            <div>
+              <h2 className="font-display text-4xl italic text-cream mb-3">Get Verified</h2>
+              <p className="text-cream/55 text-base leading-relaxed max-w-xs mx-auto">
+                We'll match a quick selfie to your profile photo to confirm your identity.
+              </p>
+            </div>
+            <div className="w-full max-w-xs bg-white/5 border border-white/10 rounded-2xl p-5 text-left space-y-3">
+              {[
+                { icon: <Sun size={15} className="text-amber-400" />, text: 'Face a window or bright light source' },
+                { icon: <UserIcon size={15} className="text-gold" />, text: 'Remove glasses, hats, or anything covering your face' },
+                { icon: <Camera size={15} className="text-blue-400" />, text: 'Hold your phone steady at eye level' },
+              ].map((tip, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <span className="shrink-0">{tip.icon}</span>
+                  <p className="text-[13px] text-cream/70">{tip.text}</p>
+                </div>
+              ))}
+            </div>
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={startCamera}
+              className="w-full max-w-xs bg-gold text-obsidian py-4 rounded-full font-black uppercase tracking-[0.15em] text-[13px] shadow-[0_4px_24px_rgba(201,168,76,0.4)] hover:bg-gold-light transition-all"
+            >
+              Start Camera
+            </motion.button>
+          </motion.div>
+        )}
+
+        {/* ── CAMERA ── */}
+        {phase === 'capturing' && (
+          <div className="flex-1 flex flex-col relative">
+            {/* Full-screen video */}
+            <video
+              ref={videoRef}
+              className="absolute inset-0 w-full h-full object-cover"
+              muted
+              playsInline
+              style={{ transform: 'scaleX(-1)' }}
+            />
+            {/* Dark vignette overlay */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 pointer-events-none" />
+
+            {/* Face oval guide */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ marginTop: '-5%' }}>
+              <div
+                className="border-2 border-gold/70 rounded-full"
+                style={{
+                  width: 'min(60vw, 260px)',
+                  height: 'min(78vw, 340px)',
+                  boxShadow: '0 0 0 9999px rgba(0,0,0,0.45)',
+                }}
+              />
+            </div>
+
+            {/* Top label */}
+            <div className="absolute top-6 left-0 right-0 text-center pointer-events-none">
+              <p className="text-[12px] font-black uppercase tracking-widest text-cream/80">
+                Centre your face in the oval
+              </p>
+            </div>
+
+            {/* Bottom controls */}
+            <div className="absolute bottom-10 left-0 right-0 flex flex-col items-center gap-4 pointer-events-auto">
+              <motion.button
+                whileTap={{ scale: 0.93 }}
+                onClick={capture}
+                className="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-[0_0_0_4px_rgba(255,255,255,0.3)] hover:bg-cream transition-all"
+              >
+                <div className="w-16 h-16 rounded-full bg-white border-4 border-obsidian/10" />
+              </motion.button>
+              <button
+                onClick={() => { stopCamera(); onClose(); }}
+                className="text-[11px] font-black uppercase tracking-widest text-cream/40 hover:text-cream transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── PREVIEW ── */}
+        {phase === 'preview' && previewUrl && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex-1 flex flex-col"
+          >
+            {/* Full preview image */}
+            <div className="flex-1 relative">
+              <img
+                src={previewUrl}
+                alt="Your selfie"
+                className="absolute inset-0 w-full h-full object-cover"
+                style={{ transform: 'scaleX(-1)' }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60 pointer-events-none" />
+            </div>
+            <canvas ref={canvasRef} className="hidden" />
+            {/* Action row */}
+            <div className="px-6 py-8 flex flex-col gap-4 shrink-0">
+              <p className="text-cream/70 text-base text-center">Looks good? Submit to verify.</p>
+              <div className="flex gap-3">
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={retake}
+                  className="flex-1 flex items-center justify-center gap-2 py-4 rounded-full border border-cream/20 text-cream/70 hover:border-cream/40 hover:text-cream font-black uppercase tracking-widest text-[12px] transition-all"
+                >
+                  <RefreshCw size={15} /> Retake
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={submit}
+                  className="flex-1 flex items-center justify-center gap-2 py-4 rounded-full bg-gold text-obsidian font-black uppercase tracking-widest text-[12px] shadow-[0_4px_20px_rgba(201,168,76,0.4)] hover:bg-gold-light transition-all"
+                >
+                  <Check size={15} /> Submit
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── CHECKING ── */}
+        {phase === 'checking' && (
+          <div className="flex-1 flex flex-col items-center justify-center gap-6 px-8 text-center">
+            {previewUrl && (
+              <div className="relative w-36 h-36 rounded-full overflow-hidden border-4 border-gold/30">
+                <img src={previewUrl} alt="" className="w-full h-full object-cover" style={{ transform: 'scaleX(-1)' }} />
+                <div className="absolute inset-0 bg-gold/20 animate-pulse" />
+              </div>
+            )}
+            <div>
+              <Loader2 size={32} className="animate-spin text-gold mx-auto mb-4" />
+              <p className="text-cream text-lg font-bold">Matching your face…</p>
+              <p className="text-cream/40 text-sm mt-1">This only takes a moment</p>
+            </div>
+          </div>
+        )}
+
+        {/* ── DONE ── */}
+        {phase === 'done' && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex-1 flex flex-col items-center justify-center gap-6 px-8 text-center"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.15 }}
+              className="w-28 h-28 rounded-full bg-gold/20 border-2 border-gold/40 flex items-center justify-center"
+            >
+              <Check size={52} className="text-gold" strokeWidth={2.5} />
+            </motion.div>
+            <div>
+              <h2 className="font-display text-5xl italic text-cream mb-3">Verified!</h2>
+              <p className="text-cream/55 text-base max-w-xs mx-auto">Your identity has been confirmed. Your verified badge is now active.</p>
+            </div>
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={onClose}
+              className="w-full max-w-xs bg-gold text-obsidian py-4 rounded-full font-black uppercase tracking-[0.15em] text-[13px] shadow-[0_4px_24px_rgba(201,168,76,0.4)]"
+            >
+              Done
+            </motion.button>
+          </motion.div>
+        )}
+
+        {/* ── ERROR ── */}
+        {phase === 'error' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex-1 flex flex-col items-center justify-center gap-5 px-8 text-center"
+          >
+            <div className="w-24 h-24 rounded-full bg-red-500/15 border border-red-500/30 flex items-center justify-center">
+              <AlertCircle size={40} className="text-red-400" />
+            </div>
+            <div>
+              <h2 className="font-display text-3xl italic text-cream mb-2">Verification failed</h2>
+              <p className="text-red-300 text-sm leading-relaxed max-w-xs mx-auto">{errorMsg}</p>
+            </div>
+            <div className="w-full max-w-xs bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 text-left space-y-2.5">
+              <p className="text-[12px] font-black uppercase tracking-widest text-amber-400 mb-1">Tips</p>
+              {[
+                'Use bright front-facing light — avoid shadows',
+                'Match the angle in your profile photo',
+                'Ensure your profile photo is a clear headshot',
+                'Remove anything covering your face',
+              ].map((tip, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <span className="text-amber-400 mt-0.5 shrink-0">•</span>
+                  <p className="text-[12px] text-amber-200/80">{tip}</p>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-3 w-full max-w-xs">
+              <button
+                onClick={() => { stopCamera(); onClose(); }}
+                className="flex-1 py-4 rounded-full border border-cream/15 text-cream/50 hover:text-cream hover:border-cream/30 font-black uppercase tracking-widest text-[11px] transition-all"
+              >
+                Cancel
+              </button>
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={() => { setErrorMsg(''); startCamera(); }}
+                className="flex-1 py-4 rounded-full bg-gold text-obsidian font-black uppercase tracking-widest text-[11px] shadow-[0_2px_16px_rgba(201,168,76,0.35)]"
+              >
+                Try Again
+              </motion.button>
+            </div>
+          </motion.div>
+        )}
+      </motion.div>
+    </AnimatePresence>
+  );
+
+  return typeof document !== 'undefined' ? createPortal(modal, document.body) : null;
+}
+
+function VerificationSection({ user, onVerified }: { user: any; onVerified: (u: any) => void }) {
+  const [modalOpen, setModalOpen] = useState(false);
 
   if (user?.verified) {
     return (
       <div className="mb-4 flex items-center justify-between p-4 bg-gold/8 border border-gold/25 rounded-2xl">
         <div className="flex items-center gap-3">
-          <ShieldCheck size={18} className="text-gold" />
+          <ShieldCheck size={20} className="text-gold" />
           <div>
-            <p className="text-sm font-bold text-ink">Verified</p>
-            <p className="text-[10px] text-gold-dark uppercase tracking-wider font-black">Identity confirmed</p>
+            <p className="text-base font-bold text-ink">Verified</p>
+            <p className="text-[11px] text-gold-dark uppercase tracking-wider font-black">Identity confirmed</p>
           </div>
         </div>
-        <VerifiedBadge size={18} />
+        <VerifiedBadge size={20} />
       </div>
     );
   }
 
   return (
-    <div className="mb-4 p-4 bg-surface-100 border border-black/[0.07] rounded-2xl space-y-3">
-      <div className="flex items-center justify-between">
+    <>
+      <div className="mb-4 flex items-center justify-between p-4 bg-surface-100 border border-black/[0.07] rounded-2xl">
         <div className="flex items-center gap-3">
-          <ShieldCheck size={18} className="text-ink/30" />
+          <ShieldCheck size={20} className="text-ink/30" />
           <div>
-            <p className="text-sm font-bold text-ink">Get Verified</p>
-            <p className="text-[10px] text-ink/30 uppercase tracking-wider font-black">Face-match with your profile photo</p>
+            <p className="text-base font-bold text-ink">Get Verified</p>
+            <p className="text-[11px] text-ink/35 uppercase tracking-wider font-black">
+              {user?.avatar_url ? 'Face-match with your profile photo' : 'Upload a profile photo first'}
+            </p>
           </div>
         </div>
-        {phase === 'idle' && (
-          <button
-            onClick={startCamera}
-            disabled={!user?.avatar_url}
-            className="text-[9px] text-white bg-gold px-3 py-1.5 rounded-full font-black uppercase tracking-widest disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gold-dark transition-colors shadow-sm"
-          >
-            Verify Now
-          </button>
-        )}
+        <button
+          onClick={() => setModalOpen(true)}
+          disabled={!user?.avatar_url}
+          className="text-[10px] text-white bg-gold px-4 py-2 rounded-full font-black uppercase tracking-widest disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gold-dark transition-colors shadow-sm"
+        >
+          Verify Now
+        </button>
       </div>
-
-      {!user?.avatar_url && phase === 'idle' && (
-        <p className="text-[10px] text-ink/25">Upload a profile photo first, then come back to verify.</p>
+      {modalOpen && (
+        <FaceVerificationModal
+          user={user}
+          onVerified={(u) => { onVerified(u); setModalOpen(false); }}
+          onClose={() => setModalOpen(false)}
+        />
       )}
-
-      {phase === 'capturing' && (
-        <div className="space-y-3">
-          <p className="text-[10px] text-ink/40">Position your face in the frame and take a selfie.</p>
-          <div className="relative rounded-xl overflow-hidden bg-black aspect-video max-w-xs mx-auto">
-            <video ref={videoRef} className="w-full h-full object-cover" muted playsInline />
-            <div className="absolute inset-0 border-2 border-gold/40 rounded-xl pointer-events-none" />
-          </div>
-          <canvas ref={canvasRef} className="hidden" />
-          <div className="flex gap-2 justify-center">
-            <button onClick={capture} className="bg-gold text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-gold-dark transition-colors shadow-sm">
-              Take Selfie
-            </button>
-            <button onClick={() => { stopCamera(); setPhase('idle'); }} className="text-ink/30 hover:text-ink text-[10px] font-black uppercase tracking-widest transition-colors">Cancel</button>
-          </div>
-        </div>
-      )}
-
-      {(phase === 'uploading' || phase === 'checking') && (
-        <div className="flex items-center gap-2 text-ink/40 text-[11px]">
-          <Loader2 size={14} className="animate-spin text-gold" />
-          {phase === 'uploading' ? 'Uploading…' : 'Matching face to your photo…'}
-        </div>
-      )}
-
-      {phase === 'done' && (
-        <div className="flex items-center gap-2 text-gold-dark text-[11px] font-bold">
-          <Check size={14} /> Verified! Your badge is now active.
-        </div>
-      )}
-
-      {phase === 'error' && (
-        <div className="space-y-2">
-          <p className="text-red-500 text-[11px]">{errorMsg}</p>
-          <button onClick={() => setPhase('idle')} className="text-[9px] text-ink/40 hover:text-gold font-black uppercase tracking-widest transition-colors">Try Again</button>
-        </div>
-      )}
-    </div>
+    </>
   );
 }
 
@@ -1378,7 +1667,7 @@ function ProfileTab({ gpsCity }: { gpsCity?: string | null }) {
     setUploadingAvatar(false);
   };
 
-  if (loading) return <div className="flex justify-center py-20"><Loader2 size={28} className="text-gold animate-spin" /></div>;
+  if (loading) return <div className="flex justify-center py-20"><Loader2 size={32} className="text-gold animate-spin" /></div>;
 
   if (showUpgrade) return (
     <motion.div
@@ -1386,69 +1675,71 @@ function ProfileTab({ gpsCity }: { gpsCity?: string | null }) {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-2xl mx-auto pb-10"
     >
-      <button onClick={() => setShowUpgrade(false)} className="text-[9px] uppercase tracking-widest font-black text-ink/30 hover:text-gold mb-6 flex items-center gap-1.5 transition-colors">← Back</button>
-      <div className="bg-white border border-black/[0.07] rounded-3xl p-8 md:p-12 shadow-sm">
+      {/* Dark upgrade header */}
+      <div className="bg-obsidian text-cream -mx-0 px-5 md:px-10 pt-10 pb-10 mb-8 rounded-b-3xl">
+        <button onClick={() => setShowUpgrade(false)} className="text-[10px] uppercase tracking-widest font-black text-cream/30 hover:text-gold mb-6 flex items-center gap-1.5 transition-colors">← Back</button>
         <SectionLabel variant="light">Tier Upgrade</SectionLabel>
-        <h2 className="font-display text-4xl italic mb-3 text-ink">Convivia Black</h2>
-        <p className="text-ink/50 text-base mb-8">Instant venue booking, priority seats, and Black-only events in every city.</p>
-        <div className="space-y-3 mb-8">
-          {[
-            { icon: <Zap size={16} />, title: 'Instant Venue Booking', sub: 'No 24-hour wait' },
-            { icon: <Ticket size={16} />, title: 'Priority Physical Seating', sub: 'The Table & Deal Rooms' },
-            { icon: <ShieldCheck size={16} />, title: 'Verified Black Badge', sub: 'Stands out in every feed' },
-          ].map(b => (
-            <div key={b.title} className="flex items-start gap-3 bg-surface-100 p-4 rounded-xl border border-black/[0.06]">
-              <span className="text-gold mt-0.5">{b.icon}</span>
-              <div>
-                <p className="text-sm font-bold text-ink">{b.title}</p>
-                <p className="text-[10px] text-ink/30 uppercase tracking-wider font-black mt-0.5">{b.sub}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-        <motion.button
-          whileTap={{ scale: 0.98 }}
-          className="w-full bg-gold text-white py-4 rounded-full font-black uppercase tracking-[0.18em] text-[11px] hover:bg-gold-dark transition-all flex items-center justify-center gap-2 shadow-[0_4px_20px_rgba(201,168,76,0.3)]"
-        >
-          <Star size={15} fill="currentColor" /> Subscribe to Black
-        </motion.button>
+        <h2 className="font-display text-5xl italic mt-3 text-cream">Convivia Black</h2>
+        <p className="text-cream/50 text-base mt-2">Instant venue booking, priority seats, and Black-only events in every city.</p>
       </div>
+      <div className="px-0 space-y-3 mb-8">
+        {[
+          { icon: <Zap size={18} />, title: 'Instant Venue Booking', sub: 'No 24-hour wait', color: 'text-gold' },
+          { icon: <Ticket size={18} />, title: 'Priority Physical Seating', sub: 'The Table & Deal Rooms', color: 'text-gold' },
+          { icon: <ShieldCheck size={18} />, title: 'Verified Black Badge', sub: 'Stands out in every feed', color: 'text-gold' },
+        ].map(b => (
+          <div key={b.title} className="flex items-start gap-4 bg-white p-5 rounded-2xl border border-black/[0.06] shadow-sm">
+            <span className={`${b.color} mt-0.5`}>{b.icon}</span>
+            <div>
+              <p className="text-base font-bold text-ink">{b.title}</p>
+              <p className="text-[11px] text-ink/35 uppercase tracking-wider font-black mt-0.5">{b.sub}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      <motion.button
+        whileTap={{ scale: 0.98 }}
+        className="w-full bg-gold text-white py-4 rounded-full font-black uppercase tracking-[0.18em] text-[13px] hover:bg-gold-dark transition-all flex items-center justify-center gap-2 shadow-[0_4px_20px_rgba(201,168,76,0.3)]"
+      >
+        <Star size={16} fill="currentColor" /> Subscribe to Black
+      </motion.button>
     </motion.div>
   );
 
-  const fieldClass = "bg-transparent border-b-2 border-black/10 pb-2 focus:outline-none focus:border-gold transition-colors text-ink w-full";
-
   return (
     <div className="max-w-2xl mx-auto pb-10">
-      <div className="bg-white border border-black/[0.07] rounded-3xl p-8 md:p-10 shadow-sm">
-
-        {/* Avatar + name */}
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8">
+      {/* Dark profile header */}
+      <div className="bg-obsidian text-cream px-5 md:px-10 pt-10 pb-12 mb-0 relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-gold/[0.08] blur-[80px]" />
+        </div>
+        <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start gap-6">
           <div className="relative shrink-0">
-            <label className="cursor-pointer relative block w-24 h-24">
+            <label className="cursor-pointer relative block w-28 h-28">
               {user?.avatar_url
-                ? <img src={user.avatar_url} alt="" className="w-24 h-24 rounded-full border-2 border-gold/30 object-cover" />
-                : <div className="w-24 h-24 rounded-full border-2 border-dashed border-gold/30 bg-surface-100 flex items-center justify-center"><Camera size={20} className="text-gold/40" /></div>
+                ? <img src={user.avatar_url} alt="" className="w-28 h-28 rounded-full border-2 border-gold/40 object-cover" />
+                : <div className="w-28 h-28 rounded-full border-2 border-dashed border-gold/30 bg-white/5 flex items-center justify-center"><Camera size={24} className="text-gold/40" /></div>
               }
               <input type="file" accept="image/*" onChange={uploadAvatar} className="hidden" />
               {uploadingAvatar ? (
-                <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center"><Loader2 size={20} className="text-white animate-spin" /></div>
+                <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center"><Loader2 size={24} className="text-white animate-spin" /></div>
               ) : (
-                <div className="absolute inset-0 bg-black/0 hover:bg-black/30 rounded-full flex items-center justify-center transition-colors opacity-0 hover:opacity-100"><Camera size={18} className="text-white" /></div>
+                <div className="absolute inset-0 bg-black/0 hover:bg-black/40 rounded-full flex items-center justify-center transition-colors opacity-0 hover:opacity-100"><Camera size={20} className="text-white" /></div>
               )}
             </label>
-            {user?.verified && <div className="absolute -bottom-1 -right-1"><VerifiedBadge size={18} /></div>}
+            {user?.verified && <div className="absolute -bottom-1 -right-1"><VerifiedBadge size={20} /></div>}
           </div>
-          {avatarError && <p className="text-red-500 text-[10px] text-center mt-1 max-w-[96px]">{avatarError}</p>}
+          {avatarError && <p className="text-red-400 text-[11px] text-center mt-1 max-w-[112px]">{avatarError}</p>}
 
           <div className="flex-1 text-center sm:text-left w-full">
             {editing ? (
               <div className="space-y-3">
-                <input value={editName} onChange={e => setEditName(e.target.value)} className={`${fieldClass} text-2xl font-display italic`} />
+                <input value={editName} onChange={e => setEditName(e.target.value)}
+                  className="bg-transparent border-b-2 border-cream/20 pb-2.5 focus:outline-none focus:border-gold transition-colors text-cream w-full text-2xl font-display italic" />
                 <textarea value={editBio} onChange={e => setEditBio(e.target.value)} rows={2}
-                  className={`${fieldClass} text-sm resize-none text-ink/50`} placeholder="Tell people about you…" />
+                  className="bg-transparent border-b-2 border-cream/20 pb-2.5 focus:outline-none focus:border-gold transition-colors text-cream/60 w-full text-sm resize-none" placeholder="Tell people about you…" />
                 <div>
-                  <p className="text-[9px] font-black text-ink/25 uppercase tracking-[0.2em] mb-1.5 flex items-center gap-1"><MapPin size={9} /> Your City</p>
+                  <p className="text-[10px] font-black text-cream/30 uppercase tracking-[0.2em] mb-1.5 flex items-center gap-1"><MapPin size={9} /> Your City</p>
                   <PlacesAutocomplete
                     value={editLocation}
                     onChange={(val) => setEditLocation(val)}
@@ -1457,51 +1748,53 @@ function ProfileTab({ gpsCity }: { gpsCity?: string | null }) {
                 </div>
                 <div className="flex gap-3 pt-1">
                   <motion.button whileTap={{ scale: 0.97 }} onClick={save} disabled={saving}
-                    className="bg-gold text-white px-5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest disabled:opacity-50 shadow-sm">
+                    className="bg-gold text-white px-6 py-2 rounded-full text-[11px] font-black uppercase tracking-widest disabled:opacity-50 shadow-sm">
                     {saving ? 'Saving…' : 'Save'}
                   </motion.button>
-                  <button onClick={() => setEditing(false)} className="text-ink/30 hover:text-ink text-[10px] font-black uppercase tracking-widest transition-colors">Cancel</button>
+                  <button onClick={() => setEditing(false)} className="text-cream/30 hover:text-cream text-[11px] font-black uppercase tracking-widest transition-colors">Cancel</button>
                 </div>
               </div>
             ) : (
               <>
-                <div className="flex items-center gap-2 justify-center sm:justify-start mb-1">
-                  <h2 className="font-display text-3xl italic text-ink">{user?.name}</h2>
-                  {user?.verified && <VerifiedBadge size={16} />}
-                  <button onClick={() => setEditing(true)} className="text-ink/25 hover:text-gold transition-colors ml-1"><Edit3 size={14} /></button>
+                <div className="flex items-center gap-2.5 justify-center sm:justify-start mb-2">
+                  <h2 className="font-display text-3xl sm:text-4xl italic text-cream">{user?.name}</h2>
+                  {user?.verified && <VerifiedBadge size={18} />}
+                  <button onClick={() => setEditing(true)} className="text-cream/25 hover:text-gold transition-colors ml-1"><Edit3 size={15} /></button>
                 </div>
-                <p className="text-ink/50 text-sm mb-1 max-w-sm">{user?.bio || 'No bio yet.'}</p>
+                <p className="text-cream/50 text-base mb-1.5 max-w-sm">{user?.bio || 'No bio yet.'}</p>
                 {(user?.location || gpsCity) && (
-                  <p className="text-ink/25 text-xs flex items-center gap-1 justify-center sm:justify-start">
-                    <MapPin size={10} /> {user?.location || gpsCity}
+                  <p className="text-cream/25 text-sm flex items-center gap-1 justify-center sm:justify-start">
+                    <MapPin size={11} /> {user?.location || gpsCity}
                   </p>
                 )}
               </>
             )}
           </div>
         </div>
+      </div>
 
+      <div className="bg-white border border-black/[0.07] rounded-b-3xl p-6 md:p-8 shadow-sm space-y-4">
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="grid grid-cols-3 gap-3">
           {[{ val: user?.hangouts_count || 0, label: 'Activities' }, { val: user?.connections_count || 0, label: 'Connections' }, { val: user?.circles_count || 0, label: 'Groups' }].map(s => (
             <motion.div
               key={s.label}
               whileTap={{ scale: 0.97 }}
               className="bg-surface-100 border border-black/[0.05] rounded-2xl p-4 flex flex-col items-center hover:border-gold/25 hover:bg-gold/5 transition-all"
             >
-              <span className="text-2xl md:text-3xl font-display text-gold italic mb-1">{s.val}</span>
-              <span className="text-[9px] uppercase tracking-[0.2em] text-ink/30 font-black">{s.label}</span>
+              <span className="text-3xl md:text-4xl font-display text-gold italic mb-1">{s.val}</span>
+              <span className="text-[10px] uppercase tracking-[0.2em] text-ink/35 font-black">{s.label}</span>
             </motion.div>
           ))}
         </div>
 
         {/* Open to Meet toggle */}
-        <div className="mb-3 flex items-center justify-between p-4 bg-surface-100 border border-black/[0.07] rounded-2xl">
+        <div className="flex items-center justify-between p-4 bg-surface-100 border border-black/[0.07] rounded-2xl">
           <div className="flex items-center gap-3">
-            <UserCheck size={18} className={user?.open_to_meet ? 'text-gold' : 'text-ink/30'} />
+            <UserCheck size={20} className={user?.open_to_meet ? 'text-gold' : 'text-ink/30'} />
             <div>
-              <p className="text-sm font-bold text-ink">Open to Meet</p>
-              <p className="text-[10px] text-ink/30 uppercase tracking-wider font-black">
+              <p className="text-base font-bold text-ink">Open to Meet</p>
+              <p className="text-[11px] text-ink/35 uppercase tracking-wider font-black">
                 {user?.open_to_meet ? 'Visible in Connect tab' : 'Hidden from Connect tab'}
               </p>
             </div>
@@ -1512,12 +1805,12 @@ function ProfileTab({ gpsCity }: { gpsCity?: string | null }) {
               setUser((u: any) => ({ ...u, open_to_meet: next }));
               await fetch('/api/profile', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ open_to_meet: next }) });
             }}
-            className={`relative w-11 h-6 rounded-full transition-colors ${user?.open_to_meet ? 'bg-gold' : 'bg-black/10'}`}
+            className={`relative w-12 h-7 rounded-full transition-colors ${user?.open_to_meet ? 'bg-gold' : 'bg-black/10'}`}
           >
             <motion.span
-              animate={{ x: user?.open_to_meet ? 20 : 2 }}
+              animate={{ x: user?.open_to_meet ? 22 : 2 }}
               transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-              className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm"
+              className="absolute top-1 w-5 h-5 rounded-full bg-white shadow-sm"
             />
           </button>
         </div>
@@ -1529,27 +1822,27 @@ function ProfileTab({ gpsCity }: { gpsCity?: string | null }) {
         <motion.div
           whileTap={{ scale: 0.99 }}
           onClick={() => setShowUpgrade(true)}
-          className="mb-4 flex items-center justify-between p-4 bg-gradient-to-r from-gold/8 to-gold/4 border border-gold/20 rounded-2xl cursor-pointer group hover:border-gold/35 transition-all"
+          className="flex items-center justify-between p-5 bg-gradient-to-r from-gold/8 to-gold/4 border border-gold/20 rounded-2xl cursor-pointer group hover:border-gold/35 transition-all"
         >
           <div className="flex items-center gap-3">
-            <div className="w-1 h-8 bg-gold rounded-full" />
+            <div className="w-1 h-10 bg-gold rounded-full" />
             <div>
-              <p className="text-sm font-bold text-ink">{user?.tier === 'black' ? 'Convivia Black' : 'Convivia Standard'}</p>
-              {user?.tier !== 'black' && <p className="text-[10px] text-gold-dark font-black tracking-widest uppercase">Upgrade Available</p>}
+              <p className="text-base font-bold text-ink">{user?.tier === 'black' ? 'Convivia Black' : 'Convivia Standard'}</p>
+              {user?.tier !== 'black' && <p className="text-[11px] text-gold-dark font-black tracking-widest uppercase">Upgrade Available</p>}
             </div>
           </div>
           {user?.tier !== 'black' ? (
-            <span className="text-[9px] text-white bg-gold px-3 py-1.5 rounded-full font-black uppercase tracking-widest group-hover:bg-gold-dark transition-colors shadow-sm">Unlock Black</span>
+            <span className="text-[10px] text-white bg-gold px-4 py-2 rounded-full font-black uppercase tracking-widest group-hover:bg-gold-dark transition-colors shadow-sm">Unlock Black</span>
           ) : (
-            <span className="text-[9px] text-gold-dark font-black uppercase tracking-widest">Active</span>
+            <span className="text-[10px] text-gold-dark font-black uppercase tracking-widest">Active</span>
           )}
         </motion.div>
 
         <button
           onClick={() => { window.location.href = '/api/auth/signout'; }}
-          className="w-full flex items-center justify-center gap-2 p-3.5 border border-black/[0.07] rounded-xl text-ink/30 hover:text-red-500 hover:border-red-200 hover:bg-red-50 transition-all text-[10px] uppercase tracking-widest font-black"
+          className="w-full flex items-center justify-center gap-2 p-4 border border-black/[0.07] rounded-xl text-ink/35 hover:text-red-500 hover:border-red-200 hover:bg-red-50 transition-all text-[11px] uppercase tracking-widest font-black"
         >
-          <LogOut size={13} /> Sign Out
+          <LogOut size={14} /> Sign Out
         </button>
       </div>
     </div>
