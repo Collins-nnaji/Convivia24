@@ -36,11 +36,12 @@ const ENERGY_COLORS: Record<Pulse['energy'], string> = {
   peak:   'text-red-300 bg-red-500/20 border-red-500/40',
 };
 
-const ENERGY_GRADIENTS: Record<Pulse['energy'], string> = {
-  quiet:  'from-neutral-100 to-neutral-50',
-  rising: 'from-emerald-500/25 to-teal-500/20',
-  high:   'from-amber-500/30 to-orange-500/25',
-  peak:   'from-orange-500/30 to-red-600/30',
+/** Left accent stripe on pulse cards (readable on white, no gradient clutter) */
+const ENERGY_STRIPE: Record<Pulse['energy'], string> = {
+  quiet:  'border-l-neutral-400 bg-gradient-to-br from-neutral-50 to-white',
+  rising: 'border-l-emerald-500 bg-gradient-to-br from-emerald-50/90 to-white',
+  high:   'border-l-amber-500 bg-gradient-to-br from-amber-50/90 to-white',
+  peak:   'border-l-red-600 bg-gradient-to-br from-red-50/80 to-white',
 };
 
 const staggerContainer = {
@@ -170,8 +171,8 @@ function FlowSteps({ steps }: { steps: { n: string; label: string; sub?: string 
     <div className="flex flex-wrap items-center gap-2 md:gap-3 pt-2">
       {steps.map((s, i) => (
         <div key={s.n} className="flex items-center gap-2 md:gap-3">
-          <div className="flex items-center gap-2 bg-neutral-50 border border-neutral-200 rounded-full pl-2 pr-3 py-1.5">
-            <span className="w-5 h-5 rounded-full bg-red-50 text-red-700 text-[10px] font-black flex items-center justify-center">{s.n}</span>
+          <div className="flex items-center gap-2 bg-white/90 border border-gold/20 rounded-full pl-2 pr-3 py-1.5 shadow-sm shadow-gold/5">
+            <span className="w-5 h-5 rounded-full bg-gradient-to-br from-red-50 to-amber-50 text-red-800 ring-1 ring-gold/30 text-[10px] font-black flex items-center justify-center">{s.n}</span>
             <span className="text-[10px] uppercase tracking-widest font-black text-neutral-700">{s.label}</span>
             {s.sub && <span className="hidden md:inline text-[10px] text-neutral-400 font-medium normal-case tracking-normal">· {s.sub}</span>}
           </div>
@@ -230,7 +231,7 @@ export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
   return (
     <div className="flex flex-col h-full w-full max-w-[100vw] mx-auto relative text-neutral-900 overflow-x-hidden">
       {/* TOP NAV (DESKTOP) */}
-      <header className="hidden md:flex items-center justify-between px-6 lg:px-10 py-5 lg:py-6 border-b border-neutral-200 bg-white/95 backdrop-blur-sm sticky top-0 z-50">
+      <header className="hidden md:flex items-center justify-between px-6 lg:px-10 py-5 lg:py-6 border-b border-gold/20 bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-[0_1px_0_0_rgba(201,168,76,0.08)]">
         <div className="flex items-center gap-2 min-w-0 w-[180px]">
           <button
             type="button"
@@ -257,7 +258,7 @@ export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
 
       {/* STRIP + LOGO (MOBILE) — tap logo = Now + scroll top */}
       <header
-        className="md:hidden sticky top-0 z-40 flex items-center px-3 sm:px-4 pt-[max(0.35rem,env(safe-area-inset-top))] pb-2.5 bg-white/95 backdrop-blur-md border-b border-neutral-200/90"
+        className="md:hidden sticky top-0 z-40 flex items-center px-3 sm:px-4 pt-[max(0.35rem,env(safe-area-inset-top))] pb-2.5 bg-white/82 backdrop-blur-md border-b border-gold/15 shadow-[0_1px_0_0_rgba(255,255,255,0.6)]"
       >
         <button
           type="button"
@@ -272,7 +273,7 @@ export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
       {/* MAIN CONTENT */}
       <div
         ref={mainScrollRef}
-        className="flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden px-3 sm:px-6 md:px-12 pt-3 sm:pt-5 md:pt-12 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-12 scrollbar-hide"
+        className="flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden px-3 sm:px-6 md:px-12 pt-3 sm:pt-5 md:pt-12 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-12 scrollbar-hide relative"
       >
         <AnimatePresence mode="wait">
           <motion.div
@@ -289,7 +290,7 @@ export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
       </div>
 
       {/* BOTTOM NAV (MOBILE) */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 max-w-[100vw] bg-white/95 backdrop-blur-md border-t border-neutral-200 px-1 sm:px-2 flex items-end justify-between gap-0.5 pt-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom))] z-50 shadow-[0_-3px_24px_rgba(0,0,0,0.06)]">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 max-w-[100vw] bg-white/88 backdrop-blur-lg border-t border-gold/20 px-1 sm:px-2 flex items-end justify-between gap-0.5 pt-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom))] z-50 shadow-[0_-4px_28px_rgba(0,0,0,0.06),inset_0_1px_0_0_rgba(201,168,76,0.12)]">
         <NavIcon label="Now" icon={<Home size={20} />}        active={activeTab === 'home'}     onClick={goNow} />
         <NavIcon label="Events" icon={<Compass size={20} />}   active={activeTab === 'discover'} onClick={() => setActiveTab('discover')} />
 
@@ -318,7 +319,7 @@ function DesktopNavLink({ label, icon, active, onClick }: any) {
     >
       {icon}
       <span className="text-xs uppercase tracking-widest">{label}</span>
-      {active && <span className="absolute -bottom-[29px] left-0 right-0 h-[3px] bg-red-700 rounded-t-full shadow-[0_0_10px_#b91c1c]"/>}
+      {active && <span className="absolute -bottom-[29px] left-0 right-0 h-[3px] rounded-t-full bg-gradient-to-r from-red-700 via-red-600 to-gold shadow-[0_0_12px_rgba(185,28,28,0.35)]"/>}
     </button>
   );
 }
@@ -1459,7 +1460,7 @@ function HomeTab({ onSwitchTab }: { onSwitchTab: (t: AppTab) => void }) {
   return (
     <div className="space-y-10 md:space-y-12">
       <motion.section
-        className="relative overflow-hidden rounded-[20px] sm:rounded-[24px] md:rounded-[32px] border border-neutral-200/90 shadow-[0_24px_70px_rgba(0,0,0,0.07)]"
+        className="relative overflow-hidden rounded-[20px] sm:rounded-[24px] md:rounded-[32px] border border-gold/25 shadow-[0_24px_70px_rgba(0,0,0,0.08),0_0_0_1px_rgba(201,168,76,0.12)]"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 280, damping: 32 }}
@@ -1468,23 +1469,47 @@ function HomeTab({ onSwitchTab }: { onSwitchTab: (t: AppTab) => void }) {
           <img
             src="/Homepage.png"
             alt=""
-            className="w-full h-full min-h-[220px] sm:min-h-[260px] md:min-h-[300px] object-cover object-[center_35%]"
+            className="w-full h-full min-h-[260px] sm:min-h-[300px] md:min-h-[340px] object-cover object-[center_30%] sm:object-[center_32%]"
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-white via-white/88 to-white/96" />
-          <div className="absolute inset-0 bg-gradient-to-t from-white/95 via-transparent to-white/50" />
+          {/* Directional scrim: darker behind left-aligned type; image stays vivid on the right/top */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/78 via-black/28 sm:via-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/15" />
+          <div className="absolute inset-0 bg-gradient-to-br from-gold/[0.08] via-transparent to-transparent" />
         </div>
-        <div className="relative z-10 p-4 sm:p-7 md:p-10 space-y-3 sm:space-y-4">
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-600 flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-red-700 animate-pulse shrink-0"/> Live · {new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}
-        </p>
-        <h1 className="font-display text-[1.65rem] leading-[1.08] sm:text-4xl md:text-5xl lg:text-6xl italic sm:leading-[1.02]">What&apos;s live right now</h1>
-        <p className="text-neutral-600 text-sm md:text-lg max-w-xl [overflow-wrap:anywhere]">
-          Neighbourhood energy refreshes here — then AI matches you in one tap. Tables you can join are in{' '}
-          <button type="button" onClick={() => onSwitchTab('discover')} className="text-red-700 font-semibold hover:underline underline-offset-4 decoration-red-600/50">
-            Discover
-          </button>.
-        </p>
-        <div className="md:hidden bg-white/95 border border-red-200 rounded-[28px] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.28)]">
+        <motion.div
+          className="relative z-10 p-4 sm:p-7 md:p-10 space-y-3 sm:space-y-4"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="show"
+        >
+        <motion.p
+          variants={staggerItem}
+          className="text-[10px] font-black uppercase tracking-[0.3em] text-gold-light flex items-center gap-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]"
+        >
+          <span className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.85)] animate-pulse shrink-0"/> Live · {new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}
+        </motion.p>
+        <motion.div
+          variants={staggerItem}
+          className="max-w-2xl rounded-[20px] sm:rounded-[24px] border border-white/15 bg-neutral-950/55 backdrop-blur-md px-4 py-4 sm:px-5 sm:py-5 shadow-[0_12px_40px_rgba(0,0,0,0.35)]"
+        >
+          <h1
+            className="font-display text-[1.65rem] leading-[1.08] sm:text-4xl md:text-5xl lg:text-6xl italic sm:leading-[1.02] text-white drop-shadow-sm"
+          >
+            What&apos;s <span className="text-[color:var(--gold-accent,#c9a84c)] drop-shadow-[0_1px_12px_rgba(0,0,0,0.5)]">live</span> right now
+          </h1>
+          <p className="mt-3 text-white text-[15px] sm:text-base md:text-lg leading-snug max-w-xl [overflow-wrap:anywhere] font-medium tracking-wide [word-spacing:0.02em]">
+            Neighbourhood energy refreshes here — then AI matches you in one tap. Tables you can join are in{' '}
+            <button
+              type="button"
+              onClick={() => onSwitchTab('discover')}
+              className="text-gold-light font-semibold underline decoration-gold-light/70 underline-offset-[5px] hover:text-white hover:decoration-white/80"
+            >
+              Discover
+            </button>
+            .
+          </p>
+        </motion.div>
+        <motion.div variants={staggerItem} className="md:hidden bg-white/95 border border-red-200 rounded-[28px] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.28)]">
           <div className="flex items-center justify-between gap-3 mb-3">
             <span className="text-[10px] uppercase tracking-[0.24em] font-black text-red-700">AI Match</span>
             {premium ? (
@@ -1507,23 +1532,23 @@ function HomeTab({ onSwitchTab }: { onSwitchTab: (t: AppTab) => void }) {
               <Sparkles size={19} fill="currentColor"/>
             </button>
           </div>
-        </div>
-        <div className="md:hidden grid grid-cols-2 gap-2">
+        </motion.div>
+        <motion.div variants={staggerItem} className="md:hidden grid grid-cols-2 gap-2">
           <button type="button" onClick={() => onSwitchTab('discover')} className="min-h-11 rounded-2xl border border-neutral-200 bg-neutral-100 text-neutral-700 text-[10px] uppercase tracking-widest font-black flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
             <Compass size={14}/> Events
           </button>
           <button type="button" onClick={() => onSwitchTab('host')} className="min-h-11 rounded-2xl border border-neutral-200 bg-neutral-100 text-neutral-700 text-[10px] uppercase tracking-widest font-black flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
             <PlusSquare size={14}/> Host
           </button>
-        </div>
-        <div className="hidden md:block">
+        </motion.div>
+        <motion.div variants={staggerItem} className="hidden md:block">
           <FlowSteps steps={[
             { n: '1', label: 'Feel the pulse', sub: 'live city' },
             { n: '2', label: 'AI matches you', sub: '4–6 people' },
             { n: '3', label: 'Instant plan',   sub: 'go tonight' },
           ]}/>
-        </div>
-        </div>
+        </motion.div>
+        </motion.div>
       </motion.section>
 
       {joinNote && (
@@ -1576,54 +1601,75 @@ function HomeTab({ onSwitchTab }: { onSwitchTab: (t: AppTab) => void }) {
             <p className="text-sm mt-1">Host a table — it shows up in Discover too.</p>
           </div>
         ) : (
-          <motion.div
-            className="flex md:grid md:grid-cols-3 gap-3 md:gap-4 overflow-x-auto md:overflow-visible -mx-4 px-4 md:mx-0 md:px-0 pb-2 scrollbar-hide snap-x snap-mandatory"
-            variants={staggerContainer}
-            initial="hidden"
-            animate="show"
-          >
-            {pulseCards.map((pulse) => {
-              const PulseIcon = pickPulseIcon(pulse.vibe);
-              const gradient = ENERGY_GRADIENTS[pulse.energy];
-              return (
-                <motion.button
-                  key={pulse.id}
-                  type="button"
-                  variants={staggerItem}
-                  whileTap={{ scale: 0.98 }}
-                  whileHover={{ y: -5 }}
-                  onClick={() => startMatch(pulse)}
-                  className={`relative overflow-hidden rounded-[24px] md:rounded-[28px] border border-neutral-200/90 hover:border-red-400 bg-gradient-to-br ${gradient} p-4 md:p-5 text-left transition-shadow group min-w-[78vw] sm:min-w-[46vw] md:min-w-0 snap-start shadow-[0_8px_28px_rgba(0,0,0,0.07)] ring-1 ring-black/[0.04] hover:shadow-[0_14px_40px_rgba(185,28,28,0.12)]`}
-                >
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-700 via-red-500 to-neutral-800 z-[1]" />
-                  <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px]" />
-                  <div className="relative z-[2]">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="w-10 h-10 rounded-2xl bg-white/90 border border-neutral-200/80 shadow-sm flex items-center justify-center text-neutral-800 group-hover:bg-red-50 group-hover:border-red-200 group-hover:text-red-700 transition-colors">
-                        <PulseIcon size={18} />
+          <div className="relative max-md:rounded-[28px] max-md:border max-md:border-neutral-200/90 max-md:bg-gradient-to-b max-md:from-neutral-50/90 max-md:to-neutral-100/50 max-md:p-3 sm:max-md:p-4">
+            <p className="text-[10px] text-neutral-500 mb-3 md:mb-0 font-bold uppercase tracking-[0.2em] px-0.5 md:hidden">
+              Pull up for more · tap a card to match
+            </p>
+            {/* Mobile: one column + real scroll. Desktop: 2 columns, no nested scroll trap. */}
+            <div
+              className="max-h-[min(72vh,560px)] overflow-y-auto overflow-x-hidden overscroll-contain pr-1 [-webkit-overflow-scrolling:touch] md:max-h-none md:overflow-visible md:pr-0"
+              style={{ scrollbarGutter: 'stable' }}
+            >
+              <motion.div
+                className="flex flex-col gap-4 md:grid md:grid-cols-2 md:gap-5 pb-1 md:pb-0"
+                variants={staggerContainer}
+                initial="hidden"
+                animate="show"
+              >
+                {pulseCards.map((pulse) => {
+                  const PulseIcon = pickPulseIcon(pulse.vibe);
+                  const stripe = ENERGY_STRIPE[pulse.energy];
+                  return (
+                    <motion.button
+                      key={pulse.id}
+                      type="button"
+                      variants={staggerItem}
+                      whileTap={{ scale: 0.995 }}
+                      whileHover={{ y: -2 }}
+                      onClick={() => startMatch(pulse)}
+                      className={`relative w-full text-left rounded-[22px] md:rounded-[26px] border border-neutral-200/90 border-l-[6px] shadow-[0_6px_28px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.03] transition-[box-shadow,transform,border-color] hover:border-red-300/90 hover:shadow-[0_14px_40px_rgba(185,28,28,0.12)] group ${stripe}`}
+                    >
+                      <div className="absolute top-3 right-3 h-16 w-16 rounded-full bg-gradient-to-br from-red-600/[0.07] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" aria-hidden />
+                      <div className="relative p-4 md:p-5">
+                        <div className="flex items-start gap-3">
+                          <div className="shrink-0 w-12 h-12 rounded-2xl bg-white border border-neutral-200/90 shadow-sm flex items-center justify-center text-neutral-800 group-hover:border-red-200 group-hover:text-red-700 transition-colors">
+                            <PulseIcon size={20} strokeWidth={1.75} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <p className="font-display text-xl md:text-2xl italic text-neutral-900 leading-tight [overflow-wrap:anywhere]">
+                                {pulse.area}
+                              </p>
+                              <span className={`shrink-0 text-[9px] mt-0.5 font-black uppercase tracking-[0.16em] px-2.5 py-1 rounded-full border ${ENERGY_COLORS[pulse.energy]}`}>
+                                {pulse.tag}
+                              </span>
+                            </div>
+                            <p className="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-2">{pulse.city}</p>
+                            <p className="text-neutral-600 text-[13px] md:text-sm leading-snug line-clamp-3">{pulse.vibe}</p>
+                          </div>
+                        </div>
+                        <div className="mt-4 flex items-center justify-between gap-2 border-t border-neutral-200/70 pt-3">
+                          <div className="flex items-center gap-1.5 text-[10px] text-red-700 uppercase tracking-[0.14em] font-black">
+                            <Sparkles size={11} className="shrink-0" /> Match · {pulse.groupSize} people
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {!!pulse.liveTables && pulse.liveTables > 0 && (
+                              <span className="text-[9px] uppercase tracking-widest font-black text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/90">
+                                {pulse.liveTables} live
+                              </span>
+                            )}
+                            <span className="hidden sm:inline-flex text-[10px] font-bold uppercase tracking-widest text-neutral-400 group-hover:text-red-600 transition-colors items-center gap-0.5">
+                              Open <ChevronRight size={14} strokeWidth={2} />
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <span className={`text-[9px] font-black uppercase tracking-[0.18em] px-2.5 py-1 rounded-full border backdrop-blur-sm ${ENERGY_COLORS[pulse.energy]}`}>
-                        {pulse.tag}
-                      </span>
-                    </div>
-                    <p className="font-display text-xl md:text-2xl italic text-neutral-900 leading-tight">{pulse.area}</p>
-                    <p className="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-2">{pulse.city}</p>
-                    <p className="text-neutral-600 text-[12px] md:text-sm leading-snug line-clamp-3">{pulse.vibe}</p>
-                    <div className="mt-3 flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1 text-[10px] text-red-700 uppercase tracking-widest font-black">
-                        <Sparkles size={10}/> Match · {pulse.groupSize}
-                      </div>
-                      {!!pulse.liveTables && pulse.liveTables > 0 && (
-                        <span className="text-[9px] uppercase tracking-widest font-black text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200">
-                          {pulse.liveTables} live
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </motion.button>
-              );
-            })}
-          </motion.div>
+                    </motion.button>
+                  );
+                })}
+              </motion.div>
+            </div>
+          </div>
         )}
 
         <div className="hidden md:block mt-5 bg-neutral-50 border border-neutral-200 rounded-3xl p-4 md:p-5">

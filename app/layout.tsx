@@ -35,7 +35,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${outfit.variable} ${cormorant.variable} font-sans bg-white text-neutral-900 antialiased`} suppressHydrationWarning>
+      <body className={`${outfit.variable} ${cormorant.variable} font-sans bg-[#f8f6f2] text-neutral-900 antialiased`} suppressHydrationWarning>
         {children}
       </body>
     </html>

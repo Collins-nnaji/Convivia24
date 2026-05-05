@@ -4,16 +4,18 @@
 
 :root {
   --foreground-rgb: 23, 23, 23;
+  --app-wash: #f8f6f2;
+  --gold-accent: #c9a84c;
 }
 
 html {
-  background: #ffffff;
+  background: var(--app-wash);
   -webkit-text-size-adjust: 100%;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: #ffffff;
+  background: var(--app-wash);
   overscroll-behavior-y: none;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -56,14 +58,16 @@ select {
   touch-action: manipulation;
 }
 
-/* Selection */
+/* Selection — red + subtle gold cast */
 ::selection {
-  background: rgba(185, 28, 28, 0.22);
+  background: rgba(185, 28, 28, 0.2);
   color: #0a0a0a;
 }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: #f5f5f5; }
-::-webkit-scrollbar-thumb { background: #b91c1c; }
-::-webkit-scrollbar-thumb:hover { background: #991b1b; }
+::-webkit-scrollbar-track { background: rgba(245, 240, 232, 0.6); }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #b91c1c 0%, #a67c2a 100%);
+}
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #991b1b 0%, #c9a84c 100%); }
