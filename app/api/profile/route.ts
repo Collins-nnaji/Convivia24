@@ -27,10 +27,32 @@ export async function GET() {
       SELECT COUNT(*) as count FROM checkins WHERE user_id = ${user.id}
     `;
 
+    // Refill match credits if a week has elapsed since reset
+    let mergedUser: any = user;
+    if (user.match_credits_reset_at) {
+      const resetAt = new Date(user.match_credits_reset_at as string).getTime();
+      if (resetAt < Date.now()) {
+        const refreshed = await sql`
+          UPDATE users
+          SET match_credits_remaining = 1,
+              match_credits_reset_at  = NOW() + INTERVAL '7 days'
+          WHERE id = ${user.id}
+          RETURNING *
+        `;
+        mergedUser = refreshed[0] || user;
+      }
+    }
+
+    const premiumActive = mergedUser.tier === 'black'
+      || mergedUser.subscription_status === 'black'
+      || mergedUser.subscription_status === 'black_trial'
+      || (mergedUser.premium_until && new Date(mergedUser.premium_until as string).getTime() > Date.now());
+
     return NextResponse.json({
       user: {
-        ...user,
-        created_at: user.created_at instanceof Date ? user.created_at.toISOString() : user.created_at,
+        ...mergedUser,
+        created_at: mergedUser.created_at instanceof Date ? mergedUser.created_at.toISOString() : mergedUser.created_at,
+        premium_active: premiumActive,
         connections_count: Number(connectionsResult[0]?.count || 0),
         circles_count: Number(circlesResult[0]?.count || 0),
         checkins_count: Number(checkinsResult[0]?.count || 0),

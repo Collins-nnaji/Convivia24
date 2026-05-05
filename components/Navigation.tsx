@@ -44,10 +44,6 @@ export default function Navigation() {
               className="h-7 w-auto"
               style={{ filter: 'brightness(0) invert(1)' }}
             />
-            <span className="hidden sm:flex items-center gap-1.5">
-              <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
-              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-cream/40">Lagos · Abuja · London</span>
-            </span>
           </Link>
 
           {/* Desktop links */}
@@ -127,13 +123,6 @@ export default function Navigation() {
               transition={{ duration: 0.2 }}
               className="fixed top-16 inset-x-0 z-50 bg-obsidian border-b border-gold/20 shadow-lg md:hidden"
             >
-              <div className="border-b border-gold/10 px-5 py-2.5 flex items-center gap-2">
-                <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
-                <span className="text-[8px] font-black uppercase tracking-[0.3em] text-cream/40">
-                  Lagos · Abuja · London
-                </span>
-              </div>
-
               <nav className="px-5 py-3 divide-y divide-gold/10">
                 {LINKS.map(({ label, href }) => {
                   const active = pathname === href;

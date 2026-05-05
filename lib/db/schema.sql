@@ -27,13 +27,70 @@ CREATE TABLE IF NOT EXISTS users (
                   CHECK (tier IN ('standard', 'black')),
   rating        NUMERIC(3, 2) DEFAULT 0,
   hangouts_count INT DEFAULT 0,
-  verified      BOOLEAN NOT NULL DEFAULT false,       -- identity verified (stub — wire to Twilio/KYC later)
+  verified      BOOLEAN NOT NULL DEFAULT false,       -- identity verified via Azure Face
   open_to_meet  BOOLEAN NOT NULL DEFAULT false,       -- user is actively open to meeting people now
+  -- Premium / freemium model
+  match_credits_remaining INT NOT NULL DEFAULT 1,     -- 1 free AI match per week for free users
+  match_credits_reset_at  TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '7 days'),
+  premium_until           TIMESTAMPTZ,                -- when Black subscription expires
+  subscription_status     TEXT NOT NULL DEFAULT 'free'
+                            CHECK (subscription_status IN ('free','black','black_trial','cancelled')),
+  -- Market entry profile
   company       TEXT,
   role          TEXT,
   website       TEXT,
   product_category TEXT,
   target_markets TEXT[] NOT NULL DEFAULT '{}',
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ─────────────────────────────────────
+-- MATCH REQUESTS — AI Match flow log (Skip/Delay/Join)
+-- ─────────────────────────────────────
+CREATE TABLE IF NOT EXISTS match_requests (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id       UUID REFERENCES users(id) ON DELETE CASCADE,
+  city          TEXT NOT NULL,
+  area          TEXT,
+  vibe          TEXT,
+  energy        TEXT,
+  group_size    INT NOT NULL DEFAULT 6,
+  action        TEXT NOT NULL DEFAULT 'matched'
+                  CHECK (action IN ('matched','joined','skipped','delayed')),
+  hangout_id    UUID REFERENCES hangouts(id) ON DELETE SET NULL,
+  matched_user_ids UUID[] NOT NULL DEFAULT '{}',
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ─────────────────────────────────────
+-- RESERVATIONS — Venue bookings
+-- ─────────────────────────────────────
+CREATE TABLE IF NOT EXISTS reservations (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id       UUID REFERENCES users(id) ON DELETE CASCADE,
+  venue_id      UUID REFERENCES venues(id) ON DELETE CASCADE,
+  party_size    INT NOT NULL DEFAULT 2,
+  requested_for TIMESTAMPTZ,
+  status        TEXT NOT NULL DEFAULT 'requested'
+                  CHECK (status IN ('requested','confirmed','seated','cancelled','no_show')),
+  notes         TEXT,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ─────────────────────────────────────
+-- SUBSCRIPTION EVENTS — premium audit trail
+-- ─────────────────────────────────────
+CREATE TABLE IF NOT EXISTS subscription_events (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id       UUID REFERENCES users(id) ON DELETE CASCADE,
+  event_type    TEXT NOT NULL
+                  CHECK (event_type IN ('subscribed','renewed','cancelled','trial_started','trial_ended','upgraded','downgraded')),
+  tier_from     TEXT,
+  tier_to       TEXT,
+  amount_ngn    INT,
+  currency      TEXT DEFAULT 'NGN',
+  payment_ref   TEXT,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -334,3 +391,8 @@ CREATE INDEX IF NOT EXISTS idx_market_insights_user ON market_insights(user_id, 
 CREATE INDEX IF NOT EXISTS idx_brand_activations_user ON brand_activations(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_drink_products_category ON drink_products(category);
 CREATE INDEX IF NOT EXISTS idx_drink_orders_user ON drink_orders(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_match_requests_user ON match_requests(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_match_requests_city ON match_requests(city, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_reservations_user ON reservations(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_reservations_venue ON reservations(venue_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_subscription_events_user ON subscription_events(user_id, created_at DESC);
