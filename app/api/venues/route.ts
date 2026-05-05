@@ -1,12 +1,22 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db';
 
-// GET /api/venues — List all active venues
-export async function GET() {
+// GET /api/venues — List active venues, optional ?city=London
+export async function GET(req: NextRequest) {
   try {
-    const venues = await sql`
-      SELECT * FROM venues WHERE is_active = true ORDER BY city, name
-    `;
+    const { searchParams } = new URL(req.url);
+    const city = searchParams.get('city');
+
+    const venues = city
+      ? await sql`
+          SELECT * FROM venues
+          WHERE is_active = true
+            AND city ILIKE ${'%' + city + '%'}
+          ORDER BY name
+        `
+      : await sql`
+          SELECT * FROM venues WHERE is_active = true ORDER BY city, name
+        `;
 
     const serialized = venues.map((v) => ({
       ...v,

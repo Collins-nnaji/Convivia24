@@ -103,7 +103,6 @@ export default function ConviviumCard() {
                 src="/convivia24.png"
                 alt=""
                 className="h-5 w-auto opacity-90"
-                style={{ filter: 'brightness(0) invert(1)' }}
               />
             </div>
             <div className="flex items-center justify-between text-[10px] text-cream/40 font-medium tracking-wider">

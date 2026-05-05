@@ -31,18 +31,17 @@ export default function Navigation() {
     <>
       <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-obsidian/95 backdrop-blur-md shadow-[0_1px_0_0_rgba(201,168,76,0.1)]'
-          : 'bg-obsidian/80 backdrop-blur-sm border-b border-gold/5'
+          ? 'bg-white/95 backdrop-blur-md shadow-[0_1px_0_0_rgba(0,0,0,0.06)]'
+          : 'bg-white/90 backdrop-blur-sm border-b border-neutral-200/80'
       }`}>
         <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 shrink-0 group" aria-label="Convivia24">
+          <Link href="/" className="flex items-center gap-3 shrink-0 group min-h-11 min-w-11 p-2 -m-2 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600" aria-label="Convivia24 — Now">
             <img
               src="/convivia24.png"
               alt="Convivia24"
               className="h-7 w-auto"
-              style={{ filter: 'brightness(0) invert(1)' }}
             />
           </Link>
 
@@ -55,14 +54,14 @@ export default function Navigation() {
                   key={href}
                   href={href}
                   className={`relative px-4 py-2 text-[13px] font-medium tracking-wide transition-colors duration-150 ${
-                    active ? 'text-cream' : 'text-cream/50 hover:text-cream'
+                    active ? 'text-neutral-900' : 'text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
                   {label}
                   {active && (
                     <motion.span
                       layoutId="nav-pill"
-                      className="absolute inset-0 bg-gold/10 border border-gold/20 -z-10"
+                      className="absolute inset-0 bg-red-50 border border-red-200/60 -z-10"
                       transition={{ type: 'spring', stiffness: 400, damping: 32 }}
                     />
                   )}
@@ -72,7 +71,7 @@ export default function Navigation() {
 
             <Link
               href="/inquire"
-              className="ml-2 px-5 py-2 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.15em] transition-colors duration-150"
+              className="ml-2 px-5 py-2 bg-red-700 hover:bg-red-800 text-white text-[11px] font-black uppercase tracking-[0.15em] transition-colors duration-150"
             >
               Inquire
             </Link>
@@ -80,7 +79,7 @@ export default function Navigation() {
             {/* Sign In / Dashboard */}
             <Link
               href="/auth/sign-in"
-              className="ml-3 px-4 py-2 border border-cream/20 hover:border-gold/40 text-cream/70 hover:text-gold text-[11px] font-black uppercase tracking-[0.15em] transition-all flex items-center gap-2"
+              className="ml-3 px-4 py-2 border border-neutral-300 hover:border-red-400 text-neutral-600 hover:text-red-800 text-[11px] font-black uppercase tracking-[0.15em] transition-all flex items-center gap-2"
             >
               <LogIn size={14} /> Sign In
             </Link>
@@ -121,9 +120,9 @@ export default function Navigation() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.2 }}
-              className="fixed top-16 inset-x-0 z-50 bg-obsidian border-b border-gold/20 shadow-lg md:hidden"
+              className="fixed top-16 inset-x-0 z-50 bg-white border-b border-neutral-200 shadow-lg md:hidden"
             >
-              <nav className="px-5 py-3 divide-y divide-gold/10">
+              <nav className="px-5 py-3 divide-y divide-neutral-100">
                 {LINKS.map(({ label, href }) => {
                   const active = pathname === href;
                   return (
@@ -131,11 +130,11 @@ export default function Navigation() {
                       key={href}
                       href={href}
                       className={`flex items-center justify-between py-3.5 text-[15px] font-medium transition-colors ${
-                        active ? 'text-gold' : 'text-cream/70 hover:text-cream'
+                        active ? 'text-red-700' : 'text-neutral-600 hover:text-neutral-900'
                       }`}
                     >
                       {label}
-                      <span className="text-gold/30 text-lg leading-none">&rsaquo;</span>
+                      <span className="text-neutral-300 text-lg leading-none">&rsaquo;</span>
                     </Link>
                   );
                 })}
@@ -143,13 +142,13 @@ export default function Navigation() {
                 <div className="pt-4 space-y-3 pb-2">
                   <Link
                     href="/inquire"
-                    className="block w-full text-center py-3.5 bg-gold hover:bg-gold-light text-obsidian text-[12px] font-black uppercase tracking-[0.15em] transition-colors"
+                    className="block w-full text-center py-3.5 bg-red-700 hover:bg-red-800 text-white text-[12px] font-black uppercase tracking-[0.15em] transition-colors"
                   >
                     Inquire
                   </Link>
                   <Link
                     href="/auth/sign-in"
-                    className="block w-full text-center py-3.5 border border-cream/20 text-cream/70 text-[12px] font-black uppercase tracking-[0.15em] transition-colors hover:border-gold/40 hover:text-gold"
+                    className="block w-full text-center py-3.5 border border-neutral-200 text-neutral-600 text-[12px] font-black uppercase tracking-[0.15em] transition-colors hover:border-red-300 hover:text-red-800"
                   >
                     Sign In →
                   </Link>

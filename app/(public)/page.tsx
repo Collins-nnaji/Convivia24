@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { AppConceptBoard } from '@/components/app/AppConceptBoard';
 
 export const dynamic = 'force-dynamic';
@@ -15,22 +16,11 @@ export default async function AppRootPage() {
   };
 
   return (
-    <main className="min-h-[100dvh] bg-obsidian text-cream flex flex-col font-sans overflow-hidden">
-      {/* Global Background Layer */}
-      <div className="fixed inset-0 z-0 select-none pointer-events-none">
-        <img
-          src="/Homepage.png"
-          alt=""
-          className="w-full h-full object-cover opacity-40 mix-blend-screen"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/85 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-obsidian/80 via-transparent to-obsidian/60" />
-      </div>
-
-      <div className="relative z-10 w-full h-[100dvh] flex flex-col bg-transparent">
-        <AppConceptBoard
-          initialUser={dummyUser}
-        />
+    <main className="min-h-[100dvh] bg-white text-neutral-900 flex flex-col font-sans overflow-x-hidden max-w-[100vw]">
+      <div className="relative z-10 w-full h-[100dvh] flex flex-col">
+        <Suspense fallback={<div className="flex flex-1 items-center justify-center text-neutral-400 text-sm">Loading…</div>}>
+          <AppConceptBoard initialUser={dummyUser} />
+        </Suspense>
       </div>
     </main>
   );

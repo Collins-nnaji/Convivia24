@@ -1,62 +1,79 @@
 import Link from 'next/link';
 
 const footerLinks = [
-  { label: 'Home',    href: '/' },
+  { label: 'Home', href: '/' },
   { label: 'Inquire', href: '/inquire' },
 ];
 
 export default function Footer() {
   return (
-    <footer className="mt-24 bg-obsidian border-t border-gold/20">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-14 pb-12">
-
-        {/* Top row */}
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-8 mb-10 pb-10 border-b border-gold/10">
-          <div>
-            <Link href="/" className="hover:opacity-80 transition-opacity block mb-3">
-              <img src="/convivia24.png" alt="Convivia24" className="h-7 w-auto object-contain" style={{ filter: 'brightness(0) invert(1)' }} />
+    <footer className="relative z-30 isolate mt-0 border-t border-neutral-200 bg-white text-neutral-900">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 md:py-7">
+        {/* Mobile: one tight band */}
+        <div className="flex flex-col gap-4 sm:hidden">
+          <div className="flex items-center justify-between gap-3">
+            <Link href="/" className="shrink-0 opacity-90 hover:opacity-100 transition-opacity">
+              <img
+                src="/convivia24.png"
+                alt="Convivia24"
+                className="h-5 w-auto object-contain"
+              />
             </Link>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-1 h-1 bg-gold rounded-full animate-pulse" />
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-cream/40">Come to the Table</p>
-            </div>
-            <p className="text-xs text-cream/40 max-w-xs leading-relaxed">
-              Daily check-ins, small squads, and healthy group activities across Lagos, Abuja, and London.
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:gap-12">
-            <div className="flex flex-col gap-4 sm:grid sm:grid-cols-3 sm:gap-x-12 sm:gap-y-4">
+            <div className="flex items-center gap-4 text-[11px] text-neutral-500">
               {footerLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="whitespace-nowrap text-sm text-cream/40 hover:text-cream transition-colors"
-                >
+                <Link key={link.href} href={link.href} className="hover:text-red-800 transition-colors whitespace-nowrap">
                   {link.label}
                 </Link>
               ))}
             </div>
-
-            <div className="w-full sm:min-w-[280px] sm:max-w-[360px]">
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gold/50 mb-3">Access the Platform</p>
-              <Link
-                href="/auth/sign-in"
-                className="block w-full text-center py-3 border border-gold/30 text-gold text-[10px] font-black uppercase tracking-[0.2em] hover:bg-gold/10 transition-colors"
-              >
-                Open Your 24
-              </Link>
-            </div>
+          </div>
+          <p className="text-[10px] text-neutral-500 leading-relaxed pr-2">
+            Live city pulse, AI-matched crews, same-night plans — London, Lagos, Abuja.
+          </p>
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-neutral-100 text-[10px] text-neutral-500">
+            <span>&copy; 2026 Convivia24</span>
+            <Link href="/auth/sign-in" className="text-red-700/80 hover:text-red-800 transition-colors text-[10px] font-semibold uppercase tracking-wider">
+              Sign in
+            </Link>
           </div>
         </div>
 
-        {/* Bottom row */}
-        <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-cream/30">
-          <div className="flex items-center gap-6">
-            <span>&copy; 2026 Convivia24</span>
-            <span className="text-cream/20">Lagos &middot; Abuja &middot; London</span>
+        {/* Desktop: compact two-column */}
+        <div className="hidden sm:flex sm:flex-row sm:items-start sm:justify-between gap-6 sm:gap-10">
+          <div className="min-w-0 max-w-sm">
+            <Link href="/" className="inline-block mb-2 opacity-90 hover:opacity-100 transition-opacity">
+              <img
+                src="/convivia24.png"
+                alt="Convivia24"
+                className="h-6 w-auto object-contain"
+              />
+            </Link>
+            <p className="text-[9px] font-black uppercase tracking-[0.28em] text-red-700/70 mb-1.5">Live social matching</p>
+            <p className="text-[11px] text-neutral-500 leading-relaxed">
+              Real-time city pulse, AI-matched crews, and same-night plans — starting in London, Lagos, and Abuja.
+            </p>
           </div>
-          <Link href="/inquire" className="text-gold/60 hover:text-gold font-semibold transition-colors uppercase tracking-wider text-[10px]">
+
+          <div className="flex flex-col items-end gap-4 sm:min-w-[200px]">
+            <div className="flex flex-wrap justify-end gap-x-8 gap-y-2 text-[12px] text-neutral-500">
+              {footerLinks.map((link) => (
+                <Link key={link.href} href={link.href} className="hover:text-red-800 transition-colors whitespace-nowrap">
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+            <Link
+              href="/auth/sign-in"
+              className="text-center text-[10px] font-black uppercase tracking-[0.2em] px-5 py-2 border border-red-200 text-red-800 hover:bg-red-50 transition-colors"
+            >
+              Open Your 24
+            </Link>
+          </div>
+        </div>
+
+        <div className="hidden sm:flex flex-wrap items-center justify-between gap-3 mt-6 pt-5 border-t border-neutral-100 text-[11px] text-neutral-400">
+          <span>&copy; 2026 Convivia24</span>
+          <Link href="/inquire" className="text-red-700/75 hover:text-red-800 text-[10px] font-semibold uppercase tracking-wider transition-colors">
             Inquire &rarr;
           </Link>
         </div>
