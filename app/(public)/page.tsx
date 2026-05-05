@@ -1,32 +1,36 @@
-import { BulkDrinksSupplyApp } from '@/components/app/BulkDrinksSupplyApp';
+import { AppConceptBoard } from '@/components/app/AppConceptBoard';
+
+export const dynamic = 'force-dynamic';
 
 export default async function AppRootPage() {
+  // Temporary: Dummy user to bypass auth blocker for development
   const dummyUser = {
     id: 'dummy-id',
     name: 'Collins Nnaji (Preview)',
     email: 'preview@convivia24.com',
-    tier: 'standard',
+    avatar_url: 'https://i.pravatar.cc/150?u=collins',
+    tier: 'black',
     location: 'Lagos',
-    bio: 'Bulk drinks supply for nightlife and HORECA.',
-    company: 'Preview Lounge',
-    role: 'Outlet Manager',
-    product_category: 'Drinks supply',
-    target_markets: ['Nigeria'],
-    open_to_meet: false,
-    verified: false,
     created_at: new Date().toISOString(),
   };
 
   return (
-    <main className="min-h-[100dvh] bg-white flex flex-col font-sans overflow-hidden">
-      {/* Subtle warm tint for depth */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-gold/[0.06] blur-[140px]" />
-        <div className="absolute bottom-1/3 right-0 w-[350px] h-[350px] rounded-full bg-gold/[0.04] blur-[120px]" />
+    <main className="min-h-[100dvh] bg-obsidian text-cream flex flex-col font-sans overflow-hidden">
+      {/* Global Background Layer */}
+      <div className="fixed inset-0 z-0 select-none pointer-events-none">
+        <img
+          src="/Homepage.png"
+          alt=""
+          className="w-full h-full object-cover opacity-40 mix-blend-screen"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/85 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-obsidian/80 via-transparent to-obsidian/60" />
       </div>
 
-      <div className="relative z-10 w-full h-[100dvh] flex flex-col">
-        <BulkDrinksSupplyApp initialUser={dummyUser} />
+      <div className="relative z-10 w-full h-[100dvh] flex flex-col bg-transparent">
+        <AppConceptBoard
+          initialUser={dummyUser}
+        />
       </div>
     </main>
   );

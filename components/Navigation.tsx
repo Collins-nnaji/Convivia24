@@ -6,7 +6,10 @@ import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, X, LogIn } from 'lucide-react';
 
-const LINKS: { label: string; href: string }[] = [];
+const LINKS = [
+  { label: 'The Spaces',    href: '/spaces' },
+  { label: 'The Convivium',  href: '/convivium' },
+];
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -28,8 +31,8 @@ export default function Navigation() {
     <>
       <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-white/95 backdrop-blur-md shadow-[0_1px_0_0_rgba(0,0,0,0.07)]'
-          : 'bg-white/85 backdrop-blur-sm border-b border-black/[0.06]'
+          ? 'bg-obsidian/95 backdrop-blur-md shadow-[0_1px_0_0_rgba(201,168,76,0.1)]'
+          : 'bg-obsidian/80 backdrop-blur-sm border-b border-gold/5'
       }`}>
         <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
 
@@ -39,11 +42,11 @@ export default function Navigation() {
               src="/convivia24.png"
               alt="Convivia24"
               className="h-7 w-auto"
-              style={{ filter: 'brightness(0)' }}
+              style={{ filter: 'brightness(0) invert(1)' }}
             />
             <span className="hidden sm:flex items-center gap-1.5">
               <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
-              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-ink/30">Lagos · Abuja · London</span>
+              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-cream/40">Lagos · Abuja · London</span>
             </span>
           </Link>
 
@@ -56,7 +59,7 @@ export default function Navigation() {
                   key={href}
                   href={href}
                   className={`relative px-4 py-2 text-[13px] font-medium tracking-wide transition-colors duration-150 ${
-                    active ? 'text-ink' : 'text-ink/45 hover:text-ink'
+                    active ? 'text-cream' : 'text-cream/50 hover:text-cream'
                   }`}
                 >
                   {label}
@@ -73,7 +76,7 @@ export default function Navigation() {
 
             <Link
               href="/inquire"
-              className="ml-2 px-5 py-2 bg-gold hover:bg-gold-dark text-white text-[11px] font-black uppercase tracking-[0.15em] transition-colors duration-150 rounded-full shadow-sm"
+              className="ml-2 px-5 py-2 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.15em] transition-colors duration-150"
             >
               Inquire
             </Link>
@@ -81,7 +84,7 @@ export default function Navigation() {
             {/* Sign In / Dashboard */}
             <Link
               href="/auth/sign-in"
-              className="ml-3 px-4 py-2 border border-black/[0.1] hover:border-gold/40 text-ink/60 hover:text-gold-dark text-[11px] font-black uppercase tracking-[0.15em] transition-all flex items-center gap-2 rounded-full"
+              className="ml-3 px-4 py-2 border border-cream/20 hover:border-gold/40 text-cream/70 hover:text-gold text-[11px] font-black uppercase tracking-[0.15em] transition-all flex items-center gap-2"
             >
               <LogIn size={14} /> Sign In
             </Link>
@@ -91,7 +94,7 @@ export default function Navigation() {
           <button
             type="button"
             onClick={() => setOpen(v => !v)}
-            className="md:hidden p-2 text-ink/50 hover:text-ink transition-colors"
+            className="md:hidden p-2 text-cream/70 hover:text-cream transition-colors"
             aria-label={open ? 'Close menu' : 'Open menu'}
           >
             {open ? <X size={22} strokeWidth={2} /> : <Menu size={22} strokeWidth={2} />}
@@ -112,7 +115,7 @@ export default function Navigation() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.18 }}
-              className="fixed inset-0 z-40 bg-black/30 md:hidden"
+              className="fixed inset-0 z-40 bg-black/60 md:hidden"
               onClick={() => setOpen(false)}
             />
 
@@ -122,11 +125,11 @@ export default function Navigation() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.2 }}
-              className="fixed top-16 inset-x-0 z-50 bg-white border-b border-black/[0.07] shadow-lg md:hidden"
+              className="fixed top-16 inset-x-0 z-50 bg-obsidian border-b border-gold/20 shadow-lg md:hidden"
             >
               <div className="border-b border-gold/10 px-5 py-2.5 flex items-center gap-2">
                 <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
-                <span className="text-[8px] font-black uppercase tracking-[0.3em] text-ink/30">
+                <span className="text-[8px] font-black uppercase tracking-[0.3em] text-cream/40">
                   Lagos · Abuja · London
                 </span>
               </div>
@@ -139,7 +142,7 @@ export default function Navigation() {
                       key={href}
                       href={href}
                       className={`flex items-center justify-between py-3.5 text-[15px] font-medium transition-colors ${
-                        active ? 'text-gold-dark' : 'text-ink/60 hover:text-ink'
+                        active ? 'text-gold' : 'text-cream/70 hover:text-cream'
                       }`}
                     >
                       {label}
@@ -151,13 +154,13 @@ export default function Navigation() {
                 <div className="pt-4 space-y-3 pb-2">
                   <Link
                     href="/inquire"
-                    className="block w-full text-center py-3.5 bg-gold hover:bg-gold-dark text-white text-[12px] font-black uppercase tracking-[0.15em] transition-colors rounded-full"
+                    className="block w-full text-center py-3.5 bg-gold hover:bg-gold-light text-obsidian text-[12px] font-black uppercase tracking-[0.15em] transition-colors"
                   >
                     Inquire
                   </Link>
                   <Link
                     href="/auth/sign-in"
-                    className="block w-full text-center py-3.5 border border-black/[0.1] text-ink/60 text-[12px] font-black uppercase tracking-[0.15em] transition-colors hover:border-gold/40 hover:text-gold-dark rounded-full"
+                    className="block w-full text-center py-3.5 border border-cream/20 text-cream/70 text-[12px] font-black uppercase tracking-[0.15em] transition-colors hover:border-gold/40 hover:text-gold"
                   >
                     Sign In →
                   </Link>

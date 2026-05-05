@@ -1,11 +1,10 @@
 import './globals.css';
-import { Plus_Jakarta_Sans, Cormorant_Garamond } from 'next/font/google';
+import { Outfit, Cormorant_Garamond } from 'next/font/google';
 
-const jakarta = Plus_Jakarta_Sans({
+const outfit = Outfit({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-jakarta',
-  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-outfit',
 });
 
 const cormorant = Cormorant_Garamond({
@@ -17,8 +16,8 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata = {
-  title: 'Convivia24 | Healthy living is better together.',
-  description: 'Behaviour change sticks in community. Track your Daily 24, build your squad, and make healthy living feel like a celebration — not a punishment.',
+  title: 'Convivia24 | Come to the Table.',
+  description: 'The members platform for African business. Curated gatherings, venues, and connections across Lagos, Abuja, and London.',
   icons: {
     icon: '/Logo2.png',
   }
@@ -36,7 +35,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${jakarta.variable} ${cormorant.variable} font-sans bg-white text-ink antialiased`} suppressHydrationWarning>
+      <body className={`${outfit.variable} ${cormorant.variable} font-sans bg-obsidian text-cream antialiased`} suppressHydrationWarning>
         {children}
       </body>
     </html>
