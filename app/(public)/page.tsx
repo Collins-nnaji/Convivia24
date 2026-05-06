@@ -50,7 +50,7 @@ export default async function AppRootPage() {
         <div className="absolute inset-0 bg-gradient-to-tr from-white/75 via-transparent to-gold/[0.07]" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#f0ebe3]/80 via-transparent to-transparent" />
       </div>
-      <div className="relative z-10 flex h-full min-h-0 w-full flex-1 flex-col max-lg:min-h-0">
+      <div className="relative z-10 flex w-full min-h-0 flex-col max-lg:h-full max-lg:min-h-0 max-lg:flex-1 lg:flex-none lg:h-auto">
         <Suspense fallback={<div className="flex flex-1 items-center justify-center text-neutral-400 text-sm">Loading…</div>}>
           <AppConceptBoard initialUser={initialUser} />
         </Suspense>

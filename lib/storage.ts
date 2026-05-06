@@ -1,12 +1,55 @@
 import { BlobServiceClient } from '@azure/storage-blob';
 
 const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING!;
-const containerName = process.env.AZURE_STORAGE_CONTAINER || 'convivia24-images';
+export const AZURE_STORAGE_CONTAINER_NAME = process.env.AZURE_STORAGE_CONTAINER || 'convivia24-images';
 
 function getContainerClient() {
   if (!connectionString) throw new Error('AZURE_STORAGE_CONNECTION_STRING is not configured.');
   const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
-  return blobServiceClient.getContainerClient(containerName);
+  return blobServiceClient.getContainerClient(AZURE_STORAGE_CONTAINER_NAME);
+}
+
+/** Resolve blob name in our container from a direct Azure URL (e.g. for delete). */
+/** Legacy rows may store `/api/blob/...` from an older proxy; resolve blob name for SDK download. */
+export function parseBlobNameFromProxyPath(stored: string): string | null {
+  const t = stored.trim();
+  if (!t.startsWith('/api/blob/')) return null;
+  return t
+    .slice('/api/blob/'.length)
+    .split('/')
+    .map((p) => decodeURIComponent(p))
+    .join('/');
+}
+
+export async function readBlobBufferByName(blobName: string): Promise<Buffer | null> {
+  if (!connectionString || !blobName || blobName.includes('..')) return null;
+  try {
+    const blobClient = getContainerClient().getBlobClient(blobName);
+    const download = await blobClient.download();
+    if (!download.readableStreamBody) return null;
+    const chunks: Buffer[] = [];
+    for await (const chunk of download.readableStreamBody) {
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    }
+    return Buffer.concat(chunks);
+  } catch (err) {
+    console.error('[storage] readBlobBufferByName:', err);
+    return null;
+  }
+}
+
+export function parseBlobNameFromAzureUrl(blobUrl: string): string | null {
+  try {
+    const url = new URL(blobUrl.trim());
+    if (!url.hostname.endsWith('.blob.core.windows.net')) return null;
+    const segments = url.pathname.split('/').filter(Boolean);
+    if (segments.length < 2) return null;
+    const [c, ...rest] = segments;
+    if (c !== AZURE_STORAGE_CONTAINER_NAME) return null;
+    return rest.join('/');
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -38,10 +81,15 @@ export async function uploadFile(
  */
 export async function deleteFile(blobUrl: string): Promise<void> {
   const containerClient = getContainerClient();
-
-  // Extract blob name from URL
-  const url = new URL(blobUrl);
-  const blobName = url.pathname.split('/').pop();
+  let blobName = parseBlobNameFromAzureUrl(blobUrl);
+  if (!blobName) {
+    try {
+      const url = new URL(blobUrl);
+      blobName = url.pathname.split('/').filter(Boolean).pop() || null;
+    } catch {
+      blobName = null;
+    }
+  }
   if (!blobName) return;
 
   const blockBlobClient = containerClient.getBlockBlobClient(blobName);
@@ -60,7 +108,7 @@ export async function downloadBlobBufferFromUrl(blobUrl: string): Promise<Buffer
     const segments = url.pathname.split('/').filter(Boolean);
     if (segments.length < 2) return null;
     const [urlContainer, ...blobPathParts] = segments;
-    if (urlContainer !== containerName) return null;
+    if (urlContainer !== AZURE_STORAGE_CONTAINER_NAME) return null;
     const blobName = blobPathParts.join('/');
     if (!blobName) return null;
 

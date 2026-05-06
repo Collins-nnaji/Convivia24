@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { Loader2, MapPin, Clock, Users, Copy, Check, Share2 } from 'lucide-react';
+import { Loader2, MapPin, Clock, Users, Copy, Check, Share2, MessageCircle } from 'lucide-react';
+import { buildHangoutInviteMessage, whatsAppSendPrefilledUrl } from '@/lib/hangout-invite-share';
 
 export default function JoinHangoutInvitePage() {
   const params = useParams();
@@ -64,6 +65,13 @@ export default function JoinHangoutInvitePage() {
     } catch {
       /* dismissed or unsupported */
     }
+  }, [inviteUrl, hangout]);
+
+  const shareWhatsApp = useCallback(() => {
+    if (!inviteUrl || !hangout) return;
+    const title = String(hangout.title || 'Join my table');
+    const msg = buildHangoutInviteMessage(title, inviteUrl);
+    window.open(whatsAppSendPrefilledUrl(msg), '_blank', 'noopener,noreferrer');
   }, [inviteUrl, hangout]);
 
   const spotsLeft =
@@ -154,20 +162,29 @@ export default function JoinHangoutInvitePage() {
                 ) : null}
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-2 pt-2">
+              <div className="flex flex-col gap-2 pt-2">
                 <Link
                   href={openInAppUrl}
-                  className="flex-1 text-center py-3.5 rounded-full bg-red-700 text-white text-[11px] font-black uppercase tracking-widest hover:bg-red-800 transition-colors"
+                  className="w-full text-center py-3.5 rounded-full bg-red-700 text-white text-[11px] font-black uppercase tracking-widest hover:bg-red-800 transition-colors"
                 >
                   Join in app
                 </Link>
-                <button
-                  type="button"
-                  onClick={share}
-                  className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-full border border-neutral-300 text-[11px] font-black uppercase tracking-widest text-neutral-700 hover:border-red-400 hover:text-red-800 transition-colors"
-                >
-                  <Share2 size={14} /> Share
-                </button>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <button
+                    type="button"
+                    onClick={share}
+                    className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-full border border-neutral-300 text-[11px] font-black uppercase tracking-widest text-neutral-700 hover:border-red-400 hover:text-red-800 transition-colors"
+                  >
+                    <Share2 size={14} /> Share
+                  </button>
+                  <button
+                    type="button"
+                    onClick={shareWhatsApp}
+                    className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-full border border-emerald-600/40 bg-emerald-50 text-[11px] font-black uppercase tracking-widest text-emerald-900 hover:bg-emerald-100 transition-colors"
+                  >
+                    <MessageCircle size={14} /> WhatsApp
+                  </button>
+                </div>
               </div>
               <button
                 type="button"

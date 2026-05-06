@@ -3,13 +3,14 @@ import sql from '@/lib/db';
 import { neonAuth } from '@/lib/auth/server';
 import { getOrCreateUser } from '@/lib/db/users';
 
-// GET /api/hangouts — ?city=Lagos&category=nightlife&type=open
+// GET /api/hangouts — ?city=Lagos&category=nightlife&type=open&free=1
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const city     = searchParams.get('city');
     const category = searchParams.get('category');
     const type     = searchParams.get('type');
+    const freeOnly = searchParams.get('free') === '1';
 
     const hangouts = await sql`
       SELECT h.*, u.name as host_name, u.avatar_url as host_avatar,
@@ -28,6 +29,11 @@ export async function GET(req: NextRequest) {
         )
         AND (${category}::text IS NULL OR h.category = ${category})
         AND (${type}::text IS NULL OR h.type = ${type})
+        AND (
+          ${!freeOnly}::boolean
+          OR h.ticket_price IS NULL
+          OR h.ticket_price = 0
+        )
       ORDER BY h.event_time ASC
     `;
 

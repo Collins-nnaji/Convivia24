@@ -76,19 +76,27 @@ export async function PATCH(req: NextRequest) {
     const body = await req.json();
     const { name, bio, avatar_url, location, open_to_meet } = body;
 
-    // If avatar is changing, reset verification so user must re-verify with new photo
-    const newAvatarUrl = avatar_url || null;
-    const avatarChanged = newAvatarUrl !== null && newAvatarUrl !== user.avatar_url;
+    // Omitted fields must not overwrite: COALESCE(null, col) keeps col. Never cast undefined
+    // to ::boolean (breaks JSON bodies that only send { avatar_url } after upload).
+    const nameSql = name !== undefined ? (name?.trim() || null) : null;
+    const bioSql = bio !== undefined ? (bio?.trim() || null) : null;
+    const avatarSql = avatar_url !== undefined ? (avatar_url?.trim() || null) : null;
+    const locationSql = location !== undefined ? (location?.trim() || null) : null;
+
+    const avatarChanged =
+      avatar_url !== undefined &&
+      (avatar_url?.trim() || null) !== (user.avatar_url ?? null);
 
     const updated = await sql`
       UPDATE users SET
-        name = COALESCE(${name?.trim() || null}, name),
-        bio = COALESCE(${bio?.trim() || null}, bio),
-        avatar_url = COALESCE(${newAvatarUrl}, avatar_url),
-        location = COALESCE(${location?.trim() || null}, location),
-        open_to_meet = CASE WHEN ${open_to_meet}::boolean IS NOT NULL
-                       THEN ${open_to_meet}::boolean
-                       ELSE open_to_meet END,
+        name = COALESCE(${nameSql}, name),
+        bio = COALESCE(${bioSql}, bio),
+        avatar_url = COALESCE(${avatarSql}, avatar_url),
+        location = COALESCE(${locationSql}, location),
+        open_to_meet = CASE
+          WHEN ${open_to_meet !== undefined} THEN ${Boolean(open_to_meet)}
+          ELSE open_to_meet
+        END,
         verified = CASE WHEN ${avatarChanged} THEN false ELSE verified END
       WHERE id = ${user.id}
       RETURNING *

@@ -21,10 +21,7 @@ export async function neonAuth(): Promise<{ user: AuthSessionUser | null }> {
   const previewDummy = process.env.AUTH_PREVIEW_DUMMY === '1';
 
   try {
-    const result = await Promise.race([
-      originalNeonAuth(),
-      new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
-    ]);
+    const result = await originalNeonAuth();
     if (result && typeof result === 'object' && 'user' in result && result.user) {
       return { user: result.user as AuthSessionUser };
     }

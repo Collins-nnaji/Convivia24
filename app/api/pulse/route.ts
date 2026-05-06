@@ -46,6 +46,23 @@ const CURATED_AREAS: Record<string, Omit<PulseCard, 'id' | 'energy' | 'tag' | 'l
   ],
 };
 
+/** Curated pulse rows for cities not in the map (user-added metros). */
+function curatedAreasForCity(city: string): Omit<PulseCard, 'id' | 'energy' | 'tag' | 'live_tables' | 'matches_recent'>[] {
+  const exact = CURATED_AREAS[city as keyof typeof CURATED_AREAS];
+  if (exact) return exact;
+  const matchKey = Object.keys(CURATED_AREAS).find(
+    (k) => k.toLowerCase() === city.trim().toLowerCase(),
+  ) as keyof typeof CURATED_AREAS | undefined;
+  if (matchKey) return CURATED_AREAS[matchKey];
+  const c = city.trim() || 'Your city';
+  return [
+    { area: `Downtown · ${c}`, city: c, vibe: 'Host a table — energy shows up here first.', group_size: 6 },
+    { area: `Waterfront · ${c}`, city: c, vibe: 'Sunset hangs · dining & lounges.', group_size: 5 },
+    { area: `Arts & music · ${c}`, city: c, vibe: 'Gigs · culture · open seats.', group_size: 6 },
+    { area: `Uptown · ${c}`, city: c, vibe: 'Founders · whisky · long tables.', group_size: 4 },
+  ];
+}
+
 function classifyEnergy(liveTables: number, recentMatches: number): { energy: PulseCard['energy']; tag: string } {
   const score = liveTables * 3 + recentMatches;
   if (score >= 12) return { energy: 'peak',   tag: 'Peak' };
@@ -108,7 +125,7 @@ export async function GET(req: NextRequest) {
     }
 
     // 4. fill in with curated areas that have no live tables (so the grid is always populated)
-    const curated = CURATED_AREAS[city] || CURATED_AREAS.London;
+    const curated = curatedAreasForCity(city);
     for (const c of curated) {
       if (cards.find((x) => x.area.toLowerCase() === c.area.toLowerCase())) continue;
       const matches = matchMap.get(c.area.toLowerCase()) || 0;

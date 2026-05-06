@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createAuthClient } from '@neondatabase/auth/next';
 import { NeonAuthUIProvider, AuthView } from '@neondatabase/auth/react/ui';
+import { NEON_AUTH_SOCIAL_GOOGLE } from '@/lib/auth/neon-ui';
 
 const authClient = createAuthClient();
 
@@ -38,11 +39,12 @@ export default function SignUpPage() {
           </p>
         </div>
 
-        <div className="bg-white/95 backdrop-blur-xl border border-neutral-200 rounded-[24px] sm:rounded-[32px] p-5 sm:p-8 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+        <div className="neon-auth-ui-scope bg-white/95 backdrop-blur-xl border border-neutral-200 rounded-[24px] sm:rounded-[32px] p-5 sm:p-8 shadow-[0_24px_60px_rgba(0,0,0,0.08)] [&_button_svg]:h-[18px] [&_button_svg]:w-[18px] [&_button_svg]:shrink-0 [&_button_img]:h-[18px] [&_button_img]:w-[18px] [&_button_img]:object-contain">
           <NeonAuthUIProvider
             authClient={authClient}
             navigate={(path: string) => router.push(path)}
             replace={(path: string) => router.replace(path)}
+            social={NEON_AUTH_SOCIAL_GOOGLE}
           >
             <AuthView view="SIGN_UP" redirectTo="/" />
           </NeonAuthUIProvider>

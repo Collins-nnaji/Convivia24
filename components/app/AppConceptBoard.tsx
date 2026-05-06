@@ -10,10 +10,13 @@ import {
   Clock, Users, Star, ArrowRight, Building2, Ticket,
   MapPin, Camera, Calendar, LogOut, Edit3, Check, X, Loader2,
   Sparkles, Flame, ShieldCheck, RefreshCw, AlertCircle, Wine,
-  Music2, Coffee, ChevronRight, Send, SkipForward, Hourglass, Share2, Copy,
+  Music2, Coffee, ChevronRight, Send, SkipForward, Hourglass, Share2, Copy, MessageCircle,
 } from 'lucide-react';
 import ConviviumCard from '@/components/ConviviumCard';
+import { CityChipsBar } from '@/components/CityChipsBar';
 import { SectionLabel } from '@/components/ui/SectionLabel';
+import { useCityList } from '@/hooks/useCityList';
+import { buildHangoutInviteMessage, whatsAppSendPrefilledUrl } from '@/lib/hangout-invite-share';
 
 /* ══════════════════════════════════════════════════════════════════════
    LIVE CITY PULSE  — what makes us different from Eventbrite/Meetup
@@ -108,6 +111,12 @@ async function shareHangoutInvite(id: string, title: string) {
   await copyHangoutInviteLink(id);
 }
 
+function openWhatsAppHangoutInvite(id: string, title: string) {
+  const inviteUrl = publicInviteUrl(id);
+  const msg = buildHangoutInviteMessage(title, inviteUrl);
+  window.open(whatsAppSendPrefilledUrl(msg), '_blank', 'noopener,noreferrer');
+}
+
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const VIBE_PROMPTS = [
@@ -185,6 +194,22 @@ function FlowSteps({ steps }: { steps: { n: string; label: string; sub?: string 
 
 type AppTab = 'home' | 'discover' | 'host' | 'circles' | 'profile';
 
+function formatLiveLocalTime(d: Date) {
+  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
+/** Time updates after mount so server and first client render match (no hydration mismatch). */
+function LiveLocalTime({ className }: { className?: string }) {
+  const [text, setText] = useState<string | null>(null);
+  useEffect(() => {
+    const tick = () => setText(formatLiveLocalTime(new Date()));
+    tick();
+    const id = setInterval(tick, 30_000);
+    return () => clearInterval(id);
+  }, []);
+  return <span className={className ?? 'tabular-nums'}>{text ?? '—:--'}</span>;
+}
+
 /* ══════════════════════════════════════════════════════════════════════
    MAIN COMPONENT
    ══════════════════════════════════════════════════════════════════════ */
@@ -193,15 +218,23 @@ export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
   const [activeTab, setActiveTab] = useState<AppTab>('home');
   const mainScrollRef = useRef<HTMLDivElement>(null);
   const [pendingInviteHangoutId, setPendingInviteHangoutId] = useState<string | null>(null);
+  const { cities, addCity } = useCityList();
 
   const joinParam = searchParams.get('join');
   useEffect(() => {
     if (!joinParam || !UUID_RE.test(joinParam)) return;
-    setPendingInviteHangoutId(joinParam);
-    setActiveTab('discover');
-    if (typeof window !== 'undefined') {
-      window.history.replaceState({}, '', '/');
-    }
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setPendingInviteHangoutId(joinParam);
+      setActiveTab('discover');
+      if (typeof window !== 'undefined') {
+        window.history.replaceState({}, '', '/');
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [joinParam]);
 
   const clearPendingInvite = useCallback(() => setPendingInviteHangoutId(null), []);
@@ -209,27 +242,32 @@ export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
     setActiveTab('home');
     requestAnimationFrame(() => {
       mainScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+      if (typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     });
   }, []);
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'home':     return <HomeTab onSwitchTab={setActiveTab} />;
+      case 'home':     return <HomeTab onSwitchTab={setActiveTab} cities={cities} addCity={addCity} />;
       case 'discover': return (
         <DiscoverTab
           onSwitchTab={setActiveTab}
           pendingInviteHangoutId={pendingInviteHangoutId}
           onClearPendingInvite={clearPendingInvite}
+          cities={cities}
+          addCity={addCity}
         />
       );
-      case 'host':     return <HostTab onPosted={() => setActiveTab('discover')} />;
+      case 'host':     return <HostTab onPosted={() => setActiveTab('discover')} cities={cities} addCity={addCity} />;
       case 'circles':  return <CirclesTab />;
       case 'profile':  return <ProfileTab initialUser={initialUser} />;
     }
   };
 
   return (
-    <div className="flex h-full min-h-0 w-full max-w-[100vw] flex-col mx-auto relative text-neutral-900 overflow-x-hidden max-lg:max-h-full">
+    <div className="flex w-full max-w-[100vw] flex-col mx-auto relative text-neutral-900 overflow-x-hidden max-lg:h-full max-lg:max-h-full max-lg:min-h-0 lg:h-auto lg:min-h-0">
       {/* TOP NAV (DESKTOP — lg+ only; tablet uses tab bar + fixed top strip) */}
       <header className="hidden lg:flex items-center justify-between px-6 lg:px-10 py-5 lg:py-6 border-b border-gold/20 bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-[0_1px_0_0_rgba(201,168,76,0.08)]">
         <div className="flex items-center gap-2 min-w-0 w-[180px]">
@@ -273,7 +311,7 @@ export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
       {/* MAIN CONTENT */}
       <div
         ref={mainScrollRef}
-        className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden overscroll-y-contain px-3 sm:px-6 lg:px-12 max-lg:pt-[calc(env(safe-area-inset-top)+3.65rem)] lg:pt-12 max-lg:pb-[calc(8.75rem+env(safe-area-inset-bottom))] max-lg:scroll-pb-[calc(8.75rem+env(safe-area-inset-bottom))] lg:pb-12 scrollbar-hide relative touch-pan-y"
+        className="w-full overflow-x-hidden px-3 sm:px-6 lg:px-12 max-lg:flex-1 max-lg:min-h-0 max-lg:overflow-y-auto max-lg:overscroll-y-contain max-lg:pt-[calc(env(safe-area-inset-top)+3.65rem)] max-lg:pb-[calc(8.75rem+env(safe-area-inset-bottom))] max-lg:scroll-pb-[calc(8.75rem+env(safe-area-inset-bottom))] max-lg:scrollbar-hide max-lg:relative max-lg:touch-pan-y lg:flex-none lg:overflow-visible lg:pb-12"
       >
         <AnimatePresence mode="wait">
           <motion.div
@@ -282,7 +320,7 @@ export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.3 }}
-            className="min-h-full w-full mx-auto max-w-7xl"
+            className="w-full mx-auto max-w-7xl max-lg:min-h-full lg:min-h-0"
           >
             {renderContent()}
           </motion.div>
@@ -462,6 +500,13 @@ function InviteFromLinkBanner({
           >
             <Share2 size={14} /> Share
           </button>
+          <button
+            type="button"
+            onClick={() => openWhatsAppHangoutInvite(hangoutId, h.title)}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full border border-emerald-600/40 bg-emerald-50 text-emerald-900 text-[10px] font-black uppercase tracking-widest hover:bg-emerald-100"
+          >
+            <MessageCircle size={14} /> WhatsApp
+          </button>
         </div>
       </div>
       {note && <p className="text-sm text-red-700 mt-2">{note}</p>}
@@ -493,16 +538,34 @@ function InviteFromLinkBanner({
 /* ══════════════════════════════════════════════════════════════════════
    DISCOVER TAB — events & tables forming now
    ══════════════════════════════════════════════════════════════════════ */
+const DISCOVER_CATEGORY_OPTIONS = [
+  { key: 'all', label: 'All vibes' },
+  { key: 'social', label: 'Social' },
+  { key: 'dining', label: 'Dining' },
+  { key: 'nightlife', label: 'Nightlife' },
+  { key: 'outdoors', label: 'Outdoors' },
+  { key: 'fitness', label: 'Fitness' },
+  { key: 'arts', label: 'Arts' },
+  { key: 'sports', label: 'Sports' },
+  { key: 'gigs', label: 'Gigs' },
+] as const;
+
 function DiscoverTab({
   onSwitchTab,
   pendingInviteHangoutId,
   onClearPendingInvite,
+  cities,
+  addCity,
 }: {
   onSwitchTab: (t: AppTab) => void;
   pendingInviteHangoutId?: string | null;
   onClearPendingInvite?: () => void;
+  cities: string[];
+  addCity: (name: string) => void;
 }) {
   const [filter, setFilter] = useState<'all' | 'open' | 'curated'>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [freeOnly, setFreeOnly] = useState(false);
   const [discoverCity, setDiscoverCity] = useState<string>('London');
   const [hangouts, setHangouts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -510,9 +573,28 @@ function DiscoverTab({
   const [joinNote, setJoinNote] = useState<string | null>(null);
   const [inviteCopiedId, setInviteCopiedId] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!cities.length || cities.some((c) => c.toLowerCase() === discoverCity.toLowerCase())) {
+      return;
+    }
+    let cancelled = false;
+    const next = cities[0];
+    queueMicrotask(() => {
+      if (!cancelled) setDiscoverCity(next);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [cities, discoverCity]);
+
   const loadHangouts = useCallback(() => {
     setLoading(true);
-    fetch(`/api/hangouts?city=${encodeURIComponent(discoverCity)}`)
+    const params = new URLSearchParams();
+    params.set('city', discoverCity);
+    if (filter !== 'all') params.set('type', filter);
+    if (categoryFilter !== 'all') params.set('category', categoryFilter);
+    if (freeOnly) params.set('free', '1');
+    fetch(`/api/hangouts?${params.toString()}`)
       .then((r) => r.json())
       .then((data) => {
         setHangouts(Array.isArray(data.hangouts) ? data.hangouts : []);
@@ -522,7 +604,7 @@ function DiscoverTab({
         setHangouts([]);
         setLoading(false);
       });
-  }, [discoverCity]);
+  }, [discoverCity, filter, categoryFilter, freeOnly]);
 
   useEffect(() => {
     loadHangouts();
@@ -546,8 +628,6 @@ function DiscoverTab({
       setJoiningId(null);
     }
   };
-
-  const filtered = hangouts.filter((h: any) => filter === 'all' || h.type === filter);
 
   return (
     <div className="space-y-8 md:space-y-12">
@@ -575,24 +655,15 @@ function DiscoverTab({
             Now
           </button>.
         </motion.p>
-        <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-2 pt-1">
-          <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400 shrink-0">City</span>
-          <div className="inline-flex max-w-full overflow-x-auto scrollbar-hide rounded-full p-0.5 bg-neutral-100 border border-neutral-200">
-            {(['London', 'Lagos', 'Abuja'] as const).map((c) => (
-              <button
-                type="button"
-                key={c}
-                onClick={() => setDiscoverCity(c)}
-                className={`shrink-0 text-[10px] uppercase tracking-widest font-black min-h-9 px-3 py-1.5 rounded-full transition-all ${
-                  discoverCity === c
-                    ? 'bg-red-700 text-white shadow-[0_0_12px_rgba(185,28,28,0.2)]'
-                    : 'text-neutral-600 hover:text-neutral-900'
-                }`}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
+        <motion.div variants={fadeUp} className="pt-1">
+          <CityChipsBar
+            label="City"
+            chipSize="sm"
+            cities={cities}
+            selected={discoverCity}
+            onSelect={setDiscoverCity}
+            onAddCity={addCity}
+          />
         </motion.div>
       </motion.div>
 
@@ -603,10 +674,24 @@ function DiscoverTab({
             <h2 className="font-display text-2xl md:text-4xl italic">Join a gathering.</h2>
             <p className="text-neutral-500 text-sm md:text-base mt-1">Curated and open-list tables you can hop into tonight.</p>
           </div>
-          <div className="flex gap-3 overflow-x-auto pb-2 w-full md:w-auto scrollbar-hide">
-            <FilterChip label="All tables"   active={filter === 'all'}     onClick={() => setFilter('all')} />
-            <FilterChip label="Curated only" active={filter === 'curated'} onClick={() => setFilter('curated')} color="gold" />
-            <FilterChip label="Open list"    active={filter === 'open'}    onClick={() => setFilter('open')} color="blue" />
+          <div className="flex flex-col gap-3 w-full md:items-end">
+            <div className="flex gap-2 overflow-x-auto pb-1 w-full md:w-auto scrollbar-hide">
+              <FilterChip label="All tables"   active={filter === 'all'}     onClick={() => setFilter('all')} />
+              <FilterChip label="Curated only" active={filter === 'curated'} onClick={() => setFilter('curated')} color="gold" />
+              <FilterChip label="Open list"    active={filter === 'open'}    onClick={() => setFilter('open')} color="blue" />
+              <FilterChip label="Free entry"   active={freeOnly}             onClick={() => setFreeOnly((v) => !v)} color="blue" />
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1 w-full md:max-w-xl md:justify-end scrollbar-hide">
+              {DISCOVER_CATEGORY_OPTIONS.map((opt) => (
+                <FilterChip
+                  key={opt.key}
+                  label={opt.label}
+                  active={categoryFilter === opt.key}
+                  onClick={() => setCategoryFilter(opt.key)}
+                  color={opt.key === 'all' ? 'cream' : 'gold'}
+                />
+              ))}
+            </div>
           </div>
         </div>
 
@@ -621,11 +706,11 @@ function DiscoverTab({
           <div className="flex items-center justify-center py-20">
             <Loader2 size={32} className="text-red-700 animate-spin" />
           </div>
-        ) : filtered.length === 0 ? (
+        ) : hangouts.length === 0 ? (
           <div className="text-center py-20 text-neutral-400 border border-dashed border-neutral-200 rounded-3xl">
             <Compass size={48} className="mx-auto mb-4 opacity-50" />
-            <p className="font-display text-2xl italic mb-2">No tables in {discoverCity} yet.</p>
-            <p className="text-sm mb-5">Host one from Now or open the Host tab.</p>
+            <p className="font-display text-2xl italic mb-2">No tables match in {discoverCity}.</p>
+            <p className="text-sm mb-5">Try another city, clear filters, or host a table.</p>
             <button type="button" onClick={() => onSwitchTab('host')} className="text-[10px] font-black uppercase tracking-widest bg-red-700 text-white px-6 py-3 rounded-full hover:bg-red-800 transition-colors">
               Host a table
             </button>
@@ -637,7 +722,7 @@ function DiscoverTab({
             initial="hidden"
             animate="show"
           >
-            {filtered.map((h: any) => {
+            {hangouts.map((h: any) => {
               const isCurated = h.type === 'curated';
               const badgeClass = isCurated
                 ? 'bg-red-50 text-red-700 border-red-200'
@@ -651,11 +736,11 @@ function DiscoverTab({
                   className="relative bg-white rounded-[26px] md:rounded-[28px] p-4 md:p-6 border border-neutral-200/90 shadow-[0_8px_30px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.03] hover:border-red-300 hover:shadow-[0_12px_40px_rgba(185,28,28,0.09)] transition-shadow flex flex-col justify-between group overflow-hidden"
                 >
                   <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-700 via-red-600 to-neutral-900 opacity-90" />
-                  {h.cover_image && (
+                  {h.cover_image ? (
                     <div className="w-full h-28 md:h-36 rounded-2xl overflow-hidden mb-3 md:mb-4 -mt-0.5 md:-mt-1">
                       <img src={h.cover_image} alt="" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700" />
                     </div>
-                  )}
+                  ) : null}
                   <div>
                     <div className="flex justify-between items-start mb-3 md:mb-5 gap-2">
                       <span className={`text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-full border ${badgeClass}`}>
@@ -733,6 +818,13 @@ function DiscoverTab({
                         className="inline-flex items-center gap-1 px-3 py-2 rounded-full border border-red-200 bg-red-50 text-[9px] font-black uppercase tracking-widest text-red-800 hover:bg-red-100"
                       >
                         <Share2 size={12} /> Share
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openWhatsAppHangoutInvite(h.id, h.title)}
+                        className="inline-flex items-center gap-1 px-3 py-2 rounded-full border border-emerald-600/35 bg-emerald-50 text-[9px] font-black uppercase tracking-widest text-emerald-900 hover:bg-emerald-100"
+                      >
+                        <MessageCircle size={12} /> WhatsApp
                       </button>
                       <Link
                         href={`/join/${h.id}`}
@@ -892,7 +984,15 @@ function FilterChip({ label, active, onClick, color = 'cream' }: any) {
 /* ══════════════════════════════════════════════════════════════════════
    HOST TAB — Real hangout creation
    ══════════════════════════════════════════════════════════════════════ */
-function HostTab({ onPosted }: { onPosted: () => void }) {
+function HostTab({
+  onPosted,
+  cities,
+  addCity,
+}: {
+  onPosted: () => void;
+  cities: string[];
+  addCity: (name: string) => void;
+}) {
   const [size, setSize] = useState(6);
   const [type, setType] = useState('curated');
   const [title, setTitle] = useState('');
@@ -917,7 +1017,7 @@ function HostTab({ onPosted }: { onPosted: () => void }) {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const res = await fetch('/api/upload', { method: 'POST', body: formData, credentials: 'include' });
       const data = await res.json();
       if (res.ok) setCoverImage(data.url);
       else setError(data.error || 'Upload failed.');
@@ -950,6 +1050,7 @@ function HostTab({ onPosted }: { onPosted: () => void }) {
       });
       const data = await res.json();
       if (res.ok) {
+        if (city.trim()) addCity(city.trim());
         setCreatedHangoutId(data.hangout?.id ? String(data.hangout.id) : null);
         setSuccess(true);
       } else setError(data.error || 'Failed to create hangout.');
@@ -968,11 +1069,14 @@ function HostTab({ onPosted }: { onPosted: () => void }) {
           <Check size={32} className="text-red-700" />
         </motion.div>
         <h2 className="font-display text-4xl italic text-neutral-900 mb-3">Your table is set.</h2>
-        <p className="text-neutral-500 text-base mb-6 max-w-md mx-auto">Your hangout is live on Discover. Send friends an invite link so they can join in one tap.</p>
+            <p className="text-neutral-500 text-base mb-6 max-w-md mx-auto">Your hangout is live on Discover. Send friends an invite link so they can join in one tap.</p>
         {createdHangoutId ? (
           <div className="max-w-md mx-auto mb-8 rounded-2xl border border-neutral-200 bg-neutral-50 p-4 text-left">
             <p className="text-[10px] font-black uppercase tracking-widest text-neutral-500 mb-2">Invite link</p>
-            <p className="text-xs text-neutral-600 break-all font-mono mb-3">{publicInviteUrl(createdHangoutId)}</p>
+            <p className="text-xs text-neutral-600 break-all font-mono mb-2">{publicInviteUrl(createdHangoutId)}</p>
+            <p className="text-[11px] text-neutral-500 mb-3">
+              Copy for Instagram or Status. WhatsApp opens with this message ready — pick a chat or your Status.
+            </p>
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
@@ -994,6 +1098,13 @@ function HostTab({ onPosted }: { onPosted: () => void }) {
                 className="flex-1 min-w-[100px] inline-flex items-center justify-center gap-1.5 py-2.5 rounded-full border border-neutral-300 text-[10px] font-black uppercase tracking-widest text-neutral-800 hover:border-red-400"
               >
                 <Share2 size={14} /> Share
+              </button>
+              <button
+                type="button"
+                onClick={() => openWhatsAppHangoutInvite(createdHangoutId, title || 'Join my table')}
+                className="flex-1 min-w-[100px] inline-flex items-center justify-center gap-1.5 py-2.5 rounded-full border border-emerald-600/40 bg-emerald-50 text-emerald-900 text-[10px] font-black uppercase tracking-widest hover:bg-emerald-100"
+              >
+                <MessageCircle size={14} /> WhatsApp
               </button>
               <Link
                 href={`/join/${createdHangoutId}`}
@@ -1059,10 +1170,19 @@ function HostTab({ onPosted }: { onPosted: () => void }) {
                 className="w-full bg-transparent border-b border-neutral-200 pb-3 text-base focus:outline-none focus:border-red-700 placeholder:text-neutral-300 transition-colors" />
             </Field>
             <Field label="City">
-              <select value={city} onChange={(e) => setCity(e.target.value)}
-                className="w-full bg-transparent border-b border-neutral-200 pb-3 text-base focus:outline-none focus:border-red-700 transition-colors text-neutral-900 [color-scheme:dark]">
-                {['Lagos', 'Abuja', 'London'].map((c) => <option key={c} value={c} className="bg-white text-neutral-900">{c}</option>)}
-              </select>
+              <input
+                type="text"
+                list="convivia-host-cities"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="Any city — type yours or pick a suggestion"
+                className="w-full bg-transparent border-b border-neutral-200 pb-3 text-base focus:outline-none focus:border-red-700 placeholder:text-neutral-400 transition-colors"
+              />
+              <datalist id="convivia-host-cities">
+                {cities.map((c) => (
+                  <option key={c} value={c} />
+                ))}
+              </datalist>
             </Field>
           </div>
 
@@ -1197,7 +1317,15 @@ function HomeExploreSnippets({ onSwitchTab, openTablesCount }: { onSwitchTab: (t
 /* ══════════════════════════════════════════════════════════════════════
    HOME TAB — live landing: city pulse, AI match, app snippets, partner spots
    ══════════════════════════════════════════════════════════════════════ */
-function HomeTab({ onSwitchTab }: { onSwitchTab: (t: AppTab) => void }) {
+function HomeTab({
+  onSwitchTab,
+  cities,
+  addCity,
+}: {
+  onSwitchTab: (t: AppTab) => void;
+  cities: string[];
+  addCity: (name: string) => void;
+}) {
   const [hangouts, setHangouts] = useState<any[]>([]);
   const [joiningId, setJoiningId] = useState<string | null>(null);
   const [joinNote, setJoinNote] = useState<string | null>(null);
@@ -1272,6 +1400,20 @@ function HomeTab({ onSwitchTab }: { onSwitchTab: (t: AppTab) => void }) {
   }, [loadMatchStatus]);
 
   useEffect(() => { loadPulse(activeCity); }, [activeCity, loadPulse]);
+
+  useEffect(() => {
+    if (!cities.length || cities.some((c) => c.toLowerCase() === activeCity.toLowerCase())) {
+      return;
+    }
+    let cancelled = false;
+    const next = cities[0];
+    queueMicrotask(() => {
+      if (!cancelled) setActiveCity(next);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [cities, activeCity]);
 
   const openTablesCount = useMemo(
     () => hangouts.filter((h: any) => (h.current_guests || 0) < (h.max_guests || 0)).length,
@@ -1492,7 +1634,7 @@ function HomeTab({ onSwitchTab }: { onSwitchTab: (t: AppTab) => void }) {
             <div className="absolute top-2.5 left-3 z-[1]">
               <p className="text-[9px] font-black uppercase tracking-[0.28em] text-gold-light flex items-center gap-1.5 drop-shadow-md">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.9)] animate-pulse shrink-0" />
-                Live · {new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}
+                Live · <LiveLocalTime />
               </p>
             </div>
             <div className="absolute inset-x-0 bottom-0 z-[1] p-3 pt-8 bg-gradient-to-t from-black/75 to-transparent">
@@ -1575,7 +1717,7 @@ function HomeTab({ onSwitchTab }: { onSwitchTab: (t: AppTab) => void }) {
               variants={staggerItem}
               className="text-[10px] font-black uppercase tracking-[0.3em] text-gold-light flex items-center gap-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]"
             >
-              <span className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.85)] animate-pulse shrink-0"/> Live · {new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}
+              <span className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.85)] animate-pulse shrink-0"/> Live · <LiveLocalTime />
             </motion.p>
             <motion.div
               variants={staggerItem}
@@ -1625,15 +1767,14 @@ function HomeTab({ onSwitchTab }: { onSwitchTab: (t: AppTab) => void }) {
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-600 mb-1.5 flex items-center gap-2"><Zap size={10}/> Live City Pulse</p>
             <h2 className="font-display text-2xl md:text-3xl italic">Where the energy is now.</h2>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <div className="inline-flex max-w-full overflow-x-auto scrollbar-hide rounded-full p-0.5 bg-neutral-100 border border-neutral-200">
-              {(['London','Lagos','Abuja'] as const).map((c) => (
-                <button type="button" key={c} onClick={() => setActiveCity(c)}
-                  className={`shrink-0 text-[10px] uppercase tracking-widest font-black min-h-10 px-3 sm:px-3.5 py-2 rounded-full transition-all ${activeCity===c ? 'bg-red-700 text-white shadow-[0_0_15px_rgba(185,28,28,0.2)]' : 'text-neutral-600 hover:text-neutral-900 active:bg-neutral-200/60'}`}>
-                  {c}
-                </button>
-              ))}
-            </div>
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-end flex-wrap">
+            <CityChipsBar
+              cities={cities}
+              selected={activeCity}
+              onSelect={setActiveCity}
+              onAddCity={addCity}
+              className="md:max-w-[min(100%,520px)] md:ml-auto"
+            />
             {premium ? (
               <span className="hidden md:inline-flex text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full bg-red-50 text-red-700 border border-red-400 items-center gap-1">
                 <Star size={10} fill="currentColor"/> Black
@@ -2038,6 +2179,7 @@ function FaceVerificationModal({ user: _user, onVerified, onClose }: { user: any
   const [phase, setPhase] = useState<'intro' | 'capturing' | 'preview' | 'checking' | 'done' | 'error'>('intro');
   const [errorMsg, setErrorMsg] = useState('');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [videoReady, setVideoReady] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -2065,12 +2207,23 @@ function FaceVerificationModal({ user: _user, onVerified, onClose }: { user: any
 
   const stopCamera = () => { streamRef.current?.getTracks().forEach((t) => t.stop()); streamRef.current = null; };
   const startCamera = async () => {
+    setVideoReady(false);
     setPhase('capturing'); setErrorMsg('');
     await enterFullscreen();
     try {
-      const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } } });
+      const s = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'user',
+          width: { ideal: 1920, max: 1920 },
+          height: { ideal: 1080, max: 1080 },
+        },
+      });
       streamRef.current = s;
-      if (videoRef.current) { videoRef.current.srcObject = s; videoRef.current.play(); }
+      const v = videoRef.current;
+      if (v) {
+        v.srcObject = s;
+        await v.play().catch(() => {});
+      }
     } catch {
       setPhase('error'); setErrorMsg('Camera access denied. Please allow camera access in your browser settings.');
     }
@@ -2078,13 +2231,28 @@ function FaceVerificationModal({ user: _user, onVerified, onClose }: { user: any
 
   const closeAll = async () => { stopCamera(); await exitFullscreen(); onClose(); };
   const capture = () => {
-    if (!videoRef.current || !canvasRef.current) return;
-    const v = videoRef.current, c = canvasRef.current;
-    c.width = v.videoWidth || 1280; c.height = v.videoHeight || 720;
-    const ctx = c.getContext('2d'); if (!ctx) return;
-    ctx.filter = 'brightness(1.15) contrast(1.05)'; ctx.drawImage(v, 0, 0); ctx.filter = 'none';
+    const v = videoRef.current;
+    const c = canvasRef.current;
+    if (!v || !c) return;
+    const w = v.videoWidth || 0;
+    const h = v.videoHeight || 0;
+    if (w < 32 || h < 32) {
+      setPhase('error');
+      setErrorMsg('Camera is still starting. Wait a second and try again.');
+      return;
+    }
+    c.width = w;
+    c.height = h;
+    const ctx = c.getContext('2d');
+    if (!ctx) return;
+    ctx.filter = 'brightness(1.12) contrast(1.06)';
+    ctx.translate(w, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(v, 0, 0, w, h);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.filter = 'none';
     stopCamera();
-    setPreviewUrl(c.toDataURL('image/jpeg', 0.95));
+    setPreviewUrl(c.toDataURL('image/jpeg', 0.92));
     setPhase('preview');
   };
   const submit = async () => {
@@ -2095,7 +2263,11 @@ function FaceVerificationModal({ user: _user, onVerified, onClose }: { user: any
       try {
         const fd = new FormData();
         fd.append('file', blob, 'selfie.jpg');
-        const res = await fetch('/api/profile/verify-face', { method: 'POST', body: fd });
+        const res = await fetch('/api/profile/verify-face', {
+          method: 'POST',
+          body: fd,
+          credentials: 'include',
+        });
         const d = await res.json();
         if (res.ok && d.verified) { setPhase('done'); onVerified(d.user); }
         else { setPhase('error'); setErrorMsg(d.error || 'Face did not match. Try in better lighting.'); }
@@ -2126,6 +2298,11 @@ function FaceVerificationModal({ user: _user, onVerified, onClose }: { user: any
     <motion.div ref={containerRef} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       className="fixed inset-0 z-[200] bg-neutral-950 flex flex-col"
       style={{ touchAction: 'none', paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      {/*
+        Canvas must stay mounted during "capturing" so capture() can draw; previously it only existed in "preview",
+        so canvasRef was always null and capture did nothing.
+      */}
+      <canvas ref={canvasRef} className="fixed w-px h-px opacity-0 pointer-events-none overflow-hidden" aria-hidden />
       <div className="flex items-center justify-between px-5 pt-4 pb-4 shrink-0 border-b border-neutral-100">
         <div className="flex items-center gap-2">
           <ShieldCheck size={18} className="text-red-700" />
@@ -2143,7 +2320,9 @@ function FaceVerificationModal({ user: _user, onVerified, onClose }: { user: any
           </div>
           <div>
             <h2 className="font-display text-4xl italic text-neutral-900 mb-3">Get Verified</h2>
-            <p className="text-neutral-500 text-base max-w-xs mx-auto">We&apos;ll match a quick selfie to your profile photo. Powered by Azure Face.</p>
+            <p className="text-neutral-500 text-base max-w-xs mx-auto">
+              We&apos;ll match a quick selfie to your profile photo. Center your face in the oval, similar angle and lighting as your profile picture.
+            </p>
           </div>
           <motion.button whileTap={{ scale: 0.97 }} onClick={startCamera} className="w-full max-w-xs bg-red-700 text-white py-4 rounded-full font-black uppercase tracking-[0.2em] text-[11px] hover:bg-red-800 transition-colors shadow-[0_0_30px_rgba(201,168,76,0.25)]">
             Start Camera
@@ -2153,13 +2332,28 @@ function FaceVerificationModal({ user: _user, onVerified, onClose }: { user: any
 
       {phase === 'capturing' && (
         <div className="flex-1 flex flex-col relative">
-          <video ref={videoRef} className="absolute inset-0 w-full h-full object-cover" muted playsInline style={{ transform: 'scaleX(-1)' }} />
+          <video
+            ref={videoRef}
+            className="absolute inset-0 w-full h-full object-cover"
+            muted
+            playsInline
+            style={{ transform: 'scaleX(-1)' }}
+            onLoadedData={() => setVideoReady(true)}
+          />
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 pointer-events-none" />
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ marginTop: '-5%' }}>
             <div className="border-2 border-red-600 rounded-full" style={{ width: 'min(60vw,260px)', height: 'min(78vw,340px)', boxShadow: '0 0 0 9999px rgba(0,0,0,0.45)' }} />
           </div>
-          <div className="absolute bottom-10 left-0 right-0 flex flex-col items-center gap-4">
-            <motion.button whileTap={{ scale: 0.92 }} onClick={capture} className="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-[0_0_0_4px_rgba(255,255,255,0.4)]">
+          <div className="absolute bottom-10 left-0 right-0 flex flex-col items-center gap-3">
+            {!videoReady && (
+              <p className="text-neutral-400 text-[11px] font-bold uppercase tracking-widest">Starting camera…</p>
+            )}
+            <motion.button
+              whileTap={{ scale: videoReady ? 0.92 : 1 }}
+              onClick={capture}
+              disabled={!videoReady}
+              className="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-[0_0_0_4px_rgba(255,255,255,0.4)] disabled:opacity-40 disabled:grayscale"
+            >
               <div className="w-16 h-16 rounded-full bg-white border-4 border-neutral-200" />
             </motion.button>
           </div>
@@ -2169,10 +2363,9 @@ function FaceVerificationModal({ user: _user, onVerified, onClose }: { user: any
       {phase === 'preview' && previewUrl && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col">
           <div className="flex-1 relative">
-            <img src={previewUrl} alt="Selfie" className="absolute inset-0 w-full h-full object-cover" style={{ transform: 'scaleX(-1)' }} />
+            <img src={previewUrl} alt="Selfie" className="absolute inset-0 w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60 pointer-events-none" />
           </div>
-          <canvas ref={canvasRef} className="hidden" />
           <div className="px-6 py-8 flex gap-3">
             <motion.button whileTap={{ scale: 0.97 }} onClick={() => { setPreviewUrl(null); startCamera(); }}
               className="flex-1 flex items-center justify-center gap-2 py-4 rounded-full border border-neutral-200 text-neutral-600 font-black uppercase tracking-widest text-[11px]">
@@ -2190,7 +2383,7 @@ function FaceVerificationModal({ user: _user, onVerified, onClose }: { user: any
         <div className="flex-1 flex flex-col items-center justify-center gap-6 px-8 text-center">
           {previewUrl && (
             <div className="relative w-36 h-36 rounded-full overflow-hidden border-4 border-red-600">
-              <img src={previewUrl} alt="" className="w-full h-full object-cover" style={{ transform: 'scaleX(-1)' }} />
+              <img src={previewUrl} alt="" className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-red-100 animate-pulse" />
             </div>
           )}
@@ -2255,6 +2448,7 @@ function ProfileTab({ initialUser }: { initialUser?: any }) {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [avatarError, setAvatarError] = useState('');
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
   const [profileNotice, setProfileNotice] = useState('');
   const [verifyOpen, setVerifyOpen] = useState(false);
   const [subscribing, setSubscribing] = useState<'trial' | 'paid' | null>(null);
@@ -2301,7 +2495,7 @@ function ProfileTab({ initialUser }: { initialUser?: any }) {
 
   useEffect(() => {
     setLoading(true);
-    fetch('/api/profile')
+    fetch('/api/profile', { credentials: 'include' })
       .then(async (r) => {
         const d = await r.json();
         if (!r.ok) throw new Error(d.error || 'Profile unavailable');
@@ -2310,6 +2504,7 @@ function ProfileTab({ initialUser }: { initialUser?: any }) {
       .then((data) => {
         if (data.user) {
           setUser(data.user);
+          setAvatarLoadFailed(false);
           setEditName(data.user.name || '');
           setEditBio(data.user.bio || '');
           setEditLocation(data.user.location || '');
@@ -2344,17 +2539,20 @@ function ProfileTab({ initialUser }: { initialUser?: any }) {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const res = await fetch('/api/upload', { method: 'POST', body: formData, credentials: 'include' });
       const data = await res.json();
       if (!res.ok) { setAvatarError(data.error || 'Upload failed.'); setUploadingAvatar(false); return; }
       const updateRes = await fetch('/api/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ avatar_url: data.url }),
       });
       const updateData = await updateRes.json();
-      if (updateRes.ok && updateData.user) setUser(updateData.user);
-      else setAvatarError(updateData.error || 'Profile update failed.');
+      if (updateRes.ok && updateData.user) {
+        setAvatarLoadFailed(false);
+        setUser(updateData.user);
+      } else setAvatarError(updateData.error || 'Profile update failed.');
     } catch { setAvatarError('Network error — try again.'); }
     setUploadingAvatar(false);
   };
@@ -2516,8 +2714,17 @@ function ProfileTab({ initialUser }: { initialUser?: any }) {
             <div className="relative mb-4 group">
               <div className="absolute inset-0 bg-red-100 rounded-full blur-2xl group-hover:bg-red-700/30 transition-colors" />
               <label className="cursor-pointer block">
-                {user?.avatar_url ? (
-                  <img src={user.avatar_url} alt="" className="w-32 h-32 md:w-36 md:h-36 rounded-full border-[3px] border-red-700 relative z-10 object-cover shadow-2xl" />
+                {user?.avatar_url && !avatarLoadFailed ? (
+                  <img
+                    src={user.avatar_url}
+                    alt=""
+                    referrerPolicy="no-referrer"
+                    className="w-32 h-32 md:w-36 md:h-36 rounded-full border-[3px] border-red-700 relative z-10 object-cover shadow-2xl"
+                    onError={() => {
+                      setAvatarLoadFailed(true);
+                      setAvatarError('Photo URL did not load. Use a public Azure blob (container access: blob) or re-upload from here.');
+                    }}
+                  />
                 ) : (
                   <div className="w-32 h-32 md:w-36 md:h-36 rounded-full border-[3px] border-dashed border-red-600 bg-neutral-100 relative z-10 flex items-center justify-center">
                     <Camera size={26} className="text-red-600" />
