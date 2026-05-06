@@ -21,6 +21,41 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* App shell (home): lock document scroll on phone + tablet; scroll happens inside main */
+@supports selector(:has(*)) {
+  @media (max-width: 1023px) {
+    html:has([data-app-shell]) {
+      height: 100dvh;
+      max-height: 100dvh;
+      overflow: hidden;
+    }
+    body:has([data-app-shell]) {
+      overflow: hidden;
+      height: 100%;
+      overscroll-behavior: none;
+      touch-action: pan-y;
+    }
+    html:has([data-app-shell]) {
+      overflow-x: hidden;
+      touch-action: pan-y;
+    }
+    /* Marketing footer is redundant while tab bar is present */
+    body:has([data-app-shell]) [data-site-footer] {
+      display: none !important;
+    }
+  }
+}
+
+/* Prevent iOS font scaling inside the fixed-scale app shell */
+@supports selector(:has(*)) {
+  @media (max-width: 1023px) {
+    .app-shell-root {
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+  }
+}
+
 /* Custom Utilities */
 .animate-spin-slow {
   animation: spin 12s linear infinite;

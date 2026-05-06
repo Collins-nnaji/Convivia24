@@ -229,9 +229,9 @@ export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
   };
 
   return (
-    <div className="flex flex-col h-full w-full max-w-[100vw] mx-auto relative text-neutral-900 overflow-x-hidden">
-      {/* TOP NAV (DESKTOP) */}
-      <header className="hidden md:flex items-center justify-between px-6 lg:px-10 py-5 lg:py-6 border-b border-gold/20 bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-[0_1px_0_0_rgba(201,168,76,0.08)]">
+    <div className="flex h-full min-h-0 w-full max-w-[100vw] flex-col mx-auto relative text-neutral-900 overflow-x-hidden max-lg:max-h-full">
+      {/* TOP NAV (DESKTOP — lg+ only; tablet uses tab bar + fixed top strip) */}
+      <header className="hidden lg:flex items-center justify-between px-6 lg:px-10 py-5 lg:py-6 border-b border-gold/20 bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-[0_1px_0_0_rgba(201,168,76,0.08)]">
         <div className="flex items-center gap-2 min-w-0 w-[180px]">
           <button
             type="button"
@@ -256,9 +256,9 @@ export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
         </button>
       </header>
 
-      {/* STRIP + LOGO (MOBILE) — tap logo = Now + scroll top */}
+      {/* STRIP + LOGO (phone & tablet) — fixed like a native app title bar */}
       <header
-        className="md:hidden sticky top-0 z-40 flex items-center px-3 sm:px-4 pt-[max(0.35rem,env(safe-area-inset-top))] pb-2.5 bg-white/82 backdrop-blur-md border-b border-gold/15 shadow-[0_1px_0_0_rgba(255,255,255,0.6)]"
+        className="lg:hidden fixed top-0 left-1/2 -translate-x-1/2 z-[60] w-full max-w-[min(100%,428px)] flex items-center px-3 sm:px-4 pt-[max(0.5rem,env(safe-area-inset-top))] pb-2.5 bg-white/[0.94] backdrop-blur-xl border-b border-gold/20 shadow-[0_4px_24px_rgba(0,0,0,0.06)]"
       >
         <button
           type="button"
@@ -273,7 +273,7 @@ export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
       {/* MAIN CONTENT */}
       <div
         ref={mainScrollRef}
-        className="flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden px-3 sm:px-6 md:px-12 pt-3 sm:pt-5 md:pt-12 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-12 scrollbar-hide relative"
+        className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden overscroll-y-contain px-3 sm:px-6 lg:px-12 max-lg:pt-[calc(env(safe-area-inset-top)+3.65rem)] lg:pt-12 pb-[calc(6.35rem+env(safe-area-inset-bottom))] lg:pb-12 scrollbar-hide relative touch-pan-y"
       >
         <AnimatePresence mode="wait">
           <motion.div
@@ -289,23 +289,33 @@ export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
         </AnimatePresence>
       </div>
 
-      {/* BOTTOM NAV (MOBILE) */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 max-w-[100vw] bg-white/88 backdrop-blur-lg border-t border-gold/20 px-1 sm:px-2 flex items-end justify-between gap-0.5 pt-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom))] z-50 shadow-[0_-4px_28px_rgba(0,0,0,0.06),inset_0_1px_0_0_rgba(201,168,76,0.12)]">
-        <NavIcon label="Now" icon={<Home size={20} />}        active={activeTab === 'home'}     onClick={goNow} />
-        <NavIcon label="Events" icon={<Compass size={20} />}   active={activeTab === 'discover'} onClick={() => setActiveTab('discover')} />
+      {/* Mobile: floating “dock” tab bar — replaces footer links on small screens */}
+      <div
+        className="lg:hidden pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-3 pt-3 bg-gradient-to-t from-[var(--app-wash)] via-[var(--app-wash)]/92 to-transparent"
+      >
+        <div
+          className="pointer-events-auto mb-[max(0.65rem,env(safe-area-inset-bottom))] flex w-full max-w-[min(100%,428px)] items-end justify-between gap-0.5 rounded-[24px] border border-gold/25 bg-white/[0.94] backdrop-blur-xl px-1.5 pt-2 pb-2 shadow-[0_8px_40px_rgba(0,0,0,0.14),0_0_0_1px_rgba(255,255,255,0.5)_inset]"
+          role="tablist"
+          aria-label="Main navigation"
+        >
+        <NavIcon label="Now" icon={<Home size={20} strokeWidth={activeTab === 'home' ? 2.5 : 2} />} active={activeTab === 'home'} onClick={goNow} />
+        <NavIcon label="Discover" icon={<Compass size={20} strokeWidth={activeTab === 'discover' ? 2.5 : 2} />} active={activeTab === 'discover'} onClick={() => setActiveTab('discover')} />
 
-        <div className="relative -top-2.5 flex flex-col items-center gap-0.5 min-w-[48px] shrink-0">
-          <button onClick={goNow}
-            className={`w-[50px] h-[50px] sm:w-[52px] sm:h-[52px] rounded-full bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center text-[#0a0a0a] shadow-[0_3px_16px_rgba(185,28,28,0.25)] active:scale-95 transition-transform ${activeTab === 'home' ? 'ring-2 ring-red-600/25' : ''}`}
+        <div className="relative -top-3 flex flex-col items-center gap-0.5 min-w-[52px] shrink-0">
+          <button
+            type="button"
+            onClick={goNow}
+            className={`w-[52px] h-[52px] rounded-full bg-gradient-to-br from-red-600 via-red-700 to-red-900 flex items-center justify-center text-white shadow-[0_6px_22px_rgba(185,28,28,0.4),0_0_0_1px_rgba(255,255,255,0.22)_inset] active:scale-[0.94] transition-transform duration-150 ${activeTab === 'home' ? 'ring-2 ring-gold/40 ring-offset-2 ring-offset-white/90' : ''}`}
             aria-label="Pulse — match and plans"
           >
-            <Sparkles size={22} fill="currentColor" className="text-white opacity-85" />
+            <Sparkles size={23} fill="currentColor" className="opacity-95 drop-shadow-sm" />
           </button>
-          <span className="text-[7px] uppercase tracking-[0.16em] font-black text-red-700">Pulse</span>
+          <span className="text-[6.5px] uppercase tracking-[0.18em] font-black text-red-700">Pulse</span>
         </div>
 
-        <NavIcon label="Crews" icon={<CircleDashed size={20} />} active={activeTab === 'circles'} onClick={() => setActiveTab('circles')} />
-        <NavIcon label="Me" icon={<UserIcon size={20} />}     active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} />
+        <NavIcon label="Crews" icon={<CircleDashed size={20} strokeWidth={activeTab === 'circles' ? 2.5 : 2} />} active={activeTab === 'circles'} onClick={() => setActiveTab('circles')} />
+        <NavIcon label="Me" icon={<UserIcon size={20} strokeWidth={activeTab === 'profile' ? 2.5 : 2} />} active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} />
+        </div>
       </div>
     </div>
   );
@@ -325,12 +335,17 @@ function DesktopNavLink({ label, icon, active, onClick }: any) {
 }
 function NavIcon({ icon, label, active, onClick }: any) {
   return (
-    <button onClick={onClick}
+    <button
+      onClick={onClick}
       type="button"
-      className={`min-w-[48px] max-w-[22vw] flex-1 min-h-[52px] sm:min-h-[56px] py-1 flex flex-col items-center justify-center gap-0.5 transition-colors ${active ? 'text-red-700 drop-shadow-[0_0_6px_rgba(185,28,28,0.35)]' : 'text-neutral-500 hover:text-neutral-600'}`}
+      className={`min-w-[44px] max-w-[21vw] flex-1 min-h-[50px] py-1 rounded-[18px] flex flex-col items-center justify-center gap-0.5 transition-all duration-200 active:scale-[0.97] ${
+        active
+          ? 'text-red-700 bg-red-50/95 shadow-[inset_0_0_0_1px_rgba(185,28,28,0.12)]'
+          : 'text-neutral-500 hover:text-neutral-700'
+      }`}
     >
       {icon}
-      <span className="text-[7px] uppercase tracking-[0.14em] font-black">{label}</span>
+      <span className={`text-[6.5px] uppercase tracking-[0.14em] font-black ${active ? 'text-red-800' : ''}`}>{label}</span>
     </button>
   );
 }
@@ -1458,97 +1473,138 @@ function HomeTab({ onSwitchTab }: { onSwitchTab: (t: AppTab) => void }) {
   const formatSpend = (amount: number) => `₦${(amount / 1000).toFixed(0)}k`;
 
   return (
-    <div className="space-y-10 md:space-y-12">
+    <div className="space-y-6 lg:space-y-12">
       <motion.section
-        className="relative overflow-hidden rounded-[20px] sm:rounded-[24px] md:rounded-[32px] border border-gold/25 shadow-[0_24px_70px_rgba(0,0,0,0.08),0_0_0_1px_rgba(201,168,76,0.12)]"
+        className="relative overflow-hidden rounded-[18px] lg:rounded-[32px] border border-gold/25 shadow-[0_16px_48px_rgba(0,0,0,0.07),0_0_0_1px_rgba(201,168,76,0.12)] max-lg:shadow-[0_6px_28px_rgba(0,0,0,0.07)]"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 280, damping: 32 }}
       >
-        <div className="absolute inset-0 pointer-events-none select-none" aria-hidden>
-          <img
-            src="/Homepage.png"
-            alt=""
-            className="w-full h-full min-h-[260px] sm:min-h-[300px] md:min-h-[340px] object-cover object-[center_30%] sm:object-[center_32%]"
-          />
-          {/* Directional scrim: darker behind left-aligned type; image stays vivid on the right/top */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/78 via-black/28 sm:via-black/20 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/15" />
-          <div className="absolute inset-0 bg-gradient-to-br from-gold/[0.08] via-transparent to-transparent" />
-        </div>
-        <motion.div
-          className="relative z-10 p-4 sm:p-7 md:p-10 space-y-3 sm:space-y-4"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="show"
-        >
-        <motion.p
-          variants={staggerItem}
-          className="text-[10px] font-black uppercase tracking-[0.3em] text-gold-light flex items-center gap-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]"
-        >
-          <span className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.85)] animate-pulse shrink-0"/> Live · {new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}
-        </motion.p>
-        <motion.div
-          variants={staggerItem}
-          className="max-w-2xl rounded-[20px] sm:rounded-[24px] border border-white/15 bg-neutral-950/55 backdrop-blur-md px-4 py-4 sm:px-5 sm:py-5 shadow-[0_12px_40px_rgba(0,0,0,0.35)]"
-        >
-          <h1
-            className="font-display text-[1.65rem] leading-[1.08] sm:text-4xl md:text-5xl lg:text-6xl italic sm:leading-[1.02] text-white drop-shadow-sm"
-          >
-            What&apos;s <span className="text-[color:var(--gold-accent,#c9a84c)] drop-shadow-[0_1px_12px_rgba(0,0,0,0.5)]">live</span> right now
-          </h1>
-          <p className="mt-3 text-white text-[15px] sm:text-base md:text-lg leading-snug max-w-xl [overflow-wrap:anywhere] font-medium tracking-wide [word-spacing:0.02em]">
-            Neighbourhood energy refreshes here — then AI matches you in one tap. Tables you can join are in{' '}
-            <button
-              type="button"
-              onClick={() => onSwitchTab('discover')}
-              className="text-gold-light font-semibold underline decoration-gold-light/70 underline-offset-[5px] hover:text-white hover:decoration-white/80"
-            >
-              Discover
-            </button>
-            .
-          </p>
-        </motion.div>
-        <motion.div variants={staggerItem} className="md:hidden bg-white/95 border border-red-200 rounded-[28px] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.28)]">
-          <div className="flex items-center justify-between gap-3 mb-3">
-            <span className="text-[10px] uppercase tracking-[0.24em] font-black text-red-700">AI Match</span>
-            {premium ? (
-              <span className="text-[9px] uppercase tracking-wider font-bold text-red-700">Black</span>
-            ) : (
-              <span className={`text-[9px] tabular-nums ${(credits ?? 0) > 0 ? 'text-neutral-500' : 'text-amber-800'}`}>
-                {(credits ?? 0) > 0 ? '1/wk' : 'Limit reached'}
-              </span>
-            )}
-          </div>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={vibePrompt}
-              onChange={(e) => setVibePrompt(e.target.value)}
-              placeholder="chill, social, not too loud"
-              className="min-w-0 flex-1 bg-neutral-100 border border-neutral-200 rounded-2xl px-4 py-3 text-[15px] focus:outline-none focus:border-red-700 placeholder:text-neutral-400"
+        {/* Mobile / tablet: fixed-height image band + solid panel (no tiny type on photo) */}
+        <div className="lg:hidden flex flex-col">
+          <div className="relative h-[152px] sm:h-[168px] shrink-0 overflow-hidden bg-neutral-900">
+            <img
+              src="/Homepage.png"
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover object-[center_30%]"
             />
-            <button type="button" onClick={matchByVibe} className="w-12 h-12 rounded-2xl bg-red-700 text-white flex items-center justify-center shadow-[0_0_24px_rgba(185,28,28,0.2)] active:scale-95 transition-transform" aria-label="Match me">
-              <Sparkles size={19} fill="currentColor"/>
-            </button>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/82 via-black/30 to-black/40" aria-hidden />
+            <div className="absolute top-2.5 left-3 z-[1]">
+              <p className="text-[9px] font-black uppercase tracking-[0.28em] text-gold-light flex items-center gap-1.5 drop-shadow-md">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.9)] animate-pulse shrink-0" />
+                Live · {new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}
+              </p>
+            </div>
+            <div className="absolute inset-x-0 bottom-0 z-[1] p-3 pt-8 bg-gradient-to-t from-black/75 to-transparent">
+              <h1 className="font-display text-[1.5rem] leading-[1.02] italic text-white [text-shadow:0_2px_14px_rgba(0,0,0,0.5)]">
+                What&apos;s <span className="text-[color:var(--gold-accent,#c9a84c)]">live</span> right now
+              </h1>
+            </div>
           </div>
-        </motion.div>
-        <motion.div variants={staggerItem} className="md:hidden grid grid-cols-2 gap-2">
-          <button type="button" onClick={() => onSwitchTab('discover')} className="min-h-11 rounded-2xl border border-neutral-200 bg-neutral-100 text-neutral-700 text-[10px] uppercase tracking-widest font-black flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
-            <Compass size={14}/> Events
-          </button>
-          <button type="button" onClick={() => onSwitchTab('host')} className="min-h-11 rounded-2xl border border-neutral-200 bg-neutral-100 text-neutral-700 text-[10px] uppercase tracking-widest font-black flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
-            <PlusSquare size={14}/> Host
-          </button>
-        </motion.div>
-        <motion.div variants={staggerItem} className="hidden md:block">
-          <FlowSteps steps={[
-            { n: '1', label: 'Feel the pulse', sub: 'live city' },
-            { n: '2', label: 'AI matches you', sub: '4–6 people' },
-            { n: '3', label: 'Instant plan',   sub: 'go tonight' },
-          ]}/>
-        </motion.div>
-        </motion.div>
+          <motion.div
+            className="rounded-b-[18px] border border-t-0 border-gold/20 bg-gradient-to-b from-cream/95 to-[#f8f6f2] px-3.5 py-3.5 space-y-3"
+            variants={staggerContainer}
+            initial="hidden"
+            animate="show"
+          >
+            <motion.p variants={staggerItem} className="text-[14px] leading-snug text-neutral-800 font-medium [overflow-wrap:anywhere]">
+              Neighbourhood energy refreshes here — then AI matches you in one tap. Open{' '}
+              <button
+                type="button"
+                onClick={() => onSwitchTab('discover')}
+                className="text-red-700 font-semibold underline decoration-red-600/40 underline-offset-2"
+              >
+                Discover
+              </button>{' '}
+              for tables you can join.
+            </motion.p>
+            <motion.div variants={staggerItem} className="bg-white border border-red-200/90 rounded-[22px] p-3.5 shadow-[0_8px_28px_rgba(0,0,0,0.06)]">
+              <div className="flex items-center justify-between gap-3 mb-2.5">
+                <span className="text-[10px] uppercase tracking-[0.24em] font-black text-red-700">AI Match</span>
+                {premium ? (
+                  <span className="text-[9px] uppercase tracking-wider font-bold text-red-700">Black</span>
+                ) : (
+                  <span className={`text-[9px] tabular-nums ${(credits ?? 0) > 0 ? 'text-neutral-500' : 'text-amber-800'}`}>
+                    {(credits ?? 0) > 0 ? '1/wk' : 'Limit reached'}
+                  </span>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={vibePrompt}
+                  onChange={(e) => setVibePrompt(e.target.value)}
+                  placeholder="chill, social, not too loud"
+                  className="min-w-0 flex-1 bg-neutral-50 border border-neutral-200 rounded-2xl px-3.5 py-2.5 text-[15px] focus:outline-none focus:border-red-700 placeholder:text-neutral-400"
+                />
+                <button type="button" onClick={matchByVibe} className="w-11 h-11 shrink-0 rounded-2xl bg-red-700 text-white flex items-center justify-center shadow-[0_0_20px_rgba(185,28,28,0.2)] active:scale-95 transition-transform" aria-label="Match me">
+                  <Sparkles size={18} fill="currentColor"/>
+                </button>
+              </div>
+            </motion.div>
+            <motion.div variants={staggerItem} className="grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => onSwitchTab('discover')} className="min-h-10 rounded-2xl border border-neutral-200 bg-white text-neutral-800 text-[10px] uppercase tracking-widest font-black flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-sm">
+                <Compass size={14}/> Discover
+              </button>
+              <button type="button" onClick={() => onSwitchTab('host')} className="min-h-10 rounded-2xl border border-neutral-200 bg-white text-neutral-800 text-[10px] uppercase tracking-widest font-black flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-sm">
+                <PlusSquare size={14}/> Host
+              </button>
+            </motion.div>
+          </motion.div>
+        </div>
+
+        {/* Desktop: full-bleed photo + glass copy */}
+        <div className="hidden lg:block relative min-h-[320px]">
+          <div className="absolute inset-0 pointer-events-none select-none" aria-hidden>
+            <img
+              src="/Homepage.png"
+              alt=""
+              className="w-full h-full min-h-[320px] object-cover object-[center_30%]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/78 via-black/28 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/15" />
+            <div className="absolute inset-0 bg-gradient-to-br from-gold/[0.08] via-transparent to-transparent" />
+          </div>
+          <motion.div
+            className="relative z-10 p-10 space-y-4"
+            variants={staggerContainer}
+            initial="hidden"
+            animate="show"
+          >
+            <motion.p
+              variants={staggerItem}
+              className="text-[10px] font-black uppercase tracking-[0.3em] text-gold-light flex items-center gap-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]"
+            >
+              <span className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.85)] animate-pulse shrink-0"/> Live · {new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}
+            </motion.p>
+            <motion.div
+              variants={staggerItem}
+              className="max-w-2xl rounded-[24px] border border-white/15 bg-neutral-950/55 backdrop-blur-md px-5 py-5 shadow-[0_12px_40px_rgba(0,0,0,0.35)]"
+            >
+              <h1 className="font-display text-5xl xl:text-6xl italic leading-[1.02] text-white drop-shadow-sm">
+                What&apos;s <span className="text-[color:var(--gold-accent,#c9a84c)] drop-shadow-[0_1px_12px_rgba(0,0,0,0.5)]">live</span> right now
+              </h1>
+              <p className="mt-3 text-white text-lg leading-snug max-w-xl [overflow-wrap:anywhere] font-medium tracking-wide [word-spacing:0.02em]">
+                Neighbourhood energy refreshes here — then AI matches you in one tap. Tables you can join are in{' '}
+                <button
+                  type="button"
+                  onClick={() => onSwitchTab('discover')}
+                  className="text-gold-light font-semibold underline decoration-gold-light/70 underline-offset-[5px] hover:text-white hover:decoration-white/80"
+                >
+                  Discover
+                </button>
+                .
+              </p>
+            </motion.div>
+            <motion.div variants={staggerItem}>
+              <FlowSteps steps={[
+                { n: '1', label: 'Feel the pulse', sub: 'live city' },
+                { n: '2', label: 'AI matches you', sub: '4–6 people' },
+                { n: '3', label: 'Instant plan',   sub: 'go tonight' },
+              ]}/>
+            </motion.div>
+          </motion.div>
+        </div>
       </motion.section>
 
       {joinNote && (

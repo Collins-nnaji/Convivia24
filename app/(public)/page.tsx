@@ -1,7 +1,18 @@
 import { Suspense } from 'react';
+import type { Viewport } from 'next';
 import { AppConceptBoard } from '@/components/app/AppConceptBoard';
 
 export const dynamic = 'force-dynamic';
+
+/** App home: non-zoomable, fixed-scale mobile shell (installable / PWA feel) */
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+  themeColor: '#f8f6f2',
+};
 
 export default async function AppRootPage() {
   // Temporary: Dummy user to bypass auth blocker for development
@@ -16,9 +27,14 @@ export default async function AppRootPage() {
   };
 
   return (
-    <main className="relative min-h-[100dvh] text-neutral-900 flex flex-col font-sans overflow-x-hidden max-w-[100vw] bg-[#f8f6f2]">
-      {/* Atmosphere: photo + warm wash — content stays on clear surfaces inside the app */}
-      <div className="fixed inset-0 z-0 pointer-events-none select-none" aria-hidden>
+    <main
+      data-app-shell
+      className="app-shell-root relative mx-auto w-full max-lg:max-w-[min(100%,428px)] lg:max-w-none text-neutral-900 flex flex-col font-sans bg-[#f8f6f2]
+      max-lg:h-[100dvh] max-lg:max-h-[100dvh] max-lg:overflow-hidden max-lg:overscroll-none max-lg:touch-pan-y
+      lg:min-h-[100dvh] overflow-x-hidden shadow-[0_0_0_1px_rgba(201,168,76,0.12)] lg:shadow-none"
+    >
+      {/* Atmosphere — scoped to shell so it moves with the mobile “device” width */}
+      <div className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden" aria-hidden>
         <img
           src="/Homepage.png"
           alt=""
@@ -28,7 +44,7 @@ export default async function AppRootPage() {
         <div className="absolute inset-0 bg-gradient-to-tr from-white/75 via-transparent to-gold/[0.07]" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#f0ebe3]/80 via-transparent to-transparent" />
       </div>
-      <div className="relative z-10 w-full h-[100dvh] flex flex-col">
+      <div className="relative z-10 flex h-full min-h-0 w-full flex-1 flex-col max-lg:min-h-0">
         <Suspense fallback={<div className="flex flex-1 items-center justify-center text-neutral-400 text-sm">Loading…</div>}>
           <AppConceptBoard initialUser={dummyUser} />
         </Suspense>

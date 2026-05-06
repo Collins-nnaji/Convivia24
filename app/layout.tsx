@@ -18,14 +18,24 @@ const cormorant = Cormorant_Garamond({
 export const metadata = {
   title: 'Convivia24 | Come to the Table.',
   description: 'The members platform for African business. Curated gatherings, venues, and connections across Lagos, Abuja, and London.',
+  applicationName: 'Convivia24',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    title: 'Convivia24',
+    statusBarStyle: 'default',
+  },
   icons: {
     icon: '/Logo2.png',
-  }
+    apple: '/Logo2.png',
+  },
 };
 
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#f8f6f2',
 };
 
 export default function RootLayout({

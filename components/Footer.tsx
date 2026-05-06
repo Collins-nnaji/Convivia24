@@ -7,7 +7,10 @@ const footerLinks = [
 
 export default function Footer() {
   return (
-    <footer className="relative z-30 isolate mt-0 border-t border-gold/20 bg-[#f8f6f2]/95 text-neutral-900">
+    <footer
+      data-site-footer
+      className="relative z-30 isolate mt-0 border-t border-gold/20 bg-[#f8f6f2]/95 text-neutral-900"
+    >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 md:py-7">
         {/* Mobile: one tight band */}
         <div className="flex flex-col gap-4 sm:hidden">
