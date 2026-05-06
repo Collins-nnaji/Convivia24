@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { neonAuth } from '@/lib/auth/server';
 import { getOrCreateUser } from '@/lib/db/users';
-import { uploadFile } from '@/lib/storage';
+import { uploadFile, downloadBlobBufferFromUrl } from '@/lib/storage';
 
 const FACE_ENDPOINT = process.env.AZURE_FACE_ENDPOINT;
 const FACE_KEY = process.env.AZURE_FACE_KEY;
@@ -85,15 +85,35 @@ export async function POST(req: NextRequest) {
 
     const selfieBuffer = Buffer.from(await selfie.arrayBuffer());
 
-    const avatarRes = await fetch(String(user.avatar_url));
-    if (!avatarRes.ok) {
+    async function loadProfilePhotoBuffer(url: string): Promise<Buffer | null> {
+      try {
+        const res = await fetch(url, {
+          redirect: 'follow',
+          headers: {
+            'User-Agent': 'Convivia24-Server/1.0',
+            Accept: 'image/*',
+          },
+        });
+        if (!res.ok) return null;
+        return Buffer.from(await res.arrayBuffer());
+      } catch {
+        return null;
+      }
+    }
+
+    let avatarBuffer = await loadProfilePhotoBuffer(String(user.avatar_url));
+    if (!avatarBuffer) {
+      avatarBuffer = await downloadBlobBufferFromUrl(String(user.avatar_url));
+    }
+    if (!avatarBuffer) {
       return NextResponse.json(
-        { error: 'Could not read your profile photo. Upload it again and try verification.' },
+        {
+          error:
+            'Could not read your profile photo. Re-upload a clear headshot, or ensure Azure blobs allow read access.',
+        },
         { status: 422 }
       );
     }
-
-    const avatarBuffer = Buffer.from(await avatarRes.arrayBuffer());
     if (avatarBuffer.length > MAX_FILE_SIZE) {
       return NextResponse.json({ error: 'Profile photo is too large. Upload a smaller headshot.' }, { status: 400 });
     }

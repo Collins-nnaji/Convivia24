@@ -2,7 +2,7 @@ import { createAuthServer, neonAuth as originalNeonAuth } from '@neondatabase/au
 
 export const authServer = createAuthServer();
 
-// Dev-mode dummy user — always returned when real auth is unavailable
+/** Set `AUTH_PREVIEW_DUMMY=1` in .env for local UI preview without a Neon session (APIs still use this user). */
 const DUMMY_USER = {
   id: 'dummy-id',
   name: 'Collins Nnaji (Preview)',
@@ -10,20 +10,32 @@ const DUMMY_USER = {
   image: 'https://i.pravatar.cc/150?u=collins',
 };
 
-export async function neonAuth(): Promise<{ user: typeof DUMMY_USER }> {
+export type AuthSessionUser = {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+};
+
+export async function neonAuth(): Promise<{ user: AuthSessionUser | null }> {
+  const previewDummy = process.env.AUTH_PREVIEW_DUMMY === '1';
+
   try {
     const result = await Promise.race([
       originalNeonAuth(),
-      new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000)), // 3s timeout
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
     ]);
     if (result && typeof result === 'object' && 'user' in result && result.user) {
-      return result as { user: typeof DUMMY_USER };
+      return { user: result.user as AuthSessionUser };
     }
   } catch (e) {
-    // Auth not available — fall through to dummy user
-    console.log('[auth] Bypassing auth — using preview user');
+    console.warn('[neonAuth]', e);
   }
 
-  return { user: DUMMY_USER };
+  if (previewDummy) {
+    return { user: DUMMY_USER };
+  }
+
+  return { user: null };
 }
 

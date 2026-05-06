@@ -2246,6 +2246,7 @@ function FaceVerificationModal({ user: _user, onVerified, onClose }: { user: any
 function ProfileTab({ initialUser }: { initialUser?: any }) {
   const [user, setUser] = useState<any>(initialUser || null);
   const [loading, setLoading] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState(initialUser?.name || '');
   const [editBio, setEditBio] = useState(initialUser?.bio || '');
@@ -2355,7 +2356,32 @@ function ProfileTab({ initialUser }: { initialUser?: any }) {
     setUploadingAvatar(false);
   };
 
-  const handleSignOut = () => { window.location.href = '/api/auth/signout'; };
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    setProfileNotice('');
+    try {
+      const res = await fetch('/api/auth/sign-out', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setProfileNotice(
+          (data as { error?: string }).error ||
+            'Sign out failed. Try again, or clear site data for this site.'
+        );
+        setSigningOut(false);
+        return;
+      }
+    } catch {
+      setProfileNotice('Network error during sign out.');
+      setSigningOut(false);
+      return;
+    }
+    window.location.href = '/auth/sign-in';
+  };
 
   if (loading) {
     return (
@@ -2593,9 +2619,13 @@ function ProfileTab({ initialUser }: { initialUser?: any }) {
                 </button>
               </div>
 
-              <button onClick={handleSignOut}
-                className="w-full flex items-center justify-center gap-2 p-4 border border-neutral-200 rounded-2xl text-neutral-500 hover:text-red-400 hover:border-red-400/30 transition-colors text-[10px] uppercase tracking-widest font-black">
-                <LogOut size={14} /> Sign Out
+              <button
+                type="button"
+                onClick={handleSignOut}
+                disabled={signingOut}
+                className="w-full flex items-center justify-center gap-2 p-4 border border-neutral-200 rounded-2xl text-neutral-500 hover:text-red-400 hover:border-red-400/30 transition-colors text-[10px] uppercase tracking-widest font-black disabled:opacity-50"
+              >
+                <LogOut size={14} /> {signingOut ? 'Signing out…' : 'Sign Out'}
               </button>
             </div>
           </div>

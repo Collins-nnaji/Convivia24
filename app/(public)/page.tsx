@@ -1,6 +1,8 @@
 import { Suspense } from 'react';
 import type { Viewport } from 'next';
 import { AppConceptBoard } from '@/components/app/AppConceptBoard';
+import { neonAuth } from '@/lib/auth/server';
+import { getOrCreateUser } from '@/lib/db/users';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,16 +17,20 @@ export const viewport: Viewport = {
 };
 
 export default async function AppRootPage() {
-  // Temporary: Dummy user to bypass auth blocker for development
-  const dummyUser = {
-    id: 'dummy-id',
-    name: 'Collins Nnaji (Preview)',
-    email: 'preview@convivia24.com',
-    avatar_url: 'https://i.pravatar.cc/150?u=collins',
-    tier: 'black',
-    location: 'Lagos',
-    created_at: new Date().toISOString(),
-  };
+  let initialUser: Record<string, unknown> | null = null;
+  const { user: authUser } = await neonAuth();
+  if (authUser) {
+    try {
+      const row = await getOrCreateUser(authUser);
+      initialUser = {
+        ...row,
+        created_at:
+          row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+      };
+    } catch (e) {
+      console.error('[AppRootPage] getOrCreateUser', e);
+    }
+  }
 
   return (
     <main
@@ -46,7 +52,7 @@ export default async function AppRootPage() {
       </div>
       <div className="relative z-10 flex h-full min-h-0 w-full flex-1 flex-col max-lg:min-h-0">
         <Suspense fallback={<div className="flex flex-1 items-center justify-center text-neutral-400 text-sm">Loading…</div>}>
-          <AppConceptBoard initialUser={dummyUser} />
+          <AppConceptBoard initialUser={initialUser} />
         </Suspense>
       </div>
     </main>

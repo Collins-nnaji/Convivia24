@@ -16,7 +16,15 @@ export async function getOrCreateUser(authUser: {
   `;
 
   if (existing.length > 0) {
-    return existing[0];
+    const row = existing[0];
+    const oauthImage = authUser.image?.trim() || null;
+    if (oauthImage && !row.avatar_url) {
+      const updated = await sql`
+        UPDATE users SET avatar_url = ${oauthImage} WHERE id = ${row.id} RETURNING *
+      `;
+      return updated[0] || row;
+    }
+    return row;
   }
 
   // Create new user linked to auth — no default avatar, user sets their own

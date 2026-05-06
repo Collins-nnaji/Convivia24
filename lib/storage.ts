@@ -47,3 +47,35 @@ export async function deleteFile(blobUrl: string): Promise<void> {
   const blockBlobClient = containerClient.getBlockBlobClient(blobName);
   await blockBlobClient.deleteIfExists();
 }
+
+/**
+ * Download a blob using the storage account SDK (for verify-face when public HTTP fetch fails).
+ * Expects URL like https://{account}.blob.core.windows.net/{container}/{blobKey...}
+ */
+export async function downloadBlobBufferFromUrl(blobUrl: string): Promise<Buffer | null> {
+  if (!connectionString) return null;
+  try {
+    const url = new URL(blobUrl);
+    if (!url.hostname.endsWith('.blob.core.windows.net')) return null;
+    const segments = url.pathname.split('/').filter(Boolean);
+    if (segments.length < 2) return null;
+    const [urlContainer, ...blobPathParts] = segments;
+    if (urlContainer !== containerName) return null;
+    const blobName = blobPathParts.join('/');
+    if (!blobName) return null;
+
+    const containerClient = getContainerClient();
+    const blobClient = containerClient.getBlobClient(blobName);
+    const download = await blobClient.download();
+    if (!download.readableStreamBody) return null;
+
+    const chunks: Buffer[] = [];
+    for await (const chunk of download.readableStreamBody) {
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    }
+    return Buffer.concat(chunks);
+  } catch (err) {
+    console.error('[storage] downloadBlobBufferFromUrl:', err);
+    return null;
+  }
+}
