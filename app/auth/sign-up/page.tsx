@@ -7,7 +7,7 @@ import { NeonAuthUIProvider, AuthView } from '@neondatabase/auth/react/ui';
 
 const authClient = createAuthClient();
 
-export default function SignInPage() {
+export default function SignUpPage() {
   const router = useRouter();
 
   return (
@@ -31,10 +31,10 @@ export default function SignInPage() {
             <img src="/convivia24.png" alt="Convivia24" className="h-8 w-auto mx-auto mb-4" />
           </Link>
           <h1 className="font-display text-3xl sm:text-4xl italic text-neutral-900 mb-2 px-1">
-            Welcome back
+            Start Your 24
           </h1>
           <p className="text-neutral-500 text-sm max-w-sm mx-auto">
-            Sign in to sync your profile, matches, and verification.
+            Create an account to join tables, match, and verify your profile.
           </p>
         </div>
 
@@ -44,29 +44,23 @@ export default function SignInPage() {
             navigate={(path: string) => router.push(path)}
             replace={(path: string) => router.replace(path)}
           >
-            <AuthView view="SIGN_IN" redirectTo="/" />
+            <AuthView view="SIGN_UP" redirectTo="/" />
           </NeonAuthUIProvider>
         </div>
 
         <p className="text-center mt-6 text-sm text-neutral-600">
-          New to Convivia24?{' '}
-          <Link href="/auth/sign-up" className="text-red-700 font-semibold hover:underline underline-offset-4">
-            Create an account
+          Already have an account?{' '}
+          <Link href="/auth/sign-in" className="text-red-700 font-semibold hover:underline underline-offset-4">
+            Sign in
           </Link>
         </p>
 
-        <div className="mt-6 flex flex-wrap gap-3 justify-center">
+        <div className="mt-6 flex justify-center">
           <Link
             href="/"
             className="px-5 py-2.5 border border-neutral-200 rounded-xl text-neutral-600 text-[11px] font-bold uppercase tracking-widest hover:border-red-300 hover:text-red-800 transition-colors bg-white/80"
           >
             Back to app
-          </Link>
-          <Link
-            href="/inquire"
-            className="px-5 py-2.5 border border-red-200 rounded-xl text-red-800 text-[11px] font-bold uppercase tracking-widest hover:border-red-400 hover:bg-red-50 transition-colors bg-white/80"
-          >
-            Contact
           </Link>
         </div>
       </div>

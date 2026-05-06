@@ -2316,7 +2316,10 @@ function ProfileTab({ initialUser }: { initialUser?: any }) {
           setProfileNotice('');
         }
       })
-      .catch(() => setProfileNotice('Preview profile active. Sign in to sync changes across devices.'))
+      .catch(() => {
+        setUser(null);
+        setProfileNotice('Sign in to load your profile, photo, and verification status.');
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -2387,6 +2390,44 @@ function ProfileTab({ initialUser }: { initialUser?: any }) {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 size={32} className="text-red-700 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="max-w-md mx-auto pt-8 pb-24 px-4 text-center space-y-6">
+        <div className="rounded-[28px] border border-gold/25 bg-white/90 backdrop-blur-sm p-8 shadow-[0_16px_48px_rgba(0,0,0,0.06)]">
+          <UserIcon size={40} className="mx-auto text-red-700/80 mb-4" />
+          <h2 className="font-display text-3xl italic text-neutral-900 mb-2">Sign in</h2>
+          <p className="text-neutral-600 text-sm leading-relaxed mb-6">
+            Use your account to sync your profile photo (Azure storage), face verification, matches, and membership.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link
+              href="/auth/sign-in"
+              className="inline-flex items-center justify-center min-h-12 px-6 rounded-2xl bg-red-700 text-white text-[11px] font-black uppercase tracking-[0.15em] hover:bg-red-800 transition-colors"
+            >
+              Sign in
+            </Link>
+            <Link
+              href="/auth/sign-up"
+              className="inline-flex items-center justify-center min-h-12 px-6 rounded-2xl border border-neutral-200 bg-neutral-50 text-neutral-800 text-[11px] font-black uppercase tracking-[0.15em] hover:border-red-300 transition-colors"
+            >
+              Create account
+            </Link>
+          </div>
+          {profileNotice && (
+            <p className="mt-5 text-[12px] text-neutral-500">{profileNotice}</p>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={() => window.history.back()}
+          className="text-[10px] uppercase tracking-widest font-bold text-neutral-400 hover:text-red-700"
+        >
+          ← Back
+        </button>
       </div>
     );
   }
