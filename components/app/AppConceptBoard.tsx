@@ -273,7 +273,7 @@ export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
       {/* MAIN CONTENT */}
       <div
         ref={mainScrollRef}
-        className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden overscroll-y-contain px-3 sm:px-6 lg:px-12 max-lg:pt-[calc(env(safe-area-inset-top)+3.65rem)] lg:pt-12 pb-[calc(6.35rem+env(safe-area-inset-bottom))] lg:pb-12 scrollbar-hide relative touch-pan-y"
+        className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden overscroll-y-contain px-3 sm:px-6 lg:px-12 max-lg:pt-[calc(env(safe-area-inset-top)+3.65rem)] lg:pt-12 max-lg:pb-[calc(8.75rem+env(safe-area-inset-bottom))] max-lg:scroll-pb-[calc(8.75rem+env(safe-area-inset-bottom))] lg:pb-12 scrollbar-hide relative touch-pan-y"
       >
         <AnimatePresence mode="wait">
           <motion.div
@@ -282,7 +282,7 @@ export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.3 }}
-            className="h-full w-full mx-auto max-w-7xl"
+            className="min-h-full w-full mx-auto max-w-7xl"
           >
             {renderContent()}
           </motion.div>
@@ -298,7 +298,7 @@ export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
           role="tablist"
           aria-label="Main navigation"
         >
-        <NavIcon label="Now" icon={<Home size={20} strokeWidth={activeTab === 'home' ? 2.5 : 2} />} active={activeTab === 'home'} onClick={goNow} />
+        <NavIcon label="Host" icon={<PlusSquare size={20} strokeWidth={activeTab === 'host' ? 2.5 : 2} />} active={activeTab === 'host'} onClick={() => setActiveTab('host')} />
         <NavIcon label="Discover" icon={<Compass size={20} strokeWidth={activeTab === 'discover' ? 2.5 : 2} />} active={activeTab === 'discover'} onClick={() => setActiveTab('discover')} />
 
         <div className="relative -top-3 flex flex-col items-center gap-0.5 min-w-[52px] shrink-0">
@@ -306,11 +306,11 @@ export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
             type="button"
             onClick={goNow}
             className={`w-[52px] h-[52px] rounded-full bg-gradient-to-br from-red-600 via-red-700 to-red-900 flex items-center justify-center text-white shadow-[0_6px_22px_rgba(185,28,28,0.4),0_0_0_1px_rgba(255,255,255,0.22)_inset] active:scale-[0.94] transition-transform duration-150 ${activeTab === 'home' ? 'ring-2 ring-gold/40 ring-offset-2 ring-offset-white/90' : ''}`}
-            aria-label="Pulse — match and plans"
+            aria-label="Now — home"
           >
-            <Sparkles size={23} fill="currentColor" className="opacity-95 drop-shadow-sm" />
+            <Home size={24} strokeWidth={2.25} className="opacity-95 drop-shadow-sm" />
           </button>
-          <span className="text-[6.5px] uppercase tracking-[0.18em] font-black text-red-700">Pulse</span>
+          <span className="text-[6.5px] uppercase tracking-[0.18em] font-black text-red-700">Now</span>
         </div>
 
         <NavIcon label="Crews" icon={<CircleDashed size={20} strokeWidth={activeTab === 'circles' ? 2.5 : 2} />} active={activeTab === 'circles'} onClick={() => setActiveTab('circles')} />
