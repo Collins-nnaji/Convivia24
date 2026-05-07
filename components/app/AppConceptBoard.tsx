@@ -1248,8 +1248,12 @@ function HostTab({
 
         {error && <p className="text-red-400 text-sm mt-6 text-center">{error}</p>}
 
-        <button onClick={handleSubmit} disabled={submitting}
-          className="sticky bottom-24 md:static z-10 w-full bg-red-700 text-white py-4 md:py-5 rounded-full font-black uppercase tracking-[0.2em] text-[11px] mt-8 md:mt-12 hover:bg-red-800 hover:shadow-[0_0_30px_rgba(185,28,28,0.25)] transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-[0_10px_30px_rgba(0,0,0,0.35)] md:shadow-none">
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={submitting}
+          className="relative w-full bg-red-700 text-white py-4 md:py-5 rounded-full font-black uppercase tracking-[0.2em] text-[11px] mt-8 md:mt-12 mb-1 max-lg:mb-3 hover:bg-red-800 hover:shadow-[0_0_30px_rgba(185,28,28,0.25)] transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-md md:shadow-none"
+        >
           {submitting ? <Loader2 size={16} className="animate-spin" /> : <><span>Set the Table</span> <ArrowRight size={16} /></>}
         </button>
       </div>
