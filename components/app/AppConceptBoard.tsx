@@ -294,24 +294,35 @@ export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
         </button>
       </header>
 
-      {/* STRIP + LOGO (phone & tablet) — fixed like a native app title bar */}
-      <header
-        className="lg:hidden fixed top-0 left-1/2 -translate-x-1/2 z-[60] w-full max-w-[min(100%,428px)] flex items-center justify-center px-3 sm:px-4 pt-[max(0.35rem,env(safe-area-inset-top))] pb-2 bg-white/[0.96] backdrop-blur-xl border-b border-gold/20 shadow-[0_3px_18px_rgba(0,0,0,0.05)]"
-      >
-        <button
-          type="button"
-          onClick={goNow}
-          className="flex items-center justify-center min-h-10 min-w-[44px] rounded-xl active:bg-neutral-100 px-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-inset"
-          aria-label="Go to Now"
+      {/* Mobile top tab bar — fixed below notch (Convivia wordmark only on Home hero, not here) */}
+      <div className="lg:hidden fixed top-0 left-1/2 z-[60] w-full max-w-[min(100%,428px)] -translate-x-1/2 pointer-events-none px-2 pt-0">
+        <div
+          className="pointer-events-auto flex w-full items-end justify-between gap-0.5 rounded-b-[22px] border border-gold/30 border-t-0 bg-white/[0.97] backdrop-blur-xl px-1 pt-[max(0.25rem,env(safe-area-inset-top))] pb-1.5 shadow-[0_10px_36px_rgba(0,0,0,0.1)]"
+          role="tablist"
+          aria-label="Main navigation"
         >
-          <img src="/convivia24.png" alt="" className="h-6 w-auto max-w-[120px] object-contain object-center opacity-90" />
-        </button>
-      </header>
+          <NavIcon label="Host" icon={<PlusSquare size={20} strokeWidth={activeTab === 'host' ? 2.5 : 2} />} active={activeTab === 'host'} onClick={() => setActiveTab('host')} />
+          <NavIcon label="Discover" icon={<Compass size={20} strokeWidth={activeTab === 'discover' ? 2.5 : 2} />} active={activeTab === 'discover'} onClick={() => setActiveTab('discover')} />
+          <div className="flex flex-col items-center gap-0.5 min-w-[52px] shrink-0">
+            <button
+              type="button"
+              onClick={goNow}
+              className={`w-[48px] h-[48px] rounded-full bg-gradient-to-br from-red-600 via-red-700 to-red-900 flex items-center justify-center text-white shadow-[0_6px_22px_rgba(185,28,28,0.35),0_0_0_1px_rgba(255,255,255,0.22)_inset] active:scale-[0.93] transition-transform duration-150 ${activeTab === 'home' ? 'ring-[3px] ring-gold/45 ring-offset-[2px] ring-offset-white' : ''}`}
+              aria-label="Now — home"
+            >
+              <Home size={22} strokeWidth={2.25} className="opacity-95 drop-shadow-sm" />
+            </button>
+            <span className="text-[6.5px] uppercase tracking-[0.18em] font-black text-red-700">Now</span>
+          </div>
+          <NavIcon label="Crews" icon={<CircleDashed size={20} strokeWidth={activeTab === 'circles' ? 2.5 : 2} />} active={activeTab === 'circles'} onClick={() => setActiveTab('circles')} />
+          <NavIcon label="Me" icon={<UserIcon size={20} strokeWidth={activeTab === 'profile' ? 2.5 : 2} />} active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} />
+        </div>
+      </div>
 
       {/* MAIN CONTENT */}
       <div
         ref={mainScrollRef}
-        className="w-full overflow-x-hidden px-3 sm:px-6 lg:px-12 max-lg:flex-1 max-lg:min-h-0 max-lg:overflow-y-auto max-lg:overscroll-y-contain max-lg:pt-[calc(env(safe-area-inset-top)+3.25rem)] max-lg:pb-[calc(8.75rem+env(safe-area-inset-bottom))] max-lg:scroll-pb-[calc(8.75rem+env(safe-area-inset-bottom))] max-lg:scrollbar-hide max-lg:relative max-lg:touch-pan-y lg:flex-none lg:overflow-visible lg:pb-12"
+        className="w-full overflow-x-hidden px-3 sm:px-6 lg:px-12 max-lg:flex-1 max-lg:min-h-0 max-lg:overflow-y-auto max-lg:overscroll-y-contain max-lg:pt-[calc(env(safe-area-inset-top)+3.9rem)] max-lg:pb-[calc(1rem+env(safe-area-inset-bottom))] max-lg:scroll-pb-[calc(1rem+env(safe-area-inset-bottom))] max-lg:scrollbar-hide max-lg:relative max-lg:touch-pan-y lg:flex-none lg:overflow-visible lg:pb-12"
       >
         <AnimatePresence mode="wait">
           <motion.div
@@ -325,35 +336,6 @@ export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
             {renderContent()}
           </motion.div>
         </AnimatePresence>
-      </div>
-
-      {/* Mobile: floating “dock” tab bar — replaces footer links on small screens */}
-      <div
-        className="lg:hidden pointer-events-none fixed inset-x-0 bottom-0 z-[58] flex justify-center px-3 pt-2 bg-gradient-to-t from-[var(--app-wash)] via-[var(--app-wash)]/95 to-transparent"
-      >
-        <div
-          className="pointer-events-auto mb-[max(0.5rem,env(safe-area-inset-bottom))] flex w-full max-w-[min(100%,428px)] items-end justify-between gap-0.5 rounded-[22px] border border-gold/30 bg-white/[0.97] backdrop-blur-xl px-1.5 pt-1.5 pb-1.5 shadow-[0_12px_44px_rgba(0,0,0,0.12),0_0_0_1px_rgba(255,255,255,0.55)_inset]"
-          role="tablist"
-          aria-label="Main navigation"
-        >
-        <NavIcon label="Host" icon={<PlusSquare size={20} strokeWidth={activeTab === 'host' ? 2.5 : 2} />} active={activeTab === 'host'} onClick={() => setActiveTab('host')} />
-        <NavIcon label="Discover" icon={<Compass size={20} strokeWidth={activeTab === 'discover' ? 2.5 : 2} />} active={activeTab === 'discover'} onClick={() => setActiveTab('discover')} />
-
-        <div className="relative -top-2.5 flex flex-col items-center gap-0.5 min-w-[52px] shrink-0">
-          <button
-            type="button"
-            onClick={goNow}
-            className={`w-[50px] h-[50px] rounded-full bg-gradient-to-br from-red-600 via-red-700 to-red-900 flex items-center justify-center text-white shadow-[0_8px_26px_rgba(185,28,28,0.38),0_0_0_1px_rgba(255,255,255,0.24)_inset] active:scale-[0.93] transition-transform duration-150 ${activeTab === 'home' ? 'ring-[3px] ring-gold/45 ring-offset-[3px] ring-offset-white' : ''}`}
-            aria-label="Now — home"
-          >
-            <Home size={23} strokeWidth={2.25} className="opacity-95 drop-shadow-sm" />
-          </button>
-          <span className="text-[6.5px] uppercase tracking-[0.18em] font-black text-red-700">Now</span>
-        </div>
-
-        <NavIcon label="Crews" icon={<CircleDashed size={20} strokeWidth={activeTab === 'circles' ? 2.5 : 2} />} active={activeTab === 'circles'} onClick={() => setActiveTab('circles')} />
-        <NavIcon label="Me" icon={<UserIcon size={20} strokeWidth={activeTab === 'profile' ? 2.5 : 2} />} active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} />
-        </div>
       </div>
     </div>
   );
@@ -376,7 +358,7 @@ function NavIcon({ icon, label, active, onClick }: any) {
     <button
       onClick={onClick}
       type="button"
-      className={`min-w-[44px] max-w-[21vw] flex-1 min-h-[48px] py-0.5 rounded-[16px] flex flex-col items-center justify-center gap-0.5 transition-all duration-200 active:scale-[0.96] ${
+      className={`min-w-[44px] max-w-[21vw] flex-1 min-h-[44px] py-0.5 rounded-[14px] flex flex-col items-center justify-center gap-0.5 transition-all duration-200 active:scale-[0.96] ${
         active
           ? 'text-red-700 bg-red-50 shadow-[inset_0_0_0_1.5px_rgba(185,28,28,0.18)]'
           : 'text-neutral-500 hover:text-neutral-800 active:bg-neutral-50'
