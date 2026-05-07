@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import type { Viewport } from 'next';
+import { AppOpenSplash } from '@/components/app/AppOpenSplash';
 import { AppConceptBoard } from '@/components/app/AppConceptBoard';
 import { neonAuth } from '@/lib/auth/server';
 import { getOrCreateUser } from '@/lib/db/users';
@@ -51,9 +52,11 @@ export default async function AppRootPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-[#f0ebe3]/80 via-transparent to-transparent" />
       </div>
       <div className="relative z-10 flex w-full min-h-0 flex-col max-lg:h-full max-lg:min-h-0 max-lg:flex-1 lg:flex-none lg:h-auto">
-        <Suspense fallback={<div className="flex flex-1 items-center justify-center text-neutral-400 text-sm">Loading…</div>}>
-          <AppConceptBoard initialUser={initialUser} />
-        </Suspense>
+        <AppOpenSplash>
+          <Suspense fallback={<div className="flex flex-1 items-center justify-center text-neutral-400 text-sm">Loading…</div>}>
+            <AppConceptBoard initialUser={initialUser} />
+          </Suspense>
+        </AppOpenSplash>
       </div>
     </main>
   );

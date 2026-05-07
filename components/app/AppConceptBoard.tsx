@@ -1636,6 +1636,9 @@ function HomeTab({
                 className="h-[52px] sm:h-[58px] w-auto max-w-[min(300px,88vw)] object-contain object-center select-none"
                 draggable={false}
               />
+              <p className="text-[11px] font-medium text-neutral-600 tracking-[0.03em] max-w-[300px] leading-snug text-center">
+                Connecting people together daily
+              </p>
               <p className="text-[9px] font-black uppercase tracking-[0.28em] text-red-700 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 text-center">
                 <span className="inline-flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.85)] animate-pulse shrink-0" />
@@ -1725,6 +1728,9 @@ function HomeTab({
               variants={staggerItem}
               className="max-w-2xl rounded-[24px] border border-white/15 bg-neutral-950/55 backdrop-blur-md px-5 py-5 shadow-[0_12px_40px_rgba(0,0,0,0.35)]"
             >
+              <p className="text-gold-light/95 text-[10px] font-semibold uppercase tracking-[0.28em] mb-3 drop-shadow-[0_1px_6px_rgba(0,0,0,0.6)]">
+                Connecting people together daily
+              </p>
               <h1 className="font-display text-5xl xl:text-6xl italic leading-[1.02] text-white drop-shadow-sm">
                 What&apos;s <span className="text-[color:var(--gold-accent,#c9a84c)] drop-shadow-[0_1px_12px_rgba(0,0,0,0.5)]">live</span> right now
               </h1>

@@ -17,7 +17,7 @@ const cormorant = Cormorant_Garamond({
 
 export const metadata = {
   title: 'Convivia24 | Come to the Table.',
-  description: 'The members platform for African business. Curated gatherings, venues, and connections across Lagos, Abuja, and London.',
+  description: 'Connecting people together daily — live city pulse, tables, and AI matches across Lagos, Abuja, and London.',
   applicationName: 'Convivia24',
   manifest: '/manifest.json',
   appleWebApp: {

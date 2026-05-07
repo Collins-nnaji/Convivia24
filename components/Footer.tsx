@@ -31,7 +31,7 @@ export default function Footer() {
             </div>
           </div>
           <p className="text-[10px] text-neutral-500 leading-relaxed pr-2">
-            Live city pulse, AI-matched crews, same-night plans — London, Lagos, Abuja.
+            Connecting people together daily — same-night tables across London, Lagos, Abuja.
           </p>
           <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-neutral-100 text-[10px] text-neutral-500">
             <span>&copy; 2026 Convivia24</span>
@@ -51,9 +51,9 @@ export default function Footer() {
                 className="h-6 w-auto object-contain"
               />
             </Link>
-            <p className="text-[9px] font-black uppercase tracking-[0.28em] text-red-700/70 mb-1.5">Live social matching</p>
+            <p className="text-[9px] font-black uppercase tracking-[0.28em] text-red-700/70 mb-1.5">Connecting people together daily</p>
             <p className="text-[11px] text-neutral-500 leading-relaxed">
-              Real-time city pulse, AI-matched crews, and same-night plans — starting in London, Lagos, and Abuja.
+              Live pulse, curated tables, and AI matches — rooted in London, Lagos, and Abuja.
             </p>
           </div>
 
