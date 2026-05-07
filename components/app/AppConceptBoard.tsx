@@ -303,17 +303,7 @@ export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
         >
           <NavIcon label="Host" icon={<PlusSquare size={20} strokeWidth={activeTab === 'host' ? 2.5 : 2} />} active={activeTab === 'host'} onClick={() => setActiveTab('host')} />
           <NavIcon label="Discover" icon={<Compass size={20} strokeWidth={activeTab === 'discover' ? 2.5 : 2} />} active={activeTab === 'discover'} onClick={() => setActiveTab('discover')} />
-          <div className="flex flex-col items-center gap-0.5 min-w-[52px] shrink-0">
-            <button
-              type="button"
-              onClick={goNow}
-              className={`w-[48px] h-[48px] rounded-full bg-gradient-to-br from-red-600 via-red-700 to-red-900 flex items-center justify-center text-white shadow-[0_6px_22px_rgba(185,28,28,0.35),0_0_0_1px_rgba(255,255,255,0.22)_inset] active:scale-[0.93] transition-transform duration-150 ${activeTab === 'home' ? 'ring-[3px] ring-gold/45 ring-offset-[2px] ring-offset-white' : ''}`}
-              aria-label="Now — home"
-            >
-              <Home size={22} strokeWidth={2.25} className="opacity-95 drop-shadow-sm" />
-            </button>
-            <span className="text-[6.5px] uppercase tracking-[0.18em] font-black text-red-700">Now</span>
-          </div>
+          <NavIcon label="Now" icon={<Home size={20} strokeWidth={activeTab === 'home' ? 2.5 : 2} />} active={activeTab === 'home'} onClick={goNow} />
           <NavIcon label="Crews" icon={<CircleDashed size={20} strokeWidth={activeTab === 'circles' ? 2.5 : 2} />} active={activeTab === 'circles'} onClick={() => setActiveTab('circles')} />
           <NavIcon label="Me" icon={<UserIcon size={20} strokeWidth={activeTab === 'profile' ? 2.5 : 2} />} active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} />
         </div>
@@ -627,12 +617,14 @@ function DiscoverTab({
         animate="show"
         variants={staggerContainer}
       >
-        <motion.p variants={fadeUp} className="text-[10px] font-black uppercase tracking-[0.3em] text-red-600 flex items-center gap-2">
-          <Ticket size={12} className="text-red-600 shrink-0" /> Events
+        <motion.p variants={fadeUp} className="text-[10px] font-black uppercase tracking-[0.3em] text-red-600 flex items-center gap-2 max-md:justify-center">
+          <Compass size={12} className="text-red-600 shrink-0" aria-hidden /> Discover
         </motion.p>
-        <motion.h1 variants={fadeUp} className="font-display text-3xl sm:text-5xl md:text-6xl italic leading-[1.02]">Tables forming now.</motion.h1>
-        <motion.p variants={fadeUp} className="text-neutral-600 text-sm md:text-lg max-w-xl [overflow-wrap:anywhere]">
-          Hangouts and open seats in the next 24 hours — the real-time pulse and AI match live on{' '}
+        <motion.h1 variants={fadeUp} className="font-display text-3xl sm:text-5xl md:text-6xl italic leading-[1.02] max-md:text-balance">
+          Tables forming <span className="text-red-700">now.</span>
+        </motion.h1>
+        <motion.p variants={fadeUp} className="text-neutral-600 text-sm md:text-lg max-w-xl [overflow-wrap:anywhere] max-md:text-center">
+          Hangouts and open seats in the next 24 hours. Tap a table to claim a seat — pulse and AI match live on{' '}
           <button type="button" onClick={() => onSwitchTab('home')} className="text-red-700 font-semibold hover:underline underline-offset-4 decoration-red-600/50">
             Now
           </button>.
@@ -651,7 +643,7 @@ function DiscoverTab({
 
       <section className="space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-          <div>
+          <div className="hidden md:block">
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-600 mb-1.5">Live tables</p>
             <h2 className="font-display text-2xl md:text-4xl italic">Join a gathering.</h2>
             <p className="text-neutral-500 text-sm md:text-base mt-1">Curated and open-list tables you can hop into tonight.</p>
@@ -719,7 +711,7 @@ function DiscoverTab({
                 >
                   <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-700 via-red-600 to-neutral-900 opacity-90" />
                   {h.cover_image ? (
-                    <div className="w-full h-28 md:h-36 rounded-2xl overflow-hidden mb-3 md:mb-4 -mt-0.5 md:-mt-1">
+                    <div className="hidden lg:block w-full h-36 rounded-2xl overflow-hidden mb-4 -mt-1">
                       <img src={h.cover_image} alt="" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700" />
                     </div>
                   ) : null}
@@ -746,10 +738,10 @@ function DiscoverTab({
                     </div>
                   </div>
 
-                  <div className="border-t border-neutral-100 pt-4 md:pt-5 mt-auto space-y-3">
+                    <div className="border-t border-neutral-100 pt-4 md:pt-5 mt-auto space-y-3">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="flex -space-x-2">
+                        <div className="hidden lg:flex -space-x-2">
                           {(h.attendees || []).slice(0, 4).map((a: any) =>
                             a.avatar_url ? (
                               <img key={a.user_id} src={a.avatar_url} className="w-8 h-8 rounded-full border-2 border-white object-cover" alt="" />
@@ -760,7 +752,7 @@ function DiscoverTab({
                             ),
                           )}
                         </div>
-                        <span className="text-xs text-neutral-500 font-bold tabular-nums">{h.current_guests || 0} / {h.max_guests || 0}</span>
+                        <span className="text-xs text-neutral-500 font-bold tabular-nums lg:pl-0">{h.current_guests || 0} / {h.max_guests || 0} seated</span>
                       </div>
                       <button
                         type="button"
@@ -966,6 +958,11 @@ function FilterChip({ label, active, onClick, color = 'cream' }: any) {
 /* ══════════════════════════════════════════════════════════════════════
    HOST TAB — Real hangout creation
    ══════════════════════════════════════════════════════════════════════ */
+function tableSizeFillPercent(size: number, min: number, max: number) {
+  if (max <= min) return '0%';
+  return `${((size - min) / (max - min)) * 100}%`;
+}
+
 function HostTab({
   onPosted,
   cities,
@@ -975,6 +972,8 @@ function HostTab({
   cities: string[];
   addCity: (name: string) => void;
 }) {
+  const tableMin = 2;
+  const tableMax = 24;
   const [size, setSize] = useState(6);
   const [type, setType] = useState('curated');
   const [title, setTitle] = useState('');
@@ -1111,8 +1110,11 @@ function HostTab({
   return (
     <div className="space-y-5 md:space-y-6 max-w-3xl mx-auto h-full flex flex-col">
       <div className="mb-5 md:mb-12 text-left md:text-center">
-        <h1 className="font-display text-4xl md:text-6xl italic mb-2">Host a table.</h1>
-        <p className="text-neutral-500 text-base md:text-lg mb-4">Set the table. Define the energy. The right people will come.</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.28em] text-red-600 mb-2 flex items-center gap-2 md:justify-center">
+          <PlusSquare size={12} className="shrink-0" aria-hidden /> Host
+        </p>
+        <h1 className="font-display text-4xl md:text-6xl italic mb-2">Set the <span className="text-red-700">table.</span></h1>
+        <p className="text-neutral-500 text-base md:text-lg mb-4 max-w-xl md:mx-auto">Pick a vibe, a place, a time. We&apos;ll seat the rest.</p>
         <div className="hidden md:flex justify-center">
           <FlowSteps steps={[
             { n: '1', label: 'Describe',   sub: 'occasion + vibe' },
@@ -1134,22 +1136,22 @@ function HostTab({
         </div>
       </div>
 
-      <div className="bg-neutral-50 backdrop-blur-lg border border-neutral-200 rounded-[28px] md:rounded-[40px] p-5 md:p-12 shadow-2xl flex-1">
+      <div className="bg-white backdrop-blur-lg border border-neutral-200/90 rounded-[28px] md:rounded-[40px] p-5 md:p-12 shadow-[0_12px_40px_rgba(0,0,0,0.05)] flex-1">
         <div className="space-y-7 md:space-y-10">
-          <Field label="The Occasion">
-            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Founders After Dark"
-              className="w-full bg-transparent border-b border-neutral-200 pb-3 text-2xl md:text-3xl focus:outline-none focus:border-red-700 placeholder:text-neutral-300 transition-colors font-display italic" />
+          <Field label="Title">
+            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Whisky & ideas"
+              className="w-full bg-transparent border-b border-neutral-200 pb-3 text-2xl md:text-3xl focus:outline-none focus:border-red-700 placeholder:text-neutral-400 transition-colors font-display italic text-neutral-900" />
           </Field>
 
-          <Field label="The Energy">
-            <input type="text" value={vibe} onChange={(e) => setVibe(e.target.value)} placeholder="e.g. Whisky, ideas, and honest conversation."
-              className="w-full bg-transparent border-b border-neutral-200 pb-3 text-base focus:outline-none focus:border-red-700 placeholder:text-neutral-300 transition-colors" />
+          <Field label="The vibe">
+            <input type="text" value={vibe} onChange={(e) => setVibe(e.target.value)} placeholder="What does this night feel like?"
+              className="w-full bg-transparent border-b border-neutral-200 pb-3 text-[15px] md:text-base text-neutral-800 focus:outline-none focus:border-red-700 placeholder:text-neutral-400 transition-colors font-sans" />
           </Field>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Field label="Where">
-              <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g. The Table, Victoria Island"
-                className="w-full bg-transparent border-b border-neutral-200 pb-3 text-base focus:outline-none focus:border-red-700 placeholder:text-neutral-300 transition-colors" />
+            <Field label="Place">
+              <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="The Counter, Victoria Island"
+                className="w-full bg-transparent border-b border-neutral-200 pb-3 text-[15px] md:text-base text-neutral-800 focus:outline-none focus:border-red-700 placeholder:text-neutral-400 transition-colors font-sans" />
             </Field>
             <Field label="City">
               <input
@@ -1179,7 +1181,8 @@ function HostTab({
             </Field>
           </div>
 
-          {/* Cover Image */}
+          {/* Cover image — desktop only keeps the Now flow minimal on phone */}
+          <div className="hidden lg:block">
           <Field label="Cover Image" hint="(optional)" Icon={Camera}>
             {coverImage ? (
               <div className="relative rounded-2xl overflow-hidden h-44 border border-neutral-200">
@@ -1199,31 +1202,46 @@ function HostTab({
               </label>
             )}
           </Field>
+          </div>
 
           {/* Format */}
           <Field label="Format">
-            <div className="grid grid-cols-2 gap-4 md:gap-6">
-              <button onClick={() => setType('curated')} className={`flex flex-col md:flex-row items-center justify-center gap-3 py-6 px-4 rounded-2xl border transition-all ${type === 'curated' ? 'bg-red-50 border-red-700 text-red-700 shadow-[0_0_20px_rgba(201,168,76,0.15)]' : 'border-neutral-200 text-neutral-500 hover:border-neutral-300 hover:bg-neutral-100'}`}>
-                <Zap size={24} />
-                <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em]">Curated</span>
+            <div className="grid grid-cols-2 gap-3 md:gap-6">
+              <button type="button" onClick={() => setType('curated')} className={`text-left flex flex-col gap-1.5 py-4 px-3.5 rounded-[18px] border transition-all ${type === 'curated' ? 'bg-white border-red-600 shadow-[0_0_0_1px_rgba(185,28,28,0.25)]' : 'border-neutral-200/90 bg-white/50 text-neutral-600 hover:border-neutral-300'}`}>
+                <span className="flex items-center gap-2 text-red-700">
+                  <Zap size={20} strokeWidth={1.75} className="shrink-0" />
+                  <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Curated</span>
+                </span>
+                <span className="text-[11px] text-neutral-500 leading-snug pl-7">You hand-pick guests.</span>
               </button>
-              <button onClick={() => setType('open')} className={`flex flex-col md:flex-row items-center justify-center gap-3 py-6 px-4 rounded-2xl border transition-all ${type === 'open' ? 'bg-[#1a3a5f]/20 border-[#4da6ff]/50 text-[#4da6ff] shadow-[0_0_20px_rgba(77,166,255,0.1)]' : 'border-neutral-200 text-neutral-500 hover:border-neutral-300 hover:bg-neutral-100'}`}>
-                <Users size={24} />
-                <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em]">Open</span>
+              <button type="button" onClick={() => setType('open')} className={`text-left flex flex-col gap-1.5 py-4 px-3.5 rounded-[18px] border transition-all ${type === 'open' ? 'bg-sky-50/90 border-sky-600 shadow-[0_0_0_1px_rgba(2,132,199,0.2)]' : 'border-neutral-200/90 bg-white/50 text-neutral-600 hover:border-neutral-300'}`}>
+                <span className={`flex items-center gap-2 ${type === 'open' ? 'text-sky-900' : 'text-neutral-800'}`}>
+                  <Users size={20} strokeWidth={1.75} className="shrink-0" />
+                  <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Open list</span>
+                </span>
+                <span className="text-[11px] text-neutral-500 leading-snug pl-7">First come, open seats.</span>
               </button>
             </div>
           </Field>
 
           {/* Size */}
           <div>
-            <label className="text-[10px] md:text-xs font-black text-neutral-500 uppercase tracking-[0.2em] mb-6 flex justify-between items-end">
-              <span>Table Size</span>
-              <span className="text-xl md:text-2xl text-red-700 font-display italic">{size} People</span>
+            <label className="text-[10px] md:text-[11px] font-semibold uppercase tracking-[0.28em] text-gold mb-4 flex justify-between items-end gap-3">
+              <span>Table size · {size} seats</span>
+              <span className="text-lg md:text-xl text-red-700 font-display italic font-normal tracking-normal normal-case">{size} people</span>
             </label>
-            <input type="range" min="6" max="24" value={size} onChange={(e) => setSize(Number(e.target.value))} className="w-full h-1.5 bg-neutral-100 rounded-lg appearance-none cursor-pointer accent-red-700" />
-            <div className="flex justify-between text-[9px] text-neutral-400 mt-3 font-bold uppercase tracking-widest">
-              <span>Intimate (6)</span>
-              <span>Grand (24)</span>
+            <input
+              type="range"
+              min={tableMin}
+              max={tableMax}
+              value={size}
+              onChange={(e) => setSize(Number(e.target.value))}
+              className="convivia-range w-full cursor-pointer"
+              style={{ ['--fill' as string]: tableSizeFillPercent(size, tableMin, tableMax) }}
+            />
+            <div className="flex justify-between text-[10px] text-neutral-500 mt-3 font-medium tabular-nums">
+              <span>{tableMin}</span>
+              <span>{tableMax}</span>
             </div>
           </div>
         </div>
@@ -1242,8 +1260,8 @@ function HostTab({
 function Field({ label, hint, Icon, children }: { label: string; hint?: string; Icon?: any; children: React.ReactNode }) {
   return (
     <div>
-      <label className="text-[10px] md:text-xs font-black text-neutral-500 uppercase tracking-[0.2em] block mb-3">
-        {Icon && <Icon size={12} className="inline mr-1.5 -mt-0.5" />}{label}{hint && <span className="text-neutral-400 ml-1.5 normal-case font-bold">{hint}</span>}
+      <label className="text-[10px] md:text-[11px] font-semibold uppercase tracking-[0.26em] text-gold block mb-3">
+        {Icon && <Icon size={12} className="inline mr-1.5 -mt-0.5 text-gold/90 opacity-90" strokeWidth={2} />}{label}{hint && <span className="text-gold/55 ml-1.5 normal-case font-medium tracking-normal">{hint}</span>}
       </label>
       {children}
     </div>
@@ -1614,9 +1632,16 @@ function HomeTab({
                 className="h-[52px] sm:h-[58px] w-auto max-w-[min(300px,88vw)] object-contain object-center select-none"
                 draggable={false}
               />
-              <p className="text-[9px] font-black uppercase tracking-[0.28em] text-red-700 flex items-center justify-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.85)] animate-pulse shrink-0" />
-                Live · <LiveLocalTime />
+              <p className="text-[9px] font-black uppercase tracking-[0.28em] text-red-700 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 text-center">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.85)] animate-pulse shrink-0" />
+                  <Zap size={11} className="text-amber-600 shrink-0" aria-hidden />
+                  Live now · {activeCity.toUpperCase()}
+                </span>
+                <span className="text-neutral-500 font-bold normal-case tracking-normal">·</span>
+                <span className="tabular-nums text-neutral-600">
+                  <LiveLocalTime className="tabular-nums" />
+                </span>
               </p>
               <h1 className="font-display text-[1.55rem] sm:text-[1.65rem] leading-[1.05] italic text-neutral-900">
                 What&apos;s <span className="text-[color:var(--gold-accent,#c9a84c)]">live</span> right now
@@ -1664,14 +1689,7 @@ function HomeTab({
                 </button>
               </div>
             </motion.div>
-            <motion.div variants={staggerItem} className="grid grid-cols-2 gap-2">
-              <button type="button" onClick={() => onSwitchTab('discover')} className="min-h-10 rounded-2xl border border-neutral-200 bg-white text-neutral-800 text-[10px] uppercase tracking-widest font-black flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-sm">
-                <Compass size={14}/> Discover
-              </button>
-              <button type="button" onClick={() => onSwitchTab('host')} className="min-h-10 rounded-2xl border border-neutral-200 bg-white text-neutral-800 text-[10px] uppercase tracking-widest font-black flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-sm">
-                <PlusSquare size={14}/> Host
-              </button>
-            </motion.div>
+            {/* Tab bar already exposes Discover / Host — avoid duplicating CTAs on mobile */}
           </motion.div>
         </div>
 
@@ -1744,8 +1762,17 @@ function HomeTab({
       >
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-5">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-600 mb-1.5 flex items-center gap-2"><Zap size={10}/> Live City Pulse</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-600 mb-1.5 flex items-center gap-2">
+              <Zap size={10} aria-hidden /> <span className="max-md:hidden">Live City Pulse</span>
+              <span className="md:hidden tracking-[0.35em] text-[color:var(--gold-accent,#c9a84c)]">City pulse</span>
+            </p>
             <h2 className="font-display text-2xl md:text-3xl italic">Where the energy is now.</h2>
+            <p className="mt-2 text-sm text-neutral-600 leading-snug max-md:hidden">
+              Four neighbourhoods rising tonight — tap a card to match your vibe.
+            </p>
+            <p className="mt-1.5 text-[13px] text-neutral-600 leading-snug md:hidden">
+              Tap a neighbourhood to match — or use AI Match above.
+            </p>
           </div>
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-end flex-wrap">
             <CityChipsBar
@@ -1784,7 +1811,7 @@ function HomeTab({
             </p>
             {/* Mobile: one column + real scroll. Desktop: 2 columns, no nested scroll trap. */}
             <div
-              className="max-h-[min(72vh,560px)] overflow-y-auto overflow-x-hidden overscroll-contain pr-1 [-webkit-overflow-scrolling:touch] md:max-h-none md:overflow-visible md:pr-0"
+              className="max-lg:max-h-none max-lg:overflow-visible lg:max-h-[min(72vh,560px)] lg:overflow-y-auto overflow-x-hidden overscroll-contain pr-1 [-webkit-overflow-scrolling:touch] lg:pr-0"
               style={{ scrollbarGutter: 'stable' }}
             >
               <motion.div
@@ -1872,9 +1899,11 @@ function HomeTab({
         </div>
       </motion.section>
 
-      <HomeExploreSnippets onSwitchTab={onSwitchTab} openTablesCount={openTablesCount} />
+      <div className="hidden lg:block">
+        <HomeExploreSnippets onSwitchTab={onSwitchTab} openTablesCount={openTablesCount} />
+      </div>
 
-      {/* Partner spots */}
+      {/* Partner spots — full-bleed imagery on desktop; typography-first cards on mobile */}
       <motion.section
         className="space-y-5 pt-2 border-t border-neutral-200"
         variants={staggerContainer}
@@ -1937,7 +1966,7 @@ function HomeTab({
                 whileHover={{ y: -3 }}
                 className="bg-white rounded-[28px] overflow-hidden border border-neutral-200/90 shadow-[0_10px_40px_rgba(0,0,0,0.07)] ring-1 ring-black/[0.03] group hover:border-red-300 hover:shadow-[0_16px_48px_rgba(185,28,28,0.1)] transition-shadow flex flex-col"
               >
-                <div className="relative h-44 md:h-48 overflow-hidden">
+                <div className="relative h-44 md:h-48 overflow-hidden hidden lg:block">
                   {venue.image_url
                     ? <img src={venue.image_url} className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700" alt="" />
                     : <div className="w-full h-full bg-gradient-to-br from-red-900/30 to-neutral-900 flex items-center justify-center"><Building2 size={44} className="text-red-600"/></div>
@@ -1958,6 +1987,24 @@ function HomeTab({
                       <p className="text-[9px] font-black uppercase tracking-[0.2em] text-red-200 mt-0.5">Partner · {venue.partner_name}</p>
                     )}
                   </div>
+                </div>
+                <div className="lg:hidden flex items-start gap-3 px-5 pt-5 pb-1 border-b border-neutral-100">
+                  <div className="shrink-0 w-11 h-11 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center text-red-700">
+                    <Building2 size={22} strokeWidth={1.75} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[color:var(--gold-accent,#c9a84c)]">{venue.category}</span>
+                    <h3 className="font-display text-lg italic text-neutral-900 leading-tight mt-0.5">{venue.name}</h3>
+                    {venue.partner_name && (
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-neutral-400 mt-1">Partner · {venue.partner_name}</p>
+                    )}
+                  </div>
+                  {venue.rating && (
+                    <div className="shrink-0 flex items-center gap-1 bg-neutral-100 px-2 py-1 rounded-full border border-neutral-200">
+                      <Star size={10} fill="currentColor" className="text-red-600" />
+                      <span className="text-[10px] font-black text-neutral-800">{Number(venue.rating).toFixed(1)}</span>
+                    </div>
+                  )}
                 </div>
                 <div className="p-5 flex flex-col flex-1 bg-white">
                   <p className="text-neutral-600 text-sm leading-relaxed mb-4 line-clamp-2">{venue.tagline}</p>
@@ -2066,11 +2113,15 @@ function CirclesTab() {
   return (
     <div className="space-y-7 md:space-y-10">
       <div className="mb-5 md:mb-10">
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-600 mb-3">Inner network</p>
-        <h1 className="font-display text-4xl md:text-6xl italic mb-2">Crews.</h1>
-        <p className="text-neutral-600 text-sm md:text-lg max-w-2xl mb-4">
-          Private groups for people you actually want to see again. Meet someone through Match or a table, save them to a Crew, then host invite-only plans.
-          <span className="hidden md:inline"> It is group chat × calendar × dinner club — no public list, no random requests.</span>
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-600 mb-3 flex items-center gap-2">
+          <CircleDashed size={12} className="shrink-0" aria-hidden /> Crews
+        </p>
+        <h1 className="font-display text-4xl md:text-6xl italic mb-2">
+          Your <span className="text-red-700">inner</span> circles.
+        </h1>
+        <p className="text-neutral-600 text-sm md:text-lg max-w-2xl mb-4 leading-relaxed">
+          Recurring people. Always-warm tables.
+          <span className="hidden md:inline"> Private groups for people you actually want to see again — no public list, no random requests.</span>
         </p>
         <div className="hidden md:block">
           <FlowSteps steps={[
@@ -2082,7 +2133,8 @@ function CirclesTab() {
       </div>
 
       {/* Examples band */}
-      <div className="flex md:grid md:grid-cols-3 gap-3 overflow-x-auto md:overflow-visible -mx-4 px-4 md:mx-0 md:px-0 pb-1 scrollbar-hide snap-x">
+      {/* Example crews — desktop only; mobile stays list-first */}
+      <div className="hidden md:grid md:grid-cols-3 gap-3 md:overflow-visible mx-0 px-0 pb-1">
         {[
           { name: 'Founders Lagos',    note: 'private dinners + intros',     icon: Star },
           { name: 'VI After 9',        note: 'late-night lounge crew',        icon: Wine },
@@ -2099,28 +2151,37 @@ function CirclesTab() {
       </div>
 
       <div className="space-y-6">
-        <h3 className="text-[10px] md:text-xs font-black text-red-700 uppercase tracking-[0.2em] flex items-center gap-2 border-b border-neutral-100 pb-4">
-          Your Crews <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded text-[10px]">{circles.length}</span>
+        <h3 className="text-[10px] md:text-[11px] font-semibold uppercase tracking-[0.26em] text-gold flex items-center gap-2 border-b border-neutral-200/90 pb-4">
+          Your crews <span className="rounded-full bg-red-50 text-red-700 px-2 py-0.5 text-[10px] font-bold tabular-nums tracking-normal normal-case">{circles.length}</span>
         </h3>
 
         {loading ? (
           <div className="flex items-center justify-center py-10"><Loader2 size={24} className="text-red-700 animate-spin" /></div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {circles.map((c: any) => (
-              <div key={c.id} className="bg-neutral-50 backdrop-blur-md border border-neutral-200 rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-4 shadow-xl hover:border-red-600 hover:-translate-y-1 transition-all group">
-                <div className="w-16 h-16 rounded-full border border-red-400 flex items-center justify-center bg-red-700/5 text-red-700 relative shadow-[0_0_20px_rgba(201,168,76,0.1)] group-hover:scale-105 transition-transform">
-                  <Users size={24} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {circles.map((c: any, idx: number) => {
+              const RowIcon = [Wine, Star, Coffee, Sparkles][idx % 4];
+              return (
+              <div
+                key={c.id}
+                className="bg-white border border-neutral-200/90 rounded-[22px] px-4 py-4 flex items-center gap-3.5 shadow-[0_6px_24px_rgba(0,0,0,0.05)] hover:border-red-200 hover:shadow-[0_10px_32px_rgba(185,28,28,0.08)] transition-all group text-left"
+              >
+                <div className="shrink-0 w-12 h-12 rounded-full bg-rose-50 border border-red-100 flex items-center justify-center text-red-700">
+                  <RowIcon size={20} strokeWidth={1.75} />
                 </div>
-                <div>
-                  <h4 className="font-display text-xl leading-tight mb-1">{c.name}</h4>
-                  {c.description && <p className="text-[10px] text-neutral-500 mb-2 line-clamp-2">{c.description}</p>}
-                  <span className="text-[9px] text-neutral-500 uppercase tracking-widest font-bold border-t border-neutral-200 pt-2 block w-max mx-auto">
+                <div className="min-w-0 flex-1">
+                  <h4 className="font-display text-lg italic text-neutral-900 leading-tight">{c.name}</h4>
+                  {c.description && (
+                    <p className="text-[12px] text-neutral-500 mt-0.5 line-clamp-2 leading-snug">{c.description}</p>
+                  )}
+                  <p className="text-[10px] text-neutral-500 mt-1.5 font-medium">
                     {c.member_count || 0} members
-                  </span>
+                  </p>
                 </div>
+                <ChevronRight size={18} className="shrink-0 text-neutral-300 group-hover:text-red-600 transition-colors" strokeWidth={2} />
               </div>
-            ))}
+              );
+            })}
 
             {showCreate ? (
               <div className="border border-red-400 rounded-3xl p-5 flex flex-col gap-3 bg-neutral-50">
@@ -2619,7 +2680,7 @@ function ProfileTab({ initialUser }: { initialUser?: any }) {
         </button>
 
         <div className="relative rounded-[40px] overflow-hidden border border-red-400 bg-neutral-50 backdrop-blur-3xl shadow-[0_20px_100px_rgba(201,168,76,0.1)]">
-          <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 z-0 hidden lg:block">
             <img src="/conv1.png" className="w-full h-[60%] object-cover opacity-30 mix-blend-lighten" alt="" />
             <div className="absolute inset-0 bg-gradient-to-t from-neutral-100 via-neutral-100/90 to-transparent" />
           </div>
@@ -2685,28 +2746,33 @@ function ProfileTab({ initialUser }: { initialUser?: any }) {
 
   return (
     <div className="max-w-4xl mx-auto pt-6 pb-20">
-      <div className="bg-neutral-50 backdrop-blur-xl border border-neutral-200 rounded-[40px] p-8 md:p-12 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-red-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+      <h1 className="font-display text-4xl md:text-5xl italic text-neutral-900 mb-1">
+        Your <span className="text-red-700">24.</span>
+      </h1>
+      <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-red-600 mb-6 flex items-center gap-2">
+        <UserIcon size={12} className="shrink-0" strokeWidth={2} aria-hidden /> Me
+      </p>
+      <div className="bg-white backdrop-blur-xl border border-neutral-200/90 rounded-[28px] md:rounded-[40px] p-6 md:p-10 shadow-[0_12px_48px_rgba(0,0,0,0.06)] relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-[420px] h-[420px] bg-red-50/80 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
 
-        <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12 relative z-10">
-          {/* Avatar */}
-          <div className="flex flex-col items-center">
-            <div className="relative mb-4 group">
-              <div className="absolute inset-0 bg-red-100 rounded-full blur-2xl group-hover:bg-red-700/30 transition-colors" />
+        <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-10 relative z-10">
+          {/* Avatar — full photo, same sizes as before (reference mocks: large circle, clear ring) */}
+          <div className="flex flex-col items-center shrink-0">
+            <div className="relative group">
               <label className="cursor-pointer block">
                 {user?.avatar_url && !avatarLoadFailed ? (
                   <img
                     src={user.avatar_url}
                     alt=""
                     referrerPolicy="no-referrer"
-                    className="w-32 h-32 md:w-36 md:h-36 rounded-full border-[3px] border-red-700 relative z-10 object-cover shadow-2xl"
+                    className="w-32 h-32 md:w-36 md:h-36 rounded-full border-[3px] border-red-700 object-cover shadow-[0_8px_32px_rgba(0,0,0,0.12)] ring-4 ring-white"
                     onError={() => {
                       setAvatarLoadFailed(true);
                       setAvatarError('Photo URL did not load. Use a public Azure blob (container access: blob) or re-upload from here.');
                     }}
                   />
                 ) : (
-                  <div className="w-32 h-32 md:w-36 md:h-36 rounded-full border-[3px] border-dashed border-red-600 bg-neutral-100 relative z-10 flex items-center justify-center">
+                  <div className="w-32 h-32 md:w-36 md:h-36 rounded-full border-[3px] border-dashed border-red-600 bg-neutral-50 flex items-center justify-center ring-4 ring-white shadow-inner">
                     <Camera size={26} className="text-red-600" />
                   </div>
                 )}
@@ -2718,19 +2784,16 @@ function ProfileTab({ initialUser }: { initialUser?: any }) {
                 )}
               </label>
               {user?.verified && (
-                <div className="absolute -bottom-2 -right-2 bg-red-700 text-white rounded-full p-1.5 z-20 shadow-lg border-2 border-white">
+                <div className="absolute bottom-1 right-1 bg-red-700 text-white rounded-full p-1.5 z-20 shadow-md border-2 border-white">
                   <ShieldCheck size={14} />
                 </div>
               )}
-              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 z-20 bg-red-700 text-white px-5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mx-auto w-max flex items-center gap-1.5 shadow-lg border border-red-400 whitespace-nowrap">
-                <Star size={12} fill="currentColor" /> {user?.rating || '—'} Rating
-              </div>
             </div>
-            {avatarError && <p className="text-red-400 text-[11px] text-center mt-3 max-w-[140px]">{avatarError}</p>}
+            {avatarError && <p className="text-red-500 text-[11px] text-center mt-3 max-w-[200px]">{avatarError}</p>}
           </div>
 
           {/* Info */}
-          <div className="flex-1 text-center md:text-left w-full">
+          <div className="flex-1 text-center md:text-left w-full min-w-0">
             {profileNotice && (
               <div className="bg-red-50 border border-red-200 rounded-2xl px-3 py-2 text-[12px] text-red-5005 mb-6">
                 {profileNotice}
@@ -2754,10 +2817,16 @@ function ProfileTab({ initialUser }: { initialUser?: any }) {
               </div>
             ) : (
               <>
-                <div className="flex items-center gap-3 mb-3 justify-center md:justify-start">
-                  <h2 className="font-display text-4xl md:text-5xl italic">{user?.name || 'Convivia Member'}</h2>
-                  {user?.verified && <ShieldCheck size={18} className="text-red-700" />}
-                  <button onClick={() => setEditing(true)} className="text-neutral-400 hover:text-red-700 transition-colors"><Edit3 size={16} /></button>
+                <div className="flex flex-wrap items-center gap-2 justify-center md:justify-start mb-2">
+                  <h2 className="font-display text-4xl md:text-5xl italic text-neutral-900">{user?.name || 'Convivia Member'}</h2>
+                  <button type="button" onClick={() => setEditing(true)} className="text-neutral-400 hover:text-red-700 transition-colors p-1" aria-label="Edit profile"><Edit3 size={17} /></button>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 justify-center md:justify-start mb-3">
+                  {user?.rating !== undefined && user?.rating !== null && String(user.rating).trim() !== '' && (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-red-800">
+                      <Star size={11} className="text-red-700" fill="currentColor" /> Rating {String(user.rating)}
+                    </span>
+                  )}
                 </div>
                 <p className="text-neutral-600 text-base max-w-md mx-auto md:mx-0 leading-relaxed mb-2">{user?.bio || 'No bio yet — what brings you to the table?'}</p>
                 {user?.location && <p className="text-neutral-400 text-sm mb-8 flex items-center gap-1 justify-center md:justify-start"><MapPin size={12} /> {user.location}</p>}
@@ -2872,8 +2941,8 @@ function ProfileTab({ initialUser }: { initialUser?: any }) {
 function Stat({ val, label }: { val: number; label: string }) {
   return (
     <div className="bg-neutral-50 border border-neutral-100 rounded-3xl p-6 flex flex-col items-center justify-center relative overflow-hidden hover:border-red-400 transition-colors">
-      <span className="text-3xl md:text-4xl font-display text-red-700 italic mb-2">{val}</span>
-      <span className="text-[9px] uppercase tracking-[0.2em] text-neutral-500 font-black">{label}</span>
+      <span className="text-3xl md:text-4xl font-display text-red-700 italic mb-2 tabular-nums">{val}</span>
+      <span className="text-[10px] uppercase tracking-[0.22em] text-neutral-500 font-semibold">{label}</span>
     </div>
   );
 }

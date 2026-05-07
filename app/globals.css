@@ -66,6 +66,68 @@ body {
   to { transform: rotate(360deg); }
 }
 
+/* Host: table size slider — grey track, red progress, red thumb (reference UI) */
+input[type='range'].convivia-range {
+  --fill: 50%;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 28px;
+  background: transparent;
+  cursor: pointer;
+}
+.convivia-range:focus {
+  outline: none;
+}
+.convivia-range:focus-visible {
+  outline: 2px solid rgba(185, 28, 28, 0.45);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+.convivia-range::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    to right,
+    #b91c1c 0%,
+    #b91c1c var(--fill),
+    #e7e5e0 var(--fill),
+    #e7e5e0 100%
+  );
+}
+.convivia-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: -8px;
+  border-radius: 9999px;
+  background: #b91c1c;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 10px rgba(185, 28, 28, 0.35);
+  cursor: pointer;
+}
+.convivia-range::-moz-range-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: #e7e5e0;
+  border: none;
+}
+.convivia-range::-moz-range-progress {
+  height: 6px;
+  border-radius: 9999px;
+  background: #b91c1c;
+}
+.convivia-range::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  background: #b91c1c;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 10px rgba(185, 28, 28, 0.35);
+  cursor: pointer;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

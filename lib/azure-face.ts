@@ -39,6 +39,22 @@ async function azureErrorMessage(res: Response) {
   }
 }
 
+/** User-facing hint when Azure blocks Face (Verify needs approved Recognition access in many tenants). */
+export function humanizeFaceHttpError(status: number, rawMessage: string, operation: 'detect' | 'verify'): string {
+  const logged = rawMessage?.trim() || '';
+  if (status === 401) {
+    return 'Face API rejected your key (401). In Azure Portal → your Cognitive Services resource → Keys and Endpoint: use a key that matches that exact Endpoint URL (same resource).';
+  }
+  if (status === 403) {
+    return `Face API access denied (403). Detection and Verify require Microsoft-approved Face Recognition access for your subscription—not just creating a resource. Open Azure Portal → your Face / Cognitive Services resource → confirm it’s active; if Verify is still blocked, submit Microsoft’s intake form: https://aka.ms/facerecognition (choose identity verification / 1:1 matching).`;
+  }
+  if (status === 404) {
+    return `Face API endpoint not found (404). Set AZURE_FACE_ENDPOINT to the full base URL from Keys and Endpoint only—e.g. https://YOURNAME.cognitiveservices.azure.com with no path after .com`;
+  }
+  const short = logged.length > 180 ? `${logged.slice(0, 177)}…` : logged;
+  return `Face ${operation} failed (${status}). ${short || 'See Azure Portal Face resource diagnostics.'}`;
+}
+
 /** Pick the most prominent face (largest bounding box) — helps ID cards with multiple faces or glare. */
 function pickPrimaryFace(faces: any[]): any | null {
   if (!faces?.length) return null;
@@ -82,12 +98,9 @@ export async function detectFaceInImage(buffer: Buffer, label: string): Promise<
 
   if (!res.ok) {
     const err = await azureErrorMessage(res);
-    console.error(`Face detect (${label}) HTTP ${res.status}:`, err);
-    if (res.status === 401 || res.status === 403) {
-      return {
-        error:
-          'Azure Face API rejected the request (auth or access). Check AZURE_FACE_KEY and AZURE_FACE_ENDPOINT, and that Verify is enabled for your Face resource.',
-      };
+    console.error('[azure-face] detect HTTP', res.status, err);
+    if (res.status === 401 || res.status === 403 || res.status === 404) {
+      return { error: humanizeFaceHttpError(res.status, err, 'detect') };
     }
     return { error: `Could not analyze the ${label}: ${err}. Try a clearer, well-lit image.` };
   }
@@ -132,7 +145,15 @@ export async function verifyFacePair(faceId1: string, faceId2: string): Promise<
 
   if (!verifyRes.ok) {
     const err = await azureErrorMessage(verifyRes);
-    return { ok: false, error: `Verification service error (${verifyRes.status}): ${err}`, status: verifyRes.status };
+    console.error('[azure-face] verify HTTP', verifyRes.status, err);
+    if (verifyRes.status === 401 || verifyRes.status === 403 || verifyRes.status === 404) {
+      return { ok: false, error: humanizeFaceHttpError(verifyRes.status, err, 'verify'), status: verifyRes.status };
+    }
+    return {
+      ok: false,
+      error: `Verification service error (${verifyRes.status}): ${err}`,
+      status: verifyRes.status,
+    };
   }
 
   const result = await verifyRes.json();
