@@ -296,22 +296,22 @@ export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
 
       {/* STRIP + LOGO (phone & tablet) — fixed like a native app title bar */}
       <header
-        className="lg:hidden fixed top-0 left-1/2 -translate-x-1/2 z-[60] w-full max-w-[min(100%,428px)] flex items-center px-3 sm:px-4 pt-[max(0.5rem,env(safe-area-inset-top))] pb-2.5 bg-white/[0.94] backdrop-blur-xl border-b border-gold/20 shadow-[0_4px_24px_rgba(0,0,0,0.06)]"
+        className="lg:hidden fixed top-0 left-1/2 -translate-x-1/2 z-[60] w-full max-w-[min(100%,428px)] flex items-center justify-center px-3 sm:px-4 pt-[max(0.35rem,env(safe-area-inset-top))] pb-2 bg-white/[0.96] backdrop-blur-xl border-b border-gold/20 shadow-[0_3px_18px_rgba(0,0,0,0.05)]"
       >
         <button
           type="button"
           onClick={goNow}
-          className="flex items-center min-h-11 min-w-11 rounded-xl active:bg-neutral-100 -ml-1 pl-1 pr-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-inset"
+          className="flex items-center justify-center min-h-10 min-w-[44px] rounded-xl active:bg-neutral-100 px-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-inset"
           aria-label="Go to Now"
         >
-          <img src="/convivia24.png" alt="" className="h-7 w-auto max-w-[140px] object-contain object-left" />
+          <img src="/convivia24.png" alt="" className="h-6 w-auto max-w-[120px] object-contain object-center opacity-90" />
         </button>
       </header>
 
       {/* MAIN CONTENT */}
       <div
         ref={mainScrollRef}
-        className="w-full overflow-x-hidden px-3 sm:px-6 lg:px-12 max-lg:flex-1 max-lg:min-h-0 max-lg:overflow-y-auto max-lg:overscroll-y-contain max-lg:pt-[calc(env(safe-area-inset-top)+3.65rem)] max-lg:pb-[calc(8.75rem+env(safe-area-inset-bottom))] max-lg:scroll-pb-[calc(8.75rem+env(safe-area-inset-bottom))] max-lg:scrollbar-hide max-lg:relative max-lg:touch-pan-y lg:flex-none lg:overflow-visible lg:pb-12"
+        className="w-full overflow-x-hidden px-3 sm:px-6 lg:px-12 max-lg:flex-1 max-lg:min-h-0 max-lg:overflow-y-auto max-lg:overscroll-y-contain max-lg:pt-[calc(env(safe-area-inset-top)+3.25rem)] max-lg:pb-[calc(8.75rem+env(safe-area-inset-bottom))] max-lg:scroll-pb-[calc(8.75rem+env(safe-area-inset-bottom))] max-lg:scrollbar-hide max-lg:relative max-lg:touch-pan-y lg:flex-none lg:overflow-visible lg:pb-12"
       >
         <AnimatePresence mode="wait">
           <motion.div
@@ -329,24 +329,24 @@ export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
 
       {/* Mobile: floating “dock” tab bar — replaces footer links on small screens */}
       <div
-        className="lg:hidden pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-3 pt-3 bg-gradient-to-t from-[var(--app-wash)] via-[var(--app-wash)]/92 to-transparent"
+        className="lg:hidden pointer-events-none fixed inset-x-0 bottom-0 z-[58] flex justify-center px-3 pt-2 bg-gradient-to-t from-[var(--app-wash)] via-[var(--app-wash)]/95 to-transparent"
       >
         <div
-          className="pointer-events-auto mb-[max(0.65rem,env(safe-area-inset-bottom))] flex w-full max-w-[min(100%,428px)] items-end justify-between gap-0.5 rounded-[24px] border border-gold/25 bg-white/[0.94] backdrop-blur-xl px-1.5 pt-2 pb-2 shadow-[0_8px_40px_rgba(0,0,0,0.14),0_0_0_1px_rgba(255,255,255,0.5)_inset]"
+          className="pointer-events-auto mb-[max(0.5rem,env(safe-area-inset-bottom))] flex w-full max-w-[min(100%,428px)] items-end justify-between gap-0.5 rounded-[22px] border border-gold/30 bg-white/[0.97] backdrop-blur-xl px-1.5 pt-1.5 pb-1.5 shadow-[0_12px_44px_rgba(0,0,0,0.12),0_0_0_1px_rgba(255,255,255,0.55)_inset]"
           role="tablist"
           aria-label="Main navigation"
         >
         <NavIcon label="Host" icon={<PlusSquare size={20} strokeWidth={activeTab === 'host' ? 2.5 : 2} />} active={activeTab === 'host'} onClick={() => setActiveTab('host')} />
         <NavIcon label="Discover" icon={<Compass size={20} strokeWidth={activeTab === 'discover' ? 2.5 : 2} />} active={activeTab === 'discover'} onClick={() => setActiveTab('discover')} />
 
-        <div className="relative -top-3 flex flex-col items-center gap-0.5 min-w-[52px] shrink-0">
+        <div className="relative -top-2.5 flex flex-col items-center gap-0.5 min-w-[52px] shrink-0">
           <button
             type="button"
             onClick={goNow}
-            className={`w-[52px] h-[52px] rounded-full bg-gradient-to-br from-red-600 via-red-700 to-red-900 flex items-center justify-center text-white shadow-[0_6px_22px_rgba(185,28,28,0.4),0_0_0_1px_rgba(255,255,255,0.22)_inset] active:scale-[0.94] transition-transform duration-150 ${activeTab === 'home' ? 'ring-2 ring-gold/40 ring-offset-2 ring-offset-white/90' : ''}`}
+            className={`w-[50px] h-[50px] rounded-full bg-gradient-to-br from-red-600 via-red-700 to-red-900 flex items-center justify-center text-white shadow-[0_8px_26px_rgba(185,28,28,0.38),0_0_0_1px_rgba(255,255,255,0.24)_inset] active:scale-[0.93] transition-transform duration-150 ${activeTab === 'home' ? 'ring-[3px] ring-gold/45 ring-offset-[3px] ring-offset-white' : ''}`}
             aria-label="Now — home"
           >
-            <Home size={24} strokeWidth={2.25} className="opacity-95 drop-shadow-sm" />
+            <Home size={23} strokeWidth={2.25} className="opacity-95 drop-shadow-sm" />
           </button>
           <span className="text-[6.5px] uppercase tracking-[0.18em] font-black text-red-700">Now</span>
         </div>
@@ -376,10 +376,10 @@ function NavIcon({ icon, label, active, onClick }: any) {
     <button
       onClick={onClick}
       type="button"
-      className={`min-w-[44px] max-w-[21vw] flex-1 min-h-[50px] py-1 rounded-[18px] flex flex-col items-center justify-center gap-0.5 transition-all duration-200 active:scale-[0.97] ${
+      className={`min-w-[44px] max-w-[21vw] flex-1 min-h-[48px] py-0.5 rounded-[16px] flex flex-col items-center justify-center gap-0.5 transition-all duration-200 active:scale-[0.96] ${
         active
-          ? 'text-red-700 bg-red-50/95 shadow-[inset_0_0_0_1px_rgba(185,28,28,0.12)]'
-          : 'text-neutral-500 hover:text-neutral-700'
+          ? 'text-red-700 bg-red-50 shadow-[inset_0_0_0_1.5px_rgba(185,28,28,0.18)]'
+          : 'text-neutral-500 hover:text-neutral-800 active:bg-neutral-50'
       }`}
     >
       {icon}
@@ -1622,23 +1622,21 @@ function HomeTab({
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 280, damping: 32 }}
       >
-        {/* Mobile / tablet: fixed-height image band + solid panel (no tiny type on photo) */}
+        {/* Mobile / tablet: logo hero (no photo) + solid panel */}
         <div className="lg:hidden flex flex-col">
-          <div className="relative h-[152px] sm:h-[168px] shrink-0 overflow-hidden bg-neutral-900">
-            <img
-              src="/Homepage.png"
-              alt=""
-              className="absolute inset-0 h-full w-full object-cover object-[center_30%]"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/82 via-black/30 to-black/40" aria-hidden />
-            <div className="absolute top-2.5 left-3 z-[1]">
-              <p className="text-[9px] font-black uppercase tracking-[0.28em] text-gold-light flex items-center gap-1.5 drop-shadow-md">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.9)] animate-pulse shrink-0" />
+          <div className="relative shrink-0 overflow-hidden rounded-t-[18px] border border-b-0 border-gold/25 bg-gradient-to-b from-white via-cream/90 to-[#f8f6f2] px-4 pt-5 pb-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9)]">
+            <div className="flex flex-col items-center text-center gap-3">
+              <img
+                src="/convivia24.png"
+                alt="Convivia24"
+                className="h-[52px] sm:h-[58px] w-auto max-w-[min(300px,88vw)] object-contain object-center select-none"
+                draggable={false}
+              />
+              <p className="text-[9px] font-black uppercase tracking-[0.28em] text-red-700 flex items-center justify-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.85)] animate-pulse shrink-0" />
                 Live · <LiveLocalTime />
               </p>
-            </div>
-            <div className="absolute inset-x-0 bottom-0 z-[1] p-3 pt-8 bg-gradient-to-t from-black/75 to-transparent">
-              <h1 className="font-display text-[1.5rem] leading-[1.02] italic text-white [text-shadow:0_2px_14px_rgba(0,0,0,0.5)]">
+              <h1 className="font-display text-[1.55rem] sm:text-[1.65rem] leading-[1.05] italic text-neutral-900">
                 What&apos;s <span className="text-[color:var(--gold-accent,#c9a84c)]">live</span> right now
               </h1>
             </div>

@@ -44,7 +44,7 @@ export default async function AppRootPage() {
         <img
           src="/Homepage.png"
           alt=""
-          className="absolute inset-0 w-full h-full object-cover opacity-[0.18] scale-[1.02]"
+          className="hidden lg:block absolute inset-0 w-full h-full object-cover opacity-[0.18] scale-[1.02]"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#f8f6f2] via-[#f8f6f2]/92 to-cream/50" />
         <div className="absolute inset-0 bg-gradient-to-tr from-white/75 via-transparent to-gold/[0.07]" />
