@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createAuthClient } from '@neondatabase/auth/next';
 import { NeonAuthUIProvider, AuthView } from '@neondatabase/auth/react/ui';
 import { NEON_AUTH_SOCIAL_GOOGLE } from '@/lib/auth/neon-ui';
+import { BrandLogo } from '@/components/BrandLogo';
 
 const authClient = createAuthClient();
 
@@ -29,7 +30,7 @@ export default function SignUpPage() {
             className="inline-flex min-h-11 items-center justify-center rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 px-2"
             aria-label="Back to app"
           >
-            <img src="/convivia24.png" alt="Convivia24" className="h-8 w-auto mx-auto mb-4" />
+            <BrandLogo className="h-8 w-auto mx-auto mb-4 object-contain" alt="Convivia24" />
           </Link>
           <h1 className="font-display text-3xl sm:text-4xl italic text-neutral-900 mb-2 px-1">
             Start Your 24

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { BrandLogo } from '@/components/BrandLogo';
 
 const footerLinks = [
   { label: 'Home', href: '/' },
@@ -16,11 +17,7 @@ export default function Footer() {
         <div className="flex flex-col gap-4 sm:hidden">
           <div className="flex items-center justify-between gap-3">
             <Link href="/" className="shrink-0 opacity-90 hover:opacity-100 transition-opacity">
-              <img
-                src="/convivia24.png"
-                alt="Convivia24"
-                className="h-5 w-auto object-contain"
-              />
+              <BrandLogo className="h-5 w-auto object-contain" alt="Convivia24" />
             </Link>
             <div className="flex items-center gap-4 text-[11px] text-neutral-500">
               {footerLinks.map((link) => (
@@ -31,7 +28,7 @@ export default function Footer() {
             </div>
           </div>
           <p className="text-[10px] text-neutral-500 leading-relaxed pr-2">
-            Connecting people together daily — same-night tables across London, Lagos, Abuja.
+            Convivia24 — hospitality staffing in Nigeria (Lagos, Abuja, Port Harcourt). Verified workers, same-day mobile money. <span className="font-semibold text-neutral-600">18+ only.</span>
           </p>
           <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-neutral-100 text-[10px] text-neutral-500">
             <span>&copy; 2026 Convivia24</span>
@@ -45,15 +42,11 @@ export default function Footer() {
         <div className="hidden sm:flex sm:flex-row sm:items-start sm:justify-between gap-6 sm:gap-10">
           <div className="min-w-0 max-w-sm">
             <Link href="/" className="inline-block mb-2 opacity-90 hover:opacity-100 transition-opacity">
-              <img
-                src="/convivia24.png"
-                alt="Convivia24"
-                className="h-6 w-auto object-contain"
-              />
+              <BrandLogo className="h-6 w-auto object-contain" alt="Convivia24" />
             </Link>
-            <p className="text-[9px] font-black uppercase tracking-[0.28em] text-red-700/70 mb-1.5">Connecting people together daily</p>
+            <p className="text-[9px] font-black uppercase tracking-[0.28em] text-red-700/70 mb-1.5">Hospitality staffing · 18+</p>
             <p className="text-[11px] text-neutral-500 leading-relaxed">
-              Live pulse, curated tables, and AI matches — rooted in London, Lagos, and Abuja.
+              Outlets post shifts in Lagos, Abuja, and Port Harcourt. Staff get verified shifts and same-day OPay / PalmPay / Moniepoint payouts.
             </p>
           </div>
 
@@ -69,7 +62,7 @@ export default function Footer() {
               href="/auth/sign-in"
               className="text-center text-[10px] font-black uppercase tracking-[0.2em] px-5 py-2 border border-red-200 text-red-800 hover:bg-red-50 transition-colors"
             >
-              Open Your 24
+              Sign in
             </Link>
           </div>
         </div>

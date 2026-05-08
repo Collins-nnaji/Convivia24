@@ -5,11 +5,9 @@ import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, X, LogIn } from 'lucide-react';
+import { BrandLogo } from '@/components/BrandLogo';
 
-const LINKS = [
-  { label: 'The Spaces',    href: '/spaces' },
-  { label: 'The Convivium',  href: '/convivium' },
-];
+const LINKS: { label: string; href: string }[] = [];
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -24,8 +22,8 @@ export default function Navigation() {
 
   useEffect(() => { setOpen(false); }, [pathname]);
 
-  // Don't show top Nav on the dashboard (root /)
-  if (pathname === '/') return null;
+  // Full-screen app shells — no duplicate marketing header
+  if (pathname === '/' || pathname === '/outlet') return null;
 
   return (
     <>
@@ -38,11 +36,7 @@ export default function Navigation() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 shrink-0 group min-h-11 min-w-11 p-2 -m-2 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600" aria-label="Convivia24 — Now">
-            <img
-              src="/convivia24.png"
-              alt="Convivia24"
-              className="h-7 w-auto"
-            />
+            <BrandLogo className="h-7 w-auto object-contain" alt="Convivia24" />
           </Link>
 
           {/* Desktop links */}
@@ -139,7 +133,7 @@ export default function Navigation() {
                   );
                 })}
 
-                <div className="pt-4 space-y-3 pb-2">
+                <div className="pt-4 pb-2 space-y-3">
                   <Link
                     href="/inquire"
                     className="block w-full text-center py-3.5 bg-red-700 hover:bg-red-800 text-white text-[12px] font-black uppercase tracking-[0.15em] transition-colors"

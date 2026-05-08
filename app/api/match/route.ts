@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { neonAuth } from '@/lib/auth/server';
 import { getOrCreateUser } from '@/lib/db/users';
+import { isPremiumUser } from '@/lib/premium';
 
 /**
  * AI Match — the differentiator.
@@ -14,16 +15,6 @@ import { getOrCreateUser } from '@/lib/db/users';
  *
  *   GET  /api/match — returns the user's current credits + match history (last 10)
  */
-
-function isPremium(user: any): boolean {
-  if (user.tier === 'black') return true;
-  if (user.subscription_status === 'black' || user.subscription_status === 'black_trial') return true;
-  if (user.premium_until) {
-    const until = new Date(user.premium_until as string).getTime();
-    if (until > Date.now()) return true;
-  }
-  return false;
-}
 
 async function refillIfDue(userId: unknown, user: any) {
   if (!user.match_credits_reset_at) return user;
@@ -55,9 +46,9 @@ export async function GET() {
     `;
 
     return NextResponse.json({
-      premium: isPremium(user),
+      premium: isPremiumUser(user),
       tier: user.tier,
-      credits_remaining: isPremium(user) ? null : Number(user.match_credits_remaining),
+      credits_remaining: isPremiumUser(user) ? null : Number(user.match_credits_remaining),
       credits_reset_at: user.match_credits_reset_at,
       history,
     });
@@ -85,7 +76,7 @@ export async function POST(req: NextRequest) {
 
     // Only "matched" (the initial generation) and "joined" consume a credit; skip/delay are free.
     const consumesCredit = action === 'matched' || action === 'joined';
-    const premium = isPremium(user);
+    const premium = isPremiumUser(user);
 
     if (consumesCredit && !premium && Number(user.match_credits_remaining) <= 0) {
       return NextResponse.json({

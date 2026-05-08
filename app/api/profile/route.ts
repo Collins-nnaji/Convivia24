@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { neonAuth } from '@/lib/auth/server';
 import { getOrCreateUser } from '@/lib/db/users';
+import { isPremiumUser } from '@/lib/premium';
+import { syncUserWatchlistFromHostedHangouts } from '@/lib/userWatchlist';
+import { getOutletApplicationForUser, serializeOutletApplication } from '@/lib/outlet-application';
+import { isConviviaAdmin } from '@/lib/admin';
 
 // GET /api/profile — Get current user's profile
 export async function GET() {
@@ -16,15 +20,6 @@ export async function GET() {
     // Get connections count
     const connectionsResult = await sql`
       SELECT COUNT(*) as count FROM connections WHERE user_id_1 = ${user.id}
-    `;
-
-    // Get circles count
-    const circlesResult = await sql`
-      SELECT COUNT(*) as count FROM circle_members WHERE user_id = ${user.id}
-    `;
-
-    const checkinsResult = await sql`
-      SELECT COUNT(*) as count FROM checkins WHERE user_id = ${user.id}
     `;
 
     // Refill match credits if a week has elapsed since reset
@@ -43,19 +38,21 @@ export async function GET() {
       }
     }
 
-    const premiumActive = mergedUser.tier === 'black'
-      || mergedUser.subscription_status === 'black'
-      || mergedUser.subscription_status === 'black_trial'
-      || (mergedUser.premium_until && new Date(mergedUser.premium_until as string).getTime() > Date.now());
+    const syncedWl = await syncUserWatchlistFromHostedHangouts(mergedUser.id);
+    const userOut = syncedWl !== null ? { ...mergedUser, watchlist_cities: syncedWl } : mergedUser;
+
+    const premiumActive = isPremiumUser(userOut);
+
+    const oaRow = await getOutletApplicationForUser(String(userOut.id));
 
     return NextResponse.json({
       user: {
-        ...mergedUser,
-        created_at: mergedUser.created_at instanceof Date ? mergedUser.created_at.toISOString() : mergedUser.created_at,
+        ...userOut,
+        created_at: userOut.created_at instanceof Date ? userOut.created_at.toISOString() : userOut.created_at,
         premium_active: premiumActive,
         connections_count: Number(connectionsResult[0]?.count || 0),
-        circles_count: Number(circlesResult[0]?.count || 0),
-        checkins_count: Number(checkinsResult[0]?.count || 0),
+        outlet_application: serializeOutletApplication(oaRow),
+        is_platform_admin: isConviviaAdmin(authUser.email),
       },
     });
   } catch (err) {
@@ -74,7 +71,7 @@ export async function PATCH(req: NextRequest) {
 
     const user = await getOrCreateUser(authUser);
     const body = await req.json();
-    const { name, bio, avatar_url, location, open_to_meet } = body;
+    const { name, bio, avatar_url, location, open_to_meet, watchlist_cities } = body;
 
     // Omitted fields must not overwrite: COALESCE(null, col) keeps col. Never cast undefined
     // to ::boolean (breaks JSON bodies that only send { avatar_url } after upload).
@@ -87,20 +84,50 @@ export async function PATCH(req: NextRequest) {
       avatar_url !== undefined &&
       (avatar_url?.trim() || null) !== (user.avatar_url ?? null);
 
-    const updated = await sql`
-      UPDATE users SET
-        name = COALESCE(${nameSql}, name),
-        bio = COALESCE(${bioSql}, bio),
-        avatar_url = COALESCE(${avatarSql}, avatar_url),
-        location = COALESCE(${locationSql}, location),
-        open_to_meet = CASE
-          WHEN ${open_to_meet !== undefined} THEN ${Boolean(open_to_meet)}
-          ELSE open_to_meet
-        END,
-        verified = CASE WHEN ${avatarChanged} THEN false ELSE verified END
-      WHERE id = ${user.id}
-      RETURNING *
-    `;
+    let watchlistSql: string[] | null = null;
+    if (watchlist_cities !== undefined) {
+      const raw = Array.isArray(watchlist_cities) ? watchlist_cities : [];
+      const seen = new Set<string>();
+      watchlistSql = [];
+      for (const s of raw.map((x: unknown) => String(x).trim()).filter(Boolean)) {
+        const k = s.toLowerCase();
+        if (seen.has(k)) continue;
+        seen.add(k);
+        watchlistSql.push(s.replace(/\s+/g, ' '));
+      }
+    }
+
+    const updated =
+      watchlistSql !== null
+        ? await sql`
+            UPDATE users SET
+              name = COALESCE(${nameSql}, name),
+              bio = COALESCE(${bioSql}, bio),
+              avatar_url = COALESCE(${avatarSql}, avatar_url),
+              location = COALESCE(${locationSql}, location),
+              watchlist_cities = ${watchlistSql}::text[],
+              open_to_meet = CASE
+                WHEN ${open_to_meet !== undefined} THEN ${Boolean(open_to_meet)}
+                ELSE open_to_meet
+              END,
+              verified = CASE WHEN ${avatarChanged} THEN false ELSE verified END
+            WHERE id = ${user.id}
+            RETURNING *
+          `
+        : await sql`
+            UPDATE users SET
+              name = COALESCE(${nameSql}, name),
+              bio = COALESCE(${bioSql}, bio),
+              avatar_url = COALESCE(${avatarSql}, avatar_url),
+              location = COALESCE(${locationSql}, location),
+              open_to_meet = CASE
+                WHEN ${open_to_meet !== undefined} THEN ${Boolean(open_to_meet)}
+                ELSE open_to_meet
+              END,
+              verified = CASE WHEN ${avatarChanged} THEN false ELSE verified END
+            WHERE id = ${user.id}
+            RETURNING *
+          `;
 
     return NextResponse.json({ ok: true, user: updated[0] });
   } catch (err) {

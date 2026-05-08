@@ -36,18 +36,22 @@ export function CityChipsBar({
   const chipPad = chipSize === 'sm' ? 'min-h-9 px-3 py-1.5' : 'min-h-10 px-3 sm:px-3.5 py-2';
 
   return (
-    <div className={`flex flex-col sm:flex-row sm:items-center gap-2 ${className}`}>
+    <div className={`flex w-full min-w-0 flex-col gap-3 ${className}`}>
       {label ? (
-        <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400 shrink-0">{label}</span>
+        <span className="text-[9px] font-black uppercase tracking-widest text-neutral-500 shrink-0">
+          {label}
+        </span>
       ) : null}
-      <div className="flex flex-wrap items-center gap-2 min-w-0 flex-1">
-        <div className="inline-flex max-w-full overflow-x-auto scrollbar-hide rounded-full p-0.5 bg-neutral-100 border border-neutral-200">
+
+      {/* Wrapped chips — every zone stays visible on mobile (no horizontal clipping) */}
+      <div className="w-full min-w-0 rounded-2xl border border-neutral-200 bg-neutral-100/90 p-2">
+        <div className="flex w-full min-w-0 flex-wrap gap-2">
           {cities.map((c) => (
             <button
               type="button"
               key={c}
               onClick={() => onSelect(c)}
-              className={`shrink-0 text-[10px] uppercase tracking-widest font-black ${chipPad} rounded-full transition-all ${
+              className={`text-[10px] uppercase tracking-widest font-black ${chipPad} rounded-full transition-all max-[380px]:text-[9px] ${
                 selected === c
                   ? 'bg-red-700 text-white shadow-[0_0_12px_rgba(185,28,28,0.2)]'
                   : 'text-neutral-600 hover:text-neutral-900 active:bg-neutral-200/60'
@@ -57,31 +61,33 @@ export function CityChipsBar({
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-1 rounded-full border border-neutral-200 bg-white pl-3 pr-1 py-0.5 min-w-0 max-w-[min(100%,220px)]">
-          <input
-            type="text"
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                submit();
-              }
-            }}
-            placeholder="Add your city"
-            className="min-w-0 flex-1 bg-transparent text-[11px] py-2 focus:outline-none placeholder:text-neutral-400"
-            aria-label="Add a city"
-          />
-          <button
-            type="button"
-            onClick={submit}
-            className="shrink-0 w-9 h-9 rounded-full bg-red-700 text-white flex items-center justify-center hover:bg-red-800 transition-colors disabled:opacity-40"
-            disabled={!draft.trim()}
-            aria-label="Save city"
-          >
-            <Plus size={18} strokeWidth={2.25} />
-          </button>
-        </div>
+      </div>
+
+      {/* Add zone — full width row so it doesn’t collide with chips */}
+      <div className="flex w-full min-w-0 items-stretch gap-2 rounded-2xl border border-neutral-200 bg-white px-3 py-1 shadow-sm">
+        <input
+          type="text"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              submit();
+            }
+          }}
+          placeholder="Add zone / city"
+          className="min-w-0 flex-1 bg-transparent text-[12px] sm:text-[13px] py-2.5 focus:outline-none placeholder:text-neutral-400"
+          aria-label="Add a zone or city"
+        />
+        <button
+          type="button"
+          onClick={submit}
+          className="my-1 shrink-0 self-center w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-red-700 text-white flex items-center justify-center hover:bg-red-800 transition-colors disabled:opacity-40"
+          disabled={!draft.trim()}
+          aria-label="Save zone"
+        >
+          <Plus size={18} strokeWidth={2.25} />
+        </button>
       </div>
     </div>
   );

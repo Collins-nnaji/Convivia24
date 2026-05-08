@@ -43,7 +43,7 @@ async function seed() {
 
   console.log('🌱 Seeding Convivia24 Database...\n');
 
-  await sql`TRUNCATE TABLE attendees, connections, circle_members, circles, hangouts, venues, inquiries, waitlist, users CASCADE`;
+  await sql`TRUNCATE TABLE attendees, connections, hangouts, venues, inquiries, waitlist, users CASCADE`;
 
   // ─── VENUES ────────────────────────────────────────────────────────────────
   console.log('🏛  Inserting Venues...');
@@ -406,41 +406,6 @@ async function seed() {
     }
   }
 
-  // ─── CIRCLES ───────────────────────────────────────────────────────────────
-  console.log('⭕ Inserting Circles...');
-  const circleData = [
-    { name: 'Founders Friday',    description: 'Weekly gathering for builders scaling businesses across Africa.', created_by: collins },
-    { name: 'The Palate',         description: 'Foodies, chefs, and hospitality operators exploring Lagos dining.', created_by: david },
-    { name: 'Deal Flow',          description: 'Investors and founders exchanging leads and due diligence.', created_by: amara },
-    { name: 'Lagos Night Crew',   description: 'The group that always finds the best spot on a Friday night.', created_by: emeka },
-    { name: 'Diaspora Links',     description: 'Africans in London doing great things. Regular meetups.',        created_by: david },
-    { name: 'Abuja Connect',      description: 'Abuja professionals linking up for dinners, events, and more.',  created_by: tunde },
-  ];
-
-  const circleIds: string[] = [];
-  for (const c of circleData) {
-    const rows = await sql`INSERT INTO circles (name, description, created_by) VALUES (${c.name}, ${c.description}, ${c.created_by}) RETURNING id`;
-    circleIds.push(rows[0].id as string);
-  }
-
-  // ─── CIRCLE MEMBERS ────────────────────────────────────────────────────────
-  console.log('👥 Inserting Circle Members...');
-  const memberData: [string, string][] = [
-    [circleIds[0], collins], [circleIds[0], amara], [circleIds[0], david], [circleIds[0], nkechi],
-    [circleIds[1], david],   [circleIds[1], nkechi], [circleIds[1], collins], [circleIds[1], adaeze],
-    [circleIds[2], amara],   [circleIds[2], collins], [circleIds[2], tunde], [circleIds[2], david],
-    [circleIds[3], emeka],   [circleIds[3], zainab], [circleIds[3], nkechi], [circleIds[3], femi],
-    [circleIds[4], david],   [circleIds[4], adaeze], [circleIds[4], kofi],  [circleIds[4], sade],
-    [circleIds[5], tunde],   [circleIds[5], halima], [circleIds[5], ibrahim],
-  ];
-
-  for (const [cid, uid] of memberData) {
-    if (!cid || !uid) continue;
-    try {
-      await sql`INSERT INTO circle_members (circle_id, user_id) VALUES (${cid}, ${uid})`;
-    } catch { /* skip */ }
-  }
-
   // ─── CONNECTIONS ───────────────────────────────────────────────────────────
   console.log('🤝 Inserting Connections...');
   const connectionData: [string, string, number][] = [
@@ -459,7 +424,6 @@ async function seed() {
   console.log('\n✅ Seeding Complete!');
   console.log(`   ${userIds.length} users`);
   console.log(`   ${hangoutIds.length} hangouts (Lagos, Abuja, London)`);
-  console.log(`   ${circleIds.length} circles`);
 }
 
 seed().catch((err) => {

@@ -2,21 +2,75 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Compass, PlusSquare, CircleDashed, User as UserIcon, Zap, Home,
-  Clock, Users, Star, ArrowRight, Building2, Ticket,
+  Compass, PlusSquare, User as UserIcon, Zap,
+  Clock, Users, Star, ArrowRight, Building2, Ticket, Briefcase, Wallet,
   MapPin, Camera, Calendar, LogOut, Edit3, Check, X, Loader2,
   Sparkles, Flame, ShieldCheck, RefreshCw, AlertCircle, Wine,
   Music2, Coffee, ChevronRight, Send, SkipForward, Hourglass, Share2, Copy, MessageCircle,
+  GraduationCap,
+  CalendarDays, ClipboardList, Receipt, UserCircle, LogIn, Mail,
 } from 'lucide-react';
-import ConviviumCard from '@/components/ConviviumCard';
+import { BrandLogo } from '@/components/BrandLogo';
 import { CityChipsBar } from '@/components/CityChipsBar';
-import { SectionLabel } from '@/components/ui/SectionLabel';
-import { useCityList } from '@/hooks/useCityList';
+import type { StaffPersona } from '@/hooks/useStaffPersona';
+
+export type AppShellMode = 'staff' | 'outlet';
 import { buildHangoutInviteMessage, whatsAppSendPrefilledUrl } from '@/lib/hangout-invite-share';
+import { everythingFree } from '@/lib/premium';
+import {
+  LAGOS_ZONES,
+  STAFF_ROLE_GROUPS,
+  staffingWhatsAppUrl,
+  ALL_STAFF_ROLES,
+} from '@/lib/staffing';
+import { DEFAULT_CITIES, useCityList } from '@/hooks/useCityList';
+import { OutletOnboardingForm } from '@/components/outlet/OutletOnboardingForm';
+import { MobileFirstColumn } from '@/components/app/shell/MobileFirst';
+
+/** All three metros live — keep Lagos sub-areas off marketing blurbs (zones live in filters). */
+const HOSPITALITY_METROS_BEFORE_LINK =
+  'Hospitality jobs in Lagos, Abuja, and Port Harcourt — open shifts on the';
+
+/** Parse posting `vibe` (often "Dress: …. briefing") for shift cards. */
+function shiftCardPayAndRequirements(h: {
+  vibe?: string | null;
+  ticket_price?: number | null;
+}): {
+  payHeadline: string;
+  paySub: string;
+  dressLine: string | null;
+  briefing: string;
+} {
+  const vibeRaw = String(h.vibe || '').trim();
+  const dressMatch = vibeRaw.match(/Dress:\s*([^.]+(?:\.[^.]+)?)/i);
+  const dressLine = dressMatch?.[1]?.trim() || null;
+  let briefing = vibeRaw.replace(/^Dress:\s*[^.]+\.?\s*/i, '').trim();
+  if (!briefing && !dressLine) briefing = vibeRaw;
+  else if (!briefing && dressLine) briefing = '';
+
+  const p: unknown = h.ticket_price;
+  let n = NaN;
+  if (p != null && p !== '') {
+    const x = Number(p);
+    if (Number.isFinite(x)) n = x;
+  }
+  const hasListed = n > 0;
+
+  return {
+    payHeadline: hasListed
+      ? `₦${Math.round(n).toLocaleString('en-NG')} listed rate`
+      : 'No app booking fee',
+    paySub: hasListed
+      ? 'Stated on the shift — confirm details with the outlet. Same-day pay to OPay / PalmPay / Moniepoint after sign-off.'
+      : 'Wage is agreed with the outlet for this shift. Same-day pay to your wallet after they sign you off.',
+    dressLine,
+    briefing: briefing || (dressLine ? 'Dress code above · see outlet for any updates.' : 'Check the posting for role, time, and venue details.'),
+  };
+}
 
 /* ══════════════════════════════════════════════════════════════════════
    LIVE CITY PULSE  — what makes us different from Eventbrite/Meetup
@@ -120,11 +174,11 @@ function openWhatsAppHangoutInvite(id: string, title: string) {
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const VIBE_PROMPTS = [
-  'Chill, social, not too loud',
-  'Founders, ideas, whisky',
-  'High energy, dancing, late',
-  'Brunch, slow, conversation',
-  'New to the city, open',
+  'Smart casual, black trousers',
+  'All black, closed shoes',
+  'Traditional friendly, venue provides gele',
+  'Bar apron, non-slip shoes',
+  'Early shift, hotel standards',
 ];
 
 /* Mock matched profiles for the AI match preview — replaced by real /api/people once seeded */
@@ -179,20 +233,35 @@ function FlowSteps({ steps }: { steps: { n: string; label: string; sub?: string 
   return (
     <div className="flex flex-wrap items-center gap-2 md:gap-3 pt-2">
       {steps.map((s, i) => (
-        <div key={s.n} className="flex items-center gap-2 md:gap-3">
-          <div className="flex items-center gap-2 bg-white/90 border border-gold/20 rounded-full pl-2 pr-3 py-1.5 shadow-sm shadow-gold/5">
-            <span className="w-5 h-5 rounded-full bg-gradient-to-br from-red-50 to-amber-50 text-red-800 ring-1 ring-gold/30 text-[10px] font-black flex items-center justify-center">{s.n}</span>
-            <span className="text-[10px] uppercase tracking-widest font-black text-neutral-700">{s.label}</span>
-            {s.sub && <span className="hidden md:inline text-[10px] text-neutral-400 font-medium normal-case tracking-normal">· {s.sub}</span>}
+        <div key={s.n} className="flex items-center gap-2 md:gap-3 min-w-0">
+          <div className="flex items-center gap-2 min-w-0 bg-neutral-50 border border-neutral-200 rounded-full pl-2 pr-3 py-1.5">
+            <span className="w-5 h-5 shrink-0 rounded-full bg-red-50 text-red-800 ring-1 ring-red-200 text-[10px] font-black flex items-center justify-center">{s.n}</span>
+            <span className="text-[10px] uppercase tracking-widest font-black text-neutral-800 truncate">{s.label}</span>
+            {s.sub && <span className="hidden sm:inline text-[10px] text-neutral-500 font-medium normal-case tracking-normal truncate">· {s.sub}</span>}
           </div>
-          {i < steps.length - 1 && <ChevronRight size={14} className="text-neutral-400"/>}
+          {i < steps.length - 1 && <ChevronRight size={14} className="text-neutral-300 shrink-0 hidden sm:block" />}
         </div>
       ))}
     </div>
   );
 }
 
-type AppTab = 'home' | 'discover' | 'host' | 'circles' | 'profile';
+/** Staff + shared keys; `demand` / `pay` are outlet-only (3-tab shell). */
+export type AppTab =
+  | 'home'
+  | 'discover'
+  | 'host'
+  | 'circles'
+  | 'profile'
+  | 'demand'
+  | 'pay';
+
+function resolveTabForOutlet(t: AppTab): AppTab {
+  if (t === 'discover' || t === 'host') return 'demand';
+  if (t === 'profile' || t === 'circles') return 'home';
+  if (t === 'demand' || t === 'pay' || t === 'home') return t;
+  return 'home';
+}
 
 function formatLiveLocalTime(d: Date) {
   return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
@@ -213,12 +282,47 @@ function LiveLocalTime({ className }: { className?: string }) {
 /* ══════════════════════════════════════════════════════════════════════
    MAIN COMPONENT
    ══════════════════════════════════════════════════════════════════════ */
-export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
+export function AppConceptBoard({
+  initialUser,
+  appMode,
+}: {
+  initialUser?: any;
+  appMode: AppShellMode;
+}) {
   const searchParams = useSearchParams();
+  const persona: StaffPersona = appMode === 'outlet' ? 'outlet' : 'worker';
+  const appBase = appMode === 'outlet' ? '/outlet' : '/';
+
+  const [liveUser, setLiveUser] = useState<any>(initialUser ?? null);
+
+  useEffect(() => {
+    setLiveUser(initialUser ?? null);
+  }, [initialUser]);
+
+  /** Same Neon session as staff; SSR sometimes misses cookies — hydrate once from API. */
+  useEffect(() => {
+    if (initialUser != null) return;
+    let cancelled = false;
+    fetch('/api/profile', { credentials: 'include' })
+      .then(async (r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!cancelled && d?.user) setLiveUser(d.user);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [initialUser]);
+
   const [activeTab, setActiveTab] = useState<AppTab>('home');
+  const [outletDemandSub, setOutletDemandSub] = useState<'board' | 'post'>('board');
   const mainScrollRef = useRef<HTMLDivElement>(null);
   const [pendingInviteHangoutId, setPendingInviteHangoutId] = useState<string | null>(null);
-  const { cities, addCity } = useCityList();
+  const wl = Array.isArray(liveUser?.watchlist_cities) ? (liveUser.watchlist_cities as string[]) : null;
+  const { cities, addCity } = useCityList({
+    serverWatchlist: wl,
+    persistWatchlist: Boolean(liveUser),
+  });
 
   const joinParam = searchParams.get('join');
   useEffect(() => {
@@ -227,17 +331,43 @@ export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
     queueMicrotask(() => {
       if (cancelled) return;
       setPendingInviteHangoutId(joinParam);
-      setActiveTab('discover');
+      if (appMode === 'outlet') {
+        setOutletDemandSub('board');
+        setActiveTab('demand');
+      } else {
+        setActiveTab('discover');
+      }
       if (typeof window !== 'undefined') {
-        window.history.replaceState({}, '', '/');
+        window.history.replaceState({}, '', appBase);
       }
     });
     return () => {
       cancelled = true;
     };
-  }, [joinParam]);
+  }, [joinParam, appBase, appMode]);
 
   const clearPendingInvite = useCallback(() => setPendingInviteHangoutId(null), []);
+
+  const navLabels =
+    persona === 'outlet'
+      ? { home: 'Today', demand: 'Demand', pay: 'Pay' }
+      : { home: 'Today', discover: 'Shifts', host: 'Record', circles: 'Learn', profile: 'Me' };
+
+  const switchTab = useCallback(
+    (t: AppTab) => {
+      if (appMode === 'outlet') {
+        const next = resolveTabForOutlet(t);
+        if (next === 'demand') {
+          setOutletDemandSub(t === 'host' ? 'post' : 'board');
+        }
+        setActiveTab(next);
+        return;
+      }
+      setActiveTab(t);
+    },
+    [appMode],
+  );
+
   const goNow = useCallback(() => {
     setActiveTab('home');
     requestAnimationFrame(() => {
@@ -249,20 +379,54 @@ export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
   }, []);
 
   const renderContent = () => {
+    if (appMode === 'outlet') {
+      switch (activeTab) {
+        case 'home':
+          return (
+            <OutletLandingTab initialUser={liveUser} onSwitchTab={switchTab} cities={cities} />
+          );
+        case 'demand':
+          return (
+            <OutletDemandTab
+              outletDemandSub={outletDemandSub}
+              setOutletDemandSub={setOutletDemandSub}
+              pendingInviteHangoutId={pendingInviteHangoutId}
+              onClearPendingInvite={clearPendingInvite}
+              cities={cities}
+              addCity={addCity}
+              onSwitchTab={switchTab}
+            />
+          );
+        case 'pay':
+          return <OutletPaymentsTab cities={cities} onSwitchTab={switchTab} />;
+        default:
+          return (
+            <OutletLandingTab initialUser={liveUser} onSwitchTab={switchTab} cities={cities} />
+          );
+      }
+    }
+
     switch (activeTab) {
-      case 'home':     return <HomeTab onSwitchTab={setActiveTab} cities={cities} addCity={addCity} />;
-      case 'discover': return (
-        <DiscoverTab
-          onSwitchTab={setActiveTab}
-          pendingInviteHangoutId={pendingInviteHangoutId}
-          onClearPendingInvite={clearPendingInvite}
-          cities={cities}
-          addCity={addCity}
-        />
-      );
-      case 'host':     return <HostTab onPosted={() => setActiveTab('discover')} cities={cities} addCity={addCity} />;
-      case 'circles':  return <CirclesTab />;
-      case 'profile':  return <ProfileTab initialUser={initialUser} />;
+      case 'home':
+        return <HomeTab onSwitchTab={switchTab} cities={cities} addCity={addCity} />;
+      case 'discover':
+        return (
+          <DiscoverTab
+            persona={persona}
+            onSwitchTab={switchTab}
+            pendingInviteHangoutId={pendingInviteHangoutId}
+            onClearPendingInvite={clearPendingInvite}
+            cities={cities}
+          />
+        );
+      case 'host':
+        return <CareerTab onSwitchTab={switchTab} />;
+      case 'circles':
+        return <HospitalityTrainingTab persona={persona} onSwitchTab={switchTab} />;
+      case 'profile':
+        return <ProfileTab persona={persona} initialUser={liveUser} />;
+      default:
+        return <HomeTab onSwitchTab={switchTab} cities={cities} addCity={addCity} />;
     }
   };
 
@@ -270,60 +434,158 @@ export function AppConceptBoard({ initialUser }: { initialUser?: any }) {
     <div className="flex w-full max-w-[100vw] flex-col mx-auto relative text-neutral-900 overflow-x-hidden max-lg:h-full max-lg:max-h-full max-lg:min-h-0 lg:h-auto lg:min-h-0">
       {/* TOP NAV (DESKTOP — lg+ only; tablet uses tab bar + fixed top strip) */}
       <header className="hidden lg:flex items-center justify-between px-6 lg:px-10 py-5 lg:py-6 border-b border-gold/20 bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-[0_1px_0_0_rgba(201,168,76,0.08)]">
-        <div className="flex items-center gap-2 min-w-0 w-[180px]">
+        <div className="flex items-center gap-3 min-w-0 flex-1 lg:flex-none lg:w-[220px]">
           <button
             type="button"
             onClick={goNow}
-            className="rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"
-            aria-label="Go to Now"
+            className="rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 shrink-0 text-left flex flex-col items-start gap-1"
+            aria-label="Go to Today"
           >
-            <img src="/convivia24.png" alt="" className="h-7 lg:h-8 w-auto opacity-95" />
+            <BrandLogo
+              alt="Convivia24"
+              className="h-9 lg:h-10 w-auto max-w-[200px] object-contain object-left"
+            />
+            <span className="hidden sm:block text-[9px] font-bold uppercase tracking-[0.2em] text-neutral-400">
+              {appMode === 'outlet' ? 'Outlet console · demand & pay' : 'Staff app · shifts & pay'}
+            </span>
           </button>
         </div>
 
-        <nav className="flex items-center gap-5 lg:gap-8 shrink min-w-0 justify-center">
-          <DesktopNavLink label="Now"     icon={<Home size={18} />}         active={activeTab === 'home'}     onClick={() => setActiveTab('home')} />
-          <DesktopNavLink label="Discover" icon={<Compass size={18} />}    active={activeTab === 'discover'} onClick={() => setActiveTab('discover')} />
-          <DesktopNavLink label="Host"     icon={<PlusSquare size={18} />}  active={activeTab === 'host'}     onClick={() => setActiveTab('host')} />
-          <DesktopNavLink label="Crews"    icon={<CircleDashed size={18} />} active={activeTab === 'circles'} onClick={() => setActiveTab('circles')} />
-          <DesktopNavLink label="Profile"  icon={<UserIcon size={18} />}    active={activeTab === 'profile'}  onClick={() => setActiveTab('profile')} />
+        <nav className="flex items-center gap-4 lg:gap-7 shrink min-w-0 justify-center">
+          {appMode === 'outlet' ? (
+            <>
+              <DesktopNavLink label={navLabels.home} icon={<CalendarDays size={18} strokeWidth={activeTab === 'home' ? 2.5 : 2} />} active={activeTab === 'home'} onClick={() => setActiveTab('home')} />
+              <DesktopNavLink label={navLabels.demand} icon={<ClipboardList size={18} strokeWidth={activeTab === 'demand' ? 2.5 : 2} />} active={activeTab === 'demand'} onClick={() => setActiveTab('demand')} />
+              <DesktopNavLink label={navLabels.pay} icon={<Wallet size={18} strokeWidth={activeTab === 'pay' ? 2.5 : 2} />} active={activeTab === 'pay'} onClick={() => setActiveTab('pay')} />
+            </>
+          ) : (
+            <>
+              <DesktopNavLink label={navLabels.home} icon={<CalendarDays size={18} strokeWidth={activeTab === 'home' ? 2.5 : 2} />} active={activeTab === 'home'} onClick={() => setActiveTab('home')} />
+              <DesktopNavLink label={navLabels.discover} icon={<ClipboardList size={18} strokeWidth={activeTab === 'discover' ? 2.5 : 2} />} active={activeTab === 'discover'} onClick={() => setActiveTab('discover')} />
+              <DesktopNavLink label={navLabels.host} icon={<Receipt size={18} strokeWidth={activeTab === 'host' ? 2.5 : 2} />} active={activeTab === 'host'} onClick={() => setActiveTab('host')} />
+              <DesktopNavLink label={navLabels.circles} icon={<GraduationCap size={18} strokeWidth={activeTab === 'circles' ? 2.5 : 2} />} active={activeTab === 'circles'} onClick={() => setActiveTab('circles')} />
+              <DesktopNavLink label={navLabels.profile} icon={<UserCircle size={18} strokeWidth={activeTab === 'profile' ? 2.5 : 2} />} active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} />
+            </>
+          )}
         </nav>
 
-        <button onClick={goNow} className="bg-red-700 text-white px-4 lg:px-6 py-2.5 rounded-full font-black uppercase tracking-[0.2em] text-[10px] hover:bg-red-800 hover:shadow-[0_0_20px_rgba(185,28,28,0.25)] transition-all flex items-center gap-2 w-[160px] lg:w-[180px] justify-center shrink-0">
-          <Zap size={14} fill="currentColor" /> Pulse
-        </button>
+        <div className="hidden lg:flex items-center justify-end gap-3 shrink-0 w-[160px] lg:w-[240px] text-right flex-wrap">
+          {appMode === 'staff' ? (
+            <>
+              <span
+                className="rounded-full border border-neutral-200 bg-neutral-50 px-2 py-1 text-[9px] font-black uppercase tracking-widest text-neutral-500"
+                title="Convivia24 is for adults 18 and over"
+              >
+                18+
+              </span>
+              <Link
+                href="/outlet"
+                className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 hover:text-red-700 whitespace-nowrap"
+              >
+                Outlet →
+              </Link>
+            </>
+          ) : (
+            <>
+              <span
+                className="rounded-full border border-neutral-200 bg-neutral-50 px-2 py-1 text-[9px] font-black uppercase tracking-widest text-neutral-500"
+                title="Convivia24 is for adults 18 and over"
+              >
+                18+
+              </span>
+              <Link href="/" className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 hover:text-red-700 whitespace-nowrap">
+                ← Staff app
+              </Link>
+              {!liveUser ? (
+                <Link
+                  href="/auth/sign-in"
+                  className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.2em] text-red-700 hover:text-red-800 whitespace-nowrap"
+                >
+                  <LogIn size={12} aria-hidden /> Sign in
+                </Link>
+              ) : null}
+            </>
+          )}
+        </div>
       </header>
 
       {/* Mobile top tab bar — fixed below notch (Convivia wordmark only on Home hero, not here) */}
-      <div className="lg:hidden fixed top-0 left-1/2 z-[60] w-full max-w-[min(100%,428px)] -translate-x-1/2 pointer-events-none px-2 pt-0">
+      <div className="lg:hidden fixed top-0 left-1/2 z-[60] w-full max-w-[min(100%,428px)] -translate-x-1/2 pointer-events-none px-2 pt-0 flex flex-col gap-1">
+        <div className="pointer-events-auto flex justify-between items-center px-2 pt-[max(0.35rem,env(safe-area-inset-top))] gap-2">
+          {appMode === 'staff' ? (
+            <>
+              <Link href="/outlet" className="text-[10px] font-black uppercase tracking-[0.18em] text-neutral-600 hover:text-red-700 py-1 min-w-0">
+                Outlet console →
+              </Link>
+              <span
+                className="shrink-0 rounded-full border border-neutral-200 bg-white/90 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest text-neutral-500"
+                title="Convivia24 is for adults 18 and over"
+              >
+                18+
+              </span>
+            </>
+          ) : (
+            <>
+              <Link href="/" className="text-[10px] font-black uppercase tracking-[0.18em] text-neutral-600 hover:text-red-700 py-1 shrink-0">
+                ← Staff app
+              </Link>
+              <div className="flex items-center gap-2 shrink-0">
+                <span
+                  className="rounded-full border border-neutral-200 bg-white/90 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest text-neutral-500"
+                  title="Convivia24 is for adults 18 and over"
+                >
+                  18+
+                </span>
+                {!liveUser ? (
+                  <Link
+                    href="/auth/sign-in"
+                    className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.18em] text-red-700 hover:text-red-800 py-1"
+                  >
+                    <LogIn size={12} aria-hidden /> Sign in
+                  </Link>
+                ) : null}
+              </div>
+            </>
+          )}
+        </div>
         <div
-          className="pointer-events-auto flex w-full items-end justify-between gap-0.5 rounded-b-[22px] border border-gold/30 border-t-0 bg-white/[0.97] backdrop-blur-xl px-1 pt-[max(0.25rem,env(safe-area-inset-top))] pb-1.5 shadow-[0_10px_36px_rgba(0,0,0,0.1)]"
+          className="pointer-events-auto flex w-full items-end justify-between gap-1 rounded-b-[22px] border border-neutral-200 border-t-0 bg-white/[0.98] backdrop-blur-xl px-2 pb-1.5 shadow-[0_8px_28px_rgba(0,0,0,0.08)]"
           role="tablist"
           aria-label="Main navigation"
         >
-          <NavIcon label="Host" icon={<PlusSquare size={20} strokeWidth={activeTab === 'host' ? 2.5 : 2} />} active={activeTab === 'host'} onClick={() => setActiveTab('host')} />
-          <NavIcon label="Discover" icon={<Compass size={20} strokeWidth={activeTab === 'discover' ? 2.5 : 2} />} active={activeTab === 'discover'} onClick={() => setActiveTab('discover')} />
-          <NavIcon label="Now" icon={<Home size={20} strokeWidth={activeTab === 'home' ? 2.5 : 2} />} active={activeTab === 'home'} onClick={goNow} />
-          <NavIcon label="Crews" icon={<CircleDashed size={20} strokeWidth={activeTab === 'circles' ? 2.5 : 2} />} active={activeTab === 'circles'} onClick={() => setActiveTab('circles')} />
-          <NavIcon label="Me" icon={<UserIcon size={20} strokeWidth={activeTab === 'profile' ? 2.5 : 2} />} active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} />
+          {appMode === 'outlet' ? (
+            <>
+              <NavIcon label={navLabels.demand} icon={<ClipboardList size={20} strokeWidth={activeTab === 'demand' ? 2.5 : 2} />} active={activeTab === 'demand'} onClick={() => setActiveTab('demand')} />
+              <NavIcon label={navLabels.home} icon={<CalendarDays size={20} strokeWidth={activeTab === 'home' ? 2.5 : 2} />} active={activeTab === 'home'} onClick={goNow} />
+              <NavIcon label={navLabels.pay} icon={<Wallet size={20} strokeWidth={activeTab === 'pay' ? 2.5 : 2} />} active={activeTab === 'pay'} onClick={() => setActiveTab('pay')} />
+            </>
+          ) : (
+            <>
+              <NavIcon label={navLabels.host} icon={<Receipt size={20} strokeWidth={activeTab === 'host' ? 2.5 : 2} />} active={activeTab === 'host'} onClick={() => setActiveTab('host')} />
+              <NavIcon label={navLabels.discover} icon={<ClipboardList size={20} strokeWidth={activeTab === 'discover' ? 2.5 : 2} />} active={activeTab === 'discover'} onClick={() => setActiveTab('discover')} />
+              <NavIcon label={navLabels.home} icon={<CalendarDays size={20} strokeWidth={activeTab === 'home' ? 2.5 : 2} />} active={activeTab === 'home'} onClick={goNow} />
+              <NavIcon label={navLabels.circles} icon={<GraduationCap size={20} strokeWidth={activeTab === 'circles' ? 2.5 : 2} />} active={activeTab === 'circles'} onClick={() => setActiveTab('circles')} />
+              <NavIcon label={navLabels.profile} icon={<UserCircle size={20} strokeWidth={activeTab === 'profile' ? 2.5 : 2} />} active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} />
+            </>
+          )}
         </div>
       </div>
 
       {/* MAIN CONTENT */}
       <div
         ref={mainScrollRef}
-        className="w-full overflow-x-hidden px-3 sm:px-6 lg:px-12 max-lg:flex-1 max-lg:min-h-0 max-lg:overflow-y-auto max-lg:overscroll-y-contain max-lg:pt-[calc(env(safe-area-inset-top)+3.9rem)] max-lg:pb-[calc(1rem+env(safe-area-inset-bottom))] max-lg:scroll-pb-[calc(1rem+env(safe-area-inset-bottom))] max-lg:scrollbar-hide max-lg:relative max-lg:touch-pan-y lg:flex-none lg:overflow-visible lg:pb-12"
+        className="w-full overflow-x-hidden px-4 sm:px-6 lg:px-12 max-lg:flex-1 max-lg:min-h-0 max-lg:overflow-y-auto max-lg:overscroll-y-contain max-lg:pt-[calc(env(safe-area-inset-top)+5.65rem)] max-lg:pb-[calc(1.35rem+env(safe-area-inset-bottom))] max-lg:scroll-pb-[calc(1.35rem+env(safe-area-inset-bottom))] max-lg:scrollbar-hide max-lg:relative max-lg:touch-pan-y lg:flex-none lg:overflow-visible lg:pb-12"
       >
         <AnimatePresence mode="wait">
           <motion.div
-            key={activeTab}
+            key={appMode === 'outlet' && activeTab === 'demand' ? `demand-${outletDemandSub}` : activeTab}
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.3 }}
             className="w-full mx-auto max-w-7xl max-lg:min-h-full lg:min-h-0"
           >
-            {renderContent()}
+            <MobileFirstColumn>{renderContent()}</MobileFirstColumn>
           </motion.div>
         </AnimatePresence>
       </div>
@@ -348,14 +610,18 @@ function NavIcon({ icon, label, active, onClick }: any) {
     <button
       onClick={onClick}
       type="button"
-      className={`min-w-[44px] max-w-[21vw] flex-1 min-h-[44px] py-0.5 rounded-[14px] flex flex-col items-center justify-center gap-0.5 transition-all duration-200 active:scale-[0.96] ${
+      className={`flex-1 min-w-0 basis-0 min-h-[48px] py-1 rounded-[14px] flex flex-col items-center justify-center gap-0.5 transition-all duration-200 active:scale-[0.96] ${
         active
           ? 'text-red-700 bg-red-50 shadow-[inset_0_0_0_1.5px_rgba(185,28,28,0.18)]'
           : 'text-neutral-500 hover:text-neutral-800 active:bg-neutral-50'
       }`}
     >
       {icon}
-      <span className={`text-[6.5px] uppercase tracking-[0.14em] font-black ${active ? 'text-red-800' : ''}`}>{label}</span>
+      <span
+        className={`max-w-[100%] px-0.5 text-center text-[7px] leading-[1.15] uppercase tracking-[0.1em] font-black line-clamp-2 ${active ? 'text-red-800' : ''}`}
+      >
+        {label}
+      </span>
     </button>
   );
 }
@@ -384,7 +650,7 @@ function InviteFromLinkBanner({
       .then((r) => r.json())
       .then((d) => {
         if (!cancelled) {
-          if (!d.hangout) setNote('This table is not available.');
+          if (!d.hangout) setNote('This shift is not available.');
           else setH(d.hangout);
         }
       })
@@ -441,6 +707,7 @@ function InviteFromLinkBanner({
   if (!h) return null;
 
   const isFull = (h.current_guests || 0) >= (h.max_guests || 0);
+  const invitePay = shiftCardPayAndRequirements(h);
 
   return (
     <motion.div
@@ -455,6 +722,19 @@ function InviteFromLinkBanner({
           <p className="text-xs text-neutral-500 mt-1">
             {h.formatted_time} · {h.formatted_date} · {h.city || h.location}
           </p>
+          <div className="mt-2 rounded-lg border border-emerald-200/60 bg-emerald-50/40 px-2.5 py-2 text-[11px] text-neutral-800">
+            <p>
+              <span className="font-semibold text-emerald-900">Transparent pay · </span>
+              {invitePay.payHeadline}
+            </p>
+            <p className="text-neutral-600 mt-1 leading-snug">{invitePay.paySub}</p>
+          </div>
+          <div className="mt-2 rounded-lg border border-neutral-200/80 bg-neutral-50/50 px-2.5 py-2 text-[11px] text-neutral-700 leading-snug">
+            <span className="font-black uppercase tracking-wider text-[9px] text-neutral-500">Requirements · </span>
+            {invitePay.dressLine ? <>Dress: {invitePay.dressLine}. </> : null}
+            {invitePay.briefing}
+          </div>
+          <p className="text-[9px] font-black uppercase tracking-widest text-neutral-400 mt-2">18+ only</p>
         </div>
         <div className="flex flex-wrap gap-2 shrink-0">
           <button
@@ -490,7 +770,7 @@ function InviteFromLinkBanner({
           className="flex-1 min-w-[120px] py-3 rounded-full bg-neutral-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-red-700 disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {joining ? <Loader2 size={14} className="animate-spin" /> : null}
-          {isFull ? 'Full' : 'Join table'}
+          {isFull ? 'Filled' : 'Join roster'}
         </button>
         <button
           type="button"
@@ -508,56 +788,39 @@ function InviteFromLinkBanner({
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   DISCOVER TAB — events & tables forming now
+   DISCOVER TAB — shift board (outlets ↔ workers)
    ══════════════════════════════════════════════════════════════════════ */
 const DISCOVER_CATEGORY_OPTIONS = [
-  { key: 'all', label: 'All vibes' },
-  { key: 'social', label: 'Social' },
-  { key: 'dining', label: 'Dining' },
-  { key: 'nightlife', label: 'Nightlife' },
-  { key: 'outdoors', label: 'Outdoors' },
-  { key: 'fitness', label: 'Fitness' },
-  { key: 'arts', label: 'Arts' },
-  { key: 'sports', label: 'Sports' },
-  { key: 'gigs', label: 'Gigs' },
+  { key: 'all', label: 'All role types' },
+  { key: 'social', label: 'Front of house' },
+  { key: 'dining', label: 'Back of house' },
+  { key: 'nightlife', label: 'Bar & floor' },
+  { key: 'outdoors', label: 'Housekeeping' },
+  { key: 'gigs', label: 'Events & banquets' },
 ] as const;
 
 function DiscoverTab({
+  persona,
   onSwitchTab,
   pendingInviteHangoutId,
   onClearPendingInvite,
   cities,
-  addCity,
 }: {
+  persona: StaffPersona;
   onSwitchTab: (t: AppTab) => void;
   pendingInviteHangoutId?: string | null;
   onClearPendingInvite?: () => void;
   cities: string[];
-  addCity: (name: string) => void;
 }) {
   const [filter, setFilter] = useState<'all' | 'open' | 'curated'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [freeOnly, setFreeOnly] = useState(false);
-  const [discoverCity, setDiscoverCity] = useState<string>('London');
+  const discoverCity = useMemo(() => cities[0] ?? DEFAULT_CITIES[0], [cities]);
   const [hangouts, setHangouts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [joiningId, setJoiningId] = useState<string | null>(null);
   const [joinNote, setJoinNote] = useState<string | null>(null);
   const [inviteCopiedId, setInviteCopiedId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!cities.length || cities.some((c) => c.toLowerCase() === discoverCity.toLowerCase())) {
-      return;
-    }
-    let cancelled = false;
-    const next = cities[0];
-    queueMicrotask(() => {
-      if (!cancelled) setDiscoverCity(next);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [cities, discoverCity]);
 
   const loadHangouts = useCallback(() => {
     setLoading(true);
@@ -589,7 +852,7 @@ function DiscoverTab({
       const res = await fetch(`/api/hangouts/${hangoutId}/join`, { method: 'POST' });
       const data = await res.json();
       if (res.ok) {
-        setJoinNote("You're in. We'll text you the table details.");
+        setJoinNote("You're on the roster. Check WhatsApp for outlet details — selfie check-in opens at shift start.");
         loadHangouts();
       } else {
         setJoinNote(data.error || 'Could not join.');
@@ -602,7 +865,7 @@ function DiscoverTab({
   };
 
   return (
-    <div className="space-y-8 md:space-y-12">
+    <div className="space-y-6 md:space-y-8 min-w-0">
       {pendingInviteHangoutId && onClearPendingInvite ? (
         <InviteFromLinkBanner
           hangoutId={pendingInviteHangoutId}
@@ -612,59 +875,55 @@ function DiscoverTab({
       ) : null}
 
       <motion.div
-        className="space-y-4"
+        className="space-y-3"
         initial="hidden"
         animate="show"
         variants={staggerContainer}
       >
-        <motion.p variants={fadeUp} className="text-[10px] font-black uppercase tracking-[0.3em] text-red-600 flex items-center gap-2 max-md:justify-center">
-          <Compass size={12} className="text-red-600 shrink-0" aria-hidden /> Discover
-        </motion.p>
-        <motion.h1 variants={fadeUp} className="font-display text-3xl sm:text-5xl md:text-6xl italic leading-[1.02] max-md:text-balance">
-          Tables forming <span className="text-red-700">now.</span>
-        </motion.h1>
-        <motion.p variants={fadeUp} className="text-neutral-600 text-sm md:text-lg max-w-xl [overflow-wrap:anywhere] max-md:text-center">
-          Hangouts and open seats in the next 24 hours. Tap a table to claim a seat — pulse and AI match live on{' '}
-          <button type="button" onClick={() => onSwitchTab('home')} className="text-red-700 font-semibold hover:underline underline-offset-4 decoration-red-600/50">
-            Now
-          </button>.
-        </motion.p>
-        <motion.div variants={fadeUp} className="pt-1">
-          <CityChipsBar
-            label="City"
-            chipSize="sm"
-            cities={cities}
-            selected={discoverCity}
-            onSelect={setDiscoverCity}
-            onAddCity={addCity}
-          />
+        <motion.div variants={fadeUp} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.28em] text-red-600">
+          <ClipboardList size={14} className="text-red-600 shrink-0" aria-hidden />
+          {persona === 'outlet' ? 'Shift board' : 'Open shifts'}
         </motion.div>
+        <motion.h1 variants={fadeUp} className="font-display text-2xl sm:text-4xl md:text-5xl italic leading-tight text-balance">
+          {persona === 'outlet' ? (
+            <>Live roster · <span className="text-red-700">{discoverCity}</span></>
+          ) : (
+            <>Pick a shift · <span className="text-red-700">{discoverCity}</span></>
+          )}
+        </motion.h1>
+        <motion.p variants={fadeUp} className="text-neutral-600 text-sm max-w-lg">
+          Same-day pay after outlet sign-off.{' '}
+          <button type="button" onClick={() => onSwitchTab('home')} className="text-red-700 font-semibold underline-offset-4 hover:underline decoration-red-600/40">
+            Today
+          </button>{' '}
+          is the next 24 hours only.
+        </motion.p>
       </motion.div>
 
-      <section className="space-y-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-          <div className="hidden md:block">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-600 mb-1.5">Live tables</p>
-            <h2 className="font-display text-2xl md:text-4xl italic">Join a gathering.</h2>
-            <p className="text-neutral-500 text-sm md:text-base mt-1">Curated and open-list tables you can hop into tonight.</p>
-          </div>
-          <div className="flex flex-col gap-3 w-full md:items-end">
-            <div className="flex gap-2 overflow-x-auto pb-1 w-full md:w-auto scrollbar-hide">
-              <FilterChip label="All tables"   active={filter === 'all'}     onClick={() => setFilter('all')} />
-              <FilterChip label="Curated only" active={filter === 'curated'} onClick={() => setFilter('curated')} color="gold" />
-              <FilterChip label="Open list"    active={filter === 'open'}    onClick={() => setFilter('open')} color="blue" />
-              <FilterChip label="Free entry"   active={freeOnly}             onClick={() => setFreeOnly((v) => !v)} color="blue" />
-            </div>
-            <div className="flex gap-2 overflow-x-auto pb-1 w-full md:max-w-xl md:justify-end scrollbar-hide">
+      <section className="space-y-4">
+        <div className="rounded-2xl border border-neutral-200/90 bg-neutral-50/90 p-3 sm:p-4 grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,min(100%,280px))_1fr] md:items-start md:gap-x-4 md:gap-y-3">
+          <label className="flex flex-col gap-2 min-w-0 w-full" htmlFor="shift-role-filter">
+            <span className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Role type</span>
+            <select
+              id="shift-role-filter"
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2.5 text-[14px] font-semibold text-neutral-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-600/25 focus:border-red-400"
+            >
               {DISCOVER_CATEGORY_OPTIONS.map((opt) => (
-                <FilterChip
-                  key={opt.key}
-                  label={opt.label}
-                  active={categoryFilter === opt.key}
-                  onClick={() => setCategoryFilter(opt.key)}
-                  color={opt.key === 'all' ? 'cream' : 'gold'}
-                />
+                <option key={opt.key} value={opt.key}>
+                  {opt.label}
+                </option>
               ))}
+            </select>
+          </label>
+          <div className="min-w-0 flex flex-col gap-2">
+            <span className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Roster filters</span>
+            <div className="flex flex-wrap gap-2">
+              <FilterChip label="All types" active={filter === 'all'} onClick={() => setFilter('all')} />
+              <FilterChip label="Hand-picked" active={filter === 'curated'} onClick={() => setFilter('curated')} color="gold" />
+              <FilterChip label="Open roster" active={filter === 'open'} onClick={() => setFilter('open')} color="blue" />
+              <FilterChip label="No gate fee" active={freeOnly} onClick={() => setFreeOnly((v) => !v)} color="blue" />
             </div>
           </div>
         </div>
@@ -682,12 +941,27 @@ function DiscoverTab({
           </div>
         ) : hangouts.length === 0 ? (
           <div className="text-center py-20 text-neutral-400 border border-dashed border-neutral-200 rounded-3xl">
-            <Compass size={48} className="mx-auto mb-4 opacity-50" />
-            <p className="font-display text-2xl italic mb-2">No tables match in {discoverCity}.</p>
-            <p className="text-sm mb-5">Try another city, clear filters, or host a table.</p>
-            <button type="button" onClick={() => onSwitchTab('host')} className="text-[10px] font-black uppercase tracking-widest bg-red-700 text-white px-6 py-3 rounded-full hover:bg-red-800 transition-colors">
-              Host a table
-            </button>
+            <ClipboardList size={48} className="mx-auto mb-4 opacity-50" />
+            <p className="font-display text-2xl italic mb-2">Nothing matches in {discoverCity}.</p>
+            <p className="text-sm mb-5">Loosen role or roster filters{persona === 'outlet' ? ' — or post cover.' : '.'}</p>
+            <div className="flex flex-wrap justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setFilter('all');
+                  setCategoryFilter('all');
+                  setFreeOnly(false);
+                }}
+                className="text-[10px] font-black uppercase tracking-widest border border-neutral-300 text-neutral-800 px-5 py-3 rounded-full hover:border-red-400"
+              >
+                Reset filters
+              </button>
+              {persona === 'outlet' ? (
+                <button type="button" onClick={() => onSwitchTab('host')} className="text-[10px] font-black uppercase tracking-widest bg-red-700 text-white px-6 py-3 rounded-full hover:bg-red-800 transition-colors">
+                  Post a shift
+                </button>
+              ) : null}
+            </div>
           </div>
         ) : (
           <motion.div
@@ -702,6 +976,7 @@ function DiscoverTab({
                 ? 'bg-red-50 text-red-700 border-red-200'
                 : 'bg-sky-50 text-sky-800 border-sky-200';
               const isFull = (h.current_guests || 0) >= (h.max_guests || 0);
+              const payReq = shiftCardPayAndRequirements(h);
               return (
                 <motion.div
                   key={h.id}
@@ -710,20 +985,39 @@ function DiscoverTab({
                   className="relative bg-white rounded-[26px] md:rounded-[28px] p-4 md:p-6 border border-neutral-200/90 shadow-[0_8px_30px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.03] hover:border-red-300 hover:shadow-[0_12px_40px_rgba(185,28,28,0.09)] transition-shadow flex flex-col justify-between group overflow-hidden"
                 >
                   <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-700 via-red-600 to-neutral-900 opacity-90" />
-                  {h.cover_image ? (
-                    <div className="hidden lg:block w-full h-36 rounded-2xl overflow-hidden mb-4 -mt-1">
-                      <img src={h.cover_image} alt="" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700" />
-                    </div>
-                  ) : null}
                   <div>
                     <div className="flex justify-between items-start mb-3 md:mb-5 gap-2">
                       <span className={`text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-full border ${badgeClass}`}>
                         {h.type}
                       </span>
-                      <span className="text-red-700 text-[10px] uppercase font-black tracking-widest bg-red-50 px-2 py-1 rounded-full border border-red-200 shrink-0">Live</span>
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        <span className="text-red-700 text-[10px] uppercase font-black tracking-widest bg-red-50 px-2 py-1 rounded-full border border-red-200">Open</span>
+                        <span className="text-[8px] font-black uppercase tracking-widest text-neutral-500 border border-neutral-200 bg-neutral-50 px-2 py-0.5 rounded-full">18+</span>
+                      </div>
                     </div>
-                    <h3 className="font-display text-xl md:text-2xl lg:text-3xl mb-1.5 md:mb-2 leading-tight text-neutral-900">{h.title}</h3>
-                    <p className="text-neutral-600 text-sm mb-4 md:mb-6 line-clamp-2">{h.vibe}</p>
+                    <h3 className="font-display text-xl md:text-2xl lg:text-3xl mb-3 md:mb-4 leading-tight text-neutral-900">{h.title}</h3>
+
+                    <div className="space-y-2 mb-4 md:mb-5">
+                      <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/50 px-3 py-2.5">
+                        <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-900 mb-1 flex items-center gap-1.5">
+                          <Ticket size={11} className="shrink-0 opacity-90" aria-hidden /> Transparent pay
+                        </p>
+                        <p className="text-sm font-semibold text-neutral-900 leading-snug">{payReq.payHeadline}</p>
+                        <p className="text-[11px] text-neutral-600 leading-snug mt-1">{payReq.paySub}</p>
+                      </div>
+                      <div className="rounded-xl border border-neutral-200/90 bg-neutral-50/60 px-3 py-2.5">
+                        <p className="text-[9px] font-black uppercase tracking-[0.18em] text-neutral-600 mb-1">Requirements &amp; briefing</p>
+                        {payReq.dressLine ? (
+                          <p className="text-[13px] text-neutral-900">
+                            <span className="font-semibold text-neutral-500">Dress · </span>
+                            {payReq.dressLine}
+                          </p>
+                        ) : null}
+                        <p className={`text-[13px] text-neutral-700 leading-snug ${payReq.dressLine ? 'mt-1.5' : ''} line-clamp-4`}>
+                          {payReq.briefing}
+                        </p>
+                      </div>
+                    </div>
 
                     <div className="space-y-2 text-[13px] md:text-sm text-neutral-500 mb-5 md:mb-8">
                       <div className="flex items-center gap-2"><Clock size={14} className="shrink-0 text-red-700/80" /> {h.formatted_time || 'TBD'} <span className="text-xs ml-1 font-bold text-neutral-400">• {h.formatted_date}</span></div>
@@ -739,20 +1033,20 @@ function DiscoverTab({
                   </div>
 
                     <div className="border-t border-neutral-100 pt-4 md:pt-5 mt-auto space-y-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="hidden lg:flex -space-x-2">
-                          {(h.attendees || []).slice(0, 4).map((a: any) =>
-                            a.avatar_url ? (
-                              <img key={a.user_id} src={a.avatar_url} className="w-8 h-8 rounded-full border-2 border-white object-cover" alt="" />
-                            ) : (
-                              <div key={a.user_id} className="w-8 h-8 rounded-full border-2 border-white bg-neutral-100 flex items-center justify-center text-[10px] font-bold text-neutral-600">
-                                {(a.name || '?')[0]}
-                              </div>
-                            ),
-                          )}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-wrap">
+                        <div className="flex -space-x-2 shrink-0">
+                          {(h.attendees || []).slice(0, 4).map((a: any) => (
+                            <div
+                              key={a.user_id}
+                              className="w-8 h-8 rounded-full border-2 border-white bg-neutral-200 flex items-center justify-center text-[10px] font-bold text-neutral-700"
+                              title={a.name || 'Staff'}
+                            >
+                              {(a.name || '?')[0]?.toUpperCase()}
+                            </div>
+                          ))}
                         </div>
-                        <span className="text-xs text-neutral-500 font-bold tabular-nums lg:pl-0">{h.current_guests || 0} / {h.max_guests || 0} seated</span>
+                        <span className="text-xs text-neutral-500 font-bold tabular-nums">{h.current_guests || 0} / {h.max_guests || 0} filled</span>
                       </div>
                       <button
                         type="button"
@@ -766,7 +1060,7 @@ function DiscoverTab({
                           'Full'
                         ) : (
                           <>
-                            Join <ArrowRight size={12} className="mb-0.5" />
+                            Confirm <ArrowRight size={12} className="mb-0.5" />
                           </>
                         )}
                       </button>
@@ -824,8 +1118,8 @@ function DiscoverTab({
    INSTANT PLAN MODAL — the magic moment
    ══════════════════════════════════════════════════════════════════════ */
 function InstantPlanModal({
-  phase, plan, pulse, creditsResetAt, onAccept, onSkip, onDelay, onClose, onUpgrade,
-}: { phase: 'matching' | 'ready' | 'gated'; plan: any; pulse: Pulse; creditsResetAt: string | null; onAccept: () => void; onSkip: () => void; onDelay: () => void; onClose: () => void; onUpgrade: () => void }) {
+  phase, plan, pulse, creditsResetAt, onAccept, onSkip, onDelay, onClose,
+}: { phase: 'matching' | 'ready' | 'gated'; plan: any; pulse: Pulse; creditsResetAt: string | null; onAccept: () => void; onSkip: () => void; onDelay: () => void; onClose: () => void }) {
   const modal = (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -850,8 +1144,8 @@ function InstantPlanModal({
             </div>
             {phase === 'gated' ? (
               <>
-                <h2 className="font-display text-3xl md:text-4xl italic mb-2">No credits left</h2>
-                <p className="text-neutral-600 text-sm">Convivia Black unlocks unlimited matches in {pulse.area}.</p>
+                <h2 className="font-display text-3xl md:text-4xl italic mb-2">Roster assist paused</h2>
+                <p className="text-neutral-600 text-sm">You&apos;ve used this week&apos;s free AI suggestions{pulse.area ? ` · ${pulse.area}` : ''}. Try again after reset.</p>
               </>
             ) : phase === 'matching' ? (
               <>
@@ -877,18 +1171,14 @@ function InstantPlanModal({
                 <Sparkles size={26} className="text-red-700"/>
               </div>
               <div>
-                <h3 className="font-display text-2xl italic text-neutral-900 mb-1">You&apos;ve used your free match this week.</h3>
+                <h3 className="font-display text-2xl italic text-neutral-900 mb-1">Weekly limit reached</h3>
                 <p className="text-neutral-600 text-sm max-w-xs mx-auto">
-                  Free members get 1 AI match per week. {creditsResetAt && <>Resets <strong>{new Date(creditsResetAt).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</strong>.</>}
+                  Free roster assist refreshes once per week.{creditsResetAt && <> Next window: <strong>{new Date(creditsResetAt).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</strong>.</>}
                 </p>
               </div>
-              <div className="flex gap-3 w-full">
-                <button onClick={onClose} className="flex-1 py-3 rounded-full border border-neutral-300 text-neutral-600 font-black uppercase tracking-widest text-[11px]">Wait</button>
-                <button onClick={onUpgrade} className="flex-1 py-3 rounded-full bg-red-700 text-white font-black uppercase tracking-widest text-[11px] shadow-[0_0_25px_rgba(185,28,28,0.2)] flex items-center justify-center gap-1.5">
-                  <Star size={12} fill="currentColor"/> Unlock Black
-                </button>
-              </div>
-              <p className="text-[10px] uppercase tracking-widest text-neutral-500 font-bold">14-day free trial · cancel anytime</p>
+              <button onClick={onClose} type="button" className="w-full py-3 rounded-full bg-red-700 text-white font-black uppercase tracking-widest text-[11px] shadow-[0_0_25px_rgba(185,28,28,0.2)]">
+                Got it
+              </button>
             </div>
           ) : phase === 'matching' ? (
             <div className="flex flex-col items-center justify-center gap-4 py-10">
@@ -901,10 +1191,15 @@ function InstantPlanModal({
           ) : (
             <>
               {/* People row */}
-              <div className="flex items-center gap-3 mb-5">
-                <div className="flex -space-x-3">
+              <div className="flex items-center gap-3 mb-5 flex-wrap">
+                <div className="flex -space-x-2">
                   {plan?.people?.map((p: any, i: number) => (
-                    <img key={i} src={p.avatar} alt="" className="w-12 h-12 rounded-full border-2 border-white object-cover" />
+                    <div
+                      key={i}
+                      className="w-11 h-11 rounded-full border-2 border-white bg-neutral-200 flex items-center justify-center text-xs font-bold text-neutral-800"
+                    >
+                      {(p.name || '?')[0]?.toUpperCase()}
+                    </div>
                   ))}
                 </div>
                 <div className="text-[11px] uppercase tracking-widest font-black text-neutral-600">
@@ -949,7 +1244,11 @@ function FilterChip({ label, active, onClick, color = 'cream' }: any) {
     blue:  active ? 'bg-[#1a3a5f]/30 text-[#4da6ff] border border-[#4da6ff]/50 shadow-[0_0_15px_rgba(77,166,255,0.2)]' : 'bg-neutral-100 text-[#4da6ff]/60 border border-[#4da6ff]/10 hover:border-[#4da6ff]/30',
   };
   return (
-    <button onClick={onClick} className={`px-5 py-2.5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${baseColors[color]}`}>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full text-[9px] sm:text-[10px] md:text-xs font-black uppercase tracking-widest transition-all text-center leading-tight max-[360px]:whitespace-normal sm:whitespace-nowrap ${baseColors[color]}`}
+    >
       {label}
     </button>
   );
@@ -963,6 +1262,127 @@ function tableSizeFillPercent(size: number, min: number, max: number) {
   return `${((size - min) / (max - min)) * 100}%`;
 }
 
+/** Outlet Screen 8 — verified workers from DB (+ certs when present). */
+function MatchedWorkersPanel({
+  cityName,
+  area,
+  shiftRole,
+}: {
+  cityName: string;
+  area: string;
+  shiftRole: string;
+}) {
+  const [confirmed, setConfirmed] = useState<string | null>(null);
+  const [rows, setRows] = useState<
+    {
+      id: string;
+      name: string;
+      avatar: string;
+      rating: number | null;
+      zone: string;
+      certifications: string[];
+    }[]
+  >([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    const q = new URLSearchParams({
+      city: cityName,
+      area: area || '',
+      role: shiftRole || '',
+    });
+    setLoading(true);
+    fetch(`/api/outlet/matched-workers?${q}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (cancelled) return;
+        setRows(Array.isArray(d.workers) ? d.workers : []);
+      })
+      .catch(() => {
+        if (!cancelled) setRows([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [cityName, area, shiftRole]);
+
+  return (
+    <div className="max-w-lg mx-auto text-left rounded-2xl border border-neutral-200 bg-white p-4 sm:p-5 shadow-[0_8px_28px_rgba(0,0,0,0.06)] mt-8">
+      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-600 mb-1">Matched for your shift</p>
+      <h3 className="font-display text-xl italic text-neutral-900">Verified staff (database)</h3>
+      <p className="text-[12px] text-neutral-500 mt-1 mb-4">
+        City <strong className="text-neutral-700">{cityName}</strong>
+        {area ? (
+          <>
+            {' '}
+            · area <strong className="text-neutral-700">{area}</strong>
+          </>
+        ) : null}{' '}
+        · role <strong className="text-neutral-700">{shiftRole}</strong>. Requires verified workers with profile location.
+      </p>
+      {loading ? (
+        <div className="flex items-center gap-2 py-6 text-neutral-500 text-sm">
+          <Loader2 size={18} className="animate-spin text-red-700" /> Loading matches…
+        </div>
+      ) : rows.length === 0 ? (
+        <p className="text-sm text-neutral-600 py-4">
+          No verified profiles matched yet — seed workers in the database or complete verification so staff appear here.
+        </p>
+      ) : (
+        <ul className="space-y-3">
+          {rows.map((w) => (
+            <li
+              key={w.id}
+              className="flex gap-3 rounded-xl border border-neutral-100 bg-neutral-50/90 p-3 items-center"
+            >
+              <img
+                src={w.avatar}
+                alt=""
+                className="w-14 h-14 rounded-2xl object-cover shrink-0 border border-white shadow-sm"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-semibold text-neutral-900">{w.name}</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-neutral-500 bg-white border border-neutral-200 px-2 py-0.5 rounded-full">
+                    {w.zone}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 mt-0.5 text-[11px] text-amber-800 font-semibold">
+                  <Star size={12} className="fill-amber-500 text-amber-500 shrink-0" aria-hidden />
+                  {w.rating != null ? `${w.rating.toFixed(1)} · rated` : 'New · unrated'}
+                </div>
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {w.certifications.map((c, i) => (
+                    <span
+                      key={`${w.id}-${i}-${c}`}
+                      className="text-[9px] font-bold uppercase tracking-wider bg-white border border-neutral-200 px-2 py-0.5 rounded-full text-neutral-700"
+                    >
+                      {c}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setConfirmed(w.id)}
+                className={`shrink-0 rounded-full min-h-[44px] px-4 py-2.5 text-[10px] font-black uppercase tracking-widest transition-colors ${
+                  confirmed === w.id ? 'bg-emerald-600 text-white' : 'bg-red-700 text-white hover:bg-red-800'
+                }`}
+              >
+                {confirmed === w.id ? 'Confirmed' : 'Confirm'}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 function HostTab({
   onPosted,
   cities,
@@ -972,61 +1392,65 @@ function HostTab({
   cities: string[];
   addCity: (name: string) => void;
 }) {
-  const tableMin = 2;
-  const tableMax = 24;
-  const [size, setSize] = useState(6);
-  const [type, setType] = useState('curated');
+  const tableMin = 1;
+  const tableMax = 40;
+  const [size, setSize] = useState(4);
+  const [type, setType] = useState('open');
   const [title, setTitle] = useState('');
   const [vibe, setVibe] = useState('');
+  const [dressCode, setDressCode] = useState('');
+  const [shiftRole, setShiftRole] = useState<string>(ALL_STAFF_ROLES[0] || 'Waiter');
+  const [zone, setZone] = useState<string>(LAGOS_ZONES[0]);
   const [location, setLocation] = useState('');
-  const [city, setCity] = useState('Lagos');
+  const [city, setCity] = useState<string>(DEFAULT_CITIES[0]);
   const [eventDate, setEventDate] = useState('');
   const [eventTime, setEventTime] = useState('');
-  const [coverImage, setCoverImage] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [createdHangoutId, setCreatedHangoutId] = useState<string | null>(null);
   const [inviteCopiedHost, setInviteCopiedHost] = useState(false);
   const [error, setError] = useState('');
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    setError('');
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const res = await fetch('/api/upload', { method: 'POST', body: formData, credentials: 'include' });
-      const data = await res.json();
-      if (res.ok) setCoverImage(data.url);
-      else setError(data.error || 'Upload failed.');
-    } catch {
-      setError('Upload failed. Try again.');
-    } finally {
-      setUploading(false);
+  useEffect(() => {
+    if (!cities.length) return;
+    setCity((prev) => (cities.some((c) => c.toLowerCase() === prev.toLowerCase()) ? prev : cities[0]));
+  }, [cities]);
+
+  useEffect(() => {
+    if (city === 'Lagos') {
+      setZone((z) =>
+        LAGOS_ZONES.includes(z as (typeof LAGOS_ZONES)[number]) ? z : LAGOS_ZONES[0],
+      );
+    } else {
+      setZone((z) => (LAGOS_ZONES.includes(z as (typeof LAGOS_ZONES)[number]) ? '' : z));
     }
-  };
+  }, [city]);
 
   const handleSubmit = async () => {
     if (!title.trim() || !vibe.trim() || !location.trim() || !eventDate || !eventTime) {
-      setError('Fill in all fields — title, vibe, location, date, and time.');
+      setError('Fill in shift name, notes, venue, date, and time.');
       return;
     }
     setSubmitting(true);
     setError('');
     try {
       const event_time = new Date(`${eventDate}T${eventTime}`).toISOString();
+      const vibeBlock = [dressCode.trim() ? `Dress: ${dressCode.trim()}.` : '', vibe.trim()].filter(Boolean).join(' ');
       const res = await fetch('/api/hangouts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
-          title, vibe, type,
+          title: `[${shiftRole}] ${title.trim()}`,
+          vibe: vibeBlock,
+          type,
           category: 'social',
-          event_time, location, city,
+          event_time,
+          location: location.trim(),
+          city: city.trim(),
+          area: zone.trim() || null,
           max_guests: size,
-          cover_image: coverImage,
+          cover_image: null,
         }),
       });
       const data = await res.json();
@@ -1034,7 +1458,13 @@ function HostTab({
         if (city.trim()) addCity(city.trim());
         setCreatedHangoutId(data.hangout?.id ? String(data.hangout.id) : null);
         setSuccess(true);
-      } else setError(data.error || 'Failed to create hangout.');
+      } else {
+        let msg = data.error || 'Failed to create hangout.';
+        if (data.code === 'OUTLET_NOT_APPROVED') {
+          msg = `${msg} Complete outlet registration under Profile, or wait for admin approval.`;
+        }
+        setError(msg);
+      }
     } catch {
       setError('Network error. Try again.');
     } finally {
@@ -1049,8 +1479,11 @@ function HostTab({
           className="w-20 h-20 border border-red-400 flex items-center justify-center mx-auto mb-6 rounded-full bg-red-50 shadow-[0_0_30px_rgba(201,168,76,0.25)]">
           <Check size={32} className="text-red-700" />
         </motion.div>
-        <h2 className="font-display text-4xl italic text-neutral-900 mb-3">Your table is set.</h2>
-            <p className="text-neutral-500 text-base mb-6 max-w-md mx-auto">Your hangout is live on Discover. Send friends an invite link so they can join in one tap.</p>
+        <h2 className="font-display text-4xl italic text-neutral-900 mb-3">Shift is live.</h2>
+            <p className="text-neutral-500 text-base mb-6 max-w-md mx-auto">
+              Verified staff see it on the board for your zone. Share the link on WhatsApp with your floor manager or agency partner.
+            </p>
+        <MatchedWorkersPanel cityName={city} area={zone} shiftRole={shiftRole} />
         {createdHangoutId ? (
           <div className="max-w-md mx-auto mb-8 rounded-2xl border border-neutral-200 bg-neutral-50 p-4 text-left">
             <p className="text-[10px] font-black uppercase tracking-widest text-neutral-500 mb-2">Invite link</p>
@@ -1099,8 +1532,8 @@ function HostTab({
           </div>
         ) : null}
         <div className="flex justify-center gap-3 flex-wrap">
-          <button onClick={onPosted} className="bg-red-700 text-white px-6 py-3 rounded-full font-black uppercase tracking-widest text-[11px] hover:bg-red-800 transition-colors">View on Discover</button>
-          <button onClick={() => { setSuccess(false); setCreatedHangoutId(null); setTitle(''); setVibe(''); setLocation(''); setEventDate(''); setEventTime(''); setCoverImage(null); }}
+          <button onClick={onPosted} className="bg-red-700 text-white px-6 py-3 rounded-full font-black uppercase tracking-widest text-[11px] hover:bg-red-800 transition-colors">View on board</button>
+          <button onClick={() => { setSuccess(false); setCreatedHangoutId(null); setTitle(''); setVibe(''); setDressCode(''); setShiftRole(ALL_STAFF_ROLES[0] || 'Waiter'); setZone(LAGOS_ZONES[0]); setLocation(''); setCity(DEFAULT_CITIES[0]); setEventDate(''); setEventTime(''); }}
             className="text-red-700 text-[10px] uppercase tracking-widest font-black hover:text-red-800 transition-colors">Host another →</button>
         </div>
       </div>
@@ -1111,22 +1544,24 @@ function HostTab({
     <div className="space-y-5 md:space-y-6 max-w-3xl mx-auto h-full flex flex-col">
       <div className="mb-5 md:mb-12 text-left md:text-center">
         <p className="text-[10px] font-black uppercase tracking-[0.28em] text-red-600 mb-2 flex items-center gap-2 md:justify-center">
-          <PlusSquare size={12} className="shrink-0" aria-hidden /> Host
+          <PlusSquare size={12} className="shrink-0" aria-hidden /> Outlet · post shift
         </p>
-        <h1 className="font-display text-4xl md:text-6xl italic mb-2">Set the <span className="text-red-700">table.</span></h1>
-        <p className="text-neutral-500 text-base md:text-lg mb-4 max-w-xl md:mx-auto">Pick a vibe, a place, a time. We&apos;ll seat the rest.</p>
+        <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl italic mb-2">Post <span className="text-red-700">cover.</span></h1>
+        <p className="text-neutral-500 text-base md:text-lg mb-4 max-w-xl md:mx-auto">
+          Role, zone, dress code, headcount — we surface it to verified staff. Filled shifts pay out same day to mobile money.
+        </p>
         <div className="hidden md:flex justify-center">
           <FlowSteps steps={[
-            { n: '1', label: 'Describe',   sub: 'occasion + vibe' },
-            { n: '2', label: 'Set venue',  sub: 'date + table size' },
-            { n: '3', label: 'Go live',    sub: 'guests can join now' },
+            { n: '1', label: 'Role & zone', sub: 'Lagos accuracy' },
+            { n: '2', label: 'Venue & time', sub: 'date + headcount' },
+            { n: '3', label: 'Go live',    sub: 'roster in 24h' },
           ]}/>
         </div>
         <div className="md:hidden grid grid-cols-3 gap-2">
           {[
-            ['1', 'Vibe'],
-            ['2', 'Place'],
-            ['3', 'Publish'],
+            ['1', 'Role'],
+            ['2', 'Venue'],
+            ['3', 'Live'],
           ].map(([n, label]) => (
             <div key={n} className="bg-neutral-50 border border-neutral-200 rounded-2xl px-3 py-2">
               <span className="text-red-700 text-[10px] font-black">{n}</span>
@@ -1138,37 +1573,80 @@ function HostTab({
 
       <div className="bg-white backdrop-blur-lg border border-neutral-200/90 rounded-[28px] md:rounded-[40px] p-5 md:p-12 shadow-[0_12px_40px_rgba(0,0,0,0.05)] flex-1">
         <div className="space-y-7 md:space-y-10">
-          <Field label="Title">
-            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Whisky & ideas"
-              className="w-full bg-transparent border-b border-neutral-200 pb-3 text-2xl md:text-3xl focus:outline-none focus:border-red-700 placeholder:text-neutral-400 transition-colors font-display italic text-neutral-900" />
-          </Field>
-
-          <Field label="The vibe">
-            <input type="text" value={vibe} onChange={(e) => setVibe(e.target.value)} placeholder="What does this night feel like?"
-              className="w-full bg-transparent border-b border-neutral-200 pb-3 text-[15px] md:text-base text-neutral-800 focus:outline-none focus:border-red-700 placeholder:text-neutral-400 transition-colors font-sans" />
+          <Field label="Shift title">
+            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Friday dinner cover — 4 waiters"
+              className="w-full bg-transparent border-b border-neutral-200 pb-3 text-xl sm:text-2xl md:text-3xl focus:outline-none focus:border-red-700 placeholder:text-neutral-400 transition-colors font-display italic text-neutral-900" />
           </Field>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Field label="Place">
-              <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="The Counter, Victoria Island"
-                className="w-full bg-transparent border-b border-neutral-200 pb-3 text-[15px] md:text-base text-neutral-800 focus:outline-none focus:border-red-700 placeholder:text-neutral-400 transition-colors font-sans" />
+            <Field label="Role">
+              <select
+                value={shiftRole}
+                onChange={(e) => setShiftRole(e.target.value)}
+                className="w-full bg-transparent border-b border-neutral-200 pb-3 text-[15px] md:text-base text-neutral-800 focus:outline-none focus:border-red-700"
+              >
+                {STAFF_ROLE_GROUPS.map((g) => (
+                  <optgroup key={g.key} label={g.label}>
+                    {g.roles.map((r) => (
+                      <option key={r} value={r}>{r}</option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
             </Field>
-            <Field label="City">
-              <input
-                type="text"
-                list="convivia-host-cities"
+            <Field label="City (filter)" hint="Board & pulse use city only">
+              <select
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                placeholder="Any city — type yours or pick a suggestion"
-                className="w-full bg-transparent border-b border-neutral-200 pb-3 text-base focus:outline-none focus:border-red-700 placeholder:text-neutral-400 transition-colors"
-              />
-              <datalist id="convivia-host-cities">
+                className="w-full bg-transparent border-b border-neutral-200 pb-3 text-[15px] md:text-base text-neutral-800 focus:outline-none focus:border-red-700"
+              >
                 {cities.map((c) => (
-                  <option key={c} value={c} />
+                  <option key={c} value={c}>{c}</option>
                 ))}
-              </datalist>
+              </select>
             </Field>
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Field
+              label={city === 'Lagos' ? 'Area / zone (Lagos)' : 'Area / district'}
+              hint={city === 'Lagos' ? undefined : '(optional)'}
+            >
+              {city === 'Lagos' ? (
+                <select
+                  value={zone}
+                  onChange={(e) => setZone(e.target.value)}
+                  className="w-full bg-transparent border-b border-neutral-200 pb-3 text-[15px] md:text-base text-neutral-800 focus:outline-none focus:border-red-700"
+                >
+                  {LAGOS_ZONES.map((z) => (
+                    <option key={z} value={z}>{z}</option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  value={zone}
+                  onChange={(e) => setZone(e.target.value)}
+                  placeholder="Neighbourhood or district"
+                  className="w-full bg-transparent border-b border-neutral-200 pb-3 text-[15px] md:text-base text-neutral-800 focus:outline-none focus:border-red-700 placeholder:text-neutral-400 transition-colors font-sans"
+                />
+              )}
+            </Field>
+            <Field label="Venue address" hint="Street · gate · landmark — stored on this shift">
+              <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Full address for staff navigation"
+                className="w-full bg-transparent border-b border-neutral-200 pb-3 text-[15px] md:text-base text-neutral-800 focus:outline-none focus:border-red-700 placeholder:text-neutral-400 transition-colors font-sans" />
+            </Field>
+          </div>
+
+          <Field label="Dress code" hint="(required for disputes)">
+            <input type="text" value={dressCode} onChange={(e) => setDressCode(e.target.value)} placeholder="e.g. all black, closed shoes, hotel standards"
+              className="w-full bg-transparent border-b border-neutral-200 pb-3 text-[15px] md:text-base text-neutral-800 focus:outline-none focus:border-red-700 placeholder:text-neutral-400 transition-colors font-sans" />
+          </Field>
+
+          <Field label="Briefing & house rules">
+            <input type="text" value={vibe} onChange={(e) => setVibe(e.target.value)} placeholder="Reporting line, parking, break policy, allergies…"
+              className="w-full bg-transparent border-b border-neutral-200 pb-3 text-[15px] md:text-base text-neutral-800 focus:outline-none focus:border-red-700 placeholder:text-neutral-400 transition-colors font-sans" />
+          </Field>
 
           <div className="grid grid-cols-2 gap-6">
             <Field label="Date" Icon={Calendar}>
@@ -1181,28 +1659,6 @@ function HostTab({
             </Field>
           </div>
 
-          {/* Cover image — desktop only keeps the Now flow minimal on phone */}
-          <div className="hidden lg:block">
-          <Field label="Cover Image" hint="(optional)" Icon={Camera}>
-            {coverImage ? (
-              <div className="relative rounded-2xl overflow-hidden h-44 border border-neutral-200">
-                <img src={coverImage} alt="" className="w-full h-full object-cover" />
-                <button onClick={() => setCoverImage(null)} className="absolute top-3 right-3 bg-black/55 text-neutral-900 p-1.5 rounded-full hover:bg-red-900 transition-colors">
-                  <X size={14} />
-                </button>
-                <span className="absolute bottom-3 left-3 text-[9px] uppercase tracking-widest font-black text-red-700 bg-black/50 px-2 py-1 rounded-full border border-red-400">
-                  Stored on Azure
-                </span>
-              </div>
-            ) : (
-              <label className="flex items-center justify-center gap-2 border border-dashed border-neutral-200 rounded-2xl p-6 cursor-pointer hover:border-red-600 transition-colors text-neutral-400 hover:text-neutral-600">
-                <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                {uploading ? <Loader2 size={20} className="animate-spin" /> : <Camera size={20} />}
-                <span className="text-sm">{uploading ? 'Uploading…' : 'Add a cover photo'}</span>
-              </label>
-            )}
-          </Field>
-          </div>
 
           {/* Format */}
           <Field label="Format">
@@ -1212,14 +1668,14 @@ function HostTab({
                   <Zap size={20} strokeWidth={1.75} className="shrink-0" />
                   <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Curated</span>
                 </span>
-                <span className="text-[11px] text-neutral-500 leading-snug pl-7">You hand-pick guests.</span>
+                <span className="text-[11px] text-neutral-500 leading-snug pl-7">You approve each name before they&apos;re confirmed.</span>
               </button>
               <button type="button" onClick={() => setType('open')} className={`text-left flex flex-col gap-1.5 py-4 px-3.5 rounded-[18px] border transition-all ${type === 'open' ? 'bg-sky-50/90 border-sky-600 shadow-[0_0_0_1px_rgba(2,132,199,0.2)]' : 'border-neutral-200/90 bg-white/50 text-neutral-600 hover:border-neutral-300'}`}>
                 <span className={`flex items-center gap-2 ${type === 'open' ? 'text-sky-900' : 'text-neutral-800'}`}>
                   <Users size={20} strokeWidth={1.75} className="shrink-0" />
-                  <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Open list</span>
+                  <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Open roster</span>
                 </span>
-                <span className="text-[11px] text-neutral-500 leading-snug pl-7">First come, open seats.</span>
+                <span className="text-[11px] text-neutral-500 leading-snug pl-7">Verified workers grab open slots first — you see the roster live.</span>
               </button>
             </div>
           </Field>
@@ -1227,7 +1683,7 @@ function HostTab({
           {/* Size */}
           <div>
             <label className="text-[10px] md:text-[11px] font-semibold uppercase tracking-[0.28em] text-gold mb-4 flex justify-between items-end gap-3">
-              <span>Table size · {size} seats</span>
+              <span>Headcount · {size} staff</span>
               <span className="text-lg md:text-xl text-red-700 font-display italic font-normal tracking-normal normal-case">{size} people</span>
             </label>
             <input
@@ -1254,7 +1710,7 @@ function HostTab({
           disabled={submitting}
           className="relative w-full bg-red-700 text-white py-4 md:py-5 rounded-full font-black uppercase tracking-[0.2em] text-[11px] mt-8 md:mt-12 mb-1 max-lg:mb-3 hover:bg-red-800 hover:shadow-[0_0_30px_rgba(185,28,28,0.25)] transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-md md:shadow-none"
         >
-          {submitting ? <Loader2 size={16} className="animate-spin" /> : <><span>Set the Table</span> <ArrowRight size={16} /></>}
+          {submitting ? <Loader2 size={16} className="animate-spin" /> : <><span>Publish shift</span> <ArrowRight size={16} /></>}
         </button>
       </div>
     </div>
@@ -1272,13 +1728,29 @@ function Field({ label, hint, Icon, children }: { label: string; hint?: string; 
   );
 }
 
-function HomeExploreSnippets({ onSwitchTab, openTablesCount }: { onSwitchTab: (t: AppTab) => void; openTablesCount: number }) {
-  const cards: { tab: AppTab; title: string; sub: string; Icon: typeof Ticket }[] = [
-    { tab: 'discover', title: 'Events', sub: openTablesCount > 0 ? `${openTablesCount} open now` : 'Tables forming now', Icon: Ticket },
-    { tab: 'host', title: 'Host', sub: 'Start a table tonight', Icon: PlusSquare },
-    { tab: 'circles', title: 'Crews', sub: 'Your people', Icon: CircleDashed },
-    { tab: 'profile', title: 'You', sub: 'Verify · Black', Icon: UserIcon },
-  ];
+function HomeExploreSnippets({
+  persona,
+  onSwitchTab,
+  openTablesCount,
+  outletThreeTab,
+}: {
+  persona: StaffPersona;
+  onSwitchTab: (t: AppTab) => void;
+  openTablesCount: number;
+  outletThreeTab?: boolean;
+}) {
+  const cards: { tab: AppTab; title: string; sub: string; Icon: typeof Ticket }[] = outletThreeTab
+    ? [
+        { tab: 'home', title: 'Today', sub: 'Venue · pulse · account', Icon: CalendarDays },
+        { tab: 'demand', title: 'Demand', sub: 'Board & post shifts', Icon: ClipboardList },
+        { tab: 'pay', title: 'Pay', sub: 'Settlements · rails', Icon: Wallet },
+      ]
+    : [
+        { tab: 'discover', title: 'Shifts', sub: 'Future · full board', Icon: ClipboardList },
+        { tab: 'host', title: 'Record', sub: 'Pay, slips & disputes', Icon: Receipt },
+        { tab: 'circles', title: 'Learn', sub: 'Hospitality courses', Icon: GraduationCap },
+        { tab: 'profile', title: 'Profile', sub: 'Rating · wallet · trust', Icon: UserCircle },
+      ];
   return (
     <motion.section
       className="space-y-4"
@@ -1293,7 +1765,7 @@ function HomeExploreSnippets({ onSwitchTab, openTablesCount }: { onSwitchTab: (t
           <h2 className="font-display text-xl md:text-2xl italic">Jump anywhere</h2>
         </div>
       </motion.div>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 md:gap-3">
+      <div className={`grid gap-2.5 md:gap-3 ${outletThreeTab ? 'grid-cols-3' : 'grid-cols-2 lg:grid-cols-4'}`}>
         {cards.map(({ tab, title, sub, Icon }) => (
           <motion.button
             key={tab}
@@ -1319,8 +1791,9 @@ function HomeExploreSnippets({ onSwitchTab, openTablesCount }: { onSwitchTab: (t
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   HOME TAB — live landing: city pulse, AI match, app snippets, partner spots
+   HOME TAB — live landing: city pulse, AI match, app snippets
    ══════════════════════════════════════════════════════════════════════ */
+/** Staff app Today tab only — outlet Today uses `OutletLandingTab`. */
 function HomeTab({
   onSwitchTab,
   cities,
@@ -1330,11 +1803,12 @@ function HomeTab({
   cities: string[];
   addCity: (name: string) => void;
 }) {
+  const freeMode = everythingFree();
   const [hangouts, setHangouts] = useState<any[]>([]);
   const [joiningId, setJoiningId] = useState<string | null>(null);
   const [joinNote, setJoinNote] = useState<string | null>(null);
 
-  const [activeCity, setActiveCity] = useState<string>('London');
+  const [activeCity, setActiveCity] = useState<string>(DEFAULT_CITIES[0]);
   const [pulseCards, setPulseCards] = useState<Pulse[]>([]);
   const [pulseLoading, setPulseLoading] = useState(true);
   const [activePulse, setActivePulse] = useState<Pulse | null>(null);
@@ -1344,31 +1818,15 @@ function HomeTab({
   const [premium, setPremium] = useState(false);
   const [credits, setCredits] = useState<number | null>(null);
   const [creditsResetAt, setCreditsResetAt] = useState<string | null>(null);
-
-  const [venues, setVenues] = useState<any[]>([]);
-  const [venuesLoading, setVenuesLoading] = useState(true);
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [reservingId, setReservingId] = useState<string | null>(null);
-  const [reservedId, setReservedId] = useState<string | null>(null);
-  const [reserveNote, setReserveNote] = useState<string | null>(null);
+  const effectivePremium = freeMode || premium;
 
   const loadCityData = useCallback(async (city: string) => {
-    setVenuesLoading(true);
     try {
-      const [hRes, vRes] = await Promise.all([
-        fetch(`/api/hangouts?city=${encodeURIComponent(city)}`),
-        /* Partner catalog is global; filtering only by city hid venues in other metros and any city string mismatch. */
-        fetch('/api/venues'),
-      ]);
+      const hRes = await fetch(`/api/hangouts?city=${encodeURIComponent(city)}&next_hours=24`);
       const hJson = await hRes.json();
-      const vJson = await vRes.json();
       setHangouts(Array.isArray(hJson.hangouts) ? hJson.hangouts : []);
-      setVenues(Array.isArray(vJson.venues) ? vJson.venues : []);
     } catch {
       setHangouts([]);
-      setVenues([]);
-    } finally {
-      setVenuesLoading(false);
     }
   }, []);
 
@@ -1424,39 +1882,6 @@ function HomeTab({
     [hangouts],
   );
 
-  const categories = [
-    { key: 'all',            label: 'All',        icon: '✦' },
-    { key: 'dining',         label: 'Dining',     icon: '🍽' },
-    { key: 'lounge',         label: 'Lounge',     icon: '🥂' },
-    { key: 'boardroom',      label: 'Deal Rooms', icon: '💼' },
-    { key: 'accommodations', label: 'Stay',       icon: '🛏' },
-    { key: 'wellness',       label: 'Wellness',   icon: '🧖' },
-  ];
-
-  const venuesSortedForCity = useMemo(() => {
-    const needle = activeCity.toLowerCase().trim();
-    const rank = (v: any) => {
-      const c = String(v.city ?? '').toLowerCase().trim();
-      if (!needle) return 0;
-      if (!c) return 2;
-      if (c === needle) return 0;
-      if (c.includes(needle) || needle.includes(c)) return 0;
-      return 1;
-    };
-    return [...venues].sort((a, b) => {
-      const d = rank(a) - rank(b);
-      if (d !== 0) return d;
-      const ac = `${a.city ?? ''} ${a.name ?? ''}`;
-      const bc = `${b.city ?? ''} ${b.name ?? ''}`;
-      return ac.localeCompare(bc);
-    });
-  }, [venues, activeCity]);
-
-  const filteredVenues =
-    categoryFilter === 'all'
-      ? venuesSortedForCity
-      : venuesSortedForCity.filter((v) => v.category === categoryFilter);
-
   const handleJoin = async (hangoutId: string) => {
     setJoiningId(hangoutId);
     setJoinNote(null);
@@ -1464,7 +1889,7 @@ function HomeTab({
       const res = await fetch(`/api/hangouts/${hangoutId}/join`, { method: 'POST' });
       const data = await res.json();
       if (res.ok) {
-        setJoinNote("You're in. We'll text you the table details.");
+        setJoinNote("You're on the roster. Check WhatsApp for outlet details — selfie check-in opens at shift start.");
         loadCityData(activeCity);
       } else {
         setJoinNote(data.error || 'Could not join.');
@@ -1476,30 +1901,6 @@ function HomeTab({
     }
   };
 
-  const handleReserve = async (venueId: string) => {
-    setReservingId(venueId);
-    setReserveNote(null);
-    try {
-      const res = await fetch('/api/reservations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ venue_id: venueId, party_size: 2 }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setReservedId(venueId);
-        setReserveNote(data.premium ? 'Confirmed — Black member priority.' : 'Reservation requested. Partner will confirm.');
-        setTimeout(() => setReservedId(null), 4000);
-      } else {
-        setReserveNote(data.error || 'Could not request reservation.');
-      }
-    } catch {
-      setReserveNote('Network error. Try again.');
-    } finally {
-      setReservingId(null);
-    }
-  };
-
   const planTitleFromPulse = (pulse: Pulse) => {
     const head = pulse.vibe.split('·')[0]?.trim();
     return `${pulse.area} · ${head || pulse.vibe.slice(0, 32)}`;
@@ -1507,7 +1908,7 @@ function HomeTab({
 
   const startMatch = async (pulse: Pulse) => {
     setActivePulse(pulse);
-    if (!premium && credits !== null && credits <= 0) {
+    if (!effectivePremium && credits !== null && credits <= 0) {
       setMatchPhase('gated');
       return;
     }
@@ -1559,7 +1960,7 @@ function HomeTab({
         }),
       });
       const data = await res.json();
-      if (res.status === 402) {
+      if (res.status === 402 && !freeMode) {
         setMatchPhase('gated');
         setCredits(0);
         return;
@@ -1616,10 +2017,24 @@ function HomeTab({
     startMatch(found);
   };
 
-  const formatSpend = (amount: number) => `₦${(amount / 1000).toFixed(0)}k`;
-
   return (
-    <div className="space-y-6 lg:space-y-12">
+    <div className="space-y-6 lg:space-y-12 min-w-0">
+      <motion.section
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+        className="rounded-[18px] lg:rounded-[24px] border border-red-200/45 bg-white p-4 sm:p-5 shadow-[0_8px_28px_rgba(0,0,0,0.06)]"
+      >
+        <CityChipsBar
+          label="Location first — pick your zone"
+          cities={cities}
+          selected={activeCity}
+          onSelect={setActiveCity}
+          onAddCity={addCity}
+          className="w-full min-w-0"
+        />
+      </motion.section>
+
       <motion.section
         className="relative overflow-hidden rounded-[18px] lg:rounded-[32px] border border-gold/25 shadow-[0_16px_48px_rgba(0,0,0,0.07),0_0_0_1px_rgba(201,168,76,0.12)] max-lg:shadow-[0_6px_28px_rgba(0,0,0,0.07)]"
         initial={{ opacity: 0, y: 24 }}
@@ -1630,28 +2045,28 @@ function HomeTab({
         <div className="lg:hidden flex flex-col">
           <div className="relative shrink-0 overflow-hidden rounded-t-[18px] border border-b-0 border-gold/25 bg-gradient-to-b from-white via-cream/90 to-[#f8f6f2] px-4 pt-5 pb-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9)]">
             <div className="flex flex-col items-center text-center gap-3">
-              <img
-                src="/convivia24.png"
+              <BrandLogo
                 alt="Convivia24"
-                className="h-[52px] sm:h-[58px] w-auto max-w-[min(300px,88vw)] object-contain object-center select-none"
-                draggable={false}
+                variant="mark"
+                className="h-[56px] sm:h-[60px] w-auto max-w-[min(240px,78vw)] object-contain select-none"
               />
-              <p className="text-[11px] font-medium text-neutral-600 tracking-[0.03em] max-w-[300px] leading-snug text-center">
-                Connecting people together daily
+              <p className="text-[11px] font-medium text-neutral-600 tracking-[0.04em] max-w-[min(320px,92vw)] leading-snug text-center px-1">
+                Hospitality jobs — hotels, bars &amp; events · verified shifts · same-day pay
               </p>
               <p className="text-[9px] font-black uppercase tracking-[0.28em] text-red-700 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 text-center">
                 <span className="inline-flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.85)] animate-pulse shrink-0" />
                   <Zap size={11} className="text-amber-600 shrink-0" aria-hidden />
-                  Live now · {activeCity.toUpperCase()}
+                  Zone · {activeCity.toUpperCase()}
                 </span>
                 <span className="text-neutral-500 font-bold normal-case tracking-normal">·</span>
                 <span className="tabular-nums text-neutral-600">
                   <LiveLocalTime className="tabular-nums" />
                 </span>
               </p>
-              <h1 className="font-display text-[1.55rem] sm:text-[1.65rem] leading-[1.05] italic text-neutral-900">
-                What&apos;s <span className="text-[color:var(--gold-accent,#c9a84c)]">live</span> right now
+              <h1 className="font-display text-[1.55rem] sm:text-[1.65rem] leading-[1.05] italic text-neutral-900 px-1">
+                Hospitality shifts{' '}
+                <span className="text-[color:var(--gold-accent,#c9a84c)]">near you</span>
               </h1>
             </div>
           </div>
@@ -1662,21 +2077,27 @@ function HomeTab({
             animate="show"
           >
             <motion.p variants={staggerItem} className="text-[14px] leading-snug text-neutral-800 font-medium [overflow-wrap:anywhere]">
-              Neighbourhood energy refreshes here — then AI matches you in one tap. Open{' '}
+              Pick up hospitality shifts by zone — same-day pay on OPay, PalmPay, or Moniepoint once the outlet signs you off.{' '}
               <button
                 type="button"
                 onClick={() => onSwitchTab('discover')}
                 className="text-red-700 font-semibold underline decoration-red-600/40 underline-offset-2"
               >
-                Discover
-              </button>{' '}
-              for tables you can join.
+                Pick shifts
+              </button>
+              .
             </motion.p>
             <motion.div variants={staggerItem} className="bg-white border border-red-200/90 rounded-[22px] p-3.5 shadow-[0_8px_28px_rgba(0,0,0,0.06)]">
               <div className="flex items-center justify-between gap-3 mb-2.5">
-                <span className="text-[10px] uppercase tracking-[0.24em] font-black text-red-700">AI Match</span>
-                {premium ? (
-                  <span className="text-[9px] uppercase tracking-wider font-bold text-red-700">Black</span>
+                <span className="text-[10px] uppercase tracking-[0.24em] font-black text-red-700">Roster assist</span>
+                {effectivePremium ? (
+                  <span
+                    className={`text-[9px] uppercase tracking-wider font-bold ${
+                      freeMode ? 'text-emerald-700' : 'text-red-700'
+                    }`}
+                  >
+                    {freeMode ? 'Unlimited' : 'Full'}
+                  </span>
                 ) : (
                   <span className={`text-[9px] tabular-nums ${(credits ?? 0) > 0 ? 'text-neutral-500' : 'text-amber-800'}`}>
                     {(credits ?? 0) > 0 ? '1/wk' : 'Limit reached'}
@@ -1688,10 +2109,10 @@ function HomeTab({
                   type="text"
                   value={vibePrompt}
                   onChange={(e) => setVibePrompt(e.target.value)}
-                  placeholder="chill, social, not too loud"
+                  placeholder="e.g. 4 waiters, Lekki, tonight"
                   className="min-w-0 flex-1 bg-neutral-50 border border-neutral-200 rounded-2xl px-3.5 py-2.5 text-[15px] focus:outline-none focus:border-red-700 placeholder:text-neutral-400"
                 />
-                <button type="button" onClick={matchByVibe} className="w-11 h-11 shrink-0 rounded-2xl bg-red-700 text-white flex items-center justify-center shadow-[0_0_20px_rgba(185,28,28,0.2)] active:scale-95 transition-transform" aria-label="Match me">
+                <button type="button" onClick={matchByVibe} className="w-11 h-11 shrink-0 rounded-2xl bg-red-700 text-white flex items-center justify-center shadow-[0_0_20px_rgba(185,28,28,0.2)] active:scale-95 transition-transform" aria-label="Suggest roster match">
                   <Sparkles size={18} fill="currentColor"/>
                 </button>
               </div>
@@ -1700,57 +2121,45 @@ function HomeTab({
           </motion.div>
         </div>
 
-        {/* Desktop: full-bleed photo + glass copy */}
-        <div className="hidden lg:block relative min-h-[320px]">
-          <div className="absolute inset-0 pointer-events-none select-none" aria-hidden>
-            <img
-              src="/Homepage.png"
-              alt=""
-              className="w-full h-full min-h-[320px] object-cover object-[center_30%]"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/78 via-black/28 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/15" />
-            <div className="absolute inset-0 bg-gradient-to-br from-gold/[0.08] via-transparent to-transparent" />
-          </div>
+        {/* Desktop: clean panel — no hero photography */}
+        <div className="hidden lg:block">
           <motion.div
-            className="relative z-10 p-10 space-y-4"
+            className="rounded-[28px] border border-neutral-200/90 bg-white p-10 space-y-5 shadow-[0_8px_40px_rgba(0,0,0,0.04)]"
             variants={staggerContainer}
             initial="hidden"
             animate="show"
           >
-            <motion.p
-              variants={staggerItem}
-              className="text-[10px] font-black uppercase tracking-[0.3em] text-gold-light flex items-center gap-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]"
-            >
-              <span className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.85)] animate-pulse shrink-0"/> Live · <LiveLocalTime />
-            </motion.p>
-            <motion.div
-              variants={staggerItem}
-              className="max-w-2xl rounded-[24px] border border-white/15 bg-neutral-950/55 backdrop-blur-md px-5 py-5 shadow-[0_12px_40px_rgba(0,0,0,0.35)]"
-            >
-              <p className="text-gold-light/95 text-[10px] font-semibold uppercase tracking-[0.28em] mb-3 drop-shadow-[0_1px_6px_rgba(0,0,0,0.6)]">
-                Connecting people together daily
+            <motion.div variants={staggerItem} className="flex flex-col sm:flex-row sm:items-center sm:gap-6 gap-4">
+              <BrandLogo
+                alt=""
+                className="h-10 sm:h-11 w-auto object-contain object-left shrink-0"
+              />
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-700 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse shrink-0" /> Live · <LiveLocalTime />
               </p>
-              <h1 className="font-display text-5xl xl:text-6xl italic leading-[1.02] text-white drop-shadow-sm">
-                What&apos;s <span className="text-[color:var(--gold-accent,#c9a84c)] drop-shadow-[0_1px_12px_rgba(0,0,0,0.5)]">live</span> right now
+            </motion.div>
+            <motion.div variants={staggerItem} className="max-w-2xl space-y-3">
+              <p className="text-neutral-500 text-[10px] font-semibold uppercase tracking-[0.28em]">Staff dashboard</p>
+              <h1 className="font-display text-4xl xl:text-5xl italic leading-[1.05] text-neutral-900 text-balance">
+                Work that <span className="text-red-700">pays today.</span>
               </h1>
-              <p className="mt-3 text-white text-lg leading-snug max-w-xl [overflow-wrap:anywhere] font-medium tracking-wide [word-spacing:0.02em]">
-                Neighbourhood energy refreshes here — then AI matches you in one tap. Tables you can join are in{' '}
+              <p className="text-neutral-600 text-base leading-relaxed max-w-xl text-pretty">
+                {HOSPITALITY_METROS_BEFORE_LINK}{' '}
                 <button
                   type="button"
                   onClick={() => onSwitchTab('discover')}
-                  className="text-gold-light font-semibold underline decoration-gold-light/70 underline-offset-[5px] hover:text-white hover:decoration-white/80"
+                  className="text-red-700 font-semibold underline decoration-red-600/40 underline-offset-4 hover:text-red-800"
                 >
-                  Discover
+                  board
                 </button>
                 .
               </p>
             </motion.div>
             <motion.div variants={staggerItem}>
               <FlowSteps steps={[
-                { n: '1', label: 'Feel the pulse', sub: 'live city' },
-                { n: '2', label: 'AI matches you', sub: '4–6 people' },
-                { n: '3', label: 'Instant plan',   sub: 'go tonight' },
+                { n: '1', label: 'Post or pick', sub: 'by zone' },
+                { n: '2', label: 'Match & confirm', sub: 'roster locked' },
+                { n: '3', label: 'Check in · rate', sub: 'same-day pay' },
               ]}/>
             </motion.div>
           </motion.div>
@@ -1771,33 +2180,42 @@ function HomeTab({
         transition={{ duration: 0.45 }}
       >
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-5">
-          <div>
+          <div className="flex-1 min-w-0">
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-600 mb-1.5 flex items-center gap-2">
-              <Zap size={10} aria-hidden /> <span className="max-md:hidden">Live City Pulse</span>
-              <span className="md:hidden tracking-[0.35em] text-[color:var(--gold-accent,#c9a84c)]">City pulse</span>
+              <Zap size={10} aria-hidden /> <span className="max-md:hidden">Zone demand</span>
+              <span className="md:hidden tracking-[0.35em] text-[color:var(--gold-accent,#c9a84c)]">Zones</span>
             </p>
-            <h2 className="font-display text-2xl md:text-3xl italic">Where the energy is now.</h2>
+            <h2 className="font-display text-2xl md:text-3xl italic">Where shifts are stacking.</h2>
             <p className="mt-2 text-sm text-neutral-600 leading-snug max-md:hidden">
-              Four neighbourhoods rising tonight — tap a card to match your vibe.
+              <strong className="text-neutral-800">Next 24 hours</strong> — live open shifts in {activeCity} power this view. Plan further out on{' '}
+              <button
+                type="button"
+                onClick={() => onSwitchTab('discover')}
+                className="text-red-700 font-semibold underline decoration-red-600/40 underline-offset-2"
+              >
+                Shifts
+              </button>
+              .
             </p>
             <p className="mt-1.5 text-[13px] text-neutral-600 leading-snug md:hidden">
-              Tap a neighbourhood to match — or use AI Match above.
+              City above · Today shows the next 24h. Full upcoming list → Shifts tab.
             </p>
           </div>
-          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-end flex-wrap">
-            <CityChipsBar
-              cities={cities}
-              selected={activeCity}
-              onSelect={setActiveCity}
-              onAddCity={addCity}
-              className="md:max-w-[min(100%,520px)] md:ml-auto"
-            />
-            {premium ? (
-              <span className="hidden md:inline-flex text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full bg-red-50 text-red-700 border border-red-400 items-center gap-1">
-                <Star size={10} fill="currentColor"/> Black
+          <div className="flex flex-wrap items-center gap-2 shrink-0 md:justify-end">
+            {effectivePremium ? (
+              <span
+                className={`inline-flex text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full border items-center gap-1 ${
+                  freeMode
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                    : 'bg-red-50 text-red-700 border-red-400'
+                }`}
+              >
+                {freeMode ? 'Unlimited matches' : (
+                  <><Star size={10} fill="currentColor"/> Black</>
+                )}
               </span>
             ) : (
-              <span className={`hidden md:inline-flex text-[10px] px-2.5 py-1 rounded-full border tabular-nums items-center gap-1 ${
+              <span className={`inline-flex text-[10px] px-2.5 py-1 rounded-full border tabular-nums items-center gap-1 ${
                 (credits ?? 0) > 0 ? 'text-neutral-500 border-neutral-200 bg-neutral-900/[0.04]' : 'text-amber-900/90 border-amber-600/35 bg-amber-100/80'
               }`}>
                 {(credits ?? 0) > 0 ? '1 match / week' : 'No matches left'}
@@ -1811,8 +2229,8 @@ function HomeTab({
         ) : pulseCards.length === 0 ? (
           <div className="text-center py-10 text-neutral-400 border border-dashed border-neutral-200 rounded-3xl">
             <Compass size={36} className="mx-auto mb-3 opacity-50"/>
-            <p className="font-display text-xl italic">No live energy in {activeCity} yet.</p>
-            <p className="text-sm mt-1">Host a table — it shows up in Discover too.</p>
+            <p className="font-display text-xl italic">Quiet in {activeCity} for now.</p>
+            <p className="text-sm mt-1">Try another zone or check the full board.</p>
           </div>
         ) : (
           <div className="relative max-md:rounded-[28px] max-md:border max-md:border-neutral-200/90 max-md:bg-gradient-to-b max-md:from-neutral-50/90 max-md:to-neutral-100/50 max-md:p-3 sm:max-md:p-4">
@@ -1864,7 +2282,7 @@ function HomeTab({
                         </div>
                         <div className="mt-4 flex items-center justify-between gap-2 border-t border-neutral-200/70 pt-3">
                           <div className="flex items-center gap-1.5 text-[10px] text-red-700 uppercase tracking-[0.14em] font-black">
-                            <Sparkles size={11} className="shrink-0" /> Match · {pulse.groupSize} people
+                            <Sparkles size={11} className="shrink-0" /> Roster assist · {pulse.groupSize} people
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
                             {!!pulse.liveTables && pulse.liveTables > 0 && (
@@ -1887,7 +2305,7 @@ function HomeTab({
         )}
 
         <div className="hidden md:block mt-5 bg-neutral-50 border border-neutral-200 rounded-3xl p-4 md:p-5">
-          <p className="text-[10px] font-black uppercase tracking-[0.25em] text-neutral-500 mb-3">Or describe your vibe</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.25em] text-neutral-500 mb-3">Or describe the shift you need</p>
           <div className="flex flex-col md:flex-row gap-3">
             <input
               type="text" value={vibePrompt} onChange={(e) => setVibePrompt(e.target.value)}
@@ -1896,7 +2314,7 @@ function HomeTab({
             />
             <button type="button" onClick={matchByVibe}
               className="bg-red-700 text-white px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-800 transition-colors flex items-center justify-center gap-2 shrink-0">
-              <Send size={12}/> Match Me
+              <Send size={12}/> Run assist
             </button>
           </div>
           <div className="flex flex-wrap gap-2 mt-3">
@@ -1910,148 +2328,8 @@ function HomeTab({
       </motion.section>
 
       <div className="hidden lg:block">
-        <HomeExploreSnippets onSwitchTab={onSwitchTab} openTablesCount={openTablesCount} />
+        <HomeExploreSnippets persona="worker" onSwitchTab={onSwitchTab} openTablesCount={openTablesCount} />
       </div>
-
-      {/* Partner spots — full-bleed imagery on desktop; typography-first cards on mobile */}
-      <motion.section
-        className="space-y-5 pt-2 border-t border-neutral-200"
-        variants={staggerContainer}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true, margin: '-40px' }}
-      >
-        <motion.div variants={fadeUp}>
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-600 mb-1.5">Partner spots</p>
-          <h2 className="font-display text-2xl md:text-3xl italic mb-2">Where plans can land.</h2>
-          <p className="text-neutral-500 text-sm max-w-xl">
-            Reserve a seat at spaces we work with — useful when your crew wants an anchor, not a venue hunt.
-          </p>
-          <p className="text-[11px] text-neutral-400 mt-2">
-            Full partner network · <span className="font-semibold text-neutral-500">{activeCity}</span> first
-          </p>
-        </motion.div>
-
-        <motion.div variants={fadeUp} className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-2 px-2">
-          {categories.map(cat => (
-            <button type="button" key={cat.key} onClick={() => setCategoryFilter(cat.key)}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap shrink-0 ${
-                categoryFilter === cat.key
-                  ? 'bg-red-50 text-red-700 border border-red-600 shadow-[0_0_15px_rgba(185,28,28,0.12)]'
-                  : 'text-neutral-500 border border-neutral-200 hover:border-neutral-300 hover:text-neutral-600'
-              }`}
-            >
-              <span className="text-sm">{cat.icon}</span>
-              {cat.label}
-            </button>
-          ))}
-        </motion.div>
-
-        {reserveNote && (
-          <div className="bg-red-50 border border-red-400 rounded-2xl px-4 py-3 text-sm text-red-800 flex items-center justify-between gap-3">
-            <span>{reserveNote}</span>
-            <button type="button" onClick={() => setReserveNote(null)} className="text-red-600 hover:text-red-700"><X size={16}/></button>
-          </div>
-        )}
-
-        {venuesLoading ? (
-          <div className="flex items-center justify-center py-16"><Loader2 size={32} className="text-red-700 animate-spin" /></div>
-        ) : filteredVenues.length === 0 ? (
-          <div className="text-center py-14 text-neutral-400 border border-dashed border-neutral-200 rounded-3xl">
-            <Building2 size={40} className="mx-auto mb-3 opacity-50" />
-            <p className="font-display text-xl italic mb-1">No spots match this filter.</p>
-            <p className="text-sm">We&apos;re adding partner locations as the network grows.</p>
-          </div>
-        ) : (
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6"
-            variants={staggerContainer}
-            initial="hidden"
-            animate="show"
-          >
-            {filteredVenues.map((venue) => (
-              <motion.div
-                key={venue.id}
-                variants={staggerItem}
-                whileHover={{ y: -3 }}
-                className="bg-white rounded-[28px] overflow-hidden border border-neutral-200/90 shadow-[0_10px_40px_rgba(0,0,0,0.07)] ring-1 ring-black/[0.03] group hover:border-red-300 hover:shadow-[0_16px_48px_rgba(185,28,28,0.1)] transition-shadow flex flex-col"
-              >
-                <div className="relative h-44 md:h-48 overflow-hidden hidden lg:block">
-                  {venue.image_url
-                    ? <img src={venue.image_url} className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700" alt="" />
-                    : <div className="w-full h-full bg-gradient-to-br from-red-900/30 to-neutral-900 flex items-center justify-center"><Building2 size={44} className="text-red-600"/></div>
-                  }
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent" />
-                  <div className="absolute top-3 left-3">
-                    <span className="bg-white/95 backdrop-blur-md text-[9px] text-red-800 uppercase tracking-[0.2em] font-black px-2.5 py-1 rounded-full border border-red-200">{venue.category}</span>
-                  </div>
-                  {venue.rating && (
-                    <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/50 backdrop-blur-md px-2 py-1 rounded-full border border-white/10">
-                      <Star size={10} fill="currentColor" className="text-red-400" />
-                      <span className="text-[10px] font-black text-white">{Number(venue.rating).toFixed(1)}</span>
-                    </div>
-                  )}
-                  <div className="absolute bottom-3 left-3 right-3">
-                    <h3 className="font-display text-xl md:text-2xl italic text-white drop-shadow-md leading-tight">{venue.name}</h3>
-                    {venue.partner_name && (
-                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-red-200 mt-0.5">Partner · {venue.partner_name}</p>
-                    )}
-                  </div>
-                </div>
-                <div className="lg:hidden flex items-start gap-3 px-5 pt-5 pb-1 border-b border-neutral-100">
-                  <div className="shrink-0 w-11 h-11 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center text-red-700">
-                    <Building2 size={22} strokeWidth={1.75} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[color:var(--gold-accent,#c9a84c)]">{venue.category}</span>
-                    <h3 className="font-display text-lg italic text-neutral-900 leading-tight mt-0.5">{venue.name}</h3>
-                    {venue.partner_name && (
-                      <p className="text-[9px] font-bold uppercase tracking-widest text-neutral-400 mt-1">Partner · {venue.partner_name}</p>
-                    )}
-                  </div>
-                  {venue.rating && (
-                    <div className="shrink-0 flex items-center gap-1 bg-neutral-100 px-2 py-1 rounded-full border border-neutral-200">
-                      <Star size={10} fill="currentColor" className="text-red-600" />
-                      <span className="text-[10px] font-black text-neutral-800">{Number(venue.rating).toFixed(1)}</span>
-                    </div>
-                  )}
-                </div>
-                <div className="p-5 flex flex-col flex-1 bg-white">
-                  <p className="text-neutral-600 text-sm leading-relaxed mb-4 line-clamp-2">{venue.tagline}</p>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {venue.minimum_spend && (
-                      <span className="text-[9px] font-black uppercase tracking-widest text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full border border-neutral-200">
-                        From {formatSpend(venue.minimum_spend)}/person
-                      </span>
-                    )}
-                    {venue.capacity && (
-                      <span className="text-[9px] font-black uppercase tracking-widest text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-full border border-neutral-200 flex items-center gap-1">
-                        <Users size={10} /> {venue.capacity}
-                      </span>
-                    )}
-                  </div>
-                  <div className="space-y-1.5 mb-4 text-neutral-500 text-xs">
-                    {venue.address && <p className="flex items-center gap-1.5"><MapPin size={11} className="shrink-0 text-red-700/70" /> {venue.address}</p>}
-                    {venue.availability && <p className="flex items-center gap-1.5"><Clock size={11} className="shrink-0 text-red-700/70" /> {venue.availability}</p>}
-                  </div>
-                  <div className="mt-auto">
-                    {reservedId === venue.id ? (
-                      <div className="w-full flex items-center justify-center gap-2 py-2.5 bg-emerald-50 border border-emerald-200 rounded-full text-emerald-800 text-[10px] font-black uppercase tracking-widest">
-                        <Check size={14} /> Requested
-                      </div>
-                    ) : (
-                      <button type="button" onClick={() => handleReserve(venue.id)} disabled={reservingId === venue.id}
-                        className="w-full flex items-center justify-center gap-2 py-2.5 bg-neutral-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all disabled:opacity-50">
-                        {reservingId === venue.id ? <Loader2 size={14} className="animate-spin" /> : <>Reserve <ArrowRight size={12} /></>}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
-      </motion.section>
 
       <AnimatePresence>
         {matchPhase !== 'idle' && activePulse && (
@@ -2064,7 +2342,6 @@ function HomeTab({
             onSkip={skipPlan}
             onDelay={delayPlan}
             onClose={closeMatch}
-            onUpgrade={() => { closeMatch(); onSwitchTab('profile'); }}
           />
         )}
       </AnimatePresence>
@@ -2073,151 +2350,1122 @@ function HomeTab({
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   CIRCLES TAB
+   OUTLET — venue account (not staff profile): top hero row + outlet trust copy
    ══════════════════════════════════════════════════════════════════════ */
-function CirclesTab() {
-  const [circles, setCircles] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showCreate, setShowCreate] = useState(false);
-  const [newName, setNewName] = useState('');
-  const [newDesc, setNewDesc] = useState('');
-  const [creating, setCreating] = useState(false);
-  const [error, setError] = useState('');
+function outletApplicationStatusMeta(status: string | undefined) {
+  const s = (status || 'draft').toLowerCase();
+  if (s === 'approved')
+    return {
+      label: 'Approved',
+      sub: 'You can post shifts on the board.',
+      className: 'bg-emerald-50 text-emerald-900 border-emerald-200',
+    };
+  if (s === 'submitted' || s === 'under_review')
+    return {
+      label: s === 'under_review' ? 'Under review' : 'Submitted',
+      sub: 'Ops is verifying your venue details.',
+      className: 'bg-amber-50 text-amber-950 border-amber-200',
+    };
+  if (s === 'rejected')
+    return {
+      label: 'Needs attention',
+      sub: 'Check admin notes and update your application.',
+      className: 'bg-red-50 text-red-900 border-red-200',
+    };
+  return {
+    label: 'Draft',
+    sub: 'Complete the form below and submit for approval.',
+    className: 'bg-neutral-100 text-neutral-800 border-neutral-200',
+  };
+}
 
-  const loadData = useCallback(async () => {
+function OutletAccountSection({ initialUser }: { initialUser?: any }) {
+  const [user, setUser] = useState<any>(initialUser || null);
+  const [loading, setLoading] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editName, setEditName] = useState(initialUser?.name || '');
+  const [editBio, setEditBio] = useState(initialUser?.bio || '');
+  const [editLocation, setEditLocation] = useState(initialUser?.location || '');
+  const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState('');
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
+  const [profileNotice, setProfileNotice] = useState('');
+  const [verifyOpen, setVerifyOpen] = useState(false);
+
+  useEffect(() => {
+    setUser(initialUser || null);
+    if (initialUser) {
+      setEditName(initialUser.name || '');
+      setEditBio(initialUser.bio || '');
+      setEditLocation(initialUser.location || '');
+    }
+  }, [initialUser]);
+
+  useEffect(() => {
     setLoading(true);
-    try {
-      const res = await fetch('/api/circles');
-      const data = await res.json();
-      setCircles(Array.isArray(data.circles) ? data.circles : []);
-    } catch { /* ignore */ }
-    setLoading(false);
+    fetch('/api/profile', { credentials: 'include' })
+      .then(async (r) => {
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Profile unavailable');
+        return d;
+      })
+      .then((data) => {
+        if (data.user) {
+          setUser(data.user);
+          setAvatarLoadFailed(false);
+          setEditName(data.user.name || '');
+          setEditBio(data.user.bio || '');
+          setEditLocation(data.user.location || '');
+          setProfileNotice('');
+        }
+      })
+      .catch(() => {
+        setUser(null);
+        setProfileNotice('Sign in to manage your venue profile and photo.');
+      })
+      .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => { loadData(); }, [loadData]);
-
-  const handleCreate = async () => {
-    if (!newName.trim()) return;
-    setCreating(true);
-    setError('');
+  const handleSave = async () => {
+    setSaving(true);
     try {
-      const res = await fetch('/api/circles', {
-        method: 'POST',
+      const res = await fetch('/api/profile', {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newName, description: newDesc }),
+        credentials: 'include',
+        body: JSON.stringify({ name: editName, bio: editBio, location: editLocation }),
       });
       const data = await res.json();
-      if (res.ok) {
-        setNewName(''); setNewDesc(''); setShowCreate(false);
-        loadData();
-      } else {
-        setError(data.error || 'Could not create circle.');
-      }
+      if (res.ok && data.user) {
+        setUser(data.user);
+        setEditing(false);
+        setProfileNotice('');
+      } else setProfileNotice(data.error || 'Could not save.');
     } catch {
-      setError('Network error. Try again.');
-    } finally {
-      setCreating(false);
+      setProfileNotice('Could not save — try again.');
+      setEditing(false);
     }
+    setSaving(false);
   };
 
-  return (
-    <div className="space-y-7 md:space-y-10">
-      <div className="mb-5 md:mb-10">
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-600 mb-3 flex items-center gap-2">
-          <CircleDashed size={12} className="shrink-0" aria-hidden /> Crews
-        </p>
-        <h1 className="font-display text-4xl md:text-6xl italic mb-2">
-          Your <span className="text-red-700">inner</span> circles.
-        </h1>
-        <p className="text-neutral-600 text-sm md:text-lg max-w-2xl mb-4 leading-relaxed">
-          Recurring people. Always-warm tables.
-          <span className="hidden md:inline"> Private groups for people you actually want to see again — no public list, no random requests.</span>
-        </p>
-        <div className="hidden md:block">
-          <FlowSteps steps={[
-            { n: '1', label: 'Meet',        sub: 'via match or table' },
-            { n: '2', label: 'Add to Crew', sub: 'inner trust' },
-            { n: '3', label: 'Host private',  sub: 'invite-only tables' },
-          ]}/>
-        </div>
-      </div>
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingAvatar(true);
+    setAvatarError('');
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/upload', { method: 'POST', body: formData, credentials: 'include' });
+      const data = await res.json();
+      if (!res.ok) {
+        setAvatarError(data.error || 'Upload failed.');
+        setUploadingAvatar(false);
+        return;
+      }
+      const updateRes = await fetch('/api/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ avatar_url: data.url }),
+      });
+      const updateData = await updateRes.json();
+      if (updateRes.ok && updateData.user) {
+        setAvatarLoadFailed(false);
+        setUser(updateData.user);
+      } else setAvatarError(updateData.error || 'Profile update failed.');
+    } catch {
+      setAvatarError('Network error — try again.');
+    }
+    setUploadingAvatar(false);
+  };
 
-      {/* Examples band */}
-      {/* Example crews — desktop only; mobile stays list-first */}
-      <div className="hidden md:grid md:grid-cols-3 gap-3 md:overflow-visible mx-0 px-0 pb-1">
-        {[
-          { name: 'Founders Lagos',    note: 'private dinners + intros',     icon: Star },
-          { name: 'VI After 9',        note: 'late-night lounge crew',        icon: Wine },
-          { name: 'London Diaspora',   note: 'monthly brunches',              icon: Coffee },
-        ].map(({ name, note, icon: I }) => (
-          <div key={name} className="min-w-[72vw] md:min-w-0 bg-neutral-50 border border-neutral-100 rounded-2xl px-4 py-3 flex items-center gap-3 snap-start">
-            <I size={16} className="text-red-700 shrink-0"/>
-            <div className="min-w-0">
-              <p className="text-sm font-bold truncate">{name}</p>
-              <p className="text-[10px] uppercase tracking-widest text-neutral-500 font-bold truncate">{note}</p>
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    setProfileNotice('');
+    try {
+      const res = await fetch('/api/auth/sign-out', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setProfileNotice(
+          (data as { error?: string }).error ||
+            'Sign out failed. Try again, or clear site data for this site.'
+        );
+        setSigningOut(false);
+        return;
+      }
+    } catch {
+      setProfileNotice('Network error during sign out.');
+      setSigningOut(false);
+      return;
+    }
+    window.location.href = '/auth/sign-in';
+  };
+
+  if (loading) {
+    return (
+      <section className="rounded-2xl border border-neutral-200 bg-white p-10 shadow-sm flex justify-center">
+        <Loader2 size={32} className="text-red-700 animate-spin" />
+      </section>
+    );
+  }
+
+  if (!user) {
+    return (
+      <section className="rounded-2xl border border-neutral-200 bg-white p-5 sm:p-8 shadow-sm">
+        <div className="flex flex-col sm:flex-row gap-6 sm:gap-10 items-center sm:items-start">
+          <div className="shrink-0 w-28 h-28 sm:w-32 sm:h-32 rounded-full border-2 border-dashed border-neutral-200 bg-neutral-50 flex items-center justify-center">
+            <Building2 size={40} className="text-red-700/70" aria-hidden />
+          </div>
+          <div className="flex-1 text-center sm:text-left min-w-0 space-y-3">
+            <p className="text-[10px] font-black uppercase tracking-[0.28em] text-red-600">Venue account</p>
+            <h2 className="font-display text-2xl sm:text-3xl italic text-neutral-900">Sign in to manage your outlet</h2>
+            <p className="text-[13px] text-neutral-600 leading-snug max-w-md mx-auto sm:mx-0">
+              Same Neon login as the staff app — one account for both consoles.
+            </p>
+            {profileNotice ? <p className="text-[12px] text-neutral-500">{profileNotice}</p> : null}
+            <div className="flex flex-wrap gap-2 justify-center sm:justify-start pt-1">
+              <Link
+                href="/auth/sign-in"
+                className="inline-flex items-center gap-1.5 rounded-full bg-red-700 text-white text-[10px] font-black uppercase tracking-widest px-5 py-3 hover:bg-red-800"
+              >
+                <LogIn size={14} aria-hidden /> Sign in
+              </Link>
+              <Link
+                href="/auth/sign-up"
+                className="inline-flex items-center rounded-full border border-neutral-200 bg-neutral-50 text-neutral-800 text-[10px] font-black uppercase tracking-widest px-5 py-3 hover:border-red-300"
+              >
+                Create account
+              </Link>
             </div>
           </div>
-        ))}
+        </div>
+      </section>
+    );
+  }
+
+  const app = user.outlet_application as
+    | {
+        business_name?: string;
+        city_name?: string;
+        status?: string;
+        phone?: string;
+        contact_email?: string | null;
+      }
+    | null
+    | undefined;
+  const statusMeta = outletApplicationStatusMeta(app?.status);
+
+  return (
+    <section id="outlet-account" className="scroll-mt-28 rounded-2xl border border-neutral-200 bg-white shadow-[0_12px_40px_rgba(0,0,0,0.06)] overflow-hidden">
+      <div className="border-b border-neutral-100 bg-gradient-to-r from-red-50/80 via-white to-white px-5 py-4 sm:px-8 sm:py-5">
+        <p className="text-[10px] font-black uppercase tracking-[0.28em] text-red-700 flex items-center gap-2">
+          <Building2 size={14} className="shrink-0" aria-hidden /> Venue console · account
+        </p>
       </div>
 
-      <div className="space-y-6">
-        <h3 className="text-[10px] md:text-[11px] font-semibold uppercase tracking-[0.26em] text-gold flex items-center gap-2 border-b border-neutral-200/90 pb-4">
-          Your crews <span className="rounded-full bg-red-50 text-red-700 px-2 py-0.5 text-[10px] font-bold tabular-nums tracking-normal normal-case">{circles.length}</span>
-        </h3>
-
-        {loading ? (
-          <div className="flex items-center justify-center py-10"><Loader2 size={24} className="text-red-700 animate-spin" /></div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {circles.map((c: any, idx: number) => {
-              const RowIcon = [Wine, Star, Coffee, Sparkles][idx % 4];
-              return (
-              <div
-                key={c.id}
-                className="bg-white border border-neutral-200/90 rounded-[22px] px-4 py-4 flex items-center gap-3.5 shadow-[0_6px_24px_rgba(0,0,0,0.05)] hover:border-red-200 hover:shadow-[0_10px_32px_rgba(185,28,28,0.08)] transition-all group text-left"
-              >
-                <div className="shrink-0 w-12 h-12 rounded-full bg-rose-50 border border-red-100 flex items-center justify-center text-red-700">
-                  <RowIcon size={20} strokeWidth={1.75} />
+      <div className="p-5 sm:p-8">
+        <div className="flex flex-col lg:flex-row lg:items-start gap-8 lg:gap-12">
+          {/* Photo — left column */}
+          <div className="flex flex-row lg:flex-col items-center lg:items-start gap-5 lg:gap-4 shrink-0 lg:w-[200px]">
+            <div className="relative group shrink-0">
+              <label className="cursor-pointer block">
+                {user?.avatar_url && !avatarLoadFailed ? (
+                  <img
+                    src={user.avatar_url}
+                    alt=""
+                    referrerPolicy="no-referrer"
+                    className="w-28 h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-2xl border-[3px] border-red-700 object-cover shadow-[0_8px_28px_rgba(0,0,0,0.12)] ring-4 ring-white"
+                    onError={() => {
+                      setAvatarLoadFailed(true);
+                      setAvatarError('Photo did not load — try uploading again.');
+                    }}
+                  />
+                ) : (
+                  <div className="w-28 h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-2xl border-[3px] border-dashed border-red-600 bg-neutral-50 flex items-center justify-center ring-4 ring-white shadow-inner">
+                    <Camera size={28} className="text-red-600" aria-hidden />
+                  </div>
+                )}
+                <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+                {uploadingAvatar ? (
+                  <div className="absolute inset-0 bg-black/45 rounded-2xl flex items-center justify-center z-20">
+                    <Loader2 size={28} className="text-white animate-spin" />
+                  </div>
+                ) : null}
+              </label>
+              {user?.verified ? (
+                <div className="absolute -bottom-1 -right-1 bg-red-700 text-white rounded-full p-2 z-20 shadow-md border-2 border-white">
+                  <ShieldCheck size={16} aria-hidden />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <h4 className="font-display text-lg italic text-neutral-900 leading-tight">{c.name}</h4>
-                  {c.description && (
-                    <p className="text-[12px] text-neutral-500 mt-0.5 line-clamp-2 leading-snug">{c.description}</p>
-                  )}
-                  <p className="text-[10px] text-neutral-500 mt-1.5 font-medium">
-                    {c.member_count || 0} members
+              ) : null}
+            </div>
+            <p className="text-[11px] text-neutral-500 text-center lg:text-left max-w-[11rem] lg:max-w-none leading-snug">
+              Logo or venue contact photo — shown to workers when you host shifts.
+            </p>
+            {avatarError ? <p className="text-red-600 text-[11px] lg:col-span-1 text-center lg:text-left">{avatarError}</p> : null}
+          </div>
+
+          {/* Details — right column */}
+          <div className="flex-1 min-w-0 space-y-5">
+            {profileNotice ? (
+              <div className="rounded-xl border border-amber-200 bg-amber-50/80 px-3 py-2 text-[12px] text-amber-950">{profileNotice}</div>
+            ) : null}
+
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0 space-y-2">
+                <h2 className="font-display text-2xl sm:text-4xl italic text-neutral-900 leading-tight break-words">
+                  {app?.business_name?.trim() ? app.business_name : 'Your venue'}
+                </h2>
+                {app?.city_name ? (
+                  <p className="text-sm text-neutral-500 flex items-center gap-1.5">
+                    <MapPin size={14} className="shrink-0 text-red-700/70" aria-hidden />
+                    {app.city_name}
                   </p>
-                </div>
-                <ChevronRight size={18} className="shrink-0 text-neutral-300 group-hover:text-red-600 transition-colors" strokeWidth={2} />
+                ) : null}
+                {user.email ? (
+                  <p className="text-[13px] text-neutral-600 flex items-center gap-2 min-w-0">
+                    <Mail size={14} className="shrink-0 text-neutral-400" aria-hidden />
+                    <span className="truncate">{user.email}</span>
+                  </p>
+                ) : null}
               </div>
-              );
-            })}
+              <span
+                className={`shrink-0 inline-flex flex-col items-end gap-0.5 rounded-full border px-3 py-1.5 text-[9px] font-black uppercase tracking-widest ${statusMeta.className}`}
+              >
+                <span>{statusMeta.label}</span>
+              </span>
+            </div>
+            <p className="text-[12px] text-neutral-600 leading-snug">{statusMeta.sub}</p>
 
-            {showCreate ? (
-              <div className="border border-red-400 rounded-3xl p-5 flex flex-col gap-3 bg-neutral-50">
-                <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Crew name"
-                  className="bg-transparent border-b border-neutral-200 pb-2 text-sm focus:outline-none focus:border-red-700 placeholder:text-neutral-400 text-neutral-900"/>
-                <input type="text" value={newDesc} onChange={(e) => setNewDesc(e.target.value)} placeholder="What's it about?"
-                  className="bg-transparent border-b border-neutral-200 pb-2 text-xs focus:outline-none focus:border-red-700 placeholder:text-neutral-400 text-neutral-900"/>
-                {error && <p className="text-red-400 text-[10px]">{error}</p>}
-                <div className="flex gap-2 mt-2">
-                  <button onClick={handleCreate} disabled={creating} className="flex-1 bg-red-700 text-white text-[9px] font-black uppercase tracking-widest py-2 rounded-full disabled:opacity-50">
-                    {creating ? '...' : 'Create'}
+            {user?.is_platform_admin ? (
+              <Link
+                href="/admin/outlets"
+                className="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-neutral-50 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-neutral-800 hover:border-red-400"
+              >
+                Admin · outlet queue
+              </Link>
+            ) : null}
+
+            {editing ? (
+              <div className="space-y-3 rounded-xl border border-neutral-200 bg-neutral-50/80 p-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">Primary contact (your account)</p>
+                <input
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600/30"
+                  placeholder="Contact name"
+                />
+                <textarea
+                  value={editBio}
+                  onChange={(e) => setEditBio(e.target.value)}
+                  rows={2}
+                  className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600/30 resize-none"
+                  placeholder="Short note to workers (optional)"
+                />
+                <input
+                  value={editLocation}
+                  onChange={(e) => setEditLocation(e.target.value)}
+                  className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600/30"
+                  placeholder="Metro / neighbourhood label"
+                />
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="rounded-full bg-red-700 text-white px-5 py-2 text-[10px] font-black uppercase tracking-widest disabled:opacity-50"
+                  >
+                    {saving ? 'Saving…' : 'Save'}
                   </button>
-                  <button onClick={() => { setShowCreate(false); setError(''); }} className="px-3 py-2 text-neutral-500 hover:text-neutral-900 text-[9px]">
-                    <X size={14} />
+                  <button
+                    type="button"
+                    onClick={() => setEditing(false)}
+                    className="rounded-full border border-neutral-200 px-5 py-2 text-[10px] font-black uppercase tracking-widest text-neutral-600"
+                  >
+                    Cancel
                   </button>
                 </div>
               </div>
             ) : (
-              <button onClick={() => setShowCreate(true)}
-                className="border border-dashed border-neutral-200 rounded-3xl p-6 flex flex-col items-center justify-center text-center gap-3 text-neutral-400 hover:text-neutral-900 hover:border-neutral-400 transition-colors cursor-pointer bg-neutral-100 hover:bg-neutral-100">
-                <PlusSquare size={28} className="mb-1" />
-                <span className="text-[10px] uppercase tracking-widest font-black">New Crew</span>
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="min-w-0">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">Primary contact</p>
+                  <p className="font-semibold text-neutral-900">{user?.name || '—'}</p>
+                  {user?.bio ? <p className="text-[13px] text-neutral-600 mt-1 max-w-xl">{user.bio}</p> : null}
+                  {user?.location ? (
+                    <p className="text-[12px] text-neutral-500 mt-1 flex items-center gap-1">
+                      <MapPin size={12} aria-hidden /> {user.location}
+                    </p>
+                  ) : null}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditing(true)}
+                  className="ml-auto sm:ml-0 inline-flex items-center gap-1 rounded-full border border-neutral-200 bg-white px-3 py-2 text-[10px] font-black uppercase tracking-widest text-neutral-700 hover:border-red-300"
+                  aria-label="Edit contact details"
+                >
+                  <Edit3 size={14} aria-hidden /> Edit
+                </button>
+              </div>
             )}
+
+            <div className="grid sm:grid-cols-3 gap-3">
+              <div className="rounded-xl border border-neutral-100 bg-neutral-50/90 p-4 text-center sm:text-left">
+                <p className="text-[9px] font-black uppercase tracking-widest text-neutral-500">Shift posts</p>
+                <p className="font-display text-2xl italic text-red-700 tabular-nums mt-1">{user?.hangouts_count ?? 0}</p>
+              </div>
+              <div className="rounded-xl border border-neutral-100 bg-neutral-50/90 p-4 text-center sm:text-left sm:col-span-2">
+                <p className="text-[9px] font-black uppercase tracking-widest text-neutral-500">Venue lines</p>
+                <p className="text-[13px] text-neutral-700 mt-2 leading-snug">
+                  {app?.phone ? (
+                    <span className="block">
+                      Desk · <span className="font-medium text-neutral-900">{app.phone}</span>
+                    </span>
+                  ) : (
+                    <span className="text-neutral-500">Add phone in registration below.</span>
+                  )}
+                  {app?.contact_email ? (
+                    <span className="block mt-1">
+                      Billing · <span className="font-medium text-neutral-900 break-all">{app.contact_email}</span>
+                    </span>
+                  ) : null}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4 md:p-5 space-y-3">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">Outlet verification</p>
+              <div className="grid sm:grid-cols-2 gap-3 text-[13px] text-neutral-700">
+                <div className="rounded-xl bg-white border border-neutral-200 p-3">
+                  <p className="font-bold text-neutral-900 text-sm">CAC & venue records</p>
+                  <p className="text-[12px] text-neutral-500 mt-1">
+                    Business name, address, and registration details stay in the form below — we match them before you&apos;re live on the board.
+                  </p>
+                </div>
+                <div className="rounded-xl bg-white border border-neutral-200 p-3">
+                  <p className="font-bold text-neutral-900 text-sm">Staff payouts</p>
+                  <p className="text-[12px] text-neutral-500 mt-1">
+                    You settle crew through Convivia rails (OPay / PalmPay / Moniepoint). Workers see payout status on their staff app.
+                  </p>
+                </div>
+              </div>
+              <a
+                href={staffingWhatsAppUrl('Hi Convivia24 — outlet verification / payouts question.')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex text-[10px] font-black uppercase tracking-widest text-red-700 hover:underline"
+              >
+                WhatsApp ops →
+              </a>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 pt-1">
+              {user?.verified ? (
+                <div className="flex-1 flex items-center gap-3 p-4 bg-emerald-50 rounded-2xl border border-emerald-200">
+                  <ShieldCheck size={22} className="text-emerald-800 shrink-0" aria-hidden />
+                  <div>
+                    <p className="text-sm font-bold text-emerald-950">Contact photo verified</p>
+                    <p className="text-[10px] text-emerald-800 font-semibold uppercase tracking-widest mt-0.5">Trusted for venue-facing actions</p>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setVerifyOpen(true)}
+                  disabled={!user?.avatar_url}
+                  className="flex-1 flex items-center justify-between gap-3 p-4 bg-white border border-neutral-200 hover:border-red-400 rounded-2xl transition-colors disabled:opacity-50 text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <ShieldCheck size={22} className="text-neutral-400 shrink-0" aria-hidden />
+                    <div>
+                      <p className="text-sm font-bold text-neutral-900">Verify contact photo</p>
+                      <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-widest mt-0.5">
+                        {user?.avatar_url ? 'Quick face check for outlet trust' : 'Upload a clear photo first'}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] uppercase text-white bg-red-700 font-black tracking-widest px-3 py-2 rounded-lg shrink-0">
+                    Verify
+                  </span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleSignOut}
+                disabled={signingOut}
+                className="sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-4 border border-neutral-200 rounded-2xl text-neutral-600 hover:text-red-700 hover:border-red-200 text-[10px] uppercase tracking-widest font-black disabled:opacity-50"
+              >
+                <LogOut size={14} aria-hidden /> {signingOut ? 'Signing out…' : 'Sign out'}
+              </button>
+            </div>
           </div>
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {verifyOpen ? (
+          <FaceVerificationModal
+            user={user}
+            onVerified={(u) => {
+              setUser(u);
+              setVerifyOpen(false);
+            }}
+            onClose={() => setVerifyOpen(false)}
+          />
+        ) : null}
+      </AnimatePresence>
+    </section>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   OUTLET — dashboard headline + flow (no zone pulse / roster assist — staff-only in HomeTab)
+   ══════════════════════════════════════════════════════════════════════ */
+function OutletLandingDashboard({ onSwitchTab }: { onSwitchTab: (t: AppTab) => void }) {
+  const flowSteps = [
+    { n: '1', label: 'Post or pick', sub: 'shift in 2 min' },
+    { n: '2', label: 'Match & confirm', sub: 'roster locked' },
+    { n: '3', label: 'Check in · rate', sub: 'same-day pay' },
+  ] as const;
+
+  return (
+    <motion.section
+      className="relative overflow-hidden rounded-[18px] lg:rounded-[32px] border border-gold/25 shadow-[0_16px_48px_rgba(0,0,0,0.07),0_0_0_1px_rgba(201,168,76,0.12)] max-lg:shadow-[0_6px_28px_rgba(0,0,0,0.07)]"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 280, damping: 32 }}
+    >
+      <div className="lg:hidden flex flex-col">
+        <div className="relative shrink-0 overflow-hidden rounded-t-[18px] border border-b-0 border-gold/25 bg-gradient-to-b from-white via-cream/90 to-[#f8f6f2] px-4 pt-5 pb-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9)]">
+          <div className="flex flex-col items-center text-center gap-3">
+            <BrandLogo alt="" className="h-11 sm:h-12 w-auto max-w-[min(280px,88vw)] object-contain select-none" />
+            <p className="text-[11px] font-medium text-neutral-600 tracking-[0.03em] max-w-[300px] leading-snug">
+              Lagos, Abuja &amp; Port Harcourt · venue console
+            </p>
+            <p className="text-[9px] font-black uppercase tracking-[0.28em] text-red-700 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.85)] animate-pulse shrink-0" />
+                <Zap size={11} className="text-amber-600 shrink-0" aria-hidden />
+                Live
+              </span>
+              <span className="text-neutral-500 font-bold normal-case tracking-normal">·</span>
+              <LiveLocalTime className="tabular-nums text-neutral-600" />
+            </p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-neutral-500">Outlet dashboard</p>
+            <h2 className="font-display text-[1.55rem] sm:text-[1.75rem] leading-[1.05] italic text-neutral-900">
+              Cover staff, <span className="text-red-700">sorted.</span>
+            </h2>
+          </div>
+        </div>
+        <div className="rounded-b-[18px] border border-t-0 border-gold/20 bg-gradient-to-b from-cream/95 to-[#f8f6f2] px-4 py-4 space-y-4">
+          <p className="text-[14px] leading-snug text-neutral-800 font-medium text-center sm:text-left">
+            {HOSPITALITY_METROS_BEFORE_LINK}{' '}
+            <button
+              type="button"
+              onClick={() => onSwitchTab('demand')}
+              className="text-red-700 font-semibold underline decoration-red-600/40 underline-offset-2"
+            >
+              demand board
+            </button>
+            .
+          </p>
+          <FlowSteps steps={[...flowSteps]} />
+          <button
+            type="button"
+            onClick={() => onSwitchTab('demand')}
+            className="w-full rounded-full bg-red-700 text-white text-[10px] font-black uppercase tracking-[0.2em] py-3.5 hover:bg-red-800 shadow-[0_0_20px_rgba(185,28,28,0.2)]"
+          >
+            Open demand · board & post
+          </button>
+        </div>
+      </div>
+
+      <div className="hidden lg:block">
+        <motion.div
+          className="rounded-[28px] border border-neutral-200/90 bg-white p-10 space-y-5 shadow-[0_8px_40px_rgba(0,0,0,0.04)]"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="show"
+        >
+          <motion.div variants={staggerItem} className="flex flex-col sm:flex-row sm:items-center sm:gap-6 gap-4">
+            <BrandLogo alt="" className="h-10 sm:h-11 w-auto object-contain object-left shrink-0" />
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-700 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse shrink-0" /> Live · <LiveLocalTime />
+            </p>
+          </motion.div>
+          <motion.div variants={staggerItem} className="max-w-2xl space-y-3">
+            <p className="text-neutral-500 text-[10px] font-semibold uppercase tracking-[0.28em]">Outlet dashboard</p>
+            <h2 className="font-display text-4xl xl:text-5xl italic leading-[1.05] text-neutral-900 text-balance">
+              Cover staff, <span className="text-red-700">sorted.</span>
+            </h2>
+            <p className="text-neutral-600 text-base leading-relaxed max-w-xl text-pretty">
+              {HOSPITALITY_METROS_BEFORE_LINK}{' '}
+              <button
+                type="button"
+                onClick={() => onSwitchTab('demand')}
+                className="text-red-700 font-semibold underline decoration-red-600/40 underline-offset-4 hover:text-red-800"
+              >
+                demand board
+              </button>
+              .
+            </p>
+          </motion.div>
+          <motion.div variants={staggerItem}>
+            <FlowSteps steps={[...flowSteps]} />
+          </motion.div>
+        </motion.div>
+      </div>
+    </motion.section>
+  );
+}
+
+function OutletJumpSnippets({
+  onSwitchTab,
+  metroCity,
+}: {
+  onSwitchTab: (t: AppTab) => void;
+  metroCity: string;
+}) {
+  const [openTablesCount, setOpenTablesCount] = useState(0);
+  useEffect(() => {
+    const city = metroCity?.trim() || DEFAULT_CITIES[0];
+    let cancelled = false;
+    fetch(`/api/hangouts?city=${encodeURIComponent(city)}&next_hours=24`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (cancelled) return;
+        const hangouts = Array.isArray(d.hangouts) ? d.hangouts : [];
+        const n = hangouts.filter((h: any) => (h.current_guests || 0) < (h.max_guests || 0)).length;
+        setOpenTablesCount(n);
+      })
+      .catch(() => {
+        if (!cancelled) setOpenTablesCount(0);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [metroCity]);
+
+  return (
+    <HomeExploreSnippets
+      persona="outlet"
+      onSwitchTab={onSwitchTab}
+      openTablesCount={openTablesCount}
+      outletThreeTab
+    />
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   OUTLET — landing (home + registration + outlet profile card)
+   ══════════════════════════════════════════════════════════════════════ */
+function OutletLandingTab({
+  initialUser,
+  onSwitchTab,
+  cities,
+}: {
+  initialUser?: any;
+  onSwitchTab: (t: AppTab) => void;
+  cities: string[];
+}) {
+  const router = useRouter();
+  const metroCity = cities[0] ?? DEFAULT_CITIES[0];
+  return (
+    <div className="space-y-8 pb-24">
+      <OutletAccountSection initialUser={initialUser} />
+
+      <OutletLandingDashboard onSwitchTab={onSwitchTab} />
+
+      <section className="rounded-2xl border border-neutral-200 bg-white p-4 sm:p-6 shadow-sm">
+        <div className="mb-5">
+          <p className="text-[10px] font-black uppercase tracking-[0.28em] text-red-600">Registration</p>
+          <h2 className="font-display text-xl sm:text-2xl italic text-neutral-900 mt-1">Venue details & approval</h2>
+          <p className="text-[13px] text-neutral-600 mt-2 max-w-2xl leading-snug">
+            Legal business name, address, and city — required before demand goes live. Updates sync to our admin queue.
+          </p>
+        </div>
+        {initialUser ? (
+          <OutletOnboardingForm
+            initialApplication={initialUser.outlet_application ?? null}
+            onUpdated={() => {
+              router.refresh();
+            }}
+          />
+        ) : (
+          <p className="text-sm text-neutral-500 border border-dashed border-neutral-200 rounded-xl p-4 bg-neutral-50/80">
+            Sign in above, then complete this form so we can approve posting shifts.
+          </p>
         )}
+      </section>
+
+      <OutletJumpSnippets onSwitchTab={onSwitchTab} metroCity={metroCity} />
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   OUTLET — board + post (single Demand tab)
+   ══════════════════════════════════════════════════════════════════════ */
+function OutletDemandTab({
+  outletDemandSub,
+  setOutletDemandSub,
+  pendingInviteHangoutId,
+  onClearPendingInvite,
+  cities,
+  addCity,
+  onSwitchTab,
+}: {
+  outletDemandSub: 'board' | 'post';
+  setOutletDemandSub: (v: 'board' | 'post') => void;
+  pendingInviteHangoutId?: string | null;
+  onClearPendingInvite?: () => void;
+  cities: string[];
+  addCity: (name: string) => void;
+  onSwitchTab: (t: AppTab) => void;
+}) {
+  return (
+    <div className="space-y-5 pb-24">
+      <div className="flex justify-center">
+        <div className="inline-flex rounded-full border border-neutral-200 bg-neutral-50 p-1 shadow-sm" role="tablist" aria-label="Board or post">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={outletDemandSub === 'board'}
+            onClick={() => setOutletDemandSub('board')}
+            className={`rounded-full px-4 sm:px-6 py-2 text-[10px] font-black uppercase tracking-widest transition-colors ${
+              outletDemandSub === 'board' ? 'bg-red-700 text-white shadow-sm' : 'text-neutral-600 hover:text-neutral-900'
+            }`}
+          >
+            Board
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={outletDemandSub === 'post'}
+            onClick={() => setOutletDemandSub('post')}
+            className={`rounded-full px-4 sm:px-6 py-2 text-[10px] font-black uppercase tracking-widest transition-colors ${
+              outletDemandSub === 'post' ? 'bg-red-700 text-white shadow-sm' : 'text-neutral-600 hover:text-neutral-900'
+            }`}
+          >
+            Post shift
+          </button>
+        </div>
+      </div>
+
+      {outletDemandSub === 'board' ? (
+        <DiscoverTab
+          persona="outlet"
+          onSwitchTab={onSwitchTab}
+          pendingInviteHangoutId={pendingInviteHangoutId}
+          onClearPendingInvite={onClearPendingInvite}
+          cities={cities}
+        />
+      ) : (
+        <HostTab
+          onPosted={() => setOutletDemandSub('board')}
+          cities={cities}
+          addCity={addCity}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   OUTLET — payments & settlement (dedicated tab)
+   ══════════════════════════════════════════════════════════════════════ */
+function OutletPaymentsTab({
+  cities,
+  onSwitchTab,
+}: {
+  cities: string[];
+  onSwitchTab: (t: AppTab) => void;
+}) {
+  const metro = cities[0] ?? DEFAULT_CITIES[0];
+  return (
+    <div className="max-w-3xl mx-auto space-y-8 pb-20 min-w-0 px-0">
+      <div>
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-600 mb-2 flex items-center gap-2">
+          <Wallet size={12} aria-hidden /> Payouts & demand
+        </p>
+        <h1 className="font-display text-3xl md:text-5xl italic text-neutral-900 mb-3">
+          Money & <span className="text-red-700">roster.</span>
+        </h1>
+        <p className="text-neutral-600 text-sm md:text-base leading-relaxed max-w-2xl">
+          Same-day staff payouts on OPay / PalmPay / Moniepoint, demand on the board in <strong>{metro}</strong>, and one finance thread for cohort billing or adjustments.
+        </p>
+      </div>
+
+      <div className="grid sm:grid-cols-3 gap-3">
+        <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
+          <p className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Metro</p>
+          <p className="font-display text-xl italic mt-1">{metro}</p>
+          <p className="text-[12px] text-neutral-500 mt-2">Shift posts are filtered here.</p>
+        </div>
+        <div className="rounded-2xl border border-emerald-200/80 bg-emerald-50/50 p-4 shadow-sm">
+          <p className="text-[10px] font-black uppercase tracking-widest text-emerald-900">Pending to staff</p>
+          <p className="font-display text-xl italic mt-1 tabular-nums">₦—</p>
+          <p className="text-[12px] text-neutral-600 mt-2">Clears after you sign off shifts.</p>
+        </div>
+        <div className="rounded-2xl border border-amber-200/80 bg-amber-50/40 p-4 shadow-sm">
+          <p className="text-[10px] font-black uppercase tracking-widest text-amber-900">Ops / disputes</p>
+          <p className="text-[12px] text-neutral-600 mt-2">Hours or rates mismatch — keep it on-platform first.</p>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-5">
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 mb-3">Settlement lines (demo)</p>
+        <div className="rounded-xl bg-white border border-neutral-100 divide-y divide-neutral-100 text-[13px]">
+          <div className="p-3 flex flex-col sm:flex-row sm:justify-between gap-1">
+            <span>Weekend cover · VI batch</span>
+            <span className="text-neutral-500 shrink-0">Queued · rails check</span>
+          </div>
+          <div className="p-3 flex flex-col sm:flex-row sm:justify-between gap-1">
+            <span>OPay disbursement · roster pool</span>
+            <span className="text-emerald-800 font-semibold shrink-0">Released</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-3">
+        <button
+          type="button"
+          onClick={() => onSwitchTab('demand')}
+          className="rounded-full bg-red-700 text-white text-[10px] font-black uppercase tracking-widest px-5 py-3 hover:bg-red-800"
+        >
+          Demand · board & post
+        </button>
+        <a
+          href={staffingWhatsAppUrl('Hi Convivia24 — outlet payout / billing question.')}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center rounded-full border border-emerald-600/40 bg-emerald-50 text-emerald-900 text-[10px] font-black uppercase tracking-widest px-5 py-3"
+        >
+          WhatsApp finance
+        </a>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   CAREER TAB (workers) — pay, slips, disputes, training
+   ══════════════════════════════════════════════════════════════════════ */
+function CareerTab({ onSwitchTab }: { onSwitchTab: (t: AppTab) => void }) {
+  const payslipRows = [
+    { id: '1', role: 'Banquet server', zone: 'VI', venue: 'Hotel · redacted', amount: '₦18k est.', status: 'Paid · OPay', date: 'Same-day settlement' },
+    { id: '2', role: 'Barback', zone: 'Lekki', venue: 'Lounge · redacted', amount: '₦12k est.', status: 'Paid · PalmPay', date: 'Same-day settlement' },
+  ];
+  const trainingModules = [
+    { id: 't1', title: 'Service & recovery', min: 6, done: true },
+    { id: 't2', title: 'Hygiene essentials', min: 5, done: true },
+    { id: 't3', title: 'Drinks & glassware', min: 8, done: false },
+  ];
+  const trainingDone = trainingModules.filter((t) => t.done).length;
+  return (
+    <div className="mx-auto w-full max-w-[min(100%,428px)] lg:max-w-6xl pb-20 px-0 lg:px-4 min-w-0">
+      {/* Mobile-first: single column · lg+: hero full width, then pay | ops side by side */}
+      <header className="mb-8 space-y-3">
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-600 flex items-center gap-2">
+          <Briefcase size={12} aria-hidden /> Record
+        </p>
+        <h1 className="font-display text-3xl md:text-5xl italic text-neutral-900">
+          Pay, slips & <span className="text-red-700">disputes.</span>
+        </h1>
+        <p className="text-neutral-600 text-sm md:text-base leading-relaxed max-w-2xl">
+          Same-day pay to mobile money, a line-by-line slip trail, and a single place to flag a shift or payout that doesn&apos;t match. Your outlet-facing rating lives on{' '}
+          <button type="button" onClick={() => onSwitchTab('profile')} className="text-red-700 font-semibold underline decoration-red-600/40 underline-offset-2">
+            Profile
+          </button>
+          .
+        </p>
+      </header>
+
+      <div className="flex flex-col gap-8 lg:flex-row lg:gap-10 lg:items-start">
+        {/* Column A — money trail (native stack on phone) */}
+        <div className="flex min-w-0 flex-1 flex-col gap-8">
+      <div className="rounded-2xl border border-teal-200/90 bg-gradient-to-br from-teal-50/80 to-white p-5 shadow-sm">
+        <div className="flex items-start gap-3">
+          <div className="shrink-0 w-11 h-11 rounded-2xl bg-teal-600 text-white flex items-center justify-center shadow-sm">
+            <Wallet size={22} aria-hidden />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-teal-900">Payments</p>
+            <h2 className="font-display text-xl italic text-neutral-900 mt-1">Your wallet & payout route</h2>
+            <p className="text-[13px] text-neutral-600 mt-2 leading-snug">
+              Same-day settlement after the outlet confirms your shift. Register one primary wallet — OPay, PalmPay, or Moniepoint — and keep it current with ops if your number changes.
+            </p>
+            <div className="flex flex-wrap gap-2 mt-3">
+              {['OPay', 'PalmPay', 'Moniepoint'].map((p) => (
+                <span key={p} className="text-[10px] font-black uppercase tracking-widest bg-white/90 text-teal-900 border border-teal-200 px-2.5 py-1 rounded-full shadow-sm">
+                  {p}
+                </span>
+              ))}
+            </div>
+            <p className="text-[12px] text-neutral-500 mt-4 tabular-nums">
+              Pending (est.): <strong className="text-neutral-800">₦0</strong>
+              <span className="mx-2 text-neutral-300">·</span>
+              Paid this month (est.): <strong className="text-neutral-800">₦—</strong>
+            </p>
+            <button
+              type="button"
+              onClick={() => onSwitchTab('profile')}
+              className="mt-3 text-[10px] font-black uppercase tracking-widest text-teal-900 hover:underline underline-offset-4"
+            >
+              Profile · verification & payout notes →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
+        <div className="flex items-start gap-3 mb-4">
+          <div className="shrink-0 w-10 h-10 rounded-xl bg-red-50 border border-red-100 flex items-center justify-center text-red-700">
+            <Receipt size={20} aria-hidden />
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-neutral-500">Payout history</p>
+            <h2 className="font-display text-lg italic text-neutral-900 mt-0.5">What you&apos;ve been paid</h2>
+            <p className="text-[13px] text-neutral-600 mt-1 leading-snug">
+              Lines sync when the outlet signs off your shift. Full detail exports when we wire payroll integration.
+            </p>
+          </div>
+        </div>
+        <div className="rounded-xl border border-neutral-100 divide-y divide-neutral-100">
+          {payslipRows.map((r) => (
+            <div key={r.id} className="p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div>
+                <p className="font-semibold text-neutral-900">{r.role}</p>
+                <p className="text-[12px] text-neutral-500">{r.zone} · {r.venue}</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <span className="text-[11px] font-bold text-neutral-800 tabular-nums">{r.amount}</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-full">
+                  {r.status}
+                </span>
+                <span className="text-[11px] text-neutral-500">{r.date}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+        </div>
+
+        {/* Column B — ops & growth (same vertical order as mobile when stacked) */}
+        <div className="flex min-w-0 flex-1 flex-col gap-8">
+      <div className="rounded-2xl border border-amber-200/90 bg-amber-50/40 p-5 shadow-sm">
+        <div className="flex items-start gap-3">
+          <AlertCircle size={22} className="text-amber-800 shrink-0 mt-0.5" aria-hidden />
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-900">Disputes</p>
+            <h2 className="font-display text-lg italic text-neutral-900 mt-0.5">Clock-in, hours, or pay don&apos;t match?</h2>
+            <p className="text-[13px] text-neutral-700 mt-1 leading-snug">
+              Message us with shift ID and screenshots. We&apos;ll triage with the outlet — keep it on-platform first.
+            </p>
+            <a
+              href={staffingWhatsAppUrl('Hi Convivia24 — I need help with a shift payout / dispute.')}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex mt-3 text-[10px] font-black uppercase tracking-widest text-red-700 hover:underline"
+            >
+              Open dispute thread on WhatsApp →
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/90 to-white p-5 shadow-sm">
+        <div className="flex items-start gap-3">
+          <div className="shrink-0 w-11 h-11 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-sm">
+            <GraduationCap size={22} aria-hidden />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-900">Training · under 20 minutes total</p>
+            <h2 className="font-display text-xl italic text-neutral-900 mt-1">Unlock better shifts</h2>
+            <p className="text-[13px] text-neutral-600 mt-1 leading-snug">
+              Short modules — not homework. Finish to rank higher on outlet match lists and event crew calls.
+            </p>
+            <p className="text-[11px] font-bold text-emerald-900 mt-2 tabular-nums">
+              {trainingDone}/{trainingModules.length} complete · ~{trainingModules.reduce((s, t) => s + t.min, 0)} min if you do all three
+            </p>
+          </div>
+        </div>
+        <ul className="mt-4 space-y-2">
+          {trainingModules.map((m) => (
+            <li
+              key={m.id}
+              className="flex items-center justify-between gap-3 rounded-xl border border-emerald-100/80 bg-white/90 px-3 py-2.5"
+            >
+              <span className="text-sm font-semibold text-neutral-900">{m.title}</span>
+              <span className="flex items-center gap-2 shrink-0">
+                <span className="text-[10px] text-neutral-500 tabular-nums">{m.min} min</span>
+                {m.done ? (
+                  <span className="text-[9px] font-black uppercase tracking-widest text-emerald-800 bg-emerald-100 px-2 py-1 rounded-full">
+                    Done
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    className="text-[9px] font-black uppercase tracking-widest text-white bg-emerald-700 px-3 py-1.5 rounded-full hover:bg-emerald-800"
+                  >
+                    Start
+                  </button>
+                )}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 mb-2">Shift archive</p>
+        <p className="text-[13px] text-neutral-600 leading-snug">
+          Completed roles and outlet confirmations will appear here for references and your rating trail — payout lines stay in the table above.
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+        <button
+          type="button"
+          onClick={() => onSwitchTab('discover')}
+          className="inline-flex min-h-[48px] items-center justify-center rounded-full bg-red-700 text-white text-[10px] font-black uppercase tracking-widest px-5 py-3 hover:bg-red-800 lg:min-h-0"
+        >
+          Browse shifts
+        </button>
+        <a
+          href={staffingWhatsAppUrl('Hi Convivia24 — question about my pay or shift record.')}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex min-h-[48px] items-center justify-center rounded-full border border-neutral-300 text-neutral-800 text-[10px] font-black uppercase tracking-widest px-5 py-3 hover:border-red-400 lg:min-h-0"
+        >
+          WhatsApp support
+        </a>
+      </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   LEARN — hospitality training & certifications
+   ══════════════════════════════════════════════════════════════════════ */
+const HOSPITALITY_COURSES = [
+  {
+    id: 'food-safety',
+    title: 'Food safety & hygiene essentials',
+    duration: '45 min',
+    badge: 'Certificate',
+    blurb: 'Temperature zones, allergens, hand hygiene — aligned with what kitchens expect on audit day.',
+  },
+  {
+    id: 'responsible-service',
+    title: 'Responsible service & guest care',
+    duration: '35 min',
+    badge: 'Badge',
+    blurb: 'Reading the room, cut-offs, and calm service when the floor is packed.',
+  },
+  {
+    id: 'wine-bar',
+    title: 'Wine, spirits & bar basics',
+    duration: '50 min',
+    badge: 'Certificate',
+    blurb: 'Pour counts, pairings at a glance, and confident recommendations without the fluff.',
+  },
+  {
+    id: 'banquet',
+    title: 'Banquet & plated service',
+    duration: '40 min',
+    badge: 'Micro-cert',
+    blurb: 'Tray carry, silver service cues, and timing with kitchen fire — weddings & corporates.',
+  },
+  {
+    id: 'coffee',
+    title: 'Coffee & hot beverages',
+    duration: '30 min',
+    badge: 'Skills card',
+    blurb: 'Dial-in for hotels and cafés — grind, milk, and recovery when the rush hits.',
+  },
+] as const;
+
+function HospitalityTrainingTab({ persona, onSwitchTab }: { persona: StaffPersona; onSwitchTab: (t: AppTab) => void }) {
+  return (
+    <div className="max-w-[min(100%,428px)] lg:max-w-3xl mx-auto space-y-6 lg:space-y-8 pb-20 px-0 min-w-0">
+      <div>
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-600 mb-2 flex items-center gap-2">
+          <GraduationCap size={12} aria-hidden /> Learn
+        </p>
+        <h1 className="font-display text-3xl sm:text-4xl md:text-5xl italic text-neutral-900 mb-3">
+          Hospitality <span className="text-red-700">training</span>
+        </h1>
+        <p className="text-neutral-600 text-sm md:text-base leading-relaxed max-w-2xl">
+          Short courses and certs outlets actually scan for — bars, hotels, banquets, and floor teams. Complete modules to boost trust on your profile.
+        </p>
+      </div>
+
+      <ul className="space-y-3">
+        {HOSPITALITY_COURSES.map((c) => (
+          <li
+            key={c.id}
+            className="rounded-2xl border border-neutral-200 bg-white p-4 md:p-5 shadow-[0_6px_22px_rgba(0,0,0,0.04)] flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3"
+          >
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2 mb-1">
+                <h2 className="font-display text-lg md:text-xl italic text-neutral-900">{c.title}</h2>
+                <span className="text-[9px] font-black uppercase tracking-widest bg-red-50 text-red-800 border border-red-200 px-2 py-0.5 rounded-full">
+                  {c.badge}
+                </span>
+              </div>
+              <p className="text-[13px] text-neutral-600 leading-snug">{c.blurb}</p>
+              <p className="text-[11px] text-neutral-400 font-semibold mt-2 tabular-nums">{c.duration}</p>
+            </div>
+            <button
+              type="button"
+              className="w-full min-h-[48px] sm:min-h-0 sm:w-auto shrink-0 self-stretch sm:self-center rounded-full bg-neutral-900 text-white text-[10px] font-black uppercase tracking-widest px-5 py-3 sm:py-2.5 hover:bg-red-700 transition-colors"
+            >
+              Start
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      <div className="rounded-2xl border border-emerald-200/80 bg-emerald-50/50 p-5">
+        <p className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-900 mb-1">Need a custom cohort?</p>
+        <p className="text-[13px] text-neutral-700 leading-snug">
+          Outlets can brief us for on-site orientation — same WhatsApp line as staffing.
+        </p>
+        <a
+          href={staffingWhatsAppUrl('Hi Convivia24 — training / certification question for our team.')}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex mt-3 text-[10px] font-black uppercase tracking-widest text-emerald-900 hover:underline underline-offset-4"
+        >
+          Message on WhatsApp →
+        </a>
+      </div>
+
+      <div className="flex flex-wrap gap-3">
+        <button
+          type="button"
+          onClick={() => onSwitchTab(persona === 'outlet' ? 'demand' : 'discover')}
+          className="inline-flex items-center justify-center rounded-full bg-red-700 text-white text-[10px] font-black uppercase tracking-widest px-5 py-3 hover:bg-red-800"
+        >
+          {persona === 'outlet' ? 'Back to demand' : 'Browse shifts'}
+        </button>
+        <button
+          type="button"
+          onClick={() => onSwitchTab('profile')}
+          className="inline-flex items-center justify-center rounded-full border border-neutral-300 text-neutral-800 text-[10px] font-black uppercase tracking-widest px-5 py-3 hover:border-red-400"
+        >
+          Profile & verification
+        </button>
       </div>
     </div>
   );
@@ -2487,7 +3735,7 @@ function FaceVerificationModal({ user: _user, onVerified, onClose }: { user: any
 /* ══════════════════════════════════════════════════════════════════════
    PROFILE TAB
    ══════════════════════════════════════════════════════════════════════ */
-function ProfileTab({ initialUser }: { initialUser?: any }) {
+function ProfileTab({ persona, initialUser }: { persona: StaffPersona; initialUser?: any }) {
   const [user, setUser] = useState<any>(initialUser || null);
   const [loading, setLoading] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
@@ -2496,53 +3744,11 @@ function ProfileTab({ initialUser }: { initialUser?: any }) {
   const [editBio, setEditBio] = useState(initialUser?.bio || '');
   const [editLocation, setEditLocation] = useState(initialUser?.location || '');
   const [saving, setSaving] = useState(false);
-  const [showUpgrade, setShowUpgrade] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [avatarError, setAvatarError] = useState('');
   const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
   const [profileNotice, setProfileNotice] = useState('');
   const [verifyOpen, setVerifyOpen] = useState(false);
-  const [subscribing, setSubscribing] = useState<'trial' | 'paid' | null>(null);
-
-  const subscribe = async (plan: 'black' | 'black_trial') => {
-    setSubscribing(plan === 'black' ? 'paid' : 'trial');
-    setProfileNotice('');
-    try {
-      const res = await fetch('/api/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan }),
-      });
-      const data = await res.json();
-      if (res.ok && data.user) {
-        setUser({ ...user, ...data.user, premium_active: true });
-        setShowUpgrade(false);
-        setProfileNotice(data.message || 'You are now Convivia Black.');
-      } else {
-        setProfileNotice(data.error || 'Could not start subscription.');
-      }
-    } catch {
-      setProfileNotice('Network error. Try again.');
-    }
-    setSubscribing(null);
-  };
-
-  const cancelSubscription = async () => {
-    setSubscribing('paid');
-    try {
-      const res = await fetch('/api/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: 'cancel' }),
-      });
-      const data = await res.json();
-      if (res.ok && data.user) {
-        setUser({ ...user, ...data.user, premium_active: false });
-        setProfileNotice('Subscription cancelled.');
-      }
-    } catch { /* ignore */ }
-    setSubscribing(null);
-  };
 
   useEffect(() => {
     setLoading(true);
@@ -2650,7 +3856,7 @@ function ProfileTab({ initialUser }: { initialUser?: any }) {
           <UserIcon size={40} className="mx-auto text-red-700/80 mb-4" />
           <h2 className="font-display text-3xl italic text-neutral-900 mb-2">Sign in</h2>
           <p className="text-neutral-600 text-sm leading-relaxed mb-6">
-            Use your account to sync your profile photo (Azure storage), face verification, matches, and membership.
+            Sign in to sync NIN verification, guarantor, payout wallet (OPay / PalmPay / Moniepoint), and your shift history across devices.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
@@ -2681,88 +3887,27 @@ function ProfileTab({ initialUser }: { initialUser?: any }) {
     );
   }
 
-  if (showUpgrade) {
-    const isActive = !!user?.premium_active || user?.tier === 'black';
-    return (
-      <div className="pt-4 pb-20 space-y-8">
-        <button onClick={() => setShowUpgrade(false)} className="text-[10px] uppercase tracking-widest font-black text-neutral-500 hover:text-red-700 flex items-center gap-2">
-          ← Back to Profile
-        </button>
-
-        <div className="relative rounded-[40px] overflow-hidden border border-red-400 bg-neutral-50 backdrop-blur-3xl shadow-[0_20px_100px_rgba(201,168,76,0.1)]">
-          <div className="absolute inset-0 z-0 hidden lg:block">
-            <img src="/conv1.png" className="w-full h-[60%] object-cover opacity-30 mix-blend-lighten" alt="" />
-            <div className="absolute inset-0 bg-gradient-to-t from-neutral-100 via-neutral-100/90 to-transparent" />
-          </div>
-
-          <div className="relative z-10 p-8 md:p-14 flex flex-col lg:flex-row gap-12 items-center lg:items-start">
-            <div className="flex-shrink-0 relative">
-              <div className="absolute inset-0 bg-red-100 rounded-xl blur-3xl animate-pulse" />
-              <ConviviumCard />
-              <p className="text-[9px] uppercase tracking-[0.3em] font-black text-center text-red-600 mt-6 block w-full">Digital Access Key</p>
-            </div>
-            <div className="flex-1 text-center lg:text-left">
-              <SectionLabel variant="dark">Membership</SectionLabel>
-              <h2 className="font-display text-4xl sm:text-5xl italic text-neutral-900 mb-3">Convivia Black</h2>
-              <p className="text-neutral-600 text-base leading-relaxed mb-8 max-w-lg">
-                Free members get <strong className="text-neutral-900">1 AI match per week</strong>. Black is unlimited — plus priority everywhere we operate.
-              </p>
-
-              <div className="space-y-3 mb-8 text-left">
-                {[
-                  { Icon: Sparkles,    title: 'Unlimited AI Matches',     sub: 'Free is 1/week. Black is unlimited.' },
-                  { Icon: Zap,         title: 'Instant Venue Booking',    sub: 'No 24-hour wait — auto-confirmed.' },
-                  { Icon: Ticket,      title: 'Priority Curated Tables',  sub: 'Skip the host approval queue.' },
-                  { Icon: ShieldCheck, title: 'Black Badge',              sub: 'Visible to other members.' },
-                  { Icon: Building2,   title: 'Member-only Tables',       sub: 'Monthly Black-only dinners.' },
-                ].map(({ Icon, title, sub }) => (
-                  <div key={title} className="flex items-start gap-3 bg-neutral-50 p-4 rounded-2xl border border-neutral-100">
-                    <Icon size={18} className="text-red-700 shrink-0 mt-0.5" />
-                    <div><p className="text-sm font-bold">{title}</p><p className="text-[10px] text-neutral-500 mt-0.5 uppercase tracking-wider font-bold">{sub}</p></div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Plan picker */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                <button onClick={() => subscribe('black_trial')} disabled={isActive || subscribing !== null}
-                  className="text-left p-5 rounded-2xl border border-neutral-300 hover:border-red-600 transition-colors disabled:opacity-50 bg-neutral-50">
-                  <p className="text-[10px] uppercase tracking-widest font-black text-neutral-500 mb-1">Free trial</p>
-                  <p className="font-display text-3xl italic text-neutral-900">14 days</p>
-                  <p className="text-neutral-600 text-sm mt-1">Then ₦30k/mo · cancel anytime</p>
-                  <p className="text-[10px] uppercase tracking-widest text-red-700 font-black mt-3">{subscribing === 'trial' ? 'Starting…' : 'Start trial →'}</p>
-                </button>
-                <button onClick={() => subscribe('black')} disabled={isActive || subscribing !== null}
-                  className="text-left p-5 rounded-2xl border border-red-600 hover:border-red-800 transition-colors disabled:opacity-50 bg-red-50">
-                  <p className="text-[10px] uppercase tracking-widest font-black text-red-700 mb-1">Monthly</p>
-                  <p className="font-display text-3xl italic text-neutral-900">₦30,000<span className="text-base text-neutral-500">/mo</span></p>
-                  <p className="text-neutral-600 text-sm mt-1">Unlimited · all benefits live</p>
-                  <p className="text-[10px] uppercase tracking-widest text-red-700 font-black mt-3">{subscribing === 'paid' ? 'Activating…' : 'Subscribe →'}</p>
-                </button>
-              </div>
-
-              {isActive && (
-                <button onClick={cancelSubscription} disabled={subscribing !== null}
-                  className="text-[10px] uppercase tracking-widest font-black text-neutral-500 hover:text-red-400 transition-colors mt-2">
-                  Cancel subscription
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-4xl mx-auto pt-6 pb-20">
-      <h1 className="font-display text-4xl md:text-5xl italic text-neutral-900 mb-1">
-        Your <span className="text-red-700">24.</span>
+    <div className="max-w-4xl mx-auto pt-4 max-lg:pt-5 pb-20 px-0">
+      <h1 className="font-display text-3xl sm:text-4xl md:text-5xl italic text-neutral-900 mb-1 px-0.5">
+        Staff <span className="text-red-700">profile.</span>
       </h1>
       <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-red-600 mb-6 flex items-center gap-2">
-        <UserIcon size={12} className="shrink-0" strokeWidth={2} aria-hidden /> Me
+        <UserIcon size={12} className="shrink-0" strokeWidth={2} aria-hidden /> Trust & payouts
       </p>
-      <div className="bg-white backdrop-blur-xl border border-neutral-200/90 rounded-[28px] md:rounded-[40px] p-6 md:p-10 shadow-[0_12px_48px_rgba(0,0,0,0.06)] relative overflow-hidden">
+
+      {user?.is_platform_admin ? (
+        <div className="mb-6">
+          <Link
+            href="/admin/outlets"
+            className="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 py-2 text-[10px] font-black uppercase tracking-widest text-neutral-800 hover:border-red-400"
+          >
+            Admin · outlet queue
+          </Link>
+        </div>
+      ) : null}
+
+      <div className="bg-white backdrop-blur-xl border border-neutral-200/90 rounded-[24px] md:rounded-[40px] p-5 md:p-10 shadow-[0_12px_48px_rgba(0,0,0,0.06)] relative overflow-hidden">
         <div className="absolute top-0 right-0 w-[420px] h-[420px] bg-red-50/80 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
 
         <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-10 relative z-10">
@@ -2805,7 +3950,7 @@ function ProfileTab({ initialUser }: { initialUser?: any }) {
           {/* Info */}
           <div className="flex-1 text-center md:text-left w-full min-w-0">
             {profileNotice && (
-              <div className="bg-red-50 border border-red-200 rounded-2xl px-3 py-2 text-[12px] text-red-5005 mb-6">
+              <div className="bg-red-50 border border-red-200 rounded-2xl px-3 py-2 text-[12px] text-red-700 mb-6">
                 {profileNotice}
               </div>
             )}
@@ -2828,25 +3973,63 @@ function ProfileTab({ initialUser }: { initialUser?: any }) {
             ) : (
               <>
                 <div className="flex flex-wrap items-center gap-2 justify-center md:justify-start mb-2">
-                  <h2 className="font-display text-4xl md:text-5xl italic text-neutral-900">{user?.name || 'Convivia Member'}</h2>
+                  <h2 className="font-display text-3xl sm:text-4xl md:text-5xl italic text-neutral-900">{user?.name || 'Convivia Member'}</h2>
                   <button type="button" onClick={() => setEditing(true)} className="text-neutral-400 hover:text-red-700 transition-colors p-1" aria-label="Edit profile"><Edit3 size={17} /></button>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 justify-center md:justify-start mb-3">
-                  {user?.rating !== undefined && user?.rating !== null && String(user.rating).trim() !== '' && (
-                    <span className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-red-800">
-                      <Star size={11} className="text-red-700" fill="currentColor" /> Rating {String(user.rating)}
-                    </span>
-                  )}
-                </div>
-                <p className="text-neutral-600 text-base max-w-md mx-auto md:mx-0 leading-relaxed mb-2">{user?.bio || 'No bio yet — what brings you to the table?'}</p>
+                {persona === 'worker' ? (
+                  <div className="flex flex-wrap items-center gap-2 justify-center md:justify-start mb-2">
+                    {user?.rating !== undefined && user?.rating !== null && String(user.rating).trim() !== '' ? (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-red-800">
+                        <Star size={11} className="text-red-700" fill="currentColor" /> Shift rating {String(user.rating)}
+                      </span>
+                    ) : (
+                      <span className="text-[11px] text-neutral-500">Shift rating appears after outlets confirm your jobs.</span>
+                    )}
+                  </div>
+                ) : null}
+                <p className="text-neutral-600 text-base max-w-md mx-auto md:mx-0 leading-relaxed mb-2 mt-1">{user?.bio || 'No bio yet — what brings you to the table?'}</p>
                 {user?.location && <p className="text-neutral-400 text-sm mb-8 flex items-center gap-1 justify-center md:justify-start"><MapPin size={12} /> {user.location}</p>}
               </>
             )}
 
             <div className="grid grid-cols-3 gap-4 md:gap-6 w-full mb-10">
-              <Stat val={user?.hangouts_count || 0} label="Hangouts" />
-              <Stat val={user?.connections_count || 0} label="Connections" />
-              <Stat val={user?.circles_count || 0} label="Circles" />
+              <Stat val={user?.hangouts_count || 0} label={persona === 'outlet' ? 'Posted' : 'Shifts'} />
+              <Stat val={user?.connections_count || 0} label="Network" />
+              <Stat
+                val={Array.isArray(user?.certifications) ? user.certifications.length : 0}
+                label="Certs"
+              />
+            </div>
+
+            <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4 md:p-5 mb-6 space-y-3">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">Trust stack</p>
+              <div className="grid sm:grid-cols-2 gap-3 text-[13px] text-neutral-700">
+                <div className="rounded-xl bg-white border border-neutral-200 p-3">
+                  <p className="font-bold text-neutral-900 text-sm">NIN verification</p>
+                  <p className="text-[12px] text-neutral-500 mt-1">National ID match — standard for serious outlets. Complete in-app when we open the flow.</p>
+                </div>
+                <div className="rounded-xl bg-white border border-neutral-200 p-3">
+                  <p className="font-bold text-neutral-900 text-sm">Registered guarantor</p>
+                  <p className="text-[12px] text-neutral-500 mt-1">Someone who vouches for you — same as many hospitality hiring practices, digitised.</p>
+                </div>
+                <div className="rounded-xl bg-white border border-neutral-200 p-3 sm:col-span-2">
+                  <p className="font-bold text-neutral-900 text-sm">Payout wallet</p>
+                  <p className="text-[12px] text-neutral-500 mt-1 mb-2">Same-day settlement to OPay, PalmPay, or Moniepoint after the outlet confirms your shift.</p>
+                  <div className="flex flex-wrap gap-2">
+                    {['OPay', 'PalmPay', 'Moniepoint'].map((p) => (
+                      <span key={p} className="text-[10px] font-black uppercase tracking-widest bg-red-50 text-red-800 border border-red-200 px-2 py-1 rounded-full">{p}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <a
+                href={staffingWhatsAppUrl('Hi Convivia24 — I want to complete trust verification / payout setup.')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex text-[10px] font-black uppercase tracking-widest text-red-700 hover:underline"
+              >
+                Message ops on WhatsApp →
+              </a>
             </div>
 
             <div className="space-y-4">
@@ -2856,8 +4039,8 @@ function ProfileTab({ initialUser }: { initialUser?: any }) {
                   <div className="flex items-center gap-3">
                     <ShieldCheck size={20} className="text-red-700" />
                     <div>
-                      <p className="text-base font-bold tracking-wide">Verified</p>
-                      <p className="text-[10px] text-red-700 font-black tracking-widest uppercase mt-1">Identity confirmed via Azure Face</p>
+                      <p className="text-base font-bold tracking-wide">Photo verified</p>
+                      <p className="text-[10px] text-red-700 font-black tracking-widest uppercase mt-1">Matches shift selfie check-in at arrival</p>
                     </div>
                   </div>
                   <span className="text-[10px] uppercase text-red-700 font-black tracking-widest">Active</span>
@@ -2868,63 +4051,15 @@ function ProfileTab({ initialUser }: { initialUser?: any }) {
                   <div className="flex items-center gap-3 text-left">
                     <ShieldCheck size={20} className="text-neutral-500 group-hover:text-red-700 transition-colors" />
                     <div>
-                      <p className="text-base font-bold tracking-wide">Get Verified</p>
+                      <p className="text-base font-bold tracking-wide">Verify photo</p>
                       <p className="text-[10px] text-neutral-400 font-black tracking-widest uppercase mt-1">
-                        {user?.avatar_url ? 'Face-match with your photo' : 'Upload a profile photo first'}
+                        {user?.avatar_url ? 'Used for shift check-in match' : 'Upload a clear face photo first'}
                       </p>
                     </div>
                   </div>
                   <span className="text-[10px] uppercase text-white bg-red-700 font-black tracking-widest px-4 py-2 rounded-md shadow-[0_0_15px_rgba(185,28,28,0.2)] group-hover:scale-105 transition-transform">Verify</span>
                 </button>
               )}
-
-              {/* Tier card */}
-              {(() => {
-                const active = !!user?.premium_active || user?.tier === 'black';
-                const trial = user?.subscription_status === 'black_trial';
-                return (
-                  <div onClick={() => setShowUpgrade(true)}
-                    className="flex items-center justify-between p-6 bg-gradient-to-r from-neutral-50 to-neutral-100 rounded-[24px] border border-red-400 relative overflow-hidden group cursor-pointer">
-                    <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-red-700" />
-                    <div className="flex flex-col">
-                      <span className="text-base font-bold tracking-wide">{active ? 'Convivia Black' : 'Convivia Free'}</span>
-                      <span className="text-[10px] text-red-700 font-black tracking-widest uppercase mt-1">
-                        {active ? (trial ? 'Trial · Unlimited matches' : 'Active · Unlimited matches')
-                                : '1 free match per week'}
-                      </span>
-                    </div>
-                    {active ? (
-                      <span className="text-[10px] uppercase text-red-700 font-black tracking-widest">Manage</span>
-                    ) : (
-                      <span className="text-[10px] uppercase text-white bg-red-700 font-black tracking-widest px-4 py-2 rounded-md shadow-[0_0_15px_rgba(185,28,28,0.25)] group-hover:scale-105 transition-transform">Unlock Black</span>
-                    )}
-                  </div>
-                );
-              })()}
-
-              {/* Open to meet toggle */}
-              <div className="flex items-center justify-between p-5 bg-neutral-50 border border-neutral-200 rounded-[24px]">
-                <div className="flex items-center gap-3">
-                  <Users size={20} className={user?.open_to_meet ? 'text-red-700' : 'text-neutral-500'}/>
-                  <div>
-                    <p className="text-base font-bold tracking-wide">Open to meet</p>
-                    <p className="text-[10px] text-neutral-500 font-black tracking-widest uppercase mt-1">{user?.open_to_meet ? 'You can be matched' : 'Hidden from AI Match'}</p>
-                  </div>
-                </div>
-                <button onClick={async () => {
-                  const next = !user?.open_to_meet;
-                  setUser({ ...user, open_to_meet: next });
-                  try {
-                    await fetch('/api/profile', {
-                      method: 'PATCH',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ open_to_meet: next }),
-                    });
-                  } catch { /* keep optimistic */ }
-                }} className={`relative w-12 h-7 rounded-full transition-colors ${user?.open_to_meet ? 'bg-red-700' : 'bg-neutral-200'}`}>
-                  <span className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${user?.open_to_meet ? 'translate-x-[22px]' : 'translate-x-[2px]'}`}/>
-                </button>
-              </div>
 
               <button
                 type="button"

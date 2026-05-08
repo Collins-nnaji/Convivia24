@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-/** Starter metros — users can add any city; extras persist in localStorage. */
-export const DEFAULT_CITIES = ['London', 'Lagos', 'Abuja'] as const;
+/** Canonical cities if API is unavailable (matches DB seed). */
+export const DEFAULT_CITIES = ['Lagos', 'Abuja', 'Port Harcourt'] as const;
 
 const STORAGE_KEY = 'convivia24:cities_v1';
 
@@ -35,39 +35,99 @@ function mergeList(defaults: readonly string[], extras: string[]) {
   return out;
 }
 
-export function useCityList() {
-  const [cities, setCities] = useState<string[]>(() => [...DEFAULT_CITIES]);
+/** Persist only user-added metros (not returned from /api/cities). */
+function extrasPersisted(full: string[], defaultNames: readonly string[]) {
+  const d = new Set(defaultNames.map((x) => normalize(x).toLowerCase()));
+  return full.filter((c) => !d.has(normalize(c).toLowerCase()));
+}
+
+export type UseCityListOptions = {
+  serverWatchlist?: string[] | null;
+  persistWatchlist?: boolean;
+};
+
+export function useCityList(opts?: UseCityListOptions) {
+  const fromServer = opts?.serverWatchlist ?? [];
+  const serverKey = JSON.stringify(fromServer);
+  const defaultNamesRef = useRef<string[]>([...DEFAULT_CITIES]);
+
+  const [cities, setCities] = useState<string[]>(() => {
+    if (typeof window === 'undefined') {
+      return mergeList(DEFAULT_CITIES, [...fromServer]);
+    }
+    return mergeList(DEFAULT_CITIES, [...readExtras(), ...fromServer]);
+  });
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    queueMicrotask(() => {
-      if (cancelled) return;
-      setCities(mergeList(DEFAULT_CITIES, readExtras()));
-      setReady(true);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    const server = JSON.parse(serverKey) as string[];
 
-  const addCity = useCallback((name: string) => {
-    const n = normalize(name);
-    if (!n) return;
-    setCities((prev) => {
-      if (prev.some((c) => c.toLowerCase() === n.toLowerCase())) return prev;
-      const next = [...prev, n];
-      const extras = next.filter(
-        (c) => !DEFAULT_CITIES.some((d) => d.toLowerCase() === c.toLowerCase()),
-      );
+    (async () => {
+      let baseNames: string[] = [...DEFAULT_CITIES];
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(extras));
+        const res = await fetch('/api/cities');
+        const data = await res.json();
+        if (Array.isArray(data.cities) && data.cities.length > 0) {
+          baseNames = data.cities.map((c: { name: string }) => String(c.name).trim()).filter(Boolean);
+        }
+      } catch {
+        /* keep DEFAULT_CITIES */
+      }
+
+      if (cancelled) return;
+      defaultNamesRef.current = baseNames;
+      const merged = mergeList(baseNames, [...readExtras(), ...(Array.isArray(server) ? server : [])]);
+      setCities(merged);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(extrasPersisted(merged, baseNames)));
       } catch {
         /* ignore quota */
       }
-      return next;
-    });
-  }, []);
+      setReady(true);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [serverKey]);
+
+  const persistWatchlist = opts?.persistWatchlist ?? false;
+
+  const pushWatchlistToServer = useCallback(
+    (extras: string[]) => {
+      if (!persistWatchlist) return;
+      queueMicrotask(() => {
+        fetch('/api/profile', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ watchlist_cities: extras }),
+        }).catch(() => {});
+      });
+    },
+    [persistWatchlist],
+  );
+
+  const addCity = useCallback(
+    (name: string) => {
+      const n = normalize(name);
+      if (!n) return;
+      setCities((prev) => {
+        if (prev.some((c) => c.toLowerCase() === n.toLowerCase())) return prev;
+        const next = [...prev, n];
+        const extras = extrasPersisted(next, defaultNamesRef.current);
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(extras));
+        } catch {
+          /* ignore quota */
+        }
+        pushWatchlistToServer(extras);
+        return next;
+      });
+    },
+    [pushWatchlistToServer],
+  );
 
   return { cities, addCity, ready };
 }

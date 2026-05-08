@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { neonAuth } from '@/lib/auth/server';
 import { getOrCreateUser } from '@/lib/db/users';
+import { outletPostingBlocked } from '@/lib/outlet-application';
 
-// GET /api/hangouts — ?city=Lagos&category=nightlife&type=open&free=1
+// GET /api/hangouts — ?city=Lagos&next_hours=24 (optional window for “Today”) &category=&type=&free=1
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -11,6 +12,18 @@ export async function GET(req: NextRequest) {
     const category = searchParams.get('category');
     const type     = searchParams.get('type');
     const freeOnly = searchParams.get('free') === '1';
+
+    /** When set (e.g. 24), only return shifts with event_time within the next N hours (Today/home). */
+    const nextHoursRaw = searchParams.get('next_hours');
+    let applyNextHoursWindow = false;
+    let nextHours = 24;
+    if (nextHoursRaw !== null && nextHoursRaw !== '') {
+      const n = parseInt(nextHoursRaw, 10);
+      if (!Number.isNaN(n) && n > 0) {
+        applyNextHoursWindow = true;
+        nextHours = Math.min(8760, n);
+      }
+    }
 
     const hangouts = await sql`
       SELECT h.*, u.name as host_name, u.avatar_url as host_avatar,
@@ -22,10 +35,19 @@ export async function GET(req: NextRequest) {
       WHERE h.status IN ('pending', 'confirmed')
         AND h.event_time > NOW() - INTERVAL '2 hours'
         AND (
+          ${!applyNextHoursWindow}::boolean
+          OR h.event_time <= NOW() + (${nextHours}::numeric * INTERVAL '1 hour')
+        )
+        AND (
           ${city}::text IS NULL
+          OR TRIM(${city}::text) = ''
           OR h.city ILIKE ${city}
+          OR h.city ILIKE ${'%' + (city ?? '') + '%'}
           OR v.city ILIKE ${city}
+          OR v.city ILIKE ${'%' + (city ?? '') + '%'}
           OR h.location ILIKE ${'%' + (city ?? '') + '%'}
+          OR regexp_replace(lower(trim(coalesce(h.city, ''))), '\s', '', 'g')
+             = regexp_replace(lower(trim(coalesce(${city}, ''))), '\s', '', 'g')
         )
         AND (${category}::text IS NULL OR h.category = ${category})
         AND (${type}::text IS NULL OR h.type = ${type})
@@ -72,17 +94,38 @@ export async function POST(req: NextRequest) {
     if (!authUser) return NextResponse.json({ error: 'Sign in to host.' }, { status: 401 });
 
     const user = await getOrCreateUser(authUser);
+    const block = await outletPostingBlocked(String(user.id));
+    if (block.blocked) {
+      return NextResponse.json(
+        {
+          error:
+            'Your outlet registration is still pending admin approval. Complete onboarding under Profile or wait for approval.',
+          code: 'OUTLET_NOT_APPROVED',
+          status: block.status,
+        },
+        { status: 403 },
+      );
+    }
+
     const body = await req.json();
-    const { title, vibe, category, type, event_time, location, city, max_guests,
+    const { title, vibe, category, type, event_time, location, city, area, max_guests,
             cover_image, venue_id, ticket_url, ticket_price } = body;
 
     if (!title?.trim() || !vibe?.trim() || !event_time || !location?.trim()) {
       return NextResponse.json({ error: 'Title, vibe, time, and location are required.' }, { status: 400 });
     }
 
+    const cityClean =
+      typeof city === 'string' && city.trim()
+        ? city.trim().replace(/\s+/g, ' ')
+        : null;
+
+    const areaClean =
+      typeof area === 'string' && area.trim() ? area.trim().replace(/\s+/g, ' ') : null;
+
     const rows = await sql`
       INSERT INTO hangouts
-        (host_id, title, vibe, category, type, event_time, location, city,
+        (host_id, title, vibe, category, type, event_time, location, city, area,
          max_guests, cover_image, venue_id, ticket_url, ticket_price)
       VALUES (
         ${user.id},
@@ -92,7 +135,8 @@ export async function POST(req: NextRequest) {
         ${type || 'open'},
         ${event_time},
         ${location.trim()},
-        ${city || null},
+        ${cityClean},
+        ${areaClean},
         ${max_guests || 6},
         ${cover_image || null},
         ${venue_id || null},

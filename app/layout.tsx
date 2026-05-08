@@ -16,8 +16,9 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata = {
-  title: 'Convivia24 | Come to the Table.',
-  description: 'Connecting people together daily — live city pulse, tables, and AI matches across Lagos, Abuja, and London.',
+  title: 'Convivia24 | Hospitality staffing',
+  description:
+    '18+ hospitality staffing for hotels, restaurants, bars, and events in Lagos, Abuja, and Port Harcourt. Verified workers; same-day pay to OPay, PalmPay, Moniepoint.',
   applicationName: 'Convivia24',
   manifest: '/manifest.json',
   appleWebApp: {
