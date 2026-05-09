@@ -616,14 +616,14 @@ export function AppConceptBoard({
           {appMode === 'outlet' ? (
             <>
               <NavIcon label={navLabels.demand} icon={<ClipboardList size={20} strokeWidth={activeTab === 'demand' ? 2.5 : 2} />} active={activeTab === 'demand'} onClick={() => setActiveTab('demand')} />
-              <NavIcon label={navLabels.home} icon={<CalendarDays size={20} strokeWidth={activeTab === 'home' ? 2.5 : 2} />} active={activeTab === 'home'} onClick={goNow} />
+              <NavIcon label={navLabels.home} icon={<CalendarDays size={20} strokeWidth={activeTab === 'home' ? 2.5 : 2} />} active={activeTab === 'home'} onClick={goNow} live />
               <NavIcon label={navLabels.pay} icon={<Wallet size={20} strokeWidth={activeTab === 'pay' ? 2.5 : 2} />} active={activeTab === 'pay'} onClick={() => setActiveTab('pay')} />
             </>
           ) : (
             <>
               <NavIcon label={navLabels.host} icon={<Receipt size={20} strokeWidth={activeTab === 'host' ? 2.5 : 2} />} active={activeTab === 'host'} onClick={() => setActiveTab('host')} />
               <NavIcon label={navLabels.discover} icon={<ClipboardList size={20} strokeWidth={activeTab === 'discover' ? 2.5 : 2} />} active={activeTab === 'discover'} onClick={() => setActiveTab('discover')} />
-              <NavIcon label={navLabels.home} icon={<CalendarDays size={20} strokeWidth={activeTab === 'home' ? 2.5 : 2} />} active={activeTab === 'home'} onClick={goNow} />
+              <NavIcon label={navLabels.home} icon={<CalendarDays size={20} strokeWidth={activeTab === 'home' ? 2.5 : 2} />} active={activeTab === 'home'} onClick={goNow} live />
               <NavIcon label={navLabels.circles} icon={<GraduationCap size={20} strokeWidth={activeTab === 'circles' ? 2.5 : 2} />} active={activeTab === 'circles'} onClick={() => setActiveTab('circles')} />
               <NavIcon label={navLabels.profile} icon={<UserCircle size={20} strokeWidth={activeTab === 'profile' ? 2.5 : 2} />} active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} />
             </>
@@ -639,10 +639,10 @@ export function AppConceptBoard({
         <AnimatePresence mode="wait">
           <motion.div
             key={appMode === 'outlet' && activeTab === 'demand' ? `demand-${outletDemandSub}` : activeTab}
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.3 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
             className="w-full mx-auto max-w-7xl max-lg:min-h-full lg:min-h-0"
           >
             <MobileFirstColumn>{renderContent()}</MobileFirstColumn>
@@ -665,18 +665,23 @@ function DesktopNavLink({ label, icon, active, onClick }: any) {
     </button>
   );
 }
-function NavIcon({ icon, label, active, onClick }: any) {
+function NavIcon({ icon, label, active, onClick, live }: any) {
   return (
     <button
       onClick={onClick}
       type="button"
-      className={`flex-1 min-w-0 basis-0 min-h-[48px] py-1 rounded-[14px] flex flex-col items-center justify-center gap-0.5 transition-all duration-200 active:scale-[0.96] ${
+      className={`flex-1 min-w-0 basis-0 min-h-[48px] py-1 rounded-[14px] flex flex-col items-center justify-center gap-0.5 transition-all duration-200 active:scale-[0.96] relative ${
         active
           ? 'text-red-700 bg-red-50 shadow-[inset_0_0_0_1.5px_rgba(185,28,28,0.18)]'
           : 'text-neutral-500 hover:text-neutral-800 active:bg-neutral-50'
       }`}
     >
-      {icon}
+      <span className="relative">
+        {icon}
+        {live && (
+          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-600 live-pulse" aria-hidden />
+        )}
+      </span>
       <span
         className={`max-w-[100%] px-0.5 text-center text-[7px] leading-[1.15] uppercase tracking-[0.1em] font-black line-clamp-2 ${active ? 'text-red-800' : ''}`}
       >
@@ -1047,8 +1052,19 @@ function DiscoverTab({
         )}
 
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 size={32} className="text-red-700 animate-spin" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="rounded-[22px] overflow-hidden border border-neutral-200/70 bg-white p-4 space-y-3">
+                <div className="skeleton h-5 w-2/3" />
+                <div className="skeleton h-3.5 w-1/2" />
+                <div className="skeleton h-3 w-full" />
+                <div className="skeleton h-3 w-4/5" />
+                <div className="flex items-center justify-between mt-2">
+                  <div className="skeleton h-6 w-20 rounded-full" />
+                  <div className="skeleton h-8 w-24 rounded-full" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : hangouts.length === 0 ? (
           <div className="text-center py-20 text-neutral-400 border border-dashed border-neutral-200 rounded-3xl">
@@ -1165,14 +1181,14 @@ function DiscoverTab({
                       const appliedStatus = appliedIds[h.id];
                       if (appliedStatus === 'confirmed') {
                         return (
-                          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 font-semibold flex items-center gap-2">
+                          <div className="pop-in rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 font-semibold flex items-center gap-2">
                             <Check size={14} className="shrink-0" /> Confirmed — check WhatsApp for details.
                           </div>
                         );
                       }
                       if (appliedStatus) {
                         return (
-                          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 font-semibold flex items-center gap-2">
+                          <div className="pop-in rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 font-semibold flex items-center gap-2">
                             <Hourglass size={14} className="shrink-0" /> Applied · {appliedStatus} — outlet will confirm.
                           </div>
                         );
@@ -2493,7 +2509,21 @@ function HomeTab({
         </div>
 
         {pulseLoading ? (
-          <div className="flex justify-center py-10"><Loader2 size={24} className="text-red-700 animate-spin"/></div>
+          <div className="flex flex-col gap-4 md:grid md:grid-cols-2 md:gap-5">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="rounded-[22px] border border-neutral-200/70 bg-white p-4 space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="skeleton w-12 h-12 rounded-2xl shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="skeleton h-5 w-3/4" />
+                    <div className="skeleton h-3 w-1/3" />
+                  </div>
+                </div>
+                <div className="skeleton h-3 w-full" />
+                <div className="skeleton h-3 w-4/5" />
+              </div>
+            ))}
+          </div>
         ) : pulseCards.length === 0 ? (
           <div className="text-center py-10 text-neutral-400 border border-dashed border-neutral-200 rounded-3xl">
             <Compass size={36} className="mx-auto mb-3 opacity-50"/>
@@ -3869,49 +3899,104 @@ function OutletPaymentsTab({
   onSwitchTab: (t: AppTab) => void;
 }) {
   const metro = cities[0] ?? DEFAULT_CITIES[0];
+  const [shifts, setShifts] = useState<any[]>([]);
+  const [loadingShifts, setLoadingShifts] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/hangouts?next_hours=720', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((d) => setShifts(Array.isArray(d.hangouts) ? d.hangouts : []))
+      .catch(() => setShifts([]))
+      .finally(() => setLoadingShifts(false));
+  }, []);
+
+  const totalConfirmed = shifts.reduce((n, s) => n + Number(s.current_guests || 0), 0);
+  const totalPending   = shifts.reduce((n, s) => n + Math.max(0, Number(s.max_guests || 0) - Number(s.current_guests || 0)), 0);
+  const totalPayoutEst = shifts.reduce((n, s) => n + Number(s.current_guests || 0) * Number(s.ticket_price || 0), 0);
+
   return (
     <div className="max-w-3xl mx-auto space-y-8 pb-20 min-w-0 px-0">
       <div>
         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-600 mb-2 flex items-center gap-2">
-          <Wallet size={12} aria-hidden /> Payouts & demand
+          <Wallet size={12} aria-hidden /> Payouts & roster
         </p>
         <h1 className="font-display text-3xl md:text-5xl italic text-neutral-900 mb-3">
           Money & <span className="text-red-700">roster.</span>
         </h1>
         <p className="text-neutral-600 text-sm md:text-base leading-relaxed max-w-2xl">
-          Same-day payouts, board demand in <strong>{metro}</strong>, one finance thread for fixes.
+          Confirmed hires, payout estimates, and finance support — all in one thread.
         </p>
       </div>
 
       <div className="grid sm:grid-cols-3 gap-3">
         <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
-          <p className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Metro</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-neutral-500">City</p>
           <p className="font-display text-xl italic mt-1">{metro}</p>
-          <p className="text-[12px] text-neutral-500 mt-2">Filters board by city.</p>
+          <p className="text-[12px] text-neutral-500 mt-2">Your active metro.</p>
         </div>
         <div className="rounded-2xl border border-emerald-200/80 bg-emerald-50/50 p-4 shadow-sm">
-          <p className="text-[10px] font-black uppercase tracking-widest text-emerald-900">Pending to staff</p>
-          <p className="font-display text-xl italic mt-1 tabular-nums">₦—</p>
-          <p className="text-[12px] text-neutral-600 mt-2">After shift sign-off.</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-emerald-900">Confirmed hires</p>
+          <p className="font-display text-xl italic mt-1 tabular-nums">{totalConfirmed}</p>
+          <p className="text-[12px] text-neutral-600 mt-2">
+            {totalPayoutEst > 0 ? `Est. ₦${totalPayoutEst.toLocaleString()} payout` : 'Across all your shifts.'}
+          </p>
         </div>
         <div className="rounded-2xl border border-amber-200/80 bg-amber-50/40 p-4 shadow-sm">
-          <p className="text-[10px] font-black uppercase tracking-widest text-amber-900">Ops / disputes</p>
-          <p className="text-[12px] text-neutral-600 mt-2">Hours/pay mismatch — message us first.</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-amber-900">Open slots</p>
+          <p className="font-display text-xl italic mt-1 tabular-nums">{totalPending}</p>
+          <p className="text-[12px] text-neutral-600 mt-2">Still need filling.</p>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-5">
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 mb-3">Settlement lines (demo)</p>
-        <div className="rounded-xl bg-white border border-neutral-100 divide-y divide-neutral-100 text-[13px]">
-          <div className="p-3 flex flex-col sm:flex-row sm:justify-between gap-1">
-            <span>Weekend cover · VI batch</span>
-            <span className="text-neutral-500 shrink-0">Queued · rails check</span>
+      {/* Shift-by-shift roster summary */}
+      <div className="rounded-2xl border border-neutral-200 bg-white p-5 space-y-3">
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">Roster by shift</p>
+        {loadingShifts ? (
+          <div className="flex justify-center py-6"><Loader2 size={20} className="animate-spin text-red-700" /></div>
+        ) : shifts.length === 0 ? (
+          <div className="text-center py-8 text-neutral-400 border border-dashed border-neutral-200 rounded-2xl">
+            <ClipboardList size={28} className="mx-auto mb-2 opacity-40" />
+            <p className="text-sm">No shifts posted yet.</p>
+            <button type="button" onClick={() => onSwitchTab('demand')} className="mt-2 text-[11px] font-black uppercase tracking-widest text-red-700 hover:underline">Post a shift →</button>
           </div>
-          <div className="p-3 flex flex-col sm:flex-row sm:justify-between gap-1">
-            <span>OPay disbursement · roster pool</span>
-            <span className="text-emerald-800 font-semibold shrink-0">Released</span>
+        ) : (
+          <div className="rounded-xl border border-neutral-100 divide-y divide-neutral-100 text-[13px]">
+            {shifts.map((s) => (
+              <div key={s.id} className="p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="font-semibold text-neutral-900 truncate">{s.title}</p>
+                  <p className="text-[11px] text-neutral-500">
+                    {s.location}{s.area ? ` · ${s.area}` : ''} ·{' '}
+                    {new Date(s.event_time).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' })}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-[11px] tabular-nums text-neutral-700 font-semibold">
+                    {s.current_guests}/{s.max_guests} hired
+                  </span>
+                  {s.ticket_price ? (
+                    <span className="text-[10px] font-black text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                      ₦{Number(s.ticket_price).toLocaleString()}/ea
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+        )}
+      </div>
+
+      <div className="rounded-2xl border border-amber-200/80 bg-amber-50/40 p-4 space-y-2">
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-900">Pay dispute?</p>
+        <p className="text-[13px] text-neutral-700 leading-snug">Hours or pay don't match — message ops with the shift ID and we'll triage with the worker.</p>
+        <a
+          href={staffingWhatsAppUrl('Hi Convivia24 — vendor payout / billing question.')}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex text-[10px] font-black uppercase tracking-widest text-red-700 hover:underline"
+        >
+          WhatsApp finance →
+        </a>
       </div>
 
       <div className="flex flex-wrap gap-3">
@@ -3923,7 +4008,7 @@ function OutletPaymentsTab({
           Demand · board & post
         </button>
         <a
-          href={staffingWhatsAppUrl('Hi Convivia24 — outlet payout / billing question.')}
+          href={staffingWhatsAppUrl('Hi Convivia24 — vendor payout / billing question.')}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center rounded-full border border-emerald-600/40 bg-emerald-50 text-emerald-900 text-[10px] font-black uppercase tracking-widest px-5 py-3"
@@ -3939,16 +4024,26 @@ function OutletPaymentsTab({
    CAREER TAB (workers) — pay, slips, disputes, training
    ══════════════════════════════════════════════════════════════════════ */
 function CareerTab({ onSwitchTab }: { onSwitchTab: (t: AppTab) => void }) {
-  const payslipRows = [
-    { id: '1', role: 'Banquet server', zone: 'VI', venue: 'Hotel · redacted', amount: '₦18k est.', status: 'Paid · OPay', date: 'Same-day settlement' },
-    { id: '2', role: 'Barback', zone: 'Lekki', venue: 'Lounge · redacted', amount: '₦12k est.', status: 'Paid · PalmPay', date: 'Same-day settlement' },
-  ];
+  const [applications, setApplications] = useState<any[]>([]);
+  const [loadingApps, setLoadingApps] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/shifts/my-applications', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((d) => setApplications(Array.isArray(d.applications) ? d.applications : []))
+      .catch(() => setApplications([]))
+      .finally(() => setLoadingApps(false));
+  }, []);
+
+  const confirmed = applications.filter((a) => a.status === 'confirmed');
+  const pending   = applications.filter((a) => a.status === 'pending' || a.status === 'shortlisted');
+  const past      = applications.filter((a) => a.status === 'rejected' || a.status === 'no_show');
+
   const trainingModules = [
-    { id: 't1', title: 'Service & recovery', min: 6, done: true },
-    { id: 't2', title: 'Hygiene essentials', min: 5, done: true },
-    { id: 't3', title: 'Drinks & glassware', min: 8, done: false },
+    { id: 't1', title: 'Service & recovery', min: 6, waLink: 'Service & recovery module' },
+    { id: 't2', title: 'Hygiene essentials', min: 5, waLink: 'Hygiene essentials module' },
+    { id: 't3', title: 'Drinks & glassware', min: 8, waLink: 'Drinks & glassware module' },
   ];
-  const trainingDone = trainingModules.filter((t) => t.done).length;
   return (
     <div className="mx-auto w-full max-w-[min(100%,428px)] lg:max-w-6xl pb-20 px-0 lg:px-4 min-w-0">
       {/* Mobile-first: single column · lg+: hero full width, then pay | ops side by side */}
@@ -4011,27 +4106,85 @@ function CareerTab({ onSwitchTab }: { onSwitchTab: (t: AppTab) => void }) {
             <Receipt size={20} aria-hidden />
           </div>
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-neutral-500">Payout history</p>
-            <h2 className="font-display text-lg italic text-neutral-900 mt-0.5">What you&apos;ve been paid</h2>
+            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-neutral-500">Confirmed shifts</p>
+            <h2 className="font-display text-lg italic text-neutral-900 mt-0.5">Your hired work</h2>
           </div>
         </div>
-        <div className="rounded-xl border border-neutral-100 divide-y divide-neutral-100">
-          {payslipRows.map((r) => (
-            <div key={r.id} className="p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div>
-                <p className="font-semibold text-neutral-900">{r.role}</p>
-                <p className="text-[12px] text-neutral-500">{r.zone} · {r.venue}</p>
+        {loadingApps ? (
+          <div className="space-y-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex items-center justify-between gap-3 p-3">
+                <div className="space-y-1.5 flex-1">
+                  <div className="skeleton h-4 w-1/2" />
+                  <div className="skeleton h-3 w-1/3" />
+                </div>
+                <div className="skeleton h-6 w-20 rounded-full" />
               </div>
-              <div className="flex flex-wrap items-center gap-2 shrink-0">
-                <span className="text-[11px] font-bold text-neutral-800 tabular-nums">{r.amount}</span>
-                <span className="text-[9px] font-black uppercase tracking-widest text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-full">
-                  {r.status}
-                </span>
-                <span className="text-[11px] text-neutral-500">{r.date}</span>
+            ))}
+          </div>
+        ) : confirmed.length === 0 ? (
+          <div className="text-center py-8 text-neutral-400 border border-dashed border-neutral-200 rounded-2xl">
+            <Briefcase size={28} className="mx-auto mb-2 opacity-40" />
+            <p className="text-sm">No confirmed shifts yet.</p>
+            <button type="button" onClick={() => onSwitchTab('discover')} className="mt-2 text-[11px] font-black uppercase tracking-widest text-red-700 hover:underline">Browse shifts →</button>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-neutral-100 divide-y divide-neutral-100">
+            {confirmed.map((a) => (
+              <div key={a.id} className="p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                  <p className="font-semibold text-neutral-900">{a.shift_title || 'Shift'}</p>
+                  <p className="text-[12px] text-neutral-500">
+                    {a.shift_location || '—'}
+                    {a.outlet_name ? ` · ${a.outlet_name}` : ''}
+                  </p>
+                  {a.shift_event_time ? (
+                    <p className="text-[11px] text-neutral-400 mt-0.5">
+                      {new Date(a.shift_event_time).toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short' })}
+                    </p>
+                  ) : null}
+                </div>
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
+                  {a.shift_pay_ngn ? (
+                    <span className="text-[11px] font-bold text-neutral-800 tabular-nums">₦{Number(a.shift_pay_ngn).toLocaleString()}</span>
+                  ) : null}
+                  {a.payout_provider ? (
+                    <span className="text-[9px] font-black uppercase tracking-widest text-teal-800 bg-teal-50 border border-teal-200 px-2 py-1 rounded-full">
+                      {a.payout_provider}
+                    </span>
+                  ) : null}
+                  <span className="text-[9px] font-black uppercase tracking-widest text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-full">
+                    Confirmed
+                  </span>
+                </div>
               </div>
+            ))}
+          </div>
+        )}
+
+        {/* Pending applications */}
+        {pending.length > 0 && (
+          <div className="mt-4">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-2">Pending applications ({pending.length})</p>
+            <div className="rounded-xl border border-neutral-100 divide-y divide-neutral-100">
+              {pending.map((a) => (
+                <div key={a.id} className="p-3 flex items-center justify-between gap-2">
+                  <div>
+                    <p className="font-semibold text-neutral-900 text-sm">{a.shift_title || 'Shift'}</p>
+                    <p className="text-[11px] text-neutral-500">{a.shift_location || '—'}</p>
+                  </div>
+                  <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full border ${
+                    a.status === 'shortlisted'
+                      ? 'text-amber-800 bg-amber-50 border-amber-200'
+                      : 'text-neutral-600 bg-neutral-50 border-neutral-200'
+                  }`}>
+                    {a.status === 'shortlisted' ? 'Shortlisted' : 'Pending'}
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        )}
       </div>
         </div>
 
@@ -4070,7 +4223,7 @@ function CareerTab({ onSwitchTab }: { onSwitchTab: (t: AppTab) => void }) {
               Quick modules; stronger match rank.
             </p>
             <p className="text-[11px] font-bold text-emerald-900 mt-2 tabular-nums">
-              {trainingDone}/{trainingModules.length} complete · ~{trainingModules.reduce((s, t) => s + t.min, 0)} min if you do all three
+              {trainingModules.length} modules · ~{trainingModules.reduce((s, t) => s + t.min, 0)} min total · message us to start
             </p>
           </div>
         </div>
@@ -4083,18 +4236,14 @@ function CareerTab({ onSwitchTab }: { onSwitchTab: (t: AppTab) => void }) {
               <span className="text-sm font-semibold text-neutral-900">{m.title}</span>
               <span className="flex items-center gap-2 shrink-0">
                 <span className="text-[10px] text-neutral-500 tabular-nums">{m.min} min</span>
-                {m.done ? (
-                  <span className="text-[9px] font-black uppercase tracking-widest text-emerald-800 bg-emerald-100 px-2 py-1 rounded-full">
-                    Done
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    className="text-[9px] font-black uppercase tracking-widest text-white bg-emerald-700 px-3 py-1.5 rounded-full hover:bg-emerald-800"
-                  >
-                    Start
-                  </button>
-                )}
+                <a
+                  href={staffingWhatsAppUrl(`Hi Convivia24 — I want to start the ${m.waLink}.`)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[9px] font-black uppercase tracking-widest text-white bg-emerald-700 px-3 py-1.5 rounded-full hover:bg-emerald-800"
+                >
+                  Start
+                </a>
               </span>
             </li>
           ))}

@@ -1,11 +1,12 @@
 import './globals.css';
-import { Outfit, Cormorant_Garamond } from 'next/font/google';
+import { Plus_Jakarta_Sans, Cormorant_Garamond } from 'next/font/google';
 import { NativeAppBridge } from '@/components/app/NativeAppBridge';
 
-const outfit = Outfit({
+const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-outfit',
+  variable: '--font-jakarta',
+  weight: ['400', '500', '600', '700', '800'],
 });
 
 const cormorant = Cormorant_Garamond({
@@ -51,7 +52,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${outfit.variable} ${cormorant.variable} font-sans bg-[#f8f6f2] text-neutral-900 antialiased`} suppressHydrationWarning>
+      <body
+        className={`${jakarta.variable} ${cormorant.variable} font-sans bg-[#f8f6f2] text-neutral-900 antialiased`}
+        suppressHydrationWarning
+      >
         <NativeAppBridge />
         {children}
       </body>

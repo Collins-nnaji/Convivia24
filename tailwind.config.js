@@ -29,7 +29,7 @@ module.exports = {
         },
         fontFamily: {
           display: ['var(--font-cormorant)', 'Georgia', 'serif'],
-          sans:    ['var(--font-outfit)', 'sans-serif'],
+          sans:    ['var(--font-jakarta)', 'system-ui', '-apple-system', 'sans-serif'],
         },
         animation: {
           blob: "blob 7s infinite",

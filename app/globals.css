@@ -6,6 +6,15 @@
   --foreground-rgb: 23, 23, 23;
   --app-wash: #f8f6f2;
   --gold-accent: #c9a84c;
+
+  /* Mobile app feel — letter spacing and weight feel native */
+  --tracking-ui: -0.01em;
+  --tracking-label: 0.02em;
+
+  /* Spring easing — matches iOS UIKit feel */
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-smooth: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 html {
@@ -18,7 +27,11 @@ body {
   background: var(--app-wash);
   overscroll-behavior-y: none;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  /* Tighter default tracking — feels native not web */
+  letter-spacing: var(--tracking-ui);
+  font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
 }
 
 .mobile-safe-screen {
@@ -209,3 +222,145 @@ select {
   background: linear-gradient(180deg, #b91c1c 0%, #a67c2a 100%);
 }
 ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #991b1b 0%, #c9a84c 100%); }
+
+/* ─── Mobile app animations ─────────────────────────────────────────── */
+
+/* Tab switch — slide up like native iOS tab change */
+@keyframes tab-enter {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.tab-enter {
+  animation: tab-enter 0.28s var(--ease-out-expo) both;
+}
+
+/* Card appear — scale up from centre (native sheet feel) */
+@keyframes card-pop {
+  from { opacity: 0; transform: scale(0.94) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.card-pop {
+  animation: card-pop 0.32s var(--ease-spring) both;
+}
+
+/* Slide in from bottom — modal / action sheet */
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(100%); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.slide-up {
+  animation: slide-up 0.36s var(--ease-out-expo) both;
+}
+
+/* Slide out to bottom */
+@keyframes slide-down {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(100%); }
+}
+.slide-down {
+  animation: slide-down 0.24s var(--ease-in-out-smooth) both;
+}
+
+/* Fade + scale — status badges, toasts */
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.pop-in {
+  animation: pop-in 0.2s var(--ease-spring) both;
+}
+
+/* Shimmer skeleton loader — native-app loading feel */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #ede9e0 25%, #f5f1eb 50%, #ede9e0 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+/* Press — native button press feedback */
+@keyframes press {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(0.96); }
+  100% { transform: scale(1); }
+}
+.press-feedback {
+  transition: transform 0.1s var(--ease-in-out-smooth);
+}
+.press-feedback:active {
+  transform: scale(0.96);
+}
+
+/* Haptic-style wiggle — error feedback */
+@keyframes wiggle {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px); }
+  40%       { transform: translateX(6px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+.wiggle {
+  animation: wiggle 0.4s var(--ease-in-out-smooth) both;
+}
+
+/* Stagger children — list items enter one by one */
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 40ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 80ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 120ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 160ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 200ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 240ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 280ms; }
+
+/* Native tap highlight — thin red underline flash */
+@keyframes tap-flash {
+  0%   { opacity: 0.25; }
+  100% { opacity: 0; }
+}
+
+/* Pulse dot — live indicator */
+@keyframes live-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.5); opacity: 0.5; }
+}
+.live-pulse {
+  animation: live-pulse 1.6s ease-in-out infinite;
+}
+
+/* Number count-up feel — used on stats */
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.count-up {
+  animation: count-up 0.4s var(--ease-out-expo) both;
+}
+
+/* Bottom tab bar active indicator */
+@keyframes tab-dot {
+  from { transform: scaleX(0); opacity: 0; }
+  to   { transform: scaleX(1); opacity: 1; }
+}
+.tab-dot-active {
+  animation: tab-dot 0.2s var(--ease-spring) both;
+  transform-origin: center;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .tab-enter, .card-pop, .slide-up, .slide-down,
+  .pop-in, .press-feedback, .wiggle, .count-up,
+  .tab-dot-active, .live-pulse, .stagger-children > * {
+    animation: none !important;
+    transition: none !important;
+  }
+  .skeleton {
+    animation: none;
+    background: #ede9e0;
+  }
+}
