@@ -35,8 +35,8 @@ export function AppOpenSplash({ children }: { children: React.ReactNode }) {
             variant="mark"
             className="h-[56px] w-auto max-w-[min(220px,72vw)] object-contain object-center select-none animate-convivia-logo-bounce"
           />
-          <p className="text-center text-[11px] sm:text-xs font-medium text-neutral-600 tracking-[0.04em] max-w-[min(320px,92vw)] leading-snug px-1">
-            Hospitality jobs — hotels, bars &amp; events · verified shifts · same-day pay
+          <p className="text-center text-[11px] sm:text-xs font-medium text-neutral-600 tracking-[0.04em] max-w-[min(280px,88vw)] leading-snug px-1">
+            Verified shifts · same-day pay
           </p>
         </div>
       ) : null}

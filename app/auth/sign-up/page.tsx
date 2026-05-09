@@ -36,8 +36,7 @@ export default function SignUpPage() {
             Start Your 24
           </h1>
           <p className="text-neutral-500 text-sm max-w-sm mx-auto">
-            <span className="block text-neutral-700 font-medium mb-1.5">Connecting people together daily</span>
-            Create an account to join tables, match, and verify your profile.
+            Create account · join tables, match, verify.
           </p>
         </div>
 

@@ -15,7 +15,6 @@ import {
   CalendarDays, ClipboardList, Receipt, UserCircle, LogIn, Mail,
 } from 'lucide-react';
 import { BrandLogo } from '@/components/BrandLogo';
-import { CityChipsBar } from '@/components/CityChipsBar';
 import type { StaffPersona } from '@/hooks/useStaffPersona';
 
 export type AppShellMode = 'staff' | 'outlet';
@@ -33,12 +32,33 @@ import { MobileFirstColumn } from '@/components/app/shell/MobileFirst';
 
 /** All three metros live — keep Lagos sub-areas off marketing blurbs (zones live in filters). */
 const HOSPITALITY_METROS_BEFORE_LINK =
-  'Hospitality jobs in Lagos, Abuja, and Port Harcourt — open shifts on the';
+  'Lagos, Abuja, Port Harcourt — open shifts on the';
+
+/** Infer whether the posted amount reads as shift / day / week from copy. */
+function shiftRateBasis(vibe: string, title: string): 'daily' | 'weekly' | 'shift' {
+  const t = `${vibe} ${title}`.toLowerCase();
+  if (/\b(per\s*week|weekly|\/\s*wk\b|\/\s*week|week\s*rate)\b/.test(t)) return 'weekly';
+  if (/\b(per\s*day|daily|\/\s*day|day\s*rate)\b/.test(t)) return 'daily';
+  return 'shift';
+}
+
+function shiftTimingLine(eventTimeIso?: string | null): string {
+  if (!eventTimeIso) {
+    return 'Time on card · confirm hours with outlet (7-day board window).';
+  }
+  const d = new Date(eventTimeIso);
+  if (Number.isNaN(d.getTime())) {
+    return 'Time on card · confirm hours with outlet (7-day board window).';
+  }
+  return `${d.toLocaleString('en-NG', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })} · confirm on site.`;
+}
 
 /** Parse posting `vibe` (often "Dress: …. briefing") for shift cards. */
 function shiftCardPayAndRequirements(h: {
+  title?: string | null;
   vibe?: string | null;
   ticket_price?: number | null;
+  event_time?: string | null;
 }): {
   payHeadline: string;
   paySub: string;
@@ -59,16 +79,19 @@ function shiftCardPayAndRequirements(h: {
     if (Number.isFinite(x)) n = x;
   }
   const hasListed = n > 0;
+  const basis = shiftRateBasis(vibeRaw, String(h.title || ''));
+  const basisTag = basis === 'daily' ? 'per day' : basis === 'weekly' ? 'per week' : 'this shift';
+  const timing = shiftTimingLine(h.event_time);
 
   return {
     payHeadline: hasListed
-      ? `₦${Math.round(n).toLocaleString('en-NG')} listed rate`
+      ? `₦${Math.round(n).toLocaleString('en-NG')} · ${basisTag}`
       : 'No app booking fee',
     paySub: hasListed
-      ? 'Stated on the shift — confirm details with the outlet. Same-day pay to OPay / PalmPay / Moniepoint after sign-off.'
-      : 'Wage is agreed with the outlet for this shift. Same-day pay to your wallet after they sign you off.',
+      ? `${timing} Same-day payout after sign-off (mobile money).`
+      : `${timing} Pay agreed with outlet · same-day after sign-off.`,
     dressLine,
-    briefing: briefing || (dressLine ? 'Dress code above · see outlet for any updates.' : 'Check the posting for role, time, and venue details.'),
+    briefing: briefing || (dressLine ? 'Dress above · outlet may update.' : 'See posting for role, time, venue.'),
   };
 }
 
@@ -324,6 +347,16 @@ export function AppConceptBoard({
     persistWatchlist: Boolean(liveUser),
   });
 
+  const [staffBoardCity, setStaffBoardCity] = useState<string>(DEFAULT_CITIES[0]);
+  const [staffBoardZone, setStaffBoardZone] = useState('');
+
+  useEffect(() => {
+    if (!cities.length) return;
+    setStaffBoardCity((prev) =>
+      cities.some((c) => c.toLowerCase() === prev.toLowerCase()) ? prev : cities[0],
+    );
+  }, [cities]);
+
   const joinParam = searchParams.get('join');
   useEffect(() => {
     if (!joinParam || !UUID_RE.test(joinParam)) return;
@@ -368,15 +401,24 @@ export function AppConceptBoard({
     [appMode],
   );
 
+  const scrollContentToTop = useCallback((behavior: ScrollBehavior = 'smooth') => {
+    const run = () => {
+      mainScrollRef.current?.scrollTo({ top: 0, behavior });
+      if (typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches) {
+        window.scrollTo({ top: 0, behavior });
+      }
+    };
+    requestAnimationFrame(() => requestAnimationFrame(run));
+  }, []);
+
+  useEffect(() => {
+    scrollContentToTop('smooth');
+  }, [activeTab, outletDemandSub, scrollContentToTop]);
+
   const goNow = useCallback(() => {
     setActiveTab('home');
-    requestAnimationFrame(() => {
-      mainScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-      if (typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    });
-  }, []);
+    scrollContentToTop('smooth');
+  }, [scrollContentToTop]);
 
   const renderContent = () => {
     if (appMode === 'outlet') {
@@ -408,7 +450,17 @@ export function AppConceptBoard({
 
     switch (activeTab) {
       case 'home':
-        return <HomeTab onSwitchTab={switchTab} cities={cities} addCity={addCity} />;
+        return (
+          <HomeTab
+            onSwitchTab={switchTab}
+            cities={cities}
+            addCity={addCity}
+            boardCity={staffBoardCity}
+            onBoardCityChange={setStaffBoardCity}
+            boardZone={staffBoardZone}
+            onBoardZoneChange={setStaffBoardZone}
+          />
+        );
       case 'discover':
         return (
           <DiscoverTab
@@ -417,6 +469,11 @@ export function AppConceptBoard({
             pendingInviteHangoutId={pendingInviteHangoutId}
             onClearPendingInvite={clearPendingInvite}
             cities={cities}
+            boardCity={staffBoardCity}
+            onBoardCityChange={setStaffBoardCity}
+            boardZone={staffBoardZone}
+            onBoardZoneChange={setStaffBoardZone}
+            addCity={addCity}
           />
         );
       case 'host':
@@ -426,7 +483,17 @@ export function AppConceptBoard({
       case 'profile':
         return <ProfileTab persona={persona} initialUser={liveUser} />;
       default:
-        return <HomeTab onSwitchTab={switchTab} cities={cities} addCity={addCity} />;
+        return (
+          <HomeTab
+            onSwitchTab={switchTab}
+            cities={cities}
+            addCity={addCity}
+            boardCity={staffBoardCity}
+            onBoardCityChange={setStaffBoardCity}
+            boardZone={staffBoardZone}
+            onBoardZoneChange={setStaffBoardZone}
+          />
+        );
     }
   };
 
@@ -805,17 +872,44 @@ function DiscoverTab({
   pendingInviteHangoutId,
   onClearPendingInvite,
   cities,
+  boardCity,
+  onBoardCityChange,
+  boardZone,
+  onBoardZoneChange,
+  addCity,
 }: {
   persona: StaffPersona;
   onSwitchTab: (t: AppTab) => void;
   pendingInviteHangoutId?: string | null;
   onClearPendingInvite?: () => void;
   cities: string[];
+  boardCity?: string;
+  onBoardCityChange?: (c: string) => void;
+  boardZone?: string;
+  onBoardZoneChange?: (z: string) => void;
+  addCity?: (name: string) => void;
 }) {
   const [filter, setFilter] = useState<'all' | 'open' | 'curated'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [freeOnly, setFreeOnly] = useState(false);
-  const discoverCity = useMemo(() => cities[0] ?? DEFAULT_CITIES[0], [cities]);
+  const [fallbackCity, setFallbackCity] = useState(() => cities[0] ?? DEFAULT_CITIES[0]);
+  const [fallbackZone, setFallbackZone] = useState('');
+  const discoverCity = onBoardCityChange
+    ? (boardCity ?? cities[0] ?? DEFAULT_CITIES[0])
+    : fallbackCity;
+  const setDiscoverCity = onBoardCityChange ?? ((c: string) => setFallbackCity(c));
+  const discoverZone = onBoardZoneChange ? (boardZone ?? '') : fallbackZone;
+  const setDiscoverZone = onBoardZoneChange ?? setFallbackZone;
+  const persistExtraCity = addCity ?? (() => {});
+
+  useEffect(() => {
+    if (onBoardCityChange) return;
+    if (!cities.length) return;
+    setFallbackCity((prev) =>
+      cities.some((c) => c.toLowerCase() === prev.toLowerCase()) ? prev : cities[0],
+    );
+  }, [cities, onBoardCityChange]);
+
   const [hangouts, setHangouts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [joiningId, setJoiningId] = useState<string | null>(null);
@@ -826,9 +920,12 @@ function DiscoverTab({
     setLoading(true);
     const params = new URLSearchParams();
     params.set('city', discoverCity);
+    params.set('next_hours', '168');
     if (filter !== 'all') params.set('type', filter);
     if (categoryFilter !== 'all') params.set('category', categoryFilter);
     if (freeOnly) params.set('free', '1');
+    const zoneTrim = discoverZone.trim();
+    if (zoneTrim) params.set('area', zoneTrim);
     fetch(`/api/hangouts?${params.toString()}`)
       .then((r) => r.json())
       .then((data) => {
@@ -839,7 +936,7 @@ function DiscoverTab({
         setHangouts([]);
         setLoading(false);
       });
-  }, [discoverCity, filter, categoryFilter, freeOnly]);
+  }, [discoverCity, discoverZone, filter, categoryFilter, freeOnly]);
 
   useEffect(() => {
     loadHangouts();
@@ -852,7 +949,7 @@ function DiscoverTab({
       const res = await fetch(`/api/hangouts/${hangoutId}/join`, { method: 'POST' });
       const data = await res.json();
       if (res.ok) {
-        setJoinNote("You're on the roster. Check WhatsApp for outlet details — selfie check-in opens at shift start.");
+        setJoinNote("Roster confirmed — check WhatsApp for outlet. Selfie check-in at shift start.");
         loadHangouts();
       } else {
         setJoinNote(data.error || 'Could not join.');
@@ -874,6 +971,21 @@ function DiscoverTab({
         />
       ) : null}
 
+      <motion.section
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="rounded-[18px] border border-red-200/45 bg-white p-4 sm:p-5 shadow-[0_8px_28px_rgba(0,0,0,0.06)]"
+      >
+        <StaffMetroFilters
+          cities={cities}
+          selectedCity={discoverCity}
+          onSelectCity={setDiscoverCity}
+          selectedZone={discoverZone}
+          onSelectZone={setDiscoverZone}
+          addCity={persistExtraCity}
+        />
+      </motion.section>
+
       <motion.div
         className="space-y-3"
         initial="hidden"
@@ -892,11 +1004,11 @@ function DiscoverTab({
           )}
         </motion.h1>
         <motion.p variants={fadeUp} className="text-neutral-600 text-sm max-w-lg">
-          Same-day pay after outlet sign-off.{' '}
+          7-day board · same-day pay after sign-off.{` `}
           <button type="button" onClick={() => onSwitchTab('home')} className="text-red-700 font-semibold underline-offset-4 hover:underline decoration-red-600/40">
             Today
           </button>{' '}
-          is the next 24 hours only.
+          = 24h demand only.
         </motion.p>
       </motion.div>
 
@@ -942,8 +1054,8 @@ function DiscoverTab({
         ) : hangouts.length === 0 ? (
           <div className="text-center py-20 text-neutral-400 border border-dashed border-neutral-200 rounded-3xl">
             <ClipboardList size={48} className="mx-auto mb-4 opacity-50" />
-            <p className="font-display text-2xl italic mb-2">Nothing matches in {discoverCity}.</p>
-            <p className="text-sm mb-5">Loosen role or roster filters{persona === 'outlet' ? ' — or post cover.' : '.'}</p>
+            <p className="font-display text-2xl italic mb-2">Nothing in {discoverCity}.</p>
+            <p className="text-sm mb-5">Widen filters{persona === 'outlet' ? ' — or post shifts.' : '.'}</p>
             <div className="flex flex-wrap justify-center gap-2">
               <button
                 type="button"
@@ -1145,12 +1257,12 @@ function InstantPlanModal({
             {phase === 'gated' ? (
               <>
                 <h2 className="font-display text-3xl md:text-4xl italic mb-2">Roster assist paused</h2>
-                <p className="text-neutral-600 text-sm">You&apos;ve used this week&apos;s free AI suggestions{pulse.area ? ` · ${pulse.area}` : ''}. Try again after reset.</p>
+                <p className="text-neutral-600 text-sm">Weekly free assist used{pulse.area ? ` · ${pulse.area}` : ''}. Resets soon.</p>
               </>
             ) : phase === 'matching' ? (
               <>
                 <h2 className="font-display text-3xl md:text-4xl italic mb-2">Matching your vibe…</h2>
-                <p className="text-neutral-600 text-sm">Pulling people who match your energy and proximity.</p>
+                <p className="text-neutral-600 text-sm">Finding people near you.</p>
               </>
             ) : (
               <>
@@ -1173,7 +1285,7 @@ function InstantPlanModal({
               <div>
                 <h3 className="font-display text-2xl italic text-neutral-900 mb-1">Weekly limit reached</h3>
                 <p className="text-neutral-600 text-sm max-w-xs mx-auto">
-                  Free roster assist refreshes once per week.{creditsResetAt && <> Next window: <strong>{new Date(creditsResetAt).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</strong>.</>}
+                  Resets weekly.{creditsResetAt && <> Next: <strong>{new Date(creditsResetAt).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</strong>.</>}
                 </p>
               </div>
               <button onClick={onClose} type="button" className="w-full py-3 rounded-full bg-red-700 text-white font-black uppercase tracking-widest text-[11px] shadow-[0_0_25px_rgba(185,28,28,0.2)]">
@@ -1211,9 +1323,9 @@ function InstantPlanModal({
               <div className="rounded-2xl border border-neutral-200 bg-neutral-100 p-4 mb-5 space-y-2.5 text-sm">
                 <div className="flex items-center gap-2 text-neutral-800"><Building2 size={14} className="text-red-700"/> {plan?.venue}</div>
                 <div className="flex items-center gap-2 text-neutral-800"><Clock     size={14} className="text-red-700"/> {plan?.date} · {plan?.time}</div>
-                <div className="flex items-center gap-2 text-neutral-800"><Users     size={14} className="text-red-700"/> {(plan?.people?.length || 0) + 1} people · similar vibe</div>
-                {plan?.live && <div className="text-[10px] uppercase tracking-widest text-emerald-300 font-black">Live table · joinable now</div>}
-                {!plan?.live && <div className="text-[10px] uppercase tracking-widest text-neutral-500 font-black">Plan locks once 3 confirm</div>}
+                <div className="flex items-center gap-2 text-neutral-800"><Users     size={14} className="text-red-700"/> {(plan?.people?.length || 0) + 1} · similar vibe</div>
+                {plan?.live && <div className="text-[10px] uppercase tracking-widest text-emerald-700 font-black">Live · join now</div>}
+                {!plan?.live && <div className="text-[10px] uppercase tracking-widest text-neutral-500 font-black">Locks after 3 confirm</div>}
               </div>
 
               {/* Actions */}
@@ -1313,16 +1425,11 @@ function MatchedWorkersPanel({
   return (
     <div className="max-w-lg mx-auto text-left rounded-2xl border border-neutral-200 bg-white p-4 sm:p-5 shadow-[0_8px_28px_rgba(0,0,0,0.06)] mt-8">
       <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-600 mb-1">Matched for your shift</p>
-      <h3 className="font-display text-xl italic text-neutral-900">Verified staff (database)</h3>
+      <h3 className="font-display text-xl italic text-neutral-900">Verified matches</h3>
       <p className="text-[12px] text-neutral-500 mt-1 mb-4">
-        City <strong className="text-neutral-700">{cityName}</strong>
-        {area ? (
-          <>
-            {' '}
-            · area <strong className="text-neutral-700">{area}</strong>
-          </>
-        ) : null}{' '}
-        · role <strong className="text-neutral-700">{shiftRole}</strong>. Requires verified workers with profile location.
+        <strong className="text-neutral-700">{cityName}</strong>
+        {area ? <> · {area}</> : null}
+        {' '}· {shiftRole}. Profile location required.
       </p>
       {loading ? (
         <div className="flex items-center gap-2 py-6 text-neutral-500 text-sm">
@@ -1330,7 +1437,7 @@ function MatchedWorkersPanel({
         </div>
       ) : rows.length === 0 ? (
         <p className="text-sm text-neutral-600 py-4">
-          No verified profiles matched yet — seed workers in the database or complete verification so staff appear here.
+          No matches yet — add verified workers or widen city/role.
         </p>
       ) : (
         <ul className="space-y-3">
@@ -1461,7 +1568,7 @@ function HostTab({
       } else {
         let msg = data.error || 'Failed to create hangout.';
         if (data.code === 'OUTLET_NOT_APPROVED') {
-          msg = `${msg} Complete outlet registration under Profile, or wait for admin approval.`;
+          msg = `${msg} Finish outlet registration or wait for approval.`;
         }
         setError(msg);
       }
@@ -1481,7 +1588,7 @@ function HostTab({
         </motion.div>
         <h2 className="font-display text-4xl italic text-neutral-900 mb-3">Shift is live.</h2>
             <p className="text-neutral-500 text-base mb-6 max-w-md mx-auto">
-              Verified staff see it on the board for your zone. Share the link on WhatsApp with your floor manager or agency partner.
+              Live on the board for your zone — share link on WhatsApp.
             </p>
         <MatchedWorkersPanel cityName={city} area={zone} shiftRole={shiftRole} />
         {createdHangoutId ? (
@@ -1489,7 +1596,7 @@ function HostTab({
             <p className="text-[10px] font-black uppercase tracking-widest text-neutral-500 mb-2">Invite link</p>
             <p className="text-xs text-neutral-600 break-all font-mono mb-2">{publicInviteUrl(createdHangoutId)}</p>
             <p className="text-[11px] text-neutral-500 mb-3">
-              Copy for Instagram or Status. WhatsApp opens with this message ready — pick a chat or your Status.
+              Copy or share — WhatsApp prefills the message.
             </p>
             <div className="flex flex-wrap gap-2">
               <button
@@ -1548,7 +1655,7 @@ function HostTab({
         </p>
         <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl italic mb-2">Post <span className="text-red-700">cover.</span></h1>
         <p className="text-neutral-500 text-base md:text-lg mb-4 max-w-xl md:mx-auto">
-          Role, zone, dress code, headcount — we surface it to verified staff. Filled shifts pay out same day to mobile money.
+          Role, zone, dress, headcount — same-day mobile money when filled.
         </p>
         <div className="hidden md:flex justify-center">
           <FlowSteps steps={[
@@ -1668,14 +1775,14 @@ function HostTab({
                   <Zap size={20} strokeWidth={1.75} className="shrink-0" />
                   <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Curated</span>
                 </span>
-                <span className="text-[11px] text-neutral-500 leading-snug pl-7">You approve each name before they&apos;re confirmed.</span>
+                <span className="text-[11px] text-neutral-500 leading-snug pl-7">You approve each name.</span>
               </button>
               <button type="button" onClick={() => setType('open')} className={`text-left flex flex-col gap-1.5 py-4 px-3.5 rounded-[18px] border transition-all ${type === 'open' ? 'bg-sky-50/90 border-sky-600 shadow-[0_0_0_1px_rgba(2,132,199,0.2)]' : 'border-neutral-200/90 bg-white/50 text-neutral-600 hover:border-neutral-300'}`}>
                 <span className={`flex items-center gap-2 ${type === 'open' ? 'text-sky-900' : 'text-neutral-800'}`}>
                   <Users size={20} strokeWidth={1.75} className="shrink-0" />
                   <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Open roster</span>
                 </span>
-                <span className="text-[11px] text-neutral-500 leading-snug pl-7">Verified workers grab open slots first — you see the roster live.</span>
+                <span className="text-[11px] text-neutral-500 leading-snug pl-7">Verified staff claim slots · live roster.</span>
               </button>
             </div>
           </Field>
@@ -1793,22 +1900,164 @@ function HomeExploreSnippets({
 /* ══════════════════════════════════════════════════════════════════════
    HOME TAB — live landing: city pulse, AI match, app snippets
    ══════════════════════════════════════════════════════════════════════ */
+function StaffMetroFilters({
+  cities,
+  selectedCity,
+  onSelectCity,
+  selectedZone,
+  onSelectZone,
+  addCity,
+}: {
+  cities: string[];
+  selectedCity: string;
+  onSelectCity: (c: string) => void;
+  selectedZone: string;
+  onSelectZone: (z: string) => void;
+  addCity: (name: string) => void;
+}) {
+  const [addDraft, setAddDraft] = useState('');
+  const chipPad =
+    'min-h-9 px-3 py-1.5 text-[10px] uppercase tracking-widest font-black rounded-full transition-all max-[380px]:text-[9px]';
+
+  const submitAdd = () => {
+    const t = addDraft.trim();
+    if (!t) return;
+    addCity(t);
+    onSelectCity(t);
+    onSelectZone('');
+    setAddDraft('');
+  };
+
+  return (
+    <div className="flex w-full min-w-0 flex-col gap-4">
+      <div className="w-full min-w-0">
+        <span className="text-[9px] font-black uppercase tracking-widest text-neutral-500 shrink-0 block mb-2">
+          City
+        </span>
+        <div className="w-full min-w-0 rounded-2xl border border-neutral-200 bg-neutral-100/90 p-2">
+          <div className="flex w-full min-w-0 flex-wrap gap-2">
+            {cities.map((c) => (
+              <button
+                type="button"
+                key={c}
+                onClick={() => {
+                  onSelectCity(c);
+                  if (c !== 'Lagos') onSelectZone('');
+                }}
+                className={`${chipPad} ${
+                  selectedCity === c
+                    ? 'bg-red-700 text-white shadow-[0_0_12px_rgba(185,28,28,0.2)]'
+                    : 'text-neutral-600 hover:text-neutral-900 active:bg-neutral-200/60'
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="w-full min-w-0">
+        <span className="text-[9px] font-black uppercase tracking-widest text-neutral-500 shrink-0 block mb-2">
+          Zone / area
+        </span>
+        {selectedCity === 'Lagos' ? (
+          <div className="flex w-full min-w-0 flex-wrap gap-2 rounded-2xl border border-neutral-200 bg-white p-2 shadow-sm">
+            <button
+              type="button"
+              onClick={() => onSelectZone('')}
+              className={`${chipPad} border border-transparent ${
+                !selectedZone
+                  ? 'bg-neutral-900 text-white'
+                  : 'bg-neutral-50 text-neutral-600 border-neutral-200 hover:border-neutral-300'
+              }`}
+            >
+              All areas
+            </button>
+            {LAGOS_ZONES.map((z) => (
+              <button
+                type="button"
+                key={z}
+                onClick={() => onSelectZone(z)}
+                className={`${chipPad} border border-transparent ${
+                  selectedZone === z
+                    ? 'bg-red-700 text-white'
+                    : 'bg-neutral-50 text-neutral-600 border-neutral-200 hover:border-neutral-300'
+                }`}
+              >
+                {z}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <input
+            type="text"
+            value={selectedZone}
+            onChange={(e) => onSelectZone(e.target.value)}
+            placeholder="Optional — filter by district or neighbourhood"
+            className="w-full rounded-2xl border border-neutral-200 bg-white px-3.5 py-2.5 text-[13px] shadow-sm focus:outline-none focus:ring-2 focus:ring-red-600/25 focus:border-red-400 placeholder:text-neutral-400"
+            aria-label="Zone or area filter"
+          />
+        )}
+      </div>
+
+      <details className="group rounded-xl border border-neutral-200/80 bg-white/60 px-3 py-2 text-[11px] text-neutral-600">
+        <summary className="cursor-pointer list-none font-black uppercase tracking-widest text-[9px] text-neutral-500 flex items-center gap-2 [&::-webkit-details-marker]:hidden">
+          <ChevronRight size={14} className="shrink-0 transition-transform group-open:rotate-90" aria-hidden />
+          Add another metro
+        </summary>
+        <div className="mt-2 flex min-w-0 items-stretch gap-2 pt-1">
+          <input
+            type="text"
+            value={addDraft}
+            onChange={(e) => setAddDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                submitAdd();
+              }
+            }}
+            placeholder="City name"
+            className="min-w-0 flex-1 rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2 text-[13px] focus:outline-none focus:border-red-400"
+            aria-label="Add a city"
+          />
+          <button
+            type="button"
+            onClick={submitAdd}
+            disabled={!addDraft.trim()}
+            className="shrink-0 rounded-xl bg-red-700 text-white px-4 py-2 text-[10px] font-black uppercase tracking-widest disabled:opacity-40"
+          >
+            Add
+          </button>
+        </div>
+      </details>
+    </div>
+  );
+}
+
 /** Staff app Today tab only — outlet Today uses `OutletLandingTab`. */
 function HomeTab({
   onSwitchTab,
   cities,
   addCity,
+  boardCity,
+  onBoardCityChange,
+  boardZone,
+  onBoardZoneChange,
 }: {
   onSwitchTab: (t: AppTab) => void;
   cities: string[];
   addCity: (name: string) => void;
+  boardCity: string;
+  onBoardCityChange: (c: string) => void;
+  boardZone: string;
+  onBoardZoneChange: (z: string) => void;
 }) {
   const freeMode = everythingFree();
   const [hangouts, setHangouts] = useState<any[]>([]);
   const [joiningId, setJoiningId] = useState<string | null>(null);
   const [joinNote, setJoinNote] = useState<string | null>(null);
 
-  const [activeCity, setActiveCity] = useState<string>(DEFAULT_CITIES[0]);
   const [pulseCards, setPulseCards] = useState<Pulse[]>([]);
   const [pulseLoading, setPulseLoading] = useState(true);
   const [activePulse, setActivePulse] = useState<Pulse | null>(null);
@@ -1818,7 +2067,20 @@ function HomeTab({
   const [premium, setPremium] = useState(false);
   const [credits, setCredits] = useState<number | null>(null);
   const [creditsResetAt, setCreditsResetAt] = useState<string | null>(null);
+  const [matchMetaLoaded, setMatchMetaLoaded] = useState(false);
+  const [matchAnonymous, setMatchAnonymous] = useState(false);
   const effectivePremium = freeMode || premium;
+
+  const visiblePulseCards = useMemo(() => {
+    const z = boardZone.trim().toLowerCase();
+    if (!z) return pulseCards;
+    return pulseCards.filter(
+      (p) =>
+        p.area.toLowerCase().includes(z) ||
+        p.city.toLowerCase().includes(z) ||
+        p.vibe.toLowerCase().includes(z),
+    );
+  }, [pulseCards, boardZone]);
 
   const loadCityData = useCallback(async (city: string) => {
     try {
@@ -1846,36 +2108,53 @@ function HomeTab({
   }, []);
 
   const loadMatchStatus = useCallback(() => {
-    fetch('/api/match').then(r => r.json()).then(data => {
-      setPremium(!!data.premium);
-      setCredits(data.credits_remaining ?? null);
-      setCreditsResetAt(data.credits_reset_at || null);
-    }).catch(() => { /* leave defaults */ });
+    setMatchMetaLoaded(false);
+    fetch('/api/match')
+      .then(async (r) => {
+        if (r.status === 401) {
+          setMatchAnonymous(true);
+          setPremium(false);
+          setCredits(null);
+          setCreditsResetAt(null);
+          return;
+        }
+        setMatchAnonymous(false);
+        const data = await r.json();
+        setPremium(!!data.premium);
+        setCredits(data.credits_remaining ?? null);
+        setCreditsResetAt(data.credits_reset_at || null);
+      })
+      .catch(() => {
+        setMatchAnonymous(false);
+      })
+      .finally(() => setMatchMetaLoaded(true));
   }, []);
 
   useEffect(() => {
-    loadCityData(activeCity);
-  }, [activeCity, loadCityData]);
+    loadCityData(boardCity);
+  }, [boardCity, loadCityData]);
 
   useEffect(() => {
     loadMatchStatus();
   }, [loadMatchStatus]);
 
-  useEffect(() => { loadPulse(activeCity); }, [activeCity, loadPulse]);
+  useEffect(() => {
+    loadPulse(boardCity);
+  }, [boardCity, loadPulse]);
 
   useEffect(() => {
-    if (!cities.length || cities.some((c) => c.toLowerCase() === activeCity.toLowerCase())) {
+    if (!cities.length || cities.some((c) => c.toLowerCase() === boardCity.toLowerCase())) {
       return;
     }
     let cancelled = false;
     const next = cities[0];
     queueMicrotask(() => {
-      if (!cancelled) setActiveCity(next);
+      if (!cancelled) onBoardCityChange(next);
     });
     return () => {
       cancelled = true;
     };
-  }, [cities, activeCity]);
+  }, [cities, boardCity, onBoardCityChange]);
 
   const openTablesCount = useMemo(
     () => hangouts.filter((h: any) => (h.current_guests || 0) < (h.max_guests || 0)).length,
@@ -1889,8 +2168,8 @@ function HomeTab({
       const res = await fetch(`/api/hangouts/${hangoutId}/join`, { method: 'POST' });
       const data = await res.json();
       if (res.ok) {
-        setJoinNote("You're on the roster. Check WhatsApp for outlet details — selfie check-in opens at shift start.");
-        loadCityData(activeCity);
+        setJoinNote("Roster confirmed — check WhatsApp for outlet. Selfie check-in at shift start.");
+        loadCityData(boardCity);
       } else {
         setJoinNote(data.error || 'Could not join.');
       }
@@ -1998,22 +2277,30 @@ function HomeTab({
     if (matchedPlan?.id) {
       await handleJoin(matchedPlan.id);
     } else {
-      setJoinNote("We'll lock the plan once others confirm. Watch your inbox.");
+      setJoinNote('We lock the plan when others confirm.');
     }
     closeMatch();
   };
   const skipPlan  = async () => { await logMatchAction('skipped');  closeMatch(); };
-  const delayPlan = async () => { await logMatchAction('delayed');  setJoinNote("We'll surface another vibe in a few minutes."); closeMatch(); };
+  const delayPlan = async () => { await logMatchAction('delayed'); setJoinNote('Another vibe soon.'); closeMatch(); };
 
   const matchByVibe = () => {
+    const list = visiblePulseCards;
+    if (list.length === 0) return;
     const v = vibePrompt.toLowerCase();
-    if (pulseCards.length === 0) return;
-    const found =
-      pulseCards.find((p) => v && p.vibe.toLowerCase().includes(v)) ||
-      (v.includes('chill') ? pulseCards.find((p) => p.vibe.toLowerCase().includes('brunch') || p.energy === 'rising') : null) ||
-      (v.includes('founder') || v.includes('whisky') ? pulseCards.find((p) => p.vibe.toLowerCase().includes('whisky') || p.vibe.toLowerCase().includes('lounge')) : null) ||
-      (v.includes('dance') || v.includes('music') ? pulseCards.find((p) => p.vibe.toLowerCase().includes('music')) : null) ||
-      pulseCards[0];
+    let found =
+      (v && list.find((p) => p.vibe.toLowerCase().includes(v))) ||
+      (v.includes('chill') ? list.find((p) => p.vibe.toLowerCase().includes('brunch') || p.energy === 'rising') : null) ||
+      (v.includes('founder') || v.includes('whisky') ? list.find((p) => p.vibe.toLowerCase().includes('whisky') || p.vibe.toLowerCase().includes('lounge')) : null) ||
+      (v.includes('dance') || v.includes('music') ? list.find((p) => p.vibe.toLowerCase().includes('music')) : null) ||
+      null;
+    if (!found && boardZone.trim()) {
+      const z = boardZone.trim().toLowerCase();
+      found = list.find(
+        (p) => p.area.toLowerCase().includes(z) || p.city.toLowerCase().includes(z),
+      );
+    }
+    if (!found) found = list[0];
     startMatch(found);
   };
 
@@ -2025,13 +2312,13 @@ function HomeTab({
         transition={{ type: 'spring', stiffness: 380, damping: 32 }}
         className="rounded-[18px] lg:rounded-[24px] border border-red-200/45 bg-white p-4 sm:p-5 shadow-[0_8px_28px_rgba(0,0,0,0.06)]"
       >
-        <CityChipsBar
-          label="Location first — pick your zone"
+        <StaffMetroFilters
           cities={cities}
-          selected={activeCity}
-          onSelect={setActiveCity}
-          onAddCity={addCity}
-          className="w-full min-w-0"
+          selectedCity={boardCity}
+          onSelectCity={onBoardCityChange}
+          selectedZone={boardZone}
+          onSelectZone={onBoardZoneChange}
+          addCity={addCity}
         />
       </motion.section>
 
@@ -2050,14 +2337,17 @@ function HomeTab({
                 variant="mark"
                 className="h-[56px] sm:h-[60px] w-auto max-w-[min(240px,78vw)] object-contain select-none"
               />
-              <p className="text-[11px] font-medium text-neutral-600 tracking-[0.04em] max-w-[min(320px,92vw)] leading-snug text-center px-1">
-                Hospitality jobs — hotels, bars &amp; events · verified shifts · same-day pay
+              <p className="text-[11px] font-medium text-neutral-600 tracking-[0.03em] max-w-[300px] leading-snug">
+                Hotels, bars &amp; events · verified · same-day pay
               </p>
               <p className="text-[9px] font-black uppercase tracking-[0.28em] text-red-700 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 text-center">
                 <span className="inline-flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.85)] animate-pulse shrink-0" />
                   <Zap size={11} className="text-amber-600 shrink-0" aria-hidden />
-                  Zone · {activeCity.toUpperCase()}
+                  Zone · {boardCity.toUpperCase()}
+                  {boardZone ? (
+                    <span className="text-neutral-600 font-bold normal-case tracking-normal"> · {boardZone}</span>
+                  ) : null}
                 </span>
                 <span className="text-neutral-500 font-bold normal-case tracking-normal">·</span>
                 <span className="tabular-nums text-neutral-600">
@@ -2077,7 +2367,7 @@ function HomeTab({
             animate="show"
           >
             <motion.p variants={staggerItem} className="text-[14px] leading-snug text-neutral-800 font-medium [overflow-wrap:anywhere]">
-              Pick up hospitality shifts by zone — same-day pay on OPay, PalmPay, or Moniepoint once the outlet signs you off.{' '}
+              Shifts by zone · same-day pay when signed off.{` `}
               <button
                 type="button"
                 onClick={() => onSwitchTab('discover')}
@@ -2098,24 +2388,35 @@ function HomeTab({
                   >
                     {freeMode ? 'Unlimited' : 'Full'}
                   </span>
+                ) : !matchMetaLoaded ? (
+                  <span className="text-[9px] tabular-nums text-neutral-400">…</span>
+                ) : matchAnonymous ? (
+                  <span className="text-[9px] tabular-nums text-neutral-500">1/wk · sign in</span>
+                ) : (credits ?? 0) > 0 ? (
+                  <span className="text-[9px] tabular-nums text-neutral-500">1/wk</span>
                 ) : (
-                  <span className={`text-[9px] tabular-nums ${(credits ?? 0) > 0 ? 'text-neutral-500' : 'text-amber-800'}`}>
-                    {(credits ?? 0) > 0 ? '1/wk' : 'Limit reached'}
-                  </span>
+                  <span className="text-[9px] tabular-nums text-amber-800">Limit reached</span>
                 )}
               </div>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={vibePrompt}
-                  onChange={(e) => setVibePrompt(e.target.value)}
-                  placeholder="e.g. 4 waiters, Lekki, tonight"
-                  className="min-w-0 flex-1 bg-neutral-50 border border-neutral-200 rounded-2xl px-3.5 py-2.5 text-[15px] focus:outline-none focus:border-red-700 placeholder:text-neutral-400"
-                />
-                <button type="button" onClick={matchByVibe} className="w-11 h-11 shrink-0 rounded-2xl bg-red-700 text-white flex items-center justify-center shadow-[0_0_20px_rgba(185,28,28,0.2)] active:scale-95 transition-transform" aria-label="Suggest roster match">
-                  <Sparkles size={18} fill="currentColor"/>
-                </button>
-              </div>
+              <p className="text-[12px] text-neutral-600 leading-snug mb-2">
+                Suggests a crew line-up for <strong className="text-neutral-800">{boardCity}</strong>
+                {boardZone ? (
+                  <>
+                    {' '}
+                    · <strong className="text-neutral-800">{boardZone}</strong>
+                  </>
+                ) : null}
+                .
+              </p>
+              <button
+                type="button"
+                onClick={matchByVibe}
+                disabled={visiblePulseCards.length === 0}
+                className="w-full min-h-11 flex items-center justify-center gap-2 rounded-2xl bg-red-700 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(185,28,28,0.2)] active:scale-[0.99] transition-transform disabled:opacity-45 disabled:pointer-events-none"
+              >
+                <Sparkles size={18} fill="currentColor" className="shrink-0" />
+                Run roster assist
+              </button>
             </motion.div>
             {/* Tab bar already exposes Discover / Host — avoid duplicating CTAs on mobile */}
           </motion.div>
@@ -2187,7 +2488,7 @@ function HomeTab({
             </p>
             <h2 className="font-display text-2xl md:text-3xl italic">Where shifts are stacking.</h2>
             <p className="mt-2 text-sm text-neutral-600 leading-snug max-md:hidden">
-              <strong className="text-neutral-800">Next 24 hours</strong> — live open shifts in {activeCity} power this view. Plan further out on{' '}
+              <strong className="text-neutral-800">24h pulse</strong> in {boardCity}. More dates →{' '}
               <button
                 type="button"
                 onClick={() => onSwitchTab('discover')}
@@ -2198,7 +2499,7 @@ function HomeTab({
               .
             </p>
             <p className="mt-1.5 text-[13px] text-neutral-600 leading-snug md:hidden">
-              City above · Today shows the next 24h. Full upcoming list → Shifts tab.
+              24h window · full list in Shifts.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2 shrink-0 md:justify-end">
@@ -2213,6 +2514,14 @@ function HomeTab({
                 {freeMode ? 'Unlimited matches' : (
                   <><Star size={10} fill="currentColor"/> Black</>
                 )}
+              </span>
+            ) : !matchMetaLoaded ? (
+              <span className="inline-flex text-[10px] px-2.5 py-1 rounded-full border border-neutral-200 bg-neutral-50 text-neutral-400 tabular-nums items-center gap-1">
+                …
+              </span>
+            ) : matchAnonymous ? (
+              <span className="inline-flex text-[10px] px-2.5 py-1 rounded-full border border-neutral-200 bg-neutral-50 text-neutral-600 tabular-nums items-center gap-1">
+                1 match / wk · sign in
               </span>
             ) : (
               <span className={`inline-flex text-[10px] px-2.5 py-1 rounded-full border tabular-nums items-center gap-1 ${
@@ -2229,8 +2538,21 @@ function HomeTab({
         ) : pulseCards.length === 0 ? (
           <div className="text-center py-10 text-neutral-400 border border-dashed border-neutral-200 rounded-3xl">
             <Compass size={36} className="mx-auto mb-3 opacity-50"/>
-            <p className="font-display text-xl italic">Quiet in {activeCity} for now.</p>
-            <p className="text-sm mt-1">Try another zone or check the full board.</p>
+            <p className="font-display text-xl italic">Quiet in {boardCity}.</p>
+            <p className="text-sm mt-1">Try another zone or open Shifts.</p>
+          </div>
+        ) : visiblePulseCards.length === 0 ? (
+          <div className="text-center py-10 text-neutral-500 border border-dashed border-neutral-200 rounded-3xl px-4">
+            <Compass size={36} className="mx-auto mb-3 opacity-40 text-neutral-400"/>
+            <p className="font-display text-xl italic text-neutral-800">No pulse for this zone.</p>
+            <p className="text-sm mt-1">Clear zone or open Shifts.</p>
+            <button
+              type="button"
+              onClick={() => onBoardZoneChange('')}
+              className="mt-4 text-[10px] font-black uppercase tracking-widest text-red-700 underline underline-offset-4"
+            >
+              Show all areas
+            </button>
           </div>
         ) : (
           <div className="relative max-md:rounded-[28px] max-md:border max-md:border-neutral-200/90 max-md:bg-gradient-to-b max-md:from-neutral-50/90 max-md:to-neutral-100/50 max-md:p-3 sm:max-md:p-4">
@@ -2248,7 +2570,7 @@ function HomeTab({
                 initial="hidden"
                 animate="show"
               >
-                {pulseCards.map((pulse) => {
+                {visiblePulseCards.map((pulse) => {
                   const PulseIcon = pickPulseIcon(pulse.vibe);
                   const stripe = ENERGY_STRIPE[pulse.energy];
                   return (
@@ -2357,24 +2679,24 @@ function outletApplicationStatusMeta(status: string | undefined) {
   if (s === 'approved')
     return {
       label: 'Approved',
-      sub: 'You can post shifts on the board.',
+      sub: 'Post shifts on the board.',
       className: 'bg-emerald-50 text-emerald-900 border-emerald-200',
     };
   if (s === 'submitted' || s === 'under_review')
     return {
       label: s === 'under_review' ? 'Under review' : 'Submitted',
-      sub: 'Ops is verifying your venue details.',
+      sub: 'Ops verifying venue.',
       className: 'bg-amber-50 text-amber-950 border-amber-200',
     };
   if (s === 'rejected')
     return {
       label: 'Needs attention',
-      sub: 'Check admin notes and update your application.',
+      sub: 'See admin notes and update.',
       className: 'bg-red-50 text-red-900 border-red-200',
     };
   return {
     label: 'Draft',
-    sub: 'Complete the form below and submit for approval.',
+    sub: 'Complete below, then submit.',
     className: 'bg-neutral-100 text-neutral-800 border-neutral-200',
   };
 }
@@ -2511,24 +2833,24 @@ function OutletAccountSection({ initialUser }: { initialUser?: any }) {
 
   if (loading) {
     return (
-      <section className="rounded-2xl border border-neutral-200 bg-white p-10 shadow-sm flex justify-center">
-        <Loader2 size={32} className="text-red-700 animate-spin" />
+      <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm flex justify-center">
+        <Loader2 size={28} className="text-red-700 animate-spin" />
       </section>
     );
   }
 
   if (!user) {
     return (
-      <section className="rounded-2xl border border-neutral-200 bg-white p-5 sm:p-8 shadow-sm">
-        <div className="flex flex-col sm:flex-row gap-6 sm:gap-10 items-center sm:items-start">
-          <div className="shrink-0 w-28 h-28 sm:w-32 sm:h-32 rounded-full border-2 border-dashed border-neutral-200 bg-neutral-50 flex items-center justify-center">
-            <Building2 size={40} className="text-red-700/70" aria-hidden />
+      <section className="rounded-2xl border border-neutral-200 bg-white p-4 sm:p-5 shadow-sm">
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start">
+          <div className="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-dashed border-neutral-200 bg-neutral-50 flex items-center justify-center">
+            <Building2 size={32} className="text-red-700/70" aria-hidden />
           </div>
-          <div className="flex-1 text-center sm:text-left min-w-0 space-y-3">
+          <div className="flex-1 text-center sm:text-left min-w-0 space-y-2">
             <p className="text-[10px] font-black uppercase tracking-[0.28em] text-red-600">Venue account</p>
-            <h2 className="font-display text-2xl sm:text-3xl italic text-neutral-900">Sign in to manage your outlet</h2>
-            <p className="text-[13px] text-neutral-600 leading-snug max-w-md mx-auto sm:mx-0">
-              Same Neon login as the staff app — one account for both consoles.
+            <h2 className="font-display text-xl sm:text-2xl italic text-neutral-900">Sign in</h2>
+            <p className="text-[12px] text-neutral-600 leading-snug max-w-md mx-auto sm:mx-0">
+              One Neon login — staff app &amp; outlet console.
             </p>
             {profileNotice ? <p className="text-[12px] text-neutral-500">{profileNotice}</p> : null}
             <div className="flex flex-wrap gap-2 justify-center sm:justify-start pt-1">
@@ -2564,15 +2886,15 @@ function OutletAccountSection({ initialUser }: { initialUser?: any }) {
   const statusMeta = outletApplicationStatusMeta(app?.status);
 
   return (
-    <section id="outlet-account" className="scroll-mt-28 rounded-2xl border border-neutral-200 bg-white shadow-[0_12px_40px_rgba(0,0,0,0.06)] overflow-hidden">
-      <div className="border-b border-neutral-100 bg-gradient-to-r from-red-50/80 via-white to-white px-5 py-4 sm:px-8 sm:py-5">
+    <section id="outlet-account" className="scroll-mt-28 rounded-2xl border border-neutral-200 bg-white shadow-[0_8px_28px_rgba(0,0,0,0.05)] overflow-hidden">
+      <div className="border-b border-neutral-100 bg-gradient-to-r from-red-50/80 via-white to-white px-4 py-2.5 sm:px-6 sm:py-3">
         <p className="text-[10px] font-black uppercase tracking-[0.28em] text-red-700 flex items-center gap-2">
-          <Building2 size={14} className="shrink-0" aria-hidden /> Venue console · account
+          <Building2 size={14} className="shrink-0" aria-hidden /> Venue account
         </p>
       </div>
 
-      <div className="p-5 sm:p-8">
-        <div className="flex flex-col lg:flex-row lg:items-start gap-8 lg:gap-12">
+      <div className="p-4 sm:p-6">
+        <div className="flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-10">
           {/* Photo — left column */}
           <div className="flex flex-row lg:flex-col items-center lg:items-start gap-5 lg:gap-4 shrink-0 lg:w-[200px]">
             <div className="relative group shrink-0">
@@ -2606,21 +2928,21 @@ function OutletAccountSection({ initialUser }: { initialUser?: any }) {
                 </div>
               ) : null}
             </div>
-            <p className="text-[11px] text-neutral-500 text-center lg:text-left max-w-[11rem] lg:max-w-none leading-snug">
-              Logo or venue contact photo — shown to workers when you host shifts.
+            <p className="text-[10px] text-neutral-500 text-center lg:text-left max-w-[11rem] lg:max-w-[12rem] leading-snug">
+              Contact photo · visible to workers on shifts.
             </p>
             {avatarError ? <p className="text-red-600 text-[11px] lg:col-span-1 text-center lg:text-left">{avatarError}</p> : null}
           </div>
 
           {/* Details — right column */}
-          <div className="flex-1 min-w-0 space-y-5">
+          <div className="flex-1 min-w-0 space-y-4">
             {profileNotice ? (
               <div className="rounded-xl border border-amber-200 bg-amber-50/80 px-3 py-2 text-[12px] text-amber-950">{profileNotice}</div>
             ) : null}
 
             <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0 space-y-2">
-                <h2 className="font-display text-2xl sm:text-4xl italic text-neutral-900 leading-tight break-words">
+              <div className="min-w-0 space-y-1.5">
+                <h2 className="font-display text-xl sm:text-3xl italic text-neutral-900 leading-tight break-words">
                   {app?.business_name?.trim() ? app.business_name : 'Your venue'}
                 </h2>
                 {app?.city_name ? (
@@ -2740,20 +3062,16 @@ function OutletAccountSection({ initialUser }: { initialUser?: any }) {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4 md:p-5 space-y-3">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">Outlet verification</p>
-              <div className="grid sm:grid-cols-2 gap-3 text-[13px] text-neutral-700">
-                <div className="rounded-xl bg-white border border-neutral-200 p-3">
-                  <p className="font-bold text-neutral-900 text-sm">CAC & venue records</p>
-                  <p className="text-[12px] text-neutral-500 mt-1">
-                    Business name, address, and registration details stay in the form below — we match them before you&apos;re live on the board.
-                  </p>
+            <div className="rounded-xl border border-neutral-200 bg-neutral-50/80 p-3 md:p-4 space-y-2">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">Verification</p>
+              <div className="grid sm:grid-cols-2 gap-2 text-[12px] text-neutral-700">
+                <div className="rounded-lg bg-white border border-neutral-200 p-2.5">
+                  <p className="font-bold text-neutral-900 text-xs">CAC &amp; venue</p>
+                  <p className="text-[11px] text-neutral-500 mt-0.5 leading-snug">Details in the form below — matched before you&apos;re live.</p>
                 </div>
-                <div className="rounded-xl bg-white border border-neutral-200 p-3">
-                  <p className="font-bold text-neutral-900 text-sm">Staff payouts</p>
-                  <p className="text-[12px] text-neutral-500 mt-1">
-                    You settle crew through Convivia rails (OPay / PalmPay / Moniepoint). Workers see payout status on their staff app.
-                  </p>
+                <div className="rounded-lg bg-white border border-neutral-200 p-2.5">
+                  <p className="font-bold text-neutral-900 text-xs">Payouts</p>
+                  <p className="text-[11px] text-neutral-500 mt-0.5 leading-snug">OPay · PalmPay · Moniepoint · status in staff app.</p>
                 </div>
               </div>
               <a
@@ -2829,98 +3147,108 @@ function OutletAccountSection({ initialUser }: { initialUser?: any }) {
    OUTLET — dashboard headline + flow (no zone pulse / roster assist — staff-only in HomeTab)
    ══════════════════════════════════════════════════════════════════════ */
 function OutletLandingDashboard({ onSwitchTab }: { onSwitchTab: (t: AppTab) => void }) {
-  const flowSteps = [
-    { n: '1', label: 'Post or pick', sub: 'shift in 2 min' },
-    { n: '2', label: 'Match & confirm', sub: 'roster locked' },
-    { n: '3', label: 'Check in · rate', sub: 'same-day pay' },
-  ] as const;
+  const callouts = ['Board & post', 'Roster lock', 'Same-day pay'] as const;
 
   return (
     <motion.section
-      className="relative overflow-hidden rounded-[18px] lg:rounded-[32px] border border-gold/25 shadow-[0_16px_48px_rgba(0,0,0,0.07),0_0_0_1px_rgba(201,168,76,0.12)] max-lg:shadow-[0_6px_28px_rgba(0,0,0,0.07)]"
-      initial={{ opacity: 0, y: 16 }}
+      id="outlet-hero"
+      className="scroll-mt-28 relative overflow-hidden rounded-2xl border border-gold/30 bg-gradient-to-b from-white via-cream/95 to-[#f8f6f2]"
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 280, damping: 32 }}
+      transition={{ type: 'spring', stiffness: 320, damping: 30 }}
     >
-      <div className="lg:hidden flex flex-col">
-        <div className="relative shrink-0 overflow-hidden rounded-t-[18px] border border-b-0 border-gold/25 bg-gradient-to-b from-white via-cream/90 to-[#f8f6f2] px-4 pt-5 pb-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9)]">
-          <div className="flex flex-col items-center text-center gap-3">
-            <BrandLogo alt="" className="h-11 sm:h-12 w-auto max-w-[min(280px,88vw)] object-contain select-none" />
-            <p className="text-[11px] font-medium text-neutral-600 tracking-[0.03em] max-w-[300px] leading-snug">
-              Lagos, Abuja &amp; Port Harcourt · venue console
-            </p>
-            <p className="text-[9px] font-black uppercase tracking-[0.28em] text-red-700 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5">
-              <span className="inline-flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.85)] animate-pulse shrink-0" />
-                <Zap size={11} className="text-amber-600 shrink-0" aria-hidden />
-                Live
-              </span>
-              <span className="text-neutral-500 font-bold normal-case tracking-normal">·</span>
-              <LiveLocalTime className="tabular-nums text-neutral-600" />
-            </p>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-neutral-500">Outlet dashboard</p>
-            <h2 className="font-display text-[1.55rem] sm:text-[1.75rem] leading-[1.05] italic text-neutral-900">
-              Cover staff, <span className="text-red-700">sorted.</span>
-            </h2>
+      {/* Mobile / tablet — single compact hero band, logo first */}
+      <div className="lg:hidden p-3.5 sm:p-4 space-y-3">
+        <div className="flex flex-col items-center text-center gap-2">
+          <BrandLogo
+            alt="Convivia24"
+            variant="mark"
+            className="h-10 sm:h-11 w-auto max-w-[min(260px,85vw)] object-contain select-none"
+          />
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+            <span className="text-[9px] font-black uppercase tracking-widest text-red-800 bg-red-50 border border-red-200/80 px-2 py-0.5 rounded-full">
+              Outlet console
+            </span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-neutral-500">3 metros</span>
+            <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-red-700">
+              <span className="w-1 h-1 rounded-full bg-red-500 animate-pulse" />
+              Live
+              <span className="text-neutral-400 font-normal">·</span>
+              <LiveLocalTime className="tabular-nums text-neutral-600 font-bold normal-case" />
+            </span>
           </div>
+          <h2 className="font-display text-[1.35rem] sm:text-[1.5rem] leading-[1.08] italic text-neutral-900 px-1">
+            Cover staff, <span className="text-red-700">sorted.</span>
+          </h2>
         </div>
-        <div className="rounded-b-[18px] border border-t-0 border-gold/20 bg-gradient-to-b from-cream/95 to-[#f8f6f2] px-4 py-4 space-y-4">
-          <p className="text-[14px] leading-snug text-neutral-800 font-medium text-center sm:text-left">
-            {HOSPITALITY_METROS_BEFORE_LINK}{' '}
-            <button
-              type="button"
-              onClick={() => onSwitchTab('demand')}
-              className="text-red-700 font-semibold underline decoration-red-600/40 underline-offset-2"
+        <div className="flex flex-wrap justify-center gap-1.5">
+          {callouts.map((c) => (
+            <span
+              key={c}
+              className="inline-flex items-center rounded-lg border border-neutral-200/90 bg-white/90 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-neutral-700 shadow-[0_1px_0_rgba(0,0,0,0.04)]"
             >
-              demand board
-            </button>
-            .
-          </p>
-          <FlowSteps steps={[...flowSteps]} />
-          <button
-            type="button"
-            onClick={() => onSwitchTab('demand')}
-            className="w-full rounded-full bg-red-700 text-white text-[10px] font-black uppercase tracking-[0.2em] py-3.5 hover:bg-red-800 shadow-[0_0_20px_rgba(185,28,28,0.2)]"
-          >
-            Open demand · board & post
-          </button>
+              {c}
+            </span>
+          ))}
         </div>
+        <button
+          type="button"
+          onClick={() => onSwitchTab('demand')}
+          className="w-full rounded-full bg-red-700 text-white text-[10px] font-black uppercase tracking-[0.2em] py-3 hover:bg-red-800 shadow-[0_0_16px_rgba(185,28,28,0.18)] active:scale-[0.99] transition-transform"
+        >
+          Open demand → board &amp; post
+        </button>
       </div>
 
-      <div className="hidden lg:block">
-        <motion.div
-          className="rounded-[28px] border border-neutral-200/90 bg-white p-10 space-y-5 shadow-[0_8px_40px_rgba(0,0,0,0.04)]"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="show"
-        >
-          <motion.div variants={staggerItem} className="flex flex-col sm:flex-row sm:items-center sm:gap-6 gap-4">
-            <BrandLogo alt="" className="h-10 sm:h-11 w-auto object-contain object-left shrink-0" />
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-700 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse shrink-0" /> Live · <LiveLocalTime />
-            </p>
-          </motion.div>
-          <motion.div variants={staggerItem} className="max-w-2xl space-y-3">
-            <p className="text-neutral-500 text-[10px] font-semibold uppercase tracking-[0.28em]">Outlet dashboard</p>
-            <h2 className="font-display text-4xl xl:text-5xl italic leading-[1.05] text-neutral-900 text-balance">
+      {/* Desktop — compact row */}
+      <div className="hidden lg:flex lg:flex-row lg:items-center lg:justify-between gap-6 p-6 border-t-0 border border-gold/25 rounded-2xl bg-white/95 shadow-[0_8px_32px_rgba(0,0,0,0.05)]">
+        <div className="flex items-center gap-5 min-w-0">
+          <BrandLogo alt="Convivia24" className="h-11 w-auto object-contain object-left shrink-0" />
+          <div className="min-w-0 space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-red-700">Outlet console</span>
+              <span className="text-[10px] font-bold text-neutral-400">·</span>
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-neutral-600">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                Live <LiveLocalTime className="tabular-nums normal-case font-bold text-neutral-600" />
+              </span>
+            </div>
+            <h2 className="font-display text-3xl xl:text-4xl italic leading-[1.05] text-neutral-900 text-balance">
               Cover staff, <span className="text-red-700">sorted.</span>
             </h2>
-            <p className="text-neutral-600 text-base leading-relaxed max-w-xl text-pretty">
-              {HOSPITALITY_METROS_BEFORE_LINK}{' '}
+            <p className="text-[12px] text-neutral-600 max-w-xl leading-snug">
+              Hospitality demand in{' '}
+              <strong className="text-neutral-800">Lagos, Abuja, Port Harcourt</strong> —{' '}
               <button
                 type="button"
                 onClick={() => onSwitchTab('demand')}
-                className="text-red-700 font-semibold underline decoration-red-600/40 underline-offset-4 hover:text-red-800"
+                className="text-red-700 font-semibold underline decoration-red-600/35 underline-offset-2 hover:text-red-800"
               >
-                demand board
+                open board
               </button>
               .
             </p>
-          </motion.div>
-          <motion.div variants={staggerItem}>
-            <FlowSteps steps={[...flowSteps]} />
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
+        <div className="flex flex-col items-stretch lg:items-end gap-3 shrink-0">
+          <div className="flex flex-wrap justify-end gap-1.5">
+            {callouts.map((c) => (
+              <span
+                key={c}
+                className="inline-flex rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-neutral-700"
+              >
+                {c}
+              </span>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => onSwitchTab('demand')}
+            className="rounded-full bg-red-700 text-white text-[10px] font-black uppercase tracking-[0.2em] px-7 py-3 hover:bg-red-800 shadow-[0_0_18px_rgba(185,28,28,0.2)] whitespace-nowrap"
+          >
+            Demand → board &amp; post
+          </button>
+        </div>
       </div>
     </motion.section>
   );
@@ -2978,17 +3306,19 @@ function OutletLandingTab({
   const router = useRouter();
   const metroCity = cities[0] ?? DEFAULT_CITIES[0];
   return (
-    <div className="space-y-8 pb-24">
-      <OutletAccountSection initialUser={initialUser} />
-
+    <div className="space-y-5 pb-24">
       <OutletLandingDashboard onSwitchTab={onSwitchTab} />
 
-      <section className="rounded-2xl border border-neutral-200 bg-white p-4 sm:p-6 shadow-sm">
-        <div className="mb-5">
-          <p className="text-[10px] font-black uppercase tracking-[0.28em] text-red-600">Registration</p>
-          <h2 className="font-display text-xl sm:text-2xl italic text-neutral-900 mt-1">Venue details & approval</h2>
-          <p className="text-[13px] text-neutral-600 mt-2 max-w-2xl leading-snug">
-            Legal business name, address, and city — required before demand goes live. Updates sync to our admin queue.
+      <OutletAccountSection initialUser={initialUser} />
+
+      <section className="rounded-2xl border border-neutral-200 bg-white p-4 sm:p-5 shadow-sm">
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.28em] text-red-600">Registration</p>
+            <h2 className="font-display text-lg sm:text-xl italic text-neutral-900 mt-0.5">Venue approval</h2>
+          </div>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 max-w-[20rem] text-right sm:text-left sm:max-w-none">
+            CAC + address → admin queue → live posting
           </p>
         </div>
         {initialUser ? (
@@ -2999,8 +3329,8 @@ function OutletLandingTab({
             }}
           />
         ) : (
-          <p className="text-sm text-neutral-500 border border-dashed border-neutral-200 rounded-xl p-4 bg-neutral-50/80">
-            Sign in above, then complete this form so we can approve posting shifts.
+          <p className="text-sm text-neutral-500 border border-dashed border-neutral-200 rounded-xl p-3 bg-neutral-50/80">
+            Sign in on <strong className="text-neutral-700">Venue account</strong> above, then submit for approval.
           </p>
         )}
       </section>
@@ -3066,6 +3396,7 @@ function OutletDemandTab({
           pendingInviteHangoutId={pendingInviteHangoutId}
           onClearPendingInvite={onClearPendingInvite}
           cities={cities}
+          addCity={addCity}
         />
       ) : (
         <HostTab
@@ -3099,7 +3430,7 @@ function OutletPaymentsTab({
           Money & <span className="text-red-700">roster.</span>
         </h1>
         <p className="text-neutral-600 text-sm md:text-base leading-relaxed max-w-2xl">
-          Same-day staff payouts on OPay / PalmPay / Moniepoint, demand on the board in <strong>{metro}</strong>, and one finance thread for cohort billing or adjustments.
+          Same-day payouts, board demand in <strong>{metro}</strong>, one finance thread for fixes.
         </p>
       </div>
 
@@ -3107,16 +3438,16 @@ function OutletPaymentsTab({
         <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
           <p className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Metro</p>
           <p className="font-display text-xl italic mt-1">{metro}</p>
-          <p className="text-[12px] text-neutral-500 mt-2">Shift posts are filtered here.</p>
+          <p className="text-[12px] text-neutral-500 mt-2">Filters board by city.</p>
         </div>
         <div className="rounded-2xl border border-emerald-200/80 bg-emerald-50/50 p-4 shadow-sm">
           <p className="text-[10px] font-black uppercase tracking-widest text-emerald-900">Pending to staff</p>
           <p className="font-display text-xl italic mt-1 tabular-nums">₦—</p>
-          <p className="text-[12px] text-neutral-600 mt-2">Clears after you sign off shifts.</p>
+          <p className="text-[12px] text-neutral-600 mt-2">After shift sign-off.</p>
         </div>
         <div className="rounded-2xl border border-amber-200/80 bg-amber-50/40 p-4 shadow-sm">
           <p className="text-[10px] font-black uppercase tracking-widest text-amber-900">Ops / disputes</p>
-          <p className="text-[12px] text-neutral-600 mt-2">Hours or rates mismatch — keep it on-platform first.</p>
+          <p className="text-[12px] text-neutral-600 mt-2">Hours/pay mismatch — message us first.</p>
         </div>
       </div>
 
@@ -3180,7 +3511,7 @@ function CareerTab({ onSwitchTab }: { onSwitchTab: (t: AppTab) => void }) {
           Pay, slips & <span className="text-red-700">disputes.</span>
         </h1>
         <p className="text-neutral-600 text-sm md:text-base leading-relaxed max-w-2xl">
-          Same-day pay to mobile money, a line-by-line slip trail, and a single place to flag a shift or payout that doesn&apos;t match. Your outlet-facing rating lives on{' '}
+          One place for wallet, slip lines, and disputes — your outlet-facing rating is on{' '}
           <button type="button" onClick={() => onSwitchTab('profile')} className="text-red-700 font-semibold underline decoration-red-600/40 underline-offset-2">
             Profile
           </button>
@@ -3200,7 +3531,7 @@ function CareerTab({ onSwitchTab }: { onSwitchTab: (t: AppTab) => void }) {
             <p className="text-[10px] font-black uppercase tracking-[0.25em] text-teal-900">Payments</p>
             <h2 className="font-display text-xl italic text-neutral-900 mt-1">Your wallet & payout route</h2>
             <p className="text-[13px] text-neutral-600 mt-2 leading-snug">
-              Same-day settlement after the outlet confirms your shift. Register one primary wallet — OPay, PalmPay, or Moniepoint — and keep it current with ops if your number changes.
+              Link OPay / PalmPay / Moniepoint in Profile and keep ops updated if your wallet number changes.
             </p>
             <div className="flex flex-wrap gap-2 mt-3">
               {['OPay', 'PalmPay', 'Moniepoint'].map((p) => (
@@ -3233,9 +3564,6 @@ function CareerTab({ onSwitchTab }: { onSwitchTab: (t: AppTab) => void }) {
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.25em] text-neutral-500">Payout history</p>
             <h2 className="font-display text-lg italic text-neutral-900 mt-0.5">What you&apos;ve been paid</h2>
-            <p className="text-[13px] text-neutral-600 mt-1 leading-snug">
-              Lines sync when the outlet signs off your shift. Full detail exports when we wire payroll integration.
-            </p>
           </div>
         </div>
         <div className="rounded-xl border border-neutral-100 divide-y divide-neutral-100">
@@ -3267,7 +3595,7 @@ function CareerTab({ onSwitchTab }: { onSwitchTab: (t: AppTab) => void }) {
             <p className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-900">Disputes</p>
             <h2 className="font-display text-lg italic text-neutral-900 mt-0.5">Clock-in, hours, or pay don&apos;t match?</h2>
             <p className="text-[13px] text-neutral-700 mt-1 leading-snug">
-              Message us with shift ID and screenshots. We&apos;ll triage with the outlet — keep it on-platform first.
+              Shift ID + screenshots. We triage with the outlet — start here, not DMs.
             </p>
             <a
               href={staffingWhatsAppUrl('Hi Convivia24 — I need help with a shift payout / dispute.')}
@@ -3290,7 +3618,7 @@ function CareerTab({ onSwitchTab }: { onSwitchTab: (t: AppTab) => void }) {
             <p className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-900">Training · under 20 minutes total</p>
             <h2 className="font-display text-xl italic text-neutral-900 mt-1">Unlock better shifts</h2>
             <p className="text-[13px] text-neutral-600 mt-1 leading-snug">
-              Short modules — not homework. Finish to rank higher on outlet match lists and event crew calls.
+              Quick modules; stronger match rank.
             </p>
             <p className="text-[11px] font-bold text-emerald-900 mt-2 tabular-nums">
               {trainingDone}/{trainingModules.length} complete · ~{trainingModules.reduce((s, t) => s + t.min, 0)} min if you do all three
@@ -3327,7 +3655,7 @@ function CareerTab({ onSwitchTab }: { onSwitchTab: (t: AppTab) => void }) {
       <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 mb-2">Shift archive</p>
         <p className="text-[13px] text-neutral-600 leading-snug">
-          Completed roles and outlet confirmations will appear here for references and your rating trail — payout lines stay in the table above.
+          Completed shifts will list here; payouts stay in the table above.
         </p>
       </div>
 
@@ -3363,35 +3691,35 @@ const HOSPITALITY_COURSES = [
     title: 'Food safety & hygiene essentials',
     duration: '45 min',
     badge: 'Certificate',
-    blurb: 'Temperature zones, allergens, hand hygiene — aligned with what kitchens expect on audit day.',
+    blurb: 'Temps, allergens, hand hygiene — kitchen audit basics.',
   },
   {
     id: 'responsible-service',
     title: 'Responsible service & guest care',
     duration: '35 min',
     badge: 'Badge',
-    blurb: 'Reading the room, cut-offs, and calm service when the floor is packed.',
+    blurb: 'Packed floor · cut-offs · calm service.',
   },
   {
     id: 'wine-bar',
     title: 'Wine, spirits & bar basics',
     duration: '50 min',
     badge: 'Certificate',
-    blurb: 'Pour counts, pairings at a glance, and confident recommendations without the fluff.',
+    blurb: 'Pour counts, pairings, confident recs.',
   },
   {
     id: 'banquet',
     title: 'Banquet & plated service',
     duration: '40 min',
     badge: 'Micro-cert',
-    blurb: 'Tray carry, silver service cues, and timing with kitchen fire — weddings & corporates.',
+    blurb: 'Tray & silver cues · timing with kitchen.',
   },
   {
     id: 'coffee',
     title: 'Coffee & hot beverages',
     duration: '30 min',
     badge: 'Skills card',
-    blurb: 'Dial-in for hotels and cafés — grind, milk, and recovery when the rush hits.',
+    blurb: 'Café/hotel dial-in — grind, milk, rush recovery.',
   },
 ] as const;
 
@@ -3406,7 +3734,7 @@ function HospitalityTrainingTab({ persona, onSwitchTab }: { persona: StaffPerson
           Hospitality <span className="text-red-700">training</span>
         </h1>
         <p className="text-neutral-600 text-sm md:text-base leading-relaxed max-w-2xl">
-          Short courses and certs outlets actually scan for — bars, hotels, banquets, and floor teams. Complete modules to boost trust on your profile.
+          Short modules outlets notice — finish to boost profile trust.
         </p>
       </div>
 
@@ -3439,7 +3767,7 @@ function HospitalityTrainingTab({ persona, onSwitchTab }: { persona: StaffPerson
       <div className="rounded-2xl border border-emerald-200/80 bg-emerald-50/50 p-5">
         <p className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-900 mb-1">Need a custom cohort?</p>
         <p className="text-[13px] text-neutral-700 leading-snug">
-          Outlets can brief us for on-site orientation — same WhatsApp line as staffing.
+          On-site training briefs — same WhatsApp as staffing.
         </p>
         <a
           href={staffingWhatsAppUrl('Hi Convivia24 — training / certification question for our team.')}
@@ -3620,7 +3948,7 @@ function FaceVerificationModal({ user: _user, onVerified, onClose }: { user: any
           <div>
             <h2 className="font-display text-4xl italic text-neutral-900 mb-3">Get Verified</h2>
             <p className="text-neutral-500 text-base max-w-xs mx-auto">
-              We&apos;ll match a quick selfie to your profile photo. Center your face in the oval, similar angle and lighting as your profile picture.
+              Quick selfie vs profile photo — face centered, similar light.
             </p>
           </div>
           <motion.button whileTap={{ scale: 0.97 }} onClick={startCamera} className="w-full max-w-xs bg-red-700 text-white py-4 rounded-full font-black uppercase tracking-[0.2em] text-[11px] hover:bg-red-800 transition-colors shadow-[0_0_30px_rgba(201,168,76,0.25)]">
@@ -3770,7 +4098,7 @@ function ProfileTab({ persona, initialUser }: { persona: StaffPersona; initialUs
       })
       .catch(() => {
         setUser(null);
-        setProfileNotice('Sign in to load your profile, photo, and verification status.');
+        setProfileNotice('Sign in to load profile.');
       })
       .finally(() => setLoading(false));
   }, []);
@@ -3856,7 +4184,7 @@ function ProfileTab({ persona, initialUser }: { persona: StaffPersona; initialUs
           <UserIcon size={40} className="mx-auto text-red-700/80 mb-4" />
           <h2 className="font-display text-3xl italic text-neutral-900 mb-2">Sign in</h2>
           <p className="text-neutral-600 text-sm leading-relaxed mb-6">
-            Sign in to sync NIN verification, guarantor, payout wallet (OPay / PalmPay / Moniepoint), and your shift history across devices.
+            Sync profile, verification, wallet &amp; shift history.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
@@ -3983,11 +4311,11 @@ function ProfileTab({ persona, initialUser }: { persona: StaffPersona; initialUs
                         <Star size={11} className="text-red-700" fill="currentColor" /> Shift rating {String(user.rating)}
                       </span>
                     ) : (
-                      <span className="text-[11px] text-neutral-500">Shift rating appears after outlets confirm your jobs.</span>
+                      <span className="text-[11px] text-neutral-500">Rating after outlets confirm shifts.</span>
                     )}
                   </div>
                 ) : null}
-                <p className="text-neutral-600 text-base max-w-md mx-auto md:mx-0 leading-relaxed mb-2 mt-1">{user?.bio || 'No bio yet — what brings you to the table?'}</p>
+                <p className="text-neutral-600 text-base max-w-md mx-auto md:mx-0 leading-relaxed mb-2 mt-1">{user?.bio || 'No bio yet.'}</p>
                 {user?.location && <p className="text-neutral-400 text-sm mb-8 flex items-center gap-1 justify-center md:justify-start"><MapPin size={12} /> {user.location}</p>}
               </>
             )}
@@ -4006,15 +4334,15 @@ function ProfileTab({ persona, initialUser }: { persona: StaffPersona; initialUs
               <div className="grid sm:grid-cols-2 gap-3 text-[13px] text-neutral-700">
                 <div className="rounded-xl bg-white border border-neutral-200 p-3">
                   <p className="font-bold text-neutral-900 text-sm">NIN verification</p>
-                  <p className="text-[12px] text-neutral-500 mt-1">National ID match — standard for serious outlets. Complete in-app when we open the flow.</p>
+                  <p className="text-[12px] text-neutral-500 mt-1">National ID match — in-app when live.</p>
                 </div>
                 <div className="rounded-xl bg-white border border-neutral-200 p-3">
                   <p className="font-bold text-neutral-900 text-sm">Registered guarantor</p>
-                  <p className="text-[12px] text-neutral-500 mt-1">Someone who vouches for you — same as many hospitality hiring practices, digitised.</p>
+                  <p className="text-[12px] text-neutral-500 mt-1">Digital guarantor · common in hospitality hires.</p>
                 </div>
                 <div className="rounded-xl bg-white border border-neutral-200 p-3 sm:col-span-2">
                   <p className="font-bold text-neutral-900 text-sm">Payout wallet</p>
-                  <p className="text-[12px] text-neutral-500 mt-1 mb-2">Same-day settlement to OPay, PalmPay, or Moniepoint after the outlet confirms your shift.</p>
+                  <p className="text-[12px] text-neutral-500 mt-1 mb-2">Same-day to OPay / PalmPay / Moniepoint after sign-off.</p>
                   <div className="flex flex-wrap gap-2">
                     {['OPay', 'PalmPay', 'Moniepoint'].map((p) => (
                       <span key={p} className="text-[10px] font-black uppercase tracking-widest bg-red-50 text-red-800 border border-red-200 px-2 py-1 rounded-full">{p}</span>

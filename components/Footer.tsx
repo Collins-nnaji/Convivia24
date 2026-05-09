@@ -28,7 +28,7 @@ export default function Footer() {
             </div>
           </div>
           <p className="text-[10px] text-neutral-500 leading-relaxed pr-2">
-            Convivia24 — hospitality staffing in Nigeria (Lagos, Abuja, Port Harcourt). Verified workers, same-day mobile money. <span className="font-semibold text-neutral-600">18+ only.</span>
+            Hospitality staffing · Lagos, Abuja, PH · verified · same-day pay. <span className="font-semibold text-neutral-600">18+</span>
           </p>
           <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-neutral-100 text-[10px] text-neutral-500">
             <span>&copy; 2026 Convivia24</span>
@@ -46,7 +46,7 @@ export default function Footer() {
             </Link>
             <p className="text-[9px] font-black uppercase tracking-[0.28em] text-red-700/70 mb-1.5">Hospitality staffing · 18+</p>
             <p className="text-[11px] text-neutral-500 leading-relaxed">
-              Outlets post shifts in Lagos, Abuja, and Port Harcourt. Staff get verified shifts and same-day OPay / PalmPay / Moniepoint payouts.
+              Shift board + same-day mobile-money payouts (18+).
             </p>
           </div>
 

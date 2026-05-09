@@ -96,15 +96,15 @@ export default function InquirePage() {
             </motion.h1>
 
             <motion.p variants={fadeUp} className="text-cream/50 text-base leading-relaxed mb-12 max-w-md">
-              Squads, partnerships, corporate wellness, or just curiosity — every inquiry is read personally and responded to within 48 hours.
+              Partnerships, press, or general questions — we read everything; reply within 48h.
             </motion.p>
 
             {/* What happens next */}
             <motion.div variants={fadeUp} className="space-y-6 mb-12">
               {[
-                { num: '01', text: 'Your inquiry is read by a real person.' },
-                { num: '02', text: 'We respond within 48 hours.' },
-                { num: '03', text: 'We match you with the right experience.' },
+                { num: '01', text: 'Human review.' },
+                { num: '02', text: 'Reply within 48h.' },
+                { num: '03', text: 'Right contact loops in.' },
               ].map((step) => (
                 <div key={step.num} className="flex items-start gap-4">
                   <span className="text-[10px] font-black text-gold/50 mt-0.5 shrink-0">{step.num}</span>
@@ -135,7 +135,7 @@ export default function InquirePage() {
                 </div>
                 <h2 className="font-display text-3xl italic text-cream mb-3">We&apos;ll be in touch.</h2>
                 <p className="text-cream/50 text-sm mb-8">
-                  Your inquiry has been received. We respond to every message within 48 hours.
+                  Received — we&apos;ll reply within 48 hours.
                 </p>
                 <Link
                   href="/"
@@ -242,7 +242,7 @@ export default function InquirePage() {
                   </button>
 
                   <p className="text-center text-cream/20 text-[10px] uppercase tracking-[0.2em]">
-                    Response within 48 hours &middot; No commitment required
+                    48h response · no obligation
                   </p>
                 </form>
               </div>

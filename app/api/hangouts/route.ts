@@ -9,9 +9,11 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const city     = searchParams.get('city');
+    const area     = searchParams.get('area');
     const category = searchParams.get('category');
     const type     = searchParams.get('type');
     const freeOnly = searchParams.get('free') === '1';
+    const areaEmpty = !area || !area.trim();
 
     /** When set (e.g. 24), only return shifts with event_time within the next N hours (Today/home). */
     const nextHoursRaw = searchParams.get('next_hours');
@@ -51,6 +53,11 @@ export async function GET(req: NextRequest) {
         )
         AND (${category}::text IS NULL OR h.category = ${category})
         AND (${type}::text IS NULL OR h.type = ${type})
+        AND (
+          ${areaEmpty}::boolean
+          OR h.area ILIKE ${'%' + (area ?? '').trim() + '%'}
+          OR h.location ILIKE ${'%' + (area ?? '').trim() + '%'}
+        )
         AND (
           ${!freeOnly}::boolean
           OR h.ticket_price IS NULL

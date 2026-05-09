@@ -123,7 +123,7 @@ export function OutletOnboardingForm({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Submit failed');
-      setNotice('Submitted for review. We’ll verify CAC details and an admin will approve your outlet.');
+      setNotice('Submitted. Ops reviews CAC; you’ll hear when you can post.');
       onUpdated?.();
     } catch (e) {
       setNotice(e instanceof Error ? e.message : 'Could not submit.');
@@ -150,7 +150,7 @@ export function OutletOnboardingForm({
           <p className="text-[10px] font-black uppercase tracking-[0.25em] text-teal-900">Outlet onboarding</p>
           <h3 className="font-display text-xl italic text-neutral-900 mt-0.5">Register your venue</h3>
           <p className="text-[13px] text-neutral-600 mt-1 leading-snug">
-            City is used for filters; your street address stays on file for shifts. After you submit, ops checks CAC — then an admin approves you to publish shifts.
+            City filters the board; address on file for shifts. Submit → CAC check → admin approval to publish.
           </p>
         </div>
       </div>
