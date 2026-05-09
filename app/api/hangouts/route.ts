@@ -3,6 +3,7 @@ import sql from '@/lib/db';
 import { neonAuth } from '@/lib/auth/server';
 import { getOrCreateUser } from '@/lib/db/users';
 import { outletPostingBlocked } from '@/lib/outlet-application';
+import { ShiftPostSchema, zodFirstError } from '@/lib/schemas';
 
 // GET /api/hangouts — ?city=Lagos&next_hours=24 (optional window for “Today”) &category=&type=&free=1
 export async function GET(req: NextRequest) {
@@ -115,12 +116,13 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { title, vibe, category, type, event_time, location, city, area, max_guests,
-            cover_image, venue_id, ticket_url, ticket_price } = body;
-
-    if (!title?.trim() || !vibe?.trim() || !event_time || !location?.trim()) {
-      return NextResponse.json({ error: 'Title, vibe, time, and location are required.' }, { status: 400 });
+    const shiftParsed = ShiftPostSchema.safeParse(body);
+    if (!shiftParsed.success) {
+      return NextResponse.json({ error: zodFirstError(shiftParsed.error) }, { status: 400 });
     }
+
+    const { title, location, city, area, event_time, max_guests, ticket_price } = shiftParsed.data;
+    const { vibe, category, type, cover_image, venue_id, ticket_url } = body as Record<string, string | null | undefined>;
 
     const cityClean =
       typeof city === 'string' && city.trim()

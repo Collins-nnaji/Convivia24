@@ -35,8 +35,9 @@ export const ALL_STAFF_ROLES = STAFF_ROLE_GROUPS.flatMap((g) => [...g.roles]);
 
 export const PAYOUT_PROVIDERS = ['OPay', 'PalmPay', 'Moniepoint'] as const;
 
-/** Placeholder — replace with your ops WhatsApp business number (E.164, no + in path). */
-export const STAFFING_WHATSAPP_PATH = '2348000000000';
+export const STAFFING_WHATSAPP_PATH = '2348074090677';
+
+export const SUPPORT_EMAIL = 'support@convivia24.com';
 
 export function staffingWhatsAppUrl(message: string) {
   const enc = encodeURIComponent(message);

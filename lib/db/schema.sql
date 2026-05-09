@@ -156,6 +156,23 @@ CREATE TABLE IF NOT EXISTS attendees (
 );
 
 -- ─────────────────────────────────────
+-- SHIFT APPLICATIONS — worker applies to a shift
+-- ─────────────────────────────────────
+CREATE TABLE IF NOT EXISTS shift_applications (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  shift_id         UUID NOT NULL REFERENCES hangouts(id) ON DELETE CASCADE,
+  worker_id        UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  status           TEXT NOT NULL DEFAULT 'pending'
+                     CHECK (status IN ('pending', 'shortlisted', 'confirmed', 'rejected', 'no_show')),
+  payout_provider  TEXT CHECK (payout_provider IN ('OPay', 'PalmPay', 'Moniepoint')),
+  payout_phone     TEXT,
+  note             TEXT,
+  applied_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (shift_id, worker_id)
+);
+
+-- ─────────────────────────────────────
 -- DAILY CHECK-INS
 -- ─────────────────────────────────────
 CREATE TABLE IF NOT EXISTS checkins (

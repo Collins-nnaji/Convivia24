@@ -21,6 +21,28 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+.mobile-safe-screen {
+  min-height: 100dvh;
+  padding-top: max(1rem, env(safe-area-inset-top));
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+.mobile-scroll-screen {
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.native-shell body {
+  min-height: 100dvh;
+}
+
+.native-shell [data-app-shell] {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
 /* App shell (home): lock document scroll on phone + tablet; scroll happens inside main */
 @supports selector(:has(*)) {
   @media (max-width: 1023px) {

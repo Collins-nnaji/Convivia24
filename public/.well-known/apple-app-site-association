@@ -1,0 +1,24 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appIDs": ["TEAMID.com.convivia24.app"],
+        "components": [
+          {
+            "/": "/auth/callback*",
+            "comment": "Return Neon/Google auth callbacks to the native app."
+          },
+          {
+            "/": "/join/*",
+            "comment": "Open public invite links in the native app."
+          },
+          {
+            "/": "/*",
+            "comment": "Allow app.convivia24.com links to route inside the native shell."
+          }
+        ]
+      }
+    ]
+  }
+}

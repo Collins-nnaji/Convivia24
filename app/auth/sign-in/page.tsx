@@ -13,7 +13,7 @@ export default function SignInPage() {
   const router = useRouter();
 
   return (
-    <main className="min-h-[100dvh] bg-[#f8f6f2] text-neutral-900 flex items-center justify-center relative overflow-x-hidden max-w-[100vw]">
+    <main className="mobile-scroll-screen mobile-safe-screen bg-[#f8f6f2] text-neutral-900 flex items-center justify-center relative max-w-[100vw]">
       <div className="fixed inset-0 z-0 select-none pointer-events-none">
         <img
           src="/Homepage.png"
@@ -23,8 +23,8 @@ export default function SignInPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-[#f8f6f2] via-[#f8f6f2]/95 to-white/88" />
       </div>
 
-      <div className="relative z-10 w-full max-w-md mx-auto px-4 sm:px-6 py-8">
-        <div className="text-center mb-6 pt-[env(safe-area-inset-top)]">
+      <div className="relative z-10 w-full max-w-md mx-auto px-4 sm:px-6 py-6">
+        <div className="text-center mb-6">
           <Link
             href="/"
             className="inline-flex min-h-11 items-center justify-center rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 px-2"

@@ -338,7 +338,7 @@ export function AppConceptBoard({
   }, [initialUser]);
 
   const [activeTab, setActiveTab] = useState<AppTab>('home');
-  const [outletDemandSub, setOutletDemandSub] = useState<'board' | 'post'>('board');
+  const [outletDemandSub, setOutletDemandSub] = useState<'board' | 'post' | 'applicants'>('board');
   const mainScrollRef = useRef<HTMLDivElement>(null);
   const [pendingInviteHangoutId, setPendingInviteHangoutId] = useState<string | null>(null);
   const wl = Array.isArray(liveUser?.watchlist_cities) ? (liveUser.watchlist_cities as string[]) : null;
@@ -348,7 +348,6 @@ export function AppConceptBoard({
   });
 
   const [staffBoardCity, setStaffBoardCity] = useState<string>(DEFAULT_CITIES[0]);
-  const [staffBoardZone, setStaffBoardZone] = useState('');
 
   useEffect(() => {
     if (!cities.length) return;
@@ -457,8 +456,6 @@ export function AppConceptBoard({
             addCity={addCity}
             boardCity={staffBoardCity}
             onBoardCityChange={setStaffBoardCity}
-            boardZone={staffBoardZone}
-            onBoardZoneChange={setStaffBoardZone}
           />
         );
       case 'discover':
@@ -471,8 +468,6 @@ export function AppConceptBoard({
             cities={cities}
             boardCity={staffBoardCity}
             onBoardCityChange={setStaffBoardCity}
-            boardZone={staffBoardZone}
-            onBoardZoneChange={setStaffBoardZone}
             addCity={addCity}
           />
         );
@@ -490,8 +485,6 @@ export function AppConceptBoard({
             addCity={addCity}
             boardCity={staffBoardCity}
             onBoardCityChange={setStaffBoardCity}
-            boardZone={staffBoardZone}
-            onBoardZoneChange={setStaffBoardZone}
           />
         );
     }
@@ -513,7 +506,7 @@ export function AppConceptBoard({
               className="h-9 lg:h-10 w-auto max-w-[200px] object-contain object-left"
             />
             <span className="hidden sm:block text-[9px] font-bold uppercase tracking-[0.2em] text-neutral-400">
-              {appMode === 'outlet' ? 'Outlet console · demand & pay' : 'Staff app · shifts & pay'}
+              {appMode === 'outlet' ? 'Vendor console · shifts & pay' : 'Staff app · shifts & pay'}
             </span>
           </button>
         </div>
@@ -582,7 +575,7 @@ export function AppConceptBoard({
           {appMode === 'staff' ? (
             <>
               <Link href="/outlet" className="text-[10px] font-black uppercase tracking-[0.18em] text-neutral-600 hover:text-red-700 py-1 min-w-0">
-                Outlet console →
+                Vendor console →
               </Link>
               <span
                 className="shrink-0 rounded-full border border-neutral-200 bg-white/90 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest text-neutral-500"
@@ -874,8 +867,6 @@ function DiscoverTab({
   cities,
   boardCity,
   onBoardCityChange,
-  boardZone,
-  onBoardZoneChange,
   addCity,
 }: {
   persona: StaffPersona;
@@ -885,21 +876,16 @@ function DiscoverTab({
   cities: string[];
   boardCity?: string;
   onBoardCityChange?: (c: string) => void;
-  boardZone?: string;
-  onBoardZoneChange?: (z: string) => void;
   addCity?: (name: string) => void;
 }) {
   const [filter, setFilter] = useState<'all' | 'open' | 'curated'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [freeOnly, setFreeOnly] = useState(false);
   const [fallbackCity, setFallbackCity] = useState(() => cities[0] ?? DEFAULT_CITIES[0]);
-  const [fallbackZone, setFallbackZone] = useState('');
   const discoverCity = onBoardCityChange
     ? (boardCity ?? cities[0] ?? DEFAULT_CITIES[0])
     : fallbackCity;
   const setDiscoverCity = onBoardCityChange ?? ((c: string) => setFallbackCity(c));
-  const discoverZone = onBoardZoneChange ? (boardZone ?? '') : fallbackZone;
-  const setDiscoverZone = onBoardZoneChange ?? setFallbackZone;
   const persistExtraCity = addCity ?? (() => {});
 
   useEffect(() => {
@@ -916,6 +902,14 @@ function DiscoverTab({
   const [joinNote, setJoinNote] = useState<string | null>(null);
   const [inviteCopiedId, setInviteCopiedId] = useState<string | null>(null);
 
+  // Apply flow
+  const [applyOpenId, setApplyOpenId] = useState<string | null>(null);
+  const [applyProvider, setApplyProvider] = useState<string>('OPay');
+  const [applyPhone, setApplyPhone] = useState('');
+  const [applyNote, setApplyNote] = useState('');
+  const [applyingId, setApplyingId] = useState<string | null>(null);
+  const [appliedIds, setAppliedIds] = useState<Record<string, string>>({}); // shiftId → status
+
   const loadHangouts = useCallback(() => {
     setLoading(true);
     const params = new URLSearchParams();
@@ -924,8 +918,6 @@ function DiscoverTab({
     if (filter !== 'all') params.set('type', filter);
     if (categoryFilter !== 'all') params.set('category', categoryFilter);
     if (freeOnly) params.set('free', '1');
-    const zoneTrim = discoverZone.trim();
-    if (zoneTrim) params.set('area', zoneTrim);
     fetch(`/api/hangouts?${params.toString()}`)
       .then((r) => r.json())
       .then((data) => {
@@ -936,28 +928,38 @@ function DiscoverTab({
         setHangouts([]);
         setLoading(false);
       });
-  }, [discoverCity, discoverZone, filter, categoryFilter, freeOnly]);
+  }, [discoverCity, filter, categoryFilter, freeOnly]);
 
   useEffect(() => {
     loadHangouts();
   }, [loadHangouts]);
 
-  const handleJoin = async (hangoutId: string) => {
-    setJoiningId(hangoutId);
+  const handleApplySubmit = async (shiftId: string) => {
+    if (!applyPhone.trim()) { setJoinNote('Enter your payout phone number.'); return; }
+    setApplyingId(shiftId);
     setJoinNote(null);
     try {
-      const res = await fetch(`/api/hangouts/${hangoutId}/join`, { method: 'POST' });
+      const res = await fetch(`/api/shifts/${shiftId}/apply`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ payout_provider: applyProvider, payout_phone: applyPhone.trim(), note: applyNote.trim() || undefined }),
+      });
       const data = await res.json();
       if (res.ok) {
-        setJoinNote("Roster confirmed — check WhatsApp for outlet. Selfie check-in at shift start.");
+        setAppliedIds((prev) => ({ ...prev, [shiftId]: data.application?.status || 'pending' }));
+        setApplyOpenId(null);
+        setApplyPhone('');
+        setApplyNote('');
+        setJoinNote('Application sent — outlet will confirm via WhatsApp.');
         loadHangouts();
       } else {
-        setJoinNote(data.error || 'Could not join.');
+        setJoinNote(data.error || 'Could not apply. Try again.');
       }
     } catch {
       setJoinNote('Network error. Try again.');
     } finally {
-      setJoiningId(null);
+      setApplyingId(null);
     }
   };
 
@@ -980,9 +982,6 @@ function DiscoverTab({
           cities={cities}
           selectedCity={discoverCity}
           onSelectCity={setDiscoverCity}
-          selectedZone={discoverZone}
-          onSelectZone={setDiscoverZone}
-          addCity={persistExtraCity}
         />
       </motion.section>
 
@@ -1145,38 +1144,112 @@ function DiscoverTab({
                   </div>
 
                     <div className="border-t border-neutral-100 pt-4 md:pt-5 mt-auto space-y-3">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 min-w-0">
-                      <div className="flex items-center gap-3 min-w-0 flex-wrap">
-                        <div className="flex -space-x-2 shrink-0">
-                          {(h.attendees || []).slice(0, 4).map((a: any) => (
-                            <div
-                              key={a.user_id}
-                              className="w-8 h-8 rounded-full border-2 border-white bg-neutral-200 flex items-center justify-center text-[10px] font-bold text-neutral-700"
-                              title={a.name || 'Staff'}
-                            >
-                              {(a.name || '?')[0]?.toUpperCase()}
-                            </div>
-                          ))}
-                        </div>
-                        <span className="text-xs text-neutral-500 font-bold tabular-nums">{h.current_guests || 0} / {h.max_guests || 0} filled</span>
+                    {/* Filled count row */}
+                    <div className="flex items-center gap-3 min-w-0 flex-wrap">
+                      <div className="flex -space-x-2 shrink-0">
+                        {(h.attendees || []).slice(0, 4).map((a: any) => (
+                          <div
+                            key={a.user_id}
+                            className="w-8 h-8 rounded-full border-2 border-white bg-neutral-200 flex items-center justify-center text-[10px] font-bold text-neutral-700"
+                            title={a.name || 'Staff'}
+                          >
+                            {(a.name || '?')[0]?.toUpperCase()}
+                          </div>
+                        ))}
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => handleJoin(h.id)}
-                        disabled={joiningId === h.id || isFull}
-                        className="min-h-10 shrink-0 text-[10px] uppercase font-black tracking-widest text-white bg-neutral-900 hover:bg-red-700 px-4 md:px-5 py-2.5 rounded-full transition-colors flex items-center gap-1.5 shadow-md disabled:opacity-50"
-                      >
-                        {joiningId === h.id ? (
-                          <Loader2 size={12} className="animate-spin" />
-                        ) : isFull ? (
-                          'Full'
-                        ) : (
-                          <>
-                            Confirm <ArrowRight size={12} className="mb-0.5" />
-                          </>
-                        )}
-                      </button>
+                      <span className="text-xs text-neutral-500 font-bold tabular-nums">{h.current_guests || 0} / {h.max_guests || 0} filled</span>
                     </div>
+
+                    {/* Apply button or status */}
+                    {(() => {
+                      const appliedStatus = appliedIds[h.id];
+                      if (appliedStatus === 'confirmed') {
+                        return (
+                          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 font-semibold flex items-center gap-2">
+                            <Check size={14} className="shrink-0" /> Confirmed — check WhatsApp for details.
+                          </div>
+                        );
+                      }
+                      if (appliedStatus) {
+                        return (
+                          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 font-semibold flex items-center gap-2">
+                            <Hourglass size={14} className="shrink-0" /> Applied · {appliedStatus} — outlet will confirm.
+                          </div>
+                        );
+                      }
+                      if (isFull) {
+                        return (
+                          <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-500 font-semibold">
+                            Fully staffed
+                          </div>
+                        );
+                      }
+                      if (applyOpenId === h.id) {
+                        return (
+                          <div className="rounded-2xl border border-red-200 bg-red-50/60 p-4 space-y-3">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-red-700">Payout details — required to apply</p>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="flex flex-col gap-1">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Provider</label>
+                                <select
+                                  value={applyProvider}
+                                  onChange={(e) => setApplyProvider(e.target.value)}
+                                  className="rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-900 focus:outline-none focus:ring-2 focus:ring-red-600/25"
+                                >
+                                  {(['OPay', 'PalmPay', 'Moniepoint'] as const).map((p) => (
+                                    <option key={p} value={p}>{p}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Phone</label>
+                                <input
+                                  type="tel"
+                                  value={applyPhone}
+                                  onChange={(e) => setApplyPhone(e.target.value)}
+                                  placeholder="080xxxxxxxx"
+                                  className="rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-red-600/25 placeholder:text-neutral-400"
+                                />
+                              </div>
+                            </div>
+                            <input
+                              type="text"
+                              value={applyNote}
+                              onChange={(e) => setApplyNote(e.target.value)}
+                              placeholder="Note to outlet (optional)"
+                              className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-red-600/25 placeholder:text-neutral-400"
+                            />
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleApplySubmit(h.id)}
+                                disabled={applyingId === h.id}
+                                className="flex-1 bg-red-700 text-white text-[10px] font-black uppercase tracking-widest py-2.5 rounded-full hover:bg-red-800 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+                              >
+                                {applyingId === h.id ? <Loader2 size={12} className="animate-spin" /> : <><Send size={12} /> Send application</>}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => { setApplyOpenId(null); setApplyPhone(''); setApplyNote(''); }}
+                                className="px-4 rounded-full border border-neutral-200 text-[10px] font-black uppercase tracking-widest text-neutral-500 hover:border-red-300"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return (
+                        <button
+                          type="button"
+                          onClick={() => { setApplyOpenId(h.id); setApplyPhone(''); setApplyNote(''); setJoinNote(null); }}
+                          disabled={joiningId === h.id}
+                          className="w-full min-h-10 text-[10px] uppercase font-black tracking-widest text-white bg-neutral-900 hover:bg-red-700 px-4 py-2.5 rounded-full transition-colors flex items-center justify-center gap-1.5 shadow-md disabled:opacity-50"
+                        >
+                          Apply for shift <ArrowRight size={12} className="mb-0.5" />
+                        </button>
+                      );
+                    })()}
                     <div className="flex flex-wrap items-center justify-end gap-2">
                       <button
                         type="button"
@@ -1512,6 +1585,7 @@ function HostTab({
   const [city, setCity] = useState<string>(DEFAULT_CITIES[0]);
   const [eventDate, setEventDate] = useState('');
   const [eventTime, setEventTime] = useState('');
+  const [payNgn, setPayNgn] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [createdHangoutId, setCreatedHangoutId] = useState<string | null>(null);
@@ -1557,6 +1631,7 @@ function HostTab({
           city: city.trim(),
           area: zone.trim() || null,
           max_guests: size,
+          ticket_price: payNgn.trim() ? Number(payNgn) : null,
           cover_image: null,
         }),
       });
@@ -1640,7 +1715,7 @@ function HostTab({
         ) : null}
         <div className="flex justify-center gap-3 flex-wrap">
           <button onClick={onPosted} className="bg-red-700 text-white px-6 py-3 rounded-full font-black uppercase tracking-widest text-[11px] hover:bg-red-800 transition-colors">View on board</button>
-          <button onClick={() => { setSuccess(false); setCreatedHangoutId(null); setTitle(''); setVibe(''); setDressCode(''); setShiftRole(ALL_STAFF_ROLES[0] || 'Waiter'); setZone(LAGOS_ZONES[0]); setLocation(''); setCity(DEFAULT_CITIES[0]); setEventDate(''); setEventTime(''); }}
+          <button onClick={() => { setSuccess(false); setCreatedHangoutId(null); setTitle(''); setVibe(''); setDressCode(''); setPayNgn(''); setShiftRole(ALL_STAFF_ROLES[0] || 'Waiter'); setZone(LAGOS_ZONES[0]); setLocation(''); setCity(DEFAULT_CITIES[0]); setEventDate(''); setEventTime(''); }}
             className="text-red-700 text-[10px] uppercase tracking-widest font-black hover:text-red-800 transition-colors">Host another →</button>
         </div>
       </div>
@@ -1651,7 +1726,7 @@ function HostTab({
     <div className="space-y-5 md:space-y-6 max-w-3xl mx-auto h-full flex flex-col">
       <div className="mb-5 md:mb-12 text-left md:text-center">
         <p className="text-[10px] font-black uppercase tracking-[0.28em] text-red-600 mb-2 flex items-center gap-2 md:justify-center">
-          <PlusSquare size={12} className="shrink-0" aria-hidden /> Outlet · post shift
+          <PlusSquare size={12} className="shrink-0" aria-hidden /> Vendor · post shift
         </p>
         <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl italic mb-2">Post <span className="text-red-700">cover.</span></h1>
         <p className="text-neutral-500 text-base md:text-lg mb-4 max-w-xl md:mx-auto">
@@ -1744,6 +1819,18 @@ function HostTab({
                 className="w-full bg-transparent border-b border-neutral-200 pb-3 text-[15px] md:text-base text-neutral-800 focus:outline-none focus:border-red-700 placeholder:text-neutral-400 transition-colors font-sans" />
             </Field>
           </div>
+
+          <Field label="Pay per shift (₦)" hint="Workers see this on the board">
+            <input
+              type="number"
+              min={0}
+              step={500}
+              value={payNgn}
+              onChange={(e) => setPayNgn(e.target.value)}
+              placeholder="e.g. 15000"
+              className="w-full bg-transparent border-b border-neutral-200 pb-3 text-[15px] md:text-base text-neutral-800 focus:outline-none focus:border-red-700 placeholder:text-neutral-400 transition-colors font-sans"
+            />
+          </Field>
 
           <Field label="Dress code" hint="(required for disputes)">
             <input type="text" value={dressCode} onChange={(e) => setDressCode(e.target.value)} placeholder="e.g. all black, closed shoes, hotel standards"
@@ -1904,133 +1991,37 @@ function StaffMetroFilters({
   cities,
   selectedCity,
   onSelectCity,
-  selectedZone,
-  onSelectZone,
-  addCity,
 }: {
   cities: string[];
   selectedCity: string;
   onSelectCity: (c: string) => void;
-  selectedZone: string;
-  onSelectZone: (z: string) => void;
-  addCity: (name: string) => void;
 }) {
-  const [addDraft, setAddDraft] = useState('');
   const chipPad =
-    'min-h-9 px-3 py-1.5 text-[10px] uppercase tracking-widest font-black rounded-full transition-all max-[380px]:text-[9px]';
-
-  const submitAdd = () => {
-    const t = addDraft.trim();
-    if (!t) return;
-    addCity(t);
-    onSelectCity(t);
-    onSelectZone('');
-    setAddDraft('');
-  };
+    'min-h-9 px-4 py-1.5 text-[10px] uppercase tracking-widest font-black rounded-full transition-all max-[380px]:text-[9px]';
 
   return (
-    <div className="flex w-full min-w-0 flex-col gap-4">
-      <div className="w-full min-w-0">
-        <span className="text-[9px] font-black uppercase tracking-widest text-neutral-500 shrink-0 block mb-2">
-          City
-        </span>
-        <div className="w-full min-w-0 rounded-2xl border border-neutral-200 bg-neutral-100/90 p-2">
-          <div className="flex w-full min-w-0 flex-wrap gap-2">
-            {cities.map((c) => (
-              <button
-                type="button"
-                key={c}
-                onClick={() => {
-                  onSelectCity(c);
-                  if (c !== 'Lagos') onSelectZone('');
-                }}
-                className={`${chipPad} ${
-                  selectedCity === c
-                    ? 'bg-red-700 text-white shadow-[0_0_12px_rgba(185,28,28,0.2)]'
-                    : 'text-neutral-600 hover:text-neutral-900 active:bg-neutral-200/60'
-                }`}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="w-full min-w-0">
-        <span className="text-[9px] font-black uppercase tracking-widest text-neutral-500 shrink-0 block mb-2">
-          Zone / area
-        </span>
-        {selectedCity === 'Lagos' ? (
-          <div className="flex w-full min-w-0 flex-wrap gap-2 rounded-2xl border border-neutral-200 bg-white p-2 shadow-sm">
+    <div className="w-full min-w-0">
+      <span className="text-[9px] font-black uppercase tracking-widest text-neutral-500 block mb-2">
+        City
+      </span>
+      <div className="w-full min-w-0 rounded-2xl border border-neutral-200 bg-neutral-100/90 p-2">
+        <div className="flex w-full min-w-0 flex-wrap gap-2">
+          {cities.map((c) => (
             <button
               type="button"
-              onClick={() => onSelectZone('')}
-              className={`${chipPad} border border-transparent ${
-                !selectedZone
-                  ? 'bg-neutral-900 text-white'
-                  : 'bg-neutral-50 text-neutral-600 border-neutral-200 hover:border-neutral-300'
+              key={c}
+              onClick={() => onSelectCity(c)}
+              className={`${chipPad} ${
+                selectedCity === c
+                  ? 'bg-red-700 text-white shadow-[0_0_12px_rgba(185,28,28,0.2)]'
+                  : 'text-neutral-600 hover:text-neutral-900 active:bg-neutral-200/60'
               }`}
             >
-              All areas
+              {c}
             </button>
-            {LAGOS_ZONES.map((z) => (
-              <button
-                type="button"
-                key={z}
-                onClick={() => onSelectZone(z)}
-                className={`${chipPad} border border-transparent ${
-                  selectedZone === z
-                    ? 'bg-red-700 text-white'
-                    : 'bg-neutral-50 text-neutral-600 border-neutral-200 hover:border-neutral-300'
-                }`}
-              >
-                {z}
-              </button>
-            ))}
-          </div>
-        ) : (
-          <input
-            type="text"
-            value={selectedZone}
-            onChange={(e) => onSelectZone(e.target.value)}
-            placeholder="Optional — filter by district or neighbourhood"
-            className="w-full rounded-2xl border border-neutral-200 bg-white px-3.5 py-2.5 text-[13px] shadow-sm focus:outline-none focus:ring-2 focus:ring-red-600/25 focus:border-red-400 placeholder:text-neutral-400"
-            aria-label="Zone or area filter"
-          />
-        )}
-      </div>
-
-      <details className="group rounded-xl border border-neutral-200/80 bg-white/60 px-3 py-2 text-[11px] text-neutral-600">
-        <summary className="cursor-pointer list-none font-black uppercase tracking-widest text-[9px] text-neutral-500 flex items-center gap-2 [&::-webkit-details-marker]:hidden">
-          <ChevronRight size={14} className="shrink-0 transition-transform group-open:rotate-90" aria-hidden />
-          Add another metro
-        </summary>
-        <div className="mt-2 flex min-w-0 items-stretch gap-2 pt-1">
-          <input
-            type="text"
-            value={addDraft}
-            onChange={(e) => setAddDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                submitAdd();
-              }
-            }}
-            placeholder="City name"
-            className="min-w-0 flex-1 rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2 text-[13px] focus:outline-none focus:border-red-400"
-            aria-label="Add a city"
-          />
-          <button
-            type="button"
-            onClick={submitAdd}
-            disabled={!addDraft.trim()}
-            className="shrink-0 rounded-xl bg-red-700 text-white px-4 py-2 text-[10px] font-black uppercase tracking-widest disabled:opacity-40"
-          >
-            Add
-          </button>
+          ))}
         </div>
-      </details>
+      </div>
     </div>
   );
 }
@@ -2042,16 +2033,12 @@ function HomeTab({
   addCity,
   boardCity,
   onBoardCityChange,
-  boardZone,
-  onBoardZoneChange,
 }: {
   onSwitchTab: (t: AppTab) => void;
   cities: string[];
   addCity: (name: string) => void;
   boardCity: string;
   onBoardCityChange: (c: string) => void;
-  boardZone: string;
-  onBoardZoneChange: (z: string) => void;
 }) {
   const freeMode = everythingFree();
   const [hangouts, setHangouts] = useState<any[]>([]);
@@ -2071,16 +2058,7 @@ function HomeTab({
   const [matchAnonymous, setMatchAnonymous] = useState(false);
   const effectivePremium = freeMode || premium;
 
-  const visiblePulseCards = useMemo(() => {
-    const z = boardZone.trim().toLowerCase();
-    if (!z) return pulseCards;
-    return pulseCards.filter(
-      (p) =>
-        p.area.toLowerCase().includes(z) ||
-        p.city.toLowerCase().includes(z) ||
-        p.vibe.toLowerCase().includes(z),
-    );
-  }, [pulseCards, boardZone]);
+  const visiblePulseCards = pulseCards;
 
   const loadCityData = useCallback(async (city: string) => {
     try {
@@ -2294,12 +2272,6 @@ function HomeTab({
       (v.includes('founder') || v.includes('whisky') ? list.find((p) => p.vibe.toLowerCase().includes('whisky') || p.vibe.toLowerCase().includes('lounge')) : null) ||
       (v.includes('dance') || v.includes('music') ? list.find((p) => p.vibe.toLowerCase().includes('music')) : null) ||
       null;
-    if (!found && boardZone.trim()) {
-      const z = boardZone.trim().toLowerCase();
-      found = list.find(
-        (p) => p.area.toLowerCase().includes(z) || p.city.toLowerCase().includes(z),
-      );
-    }
     if (!found) found = list[0];
     startMatch(found);
   };
@@ -2316,9 +2288,6 @@ function HomeTab({
           cities={cities}
           selectedCity={boardCity}
           onSelectCity={onBoardCityChange}
-          selectedZone={boardZone}
-          onSelectZone={onBoardZoneChange}
-          addCity={addCity}
         />
       </motion.section>
 
@@ -2345,9 +2314,6 @@ function HomeTab({
                   <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.85)] animate-pulse shrink-0" />
                   <Zap size={11} className="text-amber-600 shrink-0" aria-hidden />
                   Zone · {boardCity.toUpperCase()}
-                  {boardZone ? (
-                    <span className="text-neutral-600 font-bold normal-case tracking-normal"> · {boardZone}</span>
-                  ) : null}
                 </span>
                 <span className="text-neutral-500 font-bold normal-case tracking-normal">·</span>
                 <span className="tabular-nums text-neutral-600">
@@ -2399,14 +2365,7 @@ function HomeTab({
                 )}
               </div>
               <p className="text-[12px] text-neutral-600 leading-snug mb-2">
-                Suggests a crew line-up for <strong className="text-neutral-800">{boardCity}</strong>
-                {boardZone ? (
-                  <>
-                    {' '}
-                    · <strong className="text-neutral-800">{boardZone}</strong>
-                  </>
-                ) : null}
-                .
+                Suggests a crew line-up for <strong className="text-neutral-800">{boardCity}</strong>.
               </p>
               <button
                 type="button"
@@ -2539,20 +2498,7 @@ function HomeTab({
           <div className="text-center py-10 text-neutral-400 border border-dashed border-neutral-200 rounded-3xl">
             <Compass size={36} className="mx-auto mb-3 opacity-50"/>
             <p className="font-display text-xl italic">Quiet in {boardCity}.</p>
-            <p className="text-sm mt-1">Try another zone or open Shifts.</p>
-          </div>
-        ) : visiblePulseCards.length === 0 ? (
-          <div className="text-center py-10 text-neutral-500 border border-dashed border-neutral-200 rounded-3xl px-4">
-            <Compass size={36} className="mx-auto mb-3 opacity-40 text-neutral-400"/>
-            <p className="font-display text-xl italic text-neutral-800">No pulse for this zone.</p>
-            <p className="text-sm mt-1">Clear zone or open Shifts.</p>
-            <button
-              type="button"
-              onClick={() => onBoardZoneChange('')}
-              className="mt-4 text-[10px] font-black uppercase tracking-widest text-red-700 underline underline-offset-4"
-            >
-              Show all areas
-            </button>
+            <p className="text-sm mt-1">Try another city or open Shifts.</p>
           </div>
         ) : (
           <div className="relative max-md:rounded-[28px] max-md:border max-md:border-neutral-200/90 max-md:bg-gradient-to-b max-md:from-neutral-50/90 max-md:to-neutral-100/50 max-md:p-3 sm:max-md:p-4">
@@ -2716,6 +2662,19 @@ function OutletAccountSection({ initialUser }: { initialUser?: any }) {
   const [profileNotice, setProfileNotice] = useState('');
   const [verifyOpen, setVerifyOpen] = useState(false);
 
+  // Vendor profile state
+  const [vendor, setVendor] = useState<any>(null);
+  const [vendorEditing, setVendorEditing] = useState(false);
+  const [vendorSaving, setVendorSaving] = useState(false);
+  const [editDescription, setEditDescription] = useState('');
+  const [editFullAddress, setEditFullAddress] = useState('');
+  const [editInstagram, setEditInstagram] = useState('');
+  const [vendorMedia, setVendorMedia] = useState<any[]>([]);
+  const [uploadingMedia, setUploadingMedia] = useState(false);
+  const [mediaCaption, setMediaCaption] = useState('');
+  const [vendorNotice, setVendorNotice] = useState('');
+  const [linkCopied, setLinkCopied] = useState(false);
+
   useEffect(() => {
     setUser(initialUser || null);
     if (initialUser) {
@@ -2741,6 +2700,19 @@ function OutletAccountSection({ initialUser }: { initialUser?: any }) {
           setEditBio(data.user.bio || '');
           setEditLocation(data.user.location || '');
           setProfileNotice('');
+          // Load vendor profile
+          fetch('/api/vendor/profile', { credentials: 'include' })
+            .then((r) => r.json())
+            .then((vd) => {
+              if (vd.vendor) {
+                setVendor(vd.vendor);
+                setVendorMedia(Array.isArray(vd.vendor.media) ? vd.vendor.media : []);
+                setEditDescription(vd.vendor.description || '');
+                setEditFullAddress(vd.vendor.full_address || '');
+                setEditInstagram(vd.vendor.instagram_handle || '');
+              }
+            })
+            .catch(() => {});
         }
       })
       .catch(() => {
@@ -2749,6 +2721,70 @@ function OutletAccountSection({ initialUser }: { initialUser?: any }) {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  const handleVendorSave = async () => {
+    setVendorSaving(true);
+    setVendorNotice('');
+    try {
+      const res = await fetch('/api/vendor/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ description: editDescription, full_address: editFullAddress, instagram_handle: editInstagram }),
+      });
+      const data = await res.json();
+      if (res.ok) { setVendor((v: any) => ({ ...v, ...data.vendor })); setVendorEditing(false); setVendorNotice(''); }
+      else setVendorNotice(data.error || 'Could not save.');
+    } catch { setVendorNotice('Could not save — try again.'); }
+    setVendorSaving(false);
+  };
+
+  const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingMedia(true);
+    setVendorNotice('');
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData, credentials: 'include' });
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok) { setVendorNotice(uploadData.error || 'Upload failed.'); setUploadingMedia(false); return; }
+      const isVideo = file.type.startsWith('video/');
+      const addRes = await fetch('/api/vendor/media', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ url: uploadData.url, media_type: isVideo ? 'video' : 'photo', caption: mediaCaption || null }),
+      });
+      const addData = await addRes.json();
+      if (addRes.ok) { setVendorMedia((prev) => [...prev, addData.media]); setMediaCaption(''); }
+      else setVendorNotice(addData.error || 'Could not save media.');
+    } catch { setVendorNotice('Network error.'); }
+    setUploadingMedia(false);
+  };
+
+  const handleDeleteMedia = async (id: string) => {
+    await fetch('/api/vendor/media', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ id }),
+    });
+    setVendorMedia((prev) => prev.filter((m) => m.id !== id));
+  };
+
+  const vendorShareUrl = vendor?.slug
+    ? `${typeof window !== 'undefined' ? window.location.origin : 'https://app.convivia24.com'}/v/${vendor.slug}`
+    : null;
+
+  const copyVendorLink = () => {
+    if (!vendorShareUrl) return;
+    navigator.clipboard.writeText(vendorShareUrl).then(() => {
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    });
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -2847,10 +2883,10 @@ function OutletAccountSection({ initialUser }: { initialUser?: any }) {
             <Building2 size={32} className="text-red-700/70" aria-hidden />
           </div>
           <div className="flex-1 text-center sm:text-left min-w-0 space-y-2">
-            <p className="text-[10px] font-black uppercase tracking-[0.28em] text-red-600">Venue account</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.28em] text-red-600">Vendor account</p>
             <h2 className="font-display text-xl sm:text-2xl italic text-neutral-900">Sign in</h2>
             <p className="text-[12px] text-neutral-600 leading-snug max-w-md mx-auto sm:mx-0">
-              One Neon login — staff app &amp; outlet console.
+              One Neon login — staff app &amp; vendor console.
             </p>
             {profileNotice ? <p className="text-[12px] text-neutral-500">{profileNotice}</p> : null}
             <div className="flex flex-wrap gap-2 justify-center sm:justify-start pt-1">
@@ -2889,7 +2925,7 @@ function OutletAccountSection({ initialUser }: { initialUser?: any }) {
     <section id="outlet-account" className="scroll-mt-28 rounded-2xl border border-neutral-200 bg-white shadow-[0_8px_28px_rgba(0,0,0,0.05)] overflow-hidden">
       <div className="border-b border-neutral-100 bg-gradient-to-r from-red-50/80 via-white to-white px-4 py-2.5 sm:px-6 sm:py-3">
         <p className="text-[10px] font-black uppercase tracking-[0.28em] text-red-700 flex items-center gap-2">
-          <Building2 size={14} className="shrink-0" aria-hidden /> Venue account
+          <Building2 size={14} className="shrink-0" aria-hidden /> Vendor account
         </p>
       </div>
 
@@ -2915,7 +2951,7 @@ function OutletAccountSection({ initialUser }: { initialUser?: any }) {
                     <Camera size={28} className="text-red-600" aria-hidden />
                   </div>
                 )}
-                <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+                <input type="file" accept="image/*" capture="environment" onChange={handleAvatarUpload} className="hidden" />
                 {uploadingAvatar ? (
                   <div className="absolute inset-0 bg-black/45 rounded-2xl flex items-center justify-center z-20">
                     <Loader2 size={28} className="text-white animate-spin" />
@@ -3062,6 +3098,123 @@ function OutletAccountSection({ initialUser }: { initialUser?: any }) {
               </div>
             </div>
 
+            {/* ── Vendor public profile ── */}
+            <div className="rounded-xl border border-neutral-200 bg-white p-4 space-y-4">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-600">Vendor public page</p>
+                  <p className="text-[12px] text-neutral-500 mt-0.5">Photos, videos, address — your shareable marketing page.</p>
+                </div>
+                {vendorShareUrl ? (
+                  <button
+                    type="button"
+                    onClick={copyVendorLink}
+                    className="shrink-0 flex items-center gap-1.5 rounded-full border border-neutral-200 bg-neutral-50 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-neutral-700 hover:border-red-300"
+                  >
+                    {linkCopied ? <Check size={12} className="text-emerald-700" /> : <Share2 size={12} />}
+                    {linkCopied ? 'Copied' : 'Share link'}
+                  </button>
+                ) : null}
+              </div>
+
+              {vendorShareUrl ? (
+                <a href={vendorShareUrl} target="_blank" rel="noopener noreferrer"
+                  className="block text-[11px] text-red-700 font-semibold truncate hover:underline">
+                  {vendorShareUrl}
+                </a>
+              ) : (
+                <p className="text-[11px] text-neutral-400 italic">Submit &amp; get approved to unlock your public page link.</p>
+              )}
+
+              {vendorEditing ? (
+                <div className="space-y-3 rounded-xl bg-neutral-50 border border-neutral-200 p-3">
+                  <textarea
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                    rows={3}
+                    placeholder="Describe your venue — atmosphere, cuisine, events…"
+                    className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600/30 resize-none"
+                  />
+                  <input
+                    value={editFullAddress}
+                    onChange={(e) => setEditFullAddress(e.target.value)}
+                    placeholder="Full address (e.g. 12 Kofo Abayomi St, VI, Lagos)"
+                    className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600/30"
+                  />
+                  <input
+                    value={editInstagram}
+                    onChange={(e) => setEditInstagram(e.target.value)}
+                    placeholder="Instagram handle (e.g. @noirlagos)"
+                    className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600/30"
+                  />
+                  {vendorNotice && <p className="text-[12px] text-red-600">{vendorNotice}</p>}
+                  <div className="flex gap-2">
+                    <button type="button" onClick={handleVendorSave} disabled={vendorSaving}
+                      className="rounded-full bg-red-700 text-white px-5 py-2 text-[10px] font-black uppercase tracking-widest disabled:opacity-50">
+                      {vendorSaving ? 'Saving…' : 'Save'}
+                    </button>
+                    <button type="button" onClick={() => setVendorEditing(false)}
+                      className="rounded-full border border-neutral-200 px-5 py-2 text-[10px] font-black uppercase tracking-widest text-neutral-600">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {vendor?.description ? (
+                    <p className="text-[13px] text-neutral-700 leading-snug">{vendor.description}</p>
+                  ) : <p className="text-[12px] text-neutral-400 italic">No description yet.</p>}
+                  {vendor?.full_address ? (
+                    <p className="text-[12px] text-neutral-600 flex items-center gap-1"><MapPin size={12} className="text-red-700/60" />{vendor.full_address}</p>
+                  ) : null}
+                  {vendor?.instagram_handle ? (
+                    <p className="text-[12px] text-red-700 font-semibold">@{vendor.instagram_handle.replace('@', '')}</p>
+                  ) : null}
+                  <button type="button" onClick={() => setVendorEditing(true)}
+                    className="inline-flex items-center gap-1 rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-neutral-700 hover:border-red-300">
+                    <Edit3 size={12} /> Edit profile
+                  </button>
+                </div>
+              )}
+
+              {/* Media gallery */}
+              <div className="space-y-2">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">Photos &amp; videos ({vendorMedia.length}/20)</p>
+                {vendorMedia.length > 0 ? (
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {vendorMedia.map((m) => (
+                      <div key={m.id} className="relative aspect-square rounded-lg overflow-hidden bg-neutral-100 border border-neutral-200 group">
+                        {m.media_type === 'video' ? (
+                          <video src={m.url} className="w-full h-full object-cover" />
+                        ) : (
+                          <img src={m.url} alt={m.caption || ''} className="w-full h-full object-cover" />
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteMedia(m.id)}
+                          className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white text-[9px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >✕</button>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <input
+                    value={mediaCaption}
+                    onChange={(e) => setMediaCaption(e.target.value)}
+                    placeholder="Caption (optional)"
+                    className="flex-1 min-w-0 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[12px] focus:outline-none focus:ring-2 focus:ring-red-600/30"
+                  />
+                  <label className="shrink-0 flex items-center gap-1.5 cursor-pointer rounded-full border border-neutral-200 bg-white px-4 py-2 text-[10px] font-black uppercase tracking-widest text-neutral-700 hover:border-red-300">
+                    {uploadingMedia ? <Loader2 size={12} className="animate-spin" /> : <Camera size={12} />}
+                    {uploadingMedia ? 'Uploading…' : 'Add photo / video'}
+                    <input type="file" accept="image/*,video/*" onChange={handleMediaUpload} className="hidden" disabled={uploadingMedia} />
+                  </label>
+                </div>
+                {vendorNotice && !vendorEditing ? <p className="text-[12px] text-red-600">{vendorNotice}</p> : null}
+              </div>
+            </div>
+
             <div className="rounded-xl border border-neutral-200 bg-neutral-50/80 p-3 md:p-4 space-y-2">
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">Verification</p>
               <div className="grid sm:grid-cols-2 gap-2 text-[12px] text-neutral-700">
@@ -3167,7 +3320,7 @@ function OutletLandingDashboard({ onSwitchTab }: { onSwitchTab: (t: AppTab) => v
           />
           <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
             <span className="text-[9px] font-black uppercase tracking-widest text-red-800 bg-red-50 border border-red-200/80 px-2 py-0.5 rounded-full">
-              Outlet console
+              Vendor console
             </span>
             <span className="text-[9px] font-black uppercase tracking-widest text-neutral-500">3 metros</span>
             <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-red-700">
@@ -3206,7 +3359,7 @@ function OutletLandingDashboard({ onSwitchTab }: { onSwitchTab: (t: AppTab) => v
           <BrandLogo alt="Convivia24" className="h-11 w-auto object-contain object-left shrink-0" />
           <div className="min-w-0 space-y-1">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[10px] font-black uppercase tracking-widest text-red-700">Outlet console</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-red-700">Vendor console</span>
               <span className="text-[10px] font-bold text-neutral-400">·</span>
               <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-neutral-600">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
@@ -3330,12 +3483,295 @@ function OutletLandingTab({
           />
         ) : (
           <p className="text-sm text-neutral-500 border border-dashed border-neutral-200 rounded-xl p-3 bg-neutral-50/80">
-            Sign in on <strong className="text-neutral-700">Venue account</strong> above, then submit for approval.
+            Sign in on <strong className="text-neutral-700">Vendor account</strong> above, then submit for approval.
           </p>
         )}
       </section>
 
       <OutletJumpSnippets onSwitchTab={onSwitchTab} metroCity={metroCity} />
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   OUTLET — applicant management panel
+   ══════════════════════════════════════════════════════════════════════ */
+type Applicant = {
+  id: string;
+  worker_id: string;
+  status: string;
+  payout_provider: string;
+  payout_phone: string;
+  note: string | null;
+  applied_at: string;
+  worker_name: string;
+  worker_avatar: string | null;
+  worker_rating: number | null;
+  worker_verified: boolean;
+  worker_location: string | null;
+  worker_certifications: string[];
+};
+
+type OutletShift = {
+  id: string;
+  title: string;
+  event_time: string;
+  location: string;
+  city: string | null;
+  area: string | null;
+  current_guests: number;
+  max_guests: number;
+  ticket_price: number | null;
+  status: string;
+};
+
+function OutletApplicantsPanel() {
+  const [shifts, setShifts] = useState<OutletShift[]>([]);
+  const [loadingShifts, setLoadingShifts] = useState(true);
+  const [expandedShiftId, setExpandedShiftId] = useState<string | null>(null);
+  const [applicants, setApplicants] = useState<Record<string, Applicant[]>>({});
+  const [loadingApplicants, setLoadingApplicants] = useState<string | null>(null);
+  const [actingOn, setActingOn] = useState<string | null>(null); // workerId being updated
+  const [notice, setNotice] = useState<{ msg: string; ok: boolean } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/hangouts?next_hours=168', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((d) => {
+        const all: any[] = Array.isArray(d.hangouts) ? d.hangouts : [];
+        setShifts(all.map((h) => ({
+          id: String(h.id),
+          title: String(h.title || 'Shift'),
+          event_time: h.event_time || '',
+          location: String(h.location || ''),
+          city: h.city ?? null,
+          area: h.area ?? null,
+          current_guests: Number(h.current_guests || 0),
+          max_guests: Number(h.max_guests || 0),
+          ticket_price: h.ticket_price != null ? Number(h.ticket_price) : null,
+          status: String(h.status || 'pending'),
+        })));
+      })
+      .catch(() => setShifts([]))
+      .finally(() => setLoadingShifts(false));
+  }, []);
+
+  const loadApplicants = async (shiftId: string) => {
+    if (applicants[shiftId]) {
+      setExpandedShiftId((prev) => (prev === shiftId ? null : shiftId));
+      return;
+    }
+    setLoadingApplicants(shiftId);
+    try {
+      const r = await fetch(`/api/shifts/${shiftId}/applicants`, { credentials: 'include' });
+      const d = await r.json();
+      setApplicants((prev) => ({ ...prev, [shiftId]: Array.isArray(d.applicants) ? d.applicants : [] }));
+      setExpandedShiftId(shiftId);
+    } catch {
+      setNotice({ msg: 'Could not load applicants.', ok: false });
+    } finally {
+      setLoadingApplicants(null);
+    }
+  };
+
+  const updateStatus = async (shiftId: string, workerId: string, status: string) => {
+    setActingOn(workerId);
+    setNotice(null);
+    try {
+      const r = await fetch(`/api/shifts/${shiftId}/applicants/${workerId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status }),
+      });
+      const d = await r.json();
+      if (!r.ok) { setNotice({ msg: d.error || 'Action failed.', ok: false }); return; }
+
+      // Update local applicant state
+      setApplicants((prev) => ({
+        ...prev,
+        [shiftId]: (prev[shiftId] || []).map((a) =>
+          a.worker_id === workerId ? { ...a, status } : a,
+        ),
+      }));
+
+      if (status === 'confirmed' && d.whatsappUrl) {
+        window.open(d.whatsappUrl, '_blank', 'noopener,noreferrer');
+        setNotice({ msg: 'Confirmed — WhatsApp opened to notify worker.', ok: true });
+      } else if (status === 'rejected') {
+        setNotice({ msg: 'Applicant rejected.', ok: true });
+      } else {
+        setNotice({ msg: `Status updated to ${status}.`, ok: true });
+      }
+    } catch {
+      setNotice({ msg: 'Network error. Try again.', ok: false });
+    } finally {
+      setActingOn(null);
+    }
+  };
+
+  if (loadingShifts) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 size={28} className="animate-spin text-red-700" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4 max-w-3xl mx-auto">
+      <div>
+        <p className="text-[10px] font-black uppercase tracking-[0.28em] text-red-600 mb-1 flex items-center gap-2">
+          <Users size={12} aria-hidden /> Applicants
+        </p>
+        <h2 className="font-display text-2xl sm:text-3xl italic text-neutral-900 mb-1">
+          Who <span className="text-red-700">applied.</span>
+        </h2>
+        <p className="text-neutral-500 text-sm mb-5">Your live shifts — tap to see applicants, confirm or reject.</p>
+      </div>
+
+      {notice && (
+        <div className={`rounded-2xl px-4 py-3 text-sm font-semibold flex items-center justify-between gap-3 ${notice.ok ? 'bg-emerald-50 border border-emerald-200 text-emerald-800' : 'bg-red-50 border border-red-200 text-red-800'}`}>
+          <span>{notice.msg}</span>
+          <button type="button" onClick={() => setNotice(null)}><X size={14} /></button>
+        </div>
+      )}
+
+      {shifts.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-neutral-200 bg-neutral-50 py-14 text-center text-neutral-400">
+          <ClipboardList size={36} className="mx-auto mb-3 opacity-40" />
+          <p className="font-display text-xl italic mb-1">No shifts posted yet.</p>
+          <p className="text-sm">Post a shift — applicants appear here.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {shifts.map((shift) => {
+            const d = shift.event_time ? new Date(shift.event_time) : null;
+            const timeStr = d
+              ? d.toLocaleString('en-NG', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+              : 'Time TBC';
+            const isExpanded = expandedShiftId === shift.id;
+            const shiftApplicants = applicants[shift.id] ?? [];
+            const pendingCount = shiftApplicants.filter((a) => a.status === 'pending').length;
+
+            return (
+              <div key={shift.id} className="rounded-2xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
+                {/* Shift header — click to expand */}
+                <button
+                  type="button"
+                  onClick={() => loadApplicants(shift.id)}
+                  className="w-full flex items-start justify-between gap-3 p-4 text-left hover:bg-neutral-50 transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-neutral-900 leading-snug truncate">{shift.title}</p>
+                    <p className="text-sm text-neutral-500 mt-0.5 flex items-center gap-1.5">
+                      <Clock size={12} className="shrink-0 text-red-700/70" /> {timeStr}
+                    </p>
+                    {shift.ticket_price != null && (
+                      <p className="text-[11px] text-emerald-700 font-semibold mt-0.5">
+                        ₦{Number(shift.ticket_price).toLocaleString('en-NG')} per shift
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {pendingCount > 0 && (
+                      <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                        {pendingCount} new
+                      </span>
+                    )}
+                    <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full border border-neutral-200 bg-neutral-50 text-neutral-600">
+                      {shift.current_guests}/{shift.max_guests} filled
+                    </span>
+                    {loadingApplicants === shift.id
+                      ? <Loader2 size={16} className="animate-spin text-red-700" />
+                      : <ChevronRight size={16} className={`text-neutral-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                    }
+                  </div>
+                </button>
+
+                {/* Applicant list */}
+                {isExpanded && (
+                  <div className="border-t border-neutral-100 divide-y divide-neutral-100">
+                    {shiftApplicants.length === 0 ? (
+                      <p className="px-4 py-6 text-sm text-neutral-400 text-center">No applications yet.</p>
+                    ) : (
+                      shiftApplicants.map((a) => (
+                        <div key={a.id} className="px-4 py-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                          {/* Worker info */}
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="w-10 h-10 rounded-full bg-neutral-200 shrink-0 flex items-center justify-center text-sm font-bold text-neutral-600 overflow-hidden">
+                              {a.worker_avatar
+                                ? <img src={a.worker_avatar} alt={a.worker_name} className="w-full h-full object-cover" />
+                                : (a.worker_name || '?')[0]?.toUpperCase()
+                              }
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <p className="font-semibold text-neutral-900 text-sm">{a.worker_name}</p>
+                                {a.worker_verified && <ShieldCheck size={13} className="text-red-700 shrink-0" />}
+                                {a.worker_rating != null && (
+                                  <span className="text-[10px] text-amber-700 font-semibold flex items-center gap-0.5">
+                                    <Star size={10} fill="currentColor" /> {Number(a.worker_rating).toFixed(1)}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-[11px] text-neutral-500 truncate">
+                                {a.payout_provider} · {a.payout_phone}
+                                {a.worker_location ? ` · ${a.worker_location}` : ''}
+                              </p>
+                              {a.note && <p className="text-[11px] text-neutral-400 italic mt-0.5">"{a.note}"</p>}
+                            </div>
+                          </div>
+
+                          {/* Status + actions */}
+                          <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                            <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${STATUS_STYLES[a.status] ?? STATUS_STYLES.pending}`}>
+                              {a.status}
+                            </span>
+                            {a.status === 'pending' || a.status === 'shortlisted' ? (
+                              <>
+                                <button
+                                  type="button"
+                                  disabled={actingOn === a.worker_id}
+                                  onClick={() => updateStatus(shift.id, a.worker_id, 'confirmed')}
+                                  className="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center gap-1"
+                                >
+                                  {actingOn === a.worker_id ? <Loader2 size={10} className="animate-spin" /> : <Check size={10} />}
+                                  Confirm
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={actingOn === a.worker_id}
+                                  onClick={() => updateStatus(shift.id, a.worker_id, 'shortlisted')}
+                                  className="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border border-sky-300 bg-sky-50 text-sky-800 hover:bg-sky-100 transition-colors disabled:opacity-50"
+                                >
+                                  Shortlist
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={actingOn === a.worker_id}
+                                  onClick={() => updateStatus(shift.id, a.worker_id, 'rejected')}
+                                  className="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border border-neutral-200 text-neutral-500 hover:border-red-300 hover:text-red-700 transition-colors disabled:opacity-50"
+                                >
+                                  Reject
+                                </button>
+                              </>
+                            ) : a.status === 'confirmed' ? (
+                              <span className="text-[10px] text-emerald-700 font-semibold flex items-center gap-1">
+                                <Check size={12} /> Hired
+                              </span>
+                            ) : null}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -3352,8 +3788,8 @@ function OutletDemandTab({
   addCity,
   onSwitchTab,
 }: {
-  outletDemandSub: 'board' | 'post';
-  setOutletDemandSub: (v: 'board' | 'post') => void;
+  outletDemandSub: 'board' | 'post' | 'applicants';
+  setOutletDemandSub: (v: 'board' | 'post' | 'applicants') => void;
   pendingInviteHangoutId?: string | null;
   onClearPendingInvite?: () => void;
   cities: string[];
@@ -3363,13 +3799,13 @@ function OutletDemandTab({
   return (
     <div className="space-y-5 pb-24">
       <div className="flex justify-center">
-        <div className="inline-flex rounded-full border border-neutral-200 bg-neutral-50 p-1 shadow-sm" role="tablist" aria-label="Board or post">
+        <div className="inline-flex rounded-full border border-neutral-200 bg-neutral-50 p-1 shadow-sm" role="tablist" aria-label="Demand sub-navigation">
           <button
             type="button"
             role="tab"
             aria-selected={outletDemandSub === 'board'}
             onClick={() => setOutletDemandSub('board')}
-            className={`rounded-full px-4 sm:px-6 py-2 text-[10px] font-black uppercase tracking-widest transition-colors ${
+            className={`rounded-full px-3 sm:px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-colors ${
               outletDemandSub === 'board' ? 'bg-red-700 text-white shadow-sm' : 'text-neutral-600 hover:text-neutral-900'
             }`}
           >
@@ -3378,9 +3814,20 @@ function OutletDemandTab({
           <button
             type="button"
             role="tab"
+            aria-selected={outletDemandSub === 'applicants'}
+            onClick={() => setOutletDemandSub('applicants')}
+            className={`rounded-full px-3 sm:px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-colors ${
+              outletDemandSub === 'applicants' ? 'bg-red-700 text-white shadow-sm' : 'text-neutral-600 hover:text-neutral-900'
+            }`}
+          >
+            Applicants
+          </button>
+          <button
+            type="button"
+            role="tab"
             aria-selected={outletDemandSub === 'post'}
             onClick={() => setOutletDemandSub('post')}
-            className={`rounded-full px-4 sm:px-6 py-2 text-[10px] font-black uppercase tracking-widest transition-colors ${
+            className={`rounded-full px-3 sm:px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-colors ${
               outletDemandSub === 'post' ? 'bg-red-700 text-white shadow-sm' : 'text-neutral-600 hover:text-neutral-900'
             }`}
           >
@@ -3398,6 +3845,8 @@ function OutletDemandTab({
           cities={cities}
           addCity={addCity}
         />
+      ) : outletDemandSub === 'applicants' ? (
+        <OutletApplicantsPanel />
       ) : (
         <HostTab
           onPosted={() => setOutletDemandSub('board')}
@@ -4071,12 +4520,37 @@ function ProfileTab({ persona, initialUser }: { persona: StaffPersona; initialUs
   const [editName, setEditName] = useState(initialUser?.name || '');
   const [editBio, setEditBio] = useState(initialUser?.bio || '');
   const [editLocation, setEditLocation] = useState(initialUser?.location || '');
+  const [editCerts, setEditCerts] = useState<string[]>(Array.isArray(initialUser?.certifications) ? initialUser.certifications : []);
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [avatarError, setAvatarError] = useState('');
   const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
   const [profileNotice, setProfileNotice] = useState('');
   const [verifyOpen, setVerifyOpen] = useState(false);
+  const [upgrading, setUpgrading] = useState(false);
+  const [upgradeError, setUpgradeError] = useState('');
+
+  const handleUpgrade = async () => {
+    setUpgrading(true);
+    setUpgradeError('');
+    try {
+      const res = await fetch('/api/paystack/initialize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ callback_url: `${window.location.origin}/api/paystack/callback` }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.authorization_url) {
+        setUpgradeError(data.error || 'Could not start payment. Try again.');
+      } else {
+        window.location.href = data.authorization_url;
+      }
+    } catch {
+      setUpgradeError('Network error. Try again.');
+    }
+    setUpgrading(false);
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -4093,6 +4567,7 @@ function ProfileTab({ persona, initialUser }: { persona: StaffPersona; initialUs
           setEditName(data.user.name || '');
           setEditBio(data.user.bio || '');
           setEditLocation(data.user.location || '');
+          setEditCerts(Array.isArray(data.user.certifications) ? data.user.certifications : []);
           setProfileNotice('');
         }
       })
@@ -4103,13 +4578,19 @@ function ProfileTab({ persona, initialUser }: { persona: StaffPersona; initialUs
       .finally(() => setLoading(false));
   }, []);
 
+  const toggleCert = (cert: string) => {
+    setEditCerts((prev) =>
+      prev.includes(cert) ? prev.filter((c) => c !== cert) : [...prev, cert],
+    );
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
       const res = await fetch('/api/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: editName, bio: editBio, location: editLocation }),
+        body: JSON.stringify({ name: editName, bio: editBio, location: editLocation, certifications: editCerts }),
       });
       const data = await res.json();
       if (res.ok && data.user) { setUser(data.user); setEditing(false); setProfileNotice(''); }
@@ -4259,7 +4740,7 @@ function ProfileTab({ persona, initialUser }: { persona: StaffPersona; initialUs
                     <Camera size={26} className="text-red-600" />
                   </div>
                 )}
-                <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+                <input type="file" accept="image/*" capture="environment" onChange={handleAvatarUpload} className="hidden" />
                 {uploadingAvatar && (
                   <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center z-20">
                     <Loader2 size={24} className="text-red-700 animate-spin" />
@@ -4291,6 +4772,30 @@ function ProfileTab({ persona, initialUser }: { persona: StaffPersona; initialUs
                   placeholder="Tell the table about you…" />
                 <input value={editLocation} onChange={(e) => setEditLocation(e.target.value)}
                   className="bg-transparent border-b border-neutral-200 pb-2 text-sm focus:outline-none focus:border-red-700 w-full text-neutral-600" placeholder="City" />
+                {persona === 'worker' && (
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.22em] text-neutral-400 mb-2">Certifications & skills</p>
+                    <div className="flex flex-wrap gap-2">
+                      {([...ALL_STAFF_ROLES, 'Food handler cert', 'WSET Level 1', 'WSET Level 2', 'First Aid', 'Barista trained', 'Event protocol'] as string[]).map((cert) => {
+                        const active = editCerts.includes(cert);
+                        return (
+                          <button
+                            key={cert}
+                            type="button"
+                            onClick={() => toggleCert(cert)}
+                            className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border transition-colors ${
+                              active
+                                ? 'bg-red-700 text-white border-red-700'
+                                : 'bg-white text-neutral-600 border-neutral-200 hover:border-red-300'
+                            }`}
+                          >
+                            {cert}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
                 <div className="flex gap-3">
                   <button onClick={handleSave} disabled={saving} className="bg-red-700 text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest disabled:opacity-50">
                     {saving ? 'Saving…' : 'Save'}
@@ -4316,11 +4821,41 @@ function ProfileTab({ persona, initialUser }: { persona: StaffPersona; initialUs
                   </div>
                 ) : null}
                 <p className="text-neutral-600 text-base max-w-md mx-auto md:mx-0 leading-relaxed mb-2 mt-1">{user?.bio || 'No bio yet.'}</p>
-                {user?.location && <p className="text-neutral-400 text-sm mb-8 flex items-center gap-1 justify-center md:justify-start"><MapPin size={12} /> {user.location}</p>}
+                {user?.location && <p className="text-neutral-400 text-sm flex items-center gap-1 justify-center md:justify-start"><MapPin size={12} /> {user.location}</p>}
+                {/* Certifications display */}
+                {persona === 'worker' && Array.isArray(user?.certifications) && user.certifications.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-3 justify-center md:justify-start">
+                    {user.certifications.map((c: string) => (
+                      <span key={c} className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border border-neutral-200 bg-neutral-50 text-neutral-600">
+                        {c}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {/* Verification prompt for unverified workers */}
+                {persona === 'worker' && !user?.verified && (
+                  <button
+                    type="button"
+                    onClick={() => user?.avatar_url && setVerifyOpen(true)}
+                    disabled={!user?.avatar_url}
+                    className="mt-4 w-full flex items-center gap-3 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-left hover:bg-amber-100 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    <ShieldCheck size={18} className="text-amber-700 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-amber-900 leading-snug">Get verified to unlock more shifts</p>
+                      <p className="text-[11px] text-amber-700 mt-0.5">
+                        {user?.avatar_url ? 'Quick selfie check — takes 30 seconds.' : 'Upload a clear profile photo first.'}
+                      </p>
+                    </div>
+                    <span className="ml-auto shrink-0 text-[9px] font-black uppercase tracking-widest text-amber-800 border border-amber-300 px-3 py-1.5 rounded-full">
+                      {user?.avatar_url ? 'Verify now' : 'Add photo'}
+                    </span>
+                  </button>
+                )}
               </>
             )}
 
-            <div className="grid grid-cols-3 gap-4 md:gap-6 w-full mb-10">
+            <div className="grid grid-cols-3 gap-4 md:gap-6 w-full mb-10 mt-8">
               <Stat val={user?.hangouts_count || 0} label={persona === 'outlet' ? 'Posted' : 'Shifts'} />
               <Stat val={user?.connections_count || 0} label="Network" />
               <Stat
@@ -4389,6 +4924,40 @@ function ProfileTab({ persona, initialUser }: { persona: StaffPersona; initialUs
                 </button>
               )}
 
+              {/* Paystack upgrade card — shown only when not already Black */}
+              {!user?.premium_active && (
+                <div className="rounded-[22px] border border-neutral-900/10 bg-gradient-to-br from-neutral-900 to-neutral-800 p-5 space-y-3 shadow-[0_8px_32px_rgba(0,0,0,0.18)]">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.28em] text-amber-400 flex items-center gap-1.5">
+                        <Star size={10} fill="currentColor" /> Convivia Black
+                      </p>
+                      <p className="font-display text-xl italic text-white mt-1">
+                        Priority shifts &amp; full match access
+                      </p>
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 shrink-0 mt-1">₦30k/mo</span>
+                  </div>
+                  <ul className="space-y-1 text-[12px] text-neutral-300">
+                    <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"/>Unlimited roster-assist matches</li>
+                    <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"/>Priority position in outlet applicant view</li>
+                    <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"/>Black badge on your profile</li>
+                  </ul>
+                  {upgradeError && (
+                    <p className="text-[11px] text-red-400">{upgradeError}</p>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleUpgrade}
+                    disabled={upgrading}
+                    className="w-full min-h-11 flex items-center justify-center gap-2 rounded-2xl bg-amber-400 text-neutral-900 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-amber-300 transition-colors disabled:opacity-50"
+                  >
+                    {upgrading ? <Loader2 size={16} className="animate-spin" /> : <Star size={14} fill="currentColor" />}
+                    {upgrading ? 'Loading…' : 'Get Black · pay with Paystack'}
+                  </button>
+                </div>
+              )}
+
               <button
                 type="button"
                 onClick={handleSignOut}
@@ -4400,6 +4969,9 @@ function ProfileTab({ persona, initialUser }: { persona: StaffPersona; initialUs
             </div>
           </div>
         </div>
+
+        {/* My shift applications — worker only */}
+        {persona === 'worker' && <MyApplications />}
       </div>
 
       <AnimatePresence>
@@ -4407,6 +4979,112 @@ function ProfileTab({ persona, initialUser }: { persona: StaffPersona; initialUs
           <FaceVerificationModal user={user} onVerified={(u) => { setUser(u); setVerifyOpen(false); }} onClose={() => setVerifyOpen(false)} />
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   MY APPLICATIONS — worker's shift application history
+   ══════════════════════════════════════════════════════════════════════ */
+const STATUS_STYLES: Record<string, string> = {
+  pending:     'bg-amber-50 text-amber-800 border-amber-200',
+  shortlisted: 'bg-sky-50 text-sky-800 border-sky-200',
+  confirmed:   'bg-emerald-50 text-emerald-800 border-emerald-200',
+  rejected:    'bg-neutral-100 text-neutral-500 border-neutral-200',
+  no_show:     'bg-red-50 text-red-700 border-red-200',
+};
+
+function MyApplications() {
+  const [apps, setApps] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/shifts/my-applications', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((d) => setApps(Array.isArray(d.applications) ? d.applications : []))
+      .catch(() => setApps([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-10">
+        <Loader2 size={24} className="animate-spin text-red-700" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-10 max-w-4xl mx-auto px-0">
+      <p className="text-[10px] font-black uppercase tracking-[0.28em] text-red-600 mb-2 flex items-center gap-2">
+        <ClipboardList size={12} aria-hidden /> My shift applications
+      </p>
+      <h2 className="font-display text-2xl sm:text-3xl italic text-neutral-900 mb-5">
+        Your <span className="text-red-700">applications.</span>
+      </h2>
+
+      {apps.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-neutral-200 bg-neutral-50 py-14 text-center text-neutral-400">
+          <ClipboardList size={36} className="mx-auto mb-3 opacity-40" />
+          <p className="font-display text-xl italic mb-1">No applications yet.</p>
+          <p className="text-sm">Browse open shifts and tap Apply.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {apps.map((a) => {
+            const d = a.shift_event_time ? new Date(a.shift_event_time) : null;
+            const timeStr = d
+              ? d.toLocaleString('en-NG', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+              : 'Time TBC';
+            const payNgn = a.shift_pay_ngn ? `₦${Number(a.shift_pay_ngn).toLocaleString('en-NG')}` : null;
+            const styleClass = STATUS_STYLES[a.status] ?? STATUS_STYLES.pending;
+
+            return (
+              <div
+                key={a.id}
+                className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm flex flex-col sm:flex-row sm:items-start gap-4"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${styleClass}`}>
+                      {a.status}
+                    </span>
+                    {payNgn && (
+                      <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-800">
+                        {payNgn}
+                      </span>
+                    )}
+                  </div>
+                  <p className="font-semibold text-neutral-900 text-base leading-snug">{a.shift_title || 'Shift'}</p>
+                  <p className="text-sm text-neutral-500 mt-0.5 flex items-center gap-1.5">
+                    <Clock size={12} className="shrink-0 text-red-700/70" /> {timeStr}
+                  </p>
+                  {(a.shift_city || a.shift_area) && (
+                    <p className="text-sm text-neutral-500 flex items-center gap-1.5 mt-0.5">
+                      <MapPin size={12} className="shrink-0 text-red-700/70" />
+                      {[a.shift_area, a.shift_city].filter(Boolean).join(' · ')}
+                    </p>
+                  )}
+                  <p className="text-[11px] text-neutral-400 mt-1.5">
+                    Payout via {a.payout_provider} · {a.payout_phone}
+                  </p>
+                </div>
+
+                {a.status === 'confirmed' && a.outlet_name && (
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent(`Hi ${a.outlet_name} — confirming my slot for ${a.shift_title}. Looking forward to the shift.`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full border border-emerald-500/40 bg-emerald-50 text-emerald-900 text-[9px] font-black uppercase tracking-widest hover:bg-emerald-100 transition-colors"
+                  >
+                    <MessageCircle size={12} /> WhatsApp outlet
+                  </a>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

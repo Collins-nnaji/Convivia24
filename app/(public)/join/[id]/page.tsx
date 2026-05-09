@@ -82,7 +82,7 @@ export default function JoinHangoutInvitePage() {
     );
 
   return (
-    <main className="min-h-[100dvh] bg-white text-neutral-900 px-4 py-10 flex flex-col items-center">
+    <main className="mobile-scroll-screen mobile-safe-screen bg-white text-neutral-900 px-4 flex flex-col items-center">
       <div className="w-full max-w-md">
         <Link
           href="/"

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Convivia24 maskable app icon</title>
+  <desc id="desc">Safe-area Convivia24 monogram for Android adaptive icons.</desc>
+  <rect width="1024" height="1024" fill="#f8f6f2"/>
+  <circle cx="512" cy="512" r="310" fill="#fffdf8"/>
+  <circle cx="512" cy="512" r="272" fill="none" stroke="#c9a84c" stroke-width="24"/>
+  <path d="M365 542c0-100 65-174 162-174 58 0 106 24 134 69l-62 47c-16-24-41-38-71-38-50 0-85 38-85 96s35 96 85 96c30 0 55-14 71-38l62 47c-28 45-76 69-134 69-97 0-162-74-162-174Z" fill="#b91c1c"/>
+  <path d="M471 558h88c20 0 33-10 33-27 0-17-13-27-34-27h-32v-61h30c19 0 30-9 30-24s-12-24-31-24c-24 0-42 14-52 40l-62-28c20-49 61-75 118-75 67 0 111 31 111 78 0 31-17 54-48 67 37 12 57 40 57 76 0 54-48 89-121 89h-87v-84Z" fill="#0a0a0a" opacity=".9"/>
+  <path d="M390 732h244" stroke="#c9a84c" stroke-width="18" stroke-linecap="round"/>
+</svg>

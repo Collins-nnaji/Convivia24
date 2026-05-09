@@ -11,7 +11,7 @@ export default function CallbackPage() {
   const router = useRouter();
 
   return (
-    <main className="min-h-[100dvh] bg-obsidian text-cream flex items-center justify-center">
+    <main className="mobile-scroll-screen mobile-safe-screen bg-obsidian text-cream flex items-center justify-center">
       <NeonAuthUIProvider
         authClient={authClient}
         navigate={(path: string) => router.push(path)}

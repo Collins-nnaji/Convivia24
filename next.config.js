@@ -1,16 +1,30 @@
+const { withSentryConfig } = require('@sentry/nextjs');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Ensure images work properly
   images: {
     unoptimized: true, // For Netlify compatibility
-    remotePatterns: [
+    remotePatterns: [{ protocol: 'https', hostname: '**' }],
+  },
+  async headers() {
+    return [
       {
-        protocol: 'https',
-        hostname: '**',
+        source: '/.well-known/apple-app-site-association',
+        headers: [{ key: 'Content-Type', value: 'application/json' }],
       },
-    ],
+      {
+        source: '/.well-known/assetlinks.json',
+        headers: [{ key: 'Content-Type', value: 'application/json' }],
+      },
+    ];
   },
 };
 
-module.exports = nextConfig;
-
+module.exports = withSentryConfig(nextConfig, {
+  silent: true,
+  org: 'standex-digital',
+  project: 'convivia24',
+  widenClientFileUpload: true,
+  disableLogger: true,
+  automaticVercelMonitors: false,
+});

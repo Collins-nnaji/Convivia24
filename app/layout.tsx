@@ -1,5 +1,6 @@
 import './globals.css';
 import { Outfit, Cormorant_Garamond } from 'next/font/google';
+import { NativeAppBridge } from '@/components/app/NativeAppBridge';
 
 const outfit = Outfit({
   subsets: ['latin'],
@@ -18,17 +19,21 @@ const cormorant = Cormorant_Garamond({
 export const metadata = {
   title: 'Convivia24 | Hospitality staffing',
   description:
-    '18+ hospitality staffing — Lagos, Abuja, Port Harcourt. Verified workers; same-day mobile-money payouts.',
+    '18+ hospitality staffing in Lagos, Abuja, and Port Harcourt. Verified workers, open shifts, and same-day mobile-money payouts.',
   applicationName: 'Convivia24',
   manifest: '/manifest.json',
+  metadataBase: new URL('https://app.convivia24.com'),
   appleWebApp: {
     capable: true,
     title: 'Convivia24',
-    statusBarStyle: 'default',
+    statusBarStyle: 'black-translucent',
   },
   icons: {
-    icon: '/Logo2.png',
-    apple: '/Logo2.png',
+    icon: [
+      { url: '/icons/icon.svg', type: 'image/svg+xml' },
+      { url: '/icons/icon-maskable.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/icons/icon-maskable.svg',
   },
 };
 
@@ -47,6 +52,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${outfit.variable} ${cormorant.variable} font-sans bg-[#f8f6f2] text-neutral-900 antialiased`} suppressHydrationWarning>
+        <NativeAppBridge />
         {children}
       </body>
     </html>
