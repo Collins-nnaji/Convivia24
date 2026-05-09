@@ -179,7 +179,7 @@ async function shareHangoutInvite(id: string, title: string) {
   const url = publicInviteUrl(id);
   try {
     if (navigator.share) {
-      await navigator.share({ title: `Join: ${title}`, text: `You're invited — ${title}`, url });
+      await navigator.share({ title: `Shift: ${title}`, text: `Shift available — ${title}`, url });
       return;
     }
   } catch {
@@ -692,7 +692,7 @@ function NavIcon({ icon, label, active, onClick, live }: any) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   INVITE LINK — opened from /join/[id] or /?join=[id]
+   SHIFT LINK — opened from /join/[id] or /?join=[id]
    ══════════════════════════════════════════════════════════════════════ */
 function InviteFromLinkBanner({
   hangoutId,
@@ -720,7 +720,7 @@ function InviteFromLinkBanner({
         }
       })
       .catch(() => {
-        if (!cancelled) setNote('Could not load invite.');
+        if (!cancelled) setNote('Could not load shift.');
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -739,7 +739,7 @@ function InviteFromLinkBanner({
       if (res.ok) {
         onJoined();
         onDismiss();
-      } else setNote(data.error || 'Could not join.');
+      } else setNote(data.error || 'Could not apply.');
     } catch {
       setNote('Network error.');
     } finally {
@@ -753,7 +753,7 @@ function InviteFromLinkBanner({
     return (
       <div className="mb-6 flex items-center justify-center gap-2 rounded-2xl border border-neutral-200 bg-neutral-50 py-8">
         <Loader2 className="w-5 h-5 text-red-700 animate-spin" />
-        <span className="text-sm text-neutral-600">Loading invite…</span>
+        <span className="text-sm text-neutral-600">Loading shift…</span>
       </div>
     );
   }
@@ -782,7 +782,7 @@ function InviteFromLinkBanner({
     >
       <div className="flex flex-col sm:flex-row sm:items-start gap-3 justify-between">
         <div className="min-w-0">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-700 mb-1">Invite</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-700 mb-1">Shift link</p>
           <h3 className="font-display text-xl md:text-2xl italic text-neutral-900 leading-tight">{h.title}</h3>
           <p className="text-xs text-neutral-500 mt-1">
             {h.formatted_time} · {h.formatted_date} · {h.city || h.location}
@@ -835,14 +835,14 @@ function InviteFromLinkBanner({
           className="flex-1 min-w-[120px] py-3 rounded-full bg-neutral-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-red-700 disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {joining ? <Loader2 size={14} className="animate-spin" /> : null}
-          {isFull ? 'Filled' : 'Join roster'}
+          {isFull ? 'Filled' : 'Apply'}
         </button>
         <button
           type="button"
           onClick={openPublicLink}
           className="px-4 py-3 rounded-full border border-neutral-200 text-[10px] font-black uppercase tracking-widest text-neutral-600 hover:border-red-300"
         >
-          Open invite page
+          Open shift page
         </button>
         <button type="button" onClick={onDismiss} className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-neutral-400 hover:text-neutral-700">
           Dismiss
@@ -1007,13 +1007,6 @@ function DiscoverTab({
             <>Pick a shift · <span className="text-red-700">{discoverCity}</span></>
           )}
         </motion.h1>
-        <motion.p variants={fadeUp} className="text-neutral-600 text-sm max-w-lg">
-          7-day board · same-day pay after sign-off.{` `}
-          <button type="button" onClick={() => onSwitchTab('home')} className="text-red-700 font-semibold underline-offset-4 hover:underline decoration-red-600/40">
-            Today
-          </button>{' '}
-          = 24h demand only.
-        </motion.p>
       </motion.div>
 
       <section className="space-y-4">
@@ -1413,7 +1406,7 @@ function InstantPlanModal({
                 <div className="flex items-center gap-2 text-neutral-800"><Building2 size={14} className="text-red-700"/> {plan?.venue}</div>
                 <div className="flex items-center gap-2 text-neutral-800"><Clock     size={14} className="text-red-700"/> {plan?.date} · {plan?.time}</div>
                 <div className="flex items-center gap-2 text-neutral-800"><Users     size={14} className="text-red-700"/> {(plan?.people?.length || 0) + 1} · similar vibe</div>
-                {plan?.live && <div className="text-[10px] uppercase tracking-widest text-emerald-700 font-black">Live · join now</div>}
+                {plan?.live && <div className="text-[10px] uppercase tracking-widest text-emerald-700 font-black">Live · apply now</div>}
                 {!plan?.live && <div className="text-[10px] uppercase tracking-widest text-neutral-500 font-black">Locks after 3 confirm</div>}
               </div>
 
@@ -1426,7 +1419,7 @@ function InstantPlanModal({
                   <Hourglass size={16}/><span className="text-[9px] uppercase tracking-widest font-black">Delay</span>
                 </button>
                 <button onClick={onAccept} className="flex flex-col items-center gap-1 py-3 rounded-xl bg-red-700 text-white font-black hover:bg-red-800 transition-colors shadow-[0_0_20px_rgba(185,28,28,0.2)]">
-                  <Zap size={16} fill="currentColor"/><span className="text-[9px] uppercase tracking-widest">Join</span>
+                  <Zap size={16} fill="currentColor"/><span className="text-[9px] uppercase tracking-widest">Apply</span>
                 </button>
               </div>
             </>
@@ -1706,14 +1699,14 @@ function HostTab({
               </button>
               <button
                 type="button"
-                onClick={() => shareHangoutInvite(createdHangoutId, title || 'Join my table')}
+                onClick={() => shareHangoutInvite(createdHangoutId, title || 'Open shift')}
                 className="flex-1 min-w-[100px] inline-flex items-center justify-center gap-1.5 py-2.5 rounded-full border border-neutral-300 text-[10px] font-black uppercase tracking-widest text-neutral-800 hover:border-red-400"
               >
                 <Share2 size={14} /> Share
               </button>
               <button
                 type="button"
-                onClick={() => openWhatsAppHangoutInvite(createdHangoutId, title || 'Join my table')}
+                onClick={() => openWhatsAppHangoutInvite(createdHangoutId, title || 'Open shift')}
                 className="flex-1 min-w-[100px] inline-flex items-center justify-center gap-1.5 py-2.5 rounded-full border border-emerald-600/40 bg-emerald-50 text-emerald-900 text-[10px] font-black uppercase tracking-widest hover:bg-emerald-100"
               >
                 <MessageCircle size={14} /> WhatsApp
@@ -1724,7 +1717,7 @@ function HostTab({
                 rel="noopener noreferrer"
                 className="w-full text-center py-2 text-[10px] font-black uppercase tracking-widest text-red-700 hover:underline"
               >
-                Open invite page
+                Open shift page
               </Link>
             </div>
           </div>
@@ -1732,7 +1725,7 @@ function HostTab({
         <div className="flex justify-center gap-3 flex-wrap">
           <button onClick={onPosted} className="bg-red-700 text-white px-6 py-3 rounded-full font-black uppercase tracking-widest text-[11px] hover:bg-red-800 transition-colors">View on board</button>
           <button onClick={() => { setSuccess(false); setCreatedHangoutId(null); setTitle(''); setVibe(''); setDressCode(''); setPayNgn(''); setShiftRole(ALL_STAFF_ROLES[0] || 'Waiter'); setZone(LAGOS_ZONES[0]); setLocation(''); setCity(DEFAULT_CITIES[0]); setEventDate(''); setEventTime(''); }}
-            className="text-red-700 text-[10px] uppercase tracking-widest font-black hover:text-red-800 transition-colors">Host another →</button>
+            className="text-red-700 text-[10px] uppercase tracking-widest font-black hover:text-red-800 transition-colors">Post another →</button>
         </div>
       </div>
     );
@@ -2165,7 +2158,7 @@ function HomeTab({
         setJoinNote("Roster confirmed — check WhatsApp for outlet. Selfie check-in at shift start.");
         loadCityData(boardCity);
       } else {
-        setJoinNote(data.error || 'Could not join.');
+        setJoinNote(data.error || 'Could not apply.');
       }
     } catch {
       setJoinNote('Network error. Try again.');
@@ -4918,7 +4911,7 @@ function ProfileTab({ persona, initialUser }: { persona: StaffPersona; initialUs
                 <input value={editName} onChange={(e) => setEditName(e.target.value)} className="bg-transparent border-b border-neutral-200 pb-2 text-3xl font-display italic focus:outline-none focus:border-red-700 w-full text-neutral-900" />
                 <textarea value={editBio} onChange={(e) => setEditBio(e.target.value)} rows={3}
                   className="bg-transparent border-b border-neutral-200 pb-2 text-base focus:outline-none focus:border-red-700 w-full resize-none text-neutral-600"
-                  placeholder="Tell the table about you…" />
+                  placeholder="Tell outlets about your experience…" />
                 <input value={editLocation} onChange={(e) => setEditLocation(e.target.value)}
                   className="bg-transparent border-b border-neutral-200 pb-2 text-sm focus:outline-none focus:border-red-700 w-full text-neutral-600" placeholder="City" />
                 {persona === 'worker' && (

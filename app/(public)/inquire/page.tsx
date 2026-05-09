@@ -8,11 +8,11 @@ import { SectionLabel } from '@/components/ui/SectionLabel';
 
 const INQUIRY_TYPES = [
   'General Inquiry',
-  'Join a Squad',
-  'Start a Squad — for my community',
-  'Convivia Black — Upgrade',
-  'Corporate Wellness — Team squads',
-  'Partnerships & Press',
+  'Worker onboarding',
+  'Outlet onboarding',
+  'Corporate staffing',
+  'Partnerships',
+  'Press',
 ];
 
 const fadeUp = {

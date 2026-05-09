@@ -56,10 +56,10 @@ function curatedAreasForCity(city: string): Omit<PulseCard, 'id' | 'energy' | 't
   if (matchKey) return CURATED_AREAS[matchKey];
   const c = city.trim() || 'Your city';
   return [
-    { area: `Downtown · ${c}`, city: c, vibe: 'Host a table — energy shows up here first.', group_size: 6 },
-    { area: `Waterfront · ${c}`, city: c, vibe: 'Sunset hangs · dining & lounges.', group_size: 5 },
-    { area: `Arts & music · ${c}`, city: c, vibe: 'Gigs · culture · open seats.', group_size: 6 },
-    { area: `Uptown · ${c}`, city: c, vibe: 'Founders · whisky · long tables.', group_size: 4 },
+    { area: `Downtown · ${c}`, city: c, vibe: 'Post a shift — demand shows up here first.', group_size: 6 },
+    { area: `Waterfront · ${c}`, city: c, vibe: 'Hotels · lounges · evening cover.', group_size: 5 },
+    { area: `Arts & music · ${c}`, city: c, vibe: 'Events · culture · open roles.', group_size: 6 },
+    { area: `Uptown · ${c}`, city: c, vibe: 'Restaurants · bars · service teams.', group_size: 4 },
   ];
 }
 
@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const city = searchParams.get('city') || 'London';
 
-    // 1. live tables grouped by first segment of location (the area)
+    // 1. live shifts grouped by first segment of location (the area)
     const liveTables = await sql`
       SELECT
         TRIM(SPLIT_PART(h.location, ',', 1)) as area,
@@ -105,7 +105,7 @@ export async function GET(req: NextRequest) {
 
     const cards: PulseCard[] = [];
 
-    // 3. start from real hangout areas — they're already "live"
+    // 3. start from real shift areas — they're already "live"
     for (const row of liveTables) {
       const area = String(row.area).trim();
       const tableCount = Number(row.table_count);
@@ -115,7 +115,7 @@ export async function GET(req: NextRequest) {
         id: `live-${area}`,
         area,
         city,
-        vibe: tableCount > 1 ? `${tableCount} tables forming · join one tonight` : 'Live table · join now',
+        vibe: tableCount > 1 ? `${tableCount} shifts open · apply tonight` : 'Live shift · apply now',
         energy,
         tag,
         group_size: 6,
@@ -124,7 +124,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // 4. fill in with curated areas that have no live tables (so the grid is always populated)
+    // 4. fill in with curated areas that have no live shifts (so the grid is always populated)
     const curated = curatedAreasForCity(city);
     for (const c of curated) {
       if (cards.find((x) => x.area.toLowerCase() === c.area.toLowerCase())) continue;

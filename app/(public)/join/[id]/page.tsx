@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { Loader2, MapPin, Clock, Users, Copy, Check, Share2, MessageCircle } from 'lucide-react';
 import { buildHangoutInviteMessage, whatsAppSendPrefilledUrl } from '@/lib/hangout-invite-share';
 
-export default function JoinHangoutInvitePage() {
+export default function ShiftLinkPage() {
   const params = useParams();
   const id = typeof params.id === 'string' ? params.id : '';
   const [hangout, setHangout] = useState<Record<string, unknown> | null>(null);
@@ -32,7 +32,7 @@ export default function JoinHangoutInvitePage() {
         if (!cancelled) setHangout(data.hangout);
       })
       .catch((e: Error) => {
-        if (!cancelled) setErr(e.message || 'Could not load this table.');
+        if (!cancelled) setErr(e.message || 'Could not load this shift.');
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -55,11 +55,11 @@ export default function JoinHangoutInvitePage() {
 
   const share = useCallback(async () => {
     if (!inviteUrl || !hangout) return;
-    const title = String(hangout.title || 'Join my table');
+    const title = String(hangout.title || 'Open shift');
     try {
       await navigator.share({
         title,
-        text: `You're invited — ${title}`,
+        text: `Shift available — ${title}`,
         url: inviteUrl,
       });
     } catch {
@@ -69,7 +69,7 @@ export default function JoinHangoutInvitePage() {
 
   const shareWhatsApp = useCallback(() => {
     if (!inviteUrl || !hangout) return;
-    const title = String(hangout.title || 'Join my table');
+    const title = String(hangout.title || 'Open shift');
     const msg = buildHangoutInviteMessage(title, inviteUrl);
     window.open(whatsAppSendPrefilledUrl(msg), '_blank', 'noopener,noreferrer');
   }, [inviteUrl, hangout]);
@@ -124,7 +124,7 @@ export default function JoinHangoutInvitePage() {
             )}
             <div className="p-6 space-y-4">
               <p className="text-[10px] font-black uppercase tracking-[0.25em] text-red-600">
-                You&apos;re invited
+                Shift available
               </p>
               <h1 className="font-display text-3xl italic leading-tight text-neutral-900">
                 {String(hangout.title)}
@@ -147,7 +147,7 @@ export default function JoinHangoutInvitePage() {
                   <div className="flex items-center gap-2">
                     <Users size={16} className="shrink-0 text-red-700" />
                     {spotsLeft === 0 ? (
-                      <span className="text-amber-800">This table is full</span>
+                      <span className="text-amber-800">This shift is filled</span>
                     ) : (
                       <span>
                         {spotsLeft} spot{spotsLeft === 1 ? '' : 's'} left
@@ -167,7 +167,7 @@ export default function JoinHangoutInvitePage() {
                   href={openInAppUrl}
                   className="w-full text-center py-3.5 rounded-full bg-red-700 text-white text-[11px] font-black uppercase tracking-widest hover:bg-red-800 transition-colors"
                 >
-                  Join in app
+                  Apply in app
                 </Link>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <button
@@ -197,7 +197,7 @@ export default function JoinHangoutInvitePage() {
                   </>
                 ) : (
                   <>
-                    <Copy size={14} /> Copy invite link
+                    <Copy size={14} /> Copy shift link
                   </>
                 )}
               </button>

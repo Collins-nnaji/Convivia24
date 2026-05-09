@@ -36,7 +36,7 @@ export default function SignUpPage() {
             Start Your 24
           </h1>
           <p className="text-neutral-500 text-sm max-w-sm mx-auto">
-            Create account · join tables, match, verify.
+            Create account · apply for shifts, match, verify.
           </p>
         </div>
 
