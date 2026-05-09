@@ -87,6 +87,47 @@ body {
     .app-shell-root {
       -webkit-text-size-adjust: 100%;
       text-size-adjust: 100%;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .app-shell-root .font-display {
+      font-family: var(--font-jakarta), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-style: normal;
+      letter-spacing: -0.02em;
+    }
+
+    .app-shell-root .text-\[9px\] {
+      font-size: 0.6875rem !important;
+      line-height: 1rem !important;
+    }
+
+    .app-shell-root .text-\[10px\] {
+      font-size: 0.75rem !important;
+      line-height: 1rem !important;
+    }
+
+    .app-shell-root .text-\[11px\] {
+      font-size: 0.8125rem !important;
+      line-height: 1.125rem !important;
+    }
+
+    .app-shell-root .text-\[12px\],
+    .app-shell-root .text-xs {
+      font-size: 0.875rem !important;
+      line-height: 1.25rem !important;
+    }
+
+    .app-shell-root .text-sm {
+      font-size: 0.9375rem !important;
+      line-height: 1.375rem !important;
+    }
+
+    .app-shell-root input,
+    .app-shell-root textarea,
+    .app-shell-root select,
+    .app-shell-root button {
+      font-size: max(1rem, 16px);
     }
   }
 }
