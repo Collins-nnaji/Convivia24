@@ -751,8 +751,6 @@ function InviteFromLinkBanner({
     }
   };
 
-  const openPublicLink = () => window.open(publicInviteUrl(hangoutId), '_blank', 'noopener,noreferrer');
-
   if (loading) {
     return (
       <div className="mb-6 flex items-center justify-center gap-2 rounded-2xl border border-neutral-200 bg-neutral-50 py-8">
@@ -821,13 +819,6 @@ function InviteFromLinkBanner({
           >
             <Share2 size={14} /> Share
           </button>
-          <button
-            type="button"
-            onClick={() => openWhatsAppHangoutInvite(hangoutId, h.title)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full border border-emerald-600/40 bg-emerald-50 text-emerald-900 text-[10px] font-black uppercase tracking-widest hover:bg-emerald-100"
-          >
-            <MessageCircle size={14} /> WhatsApp
-          </button>
         </div>
       </div>
       {note && <p className="text-sm text-red-700 mt-2">{note}</p>}
@@ -840,13 +831,6 @@ function InviteFromLinkBanner({
         >
           {joining ? <Loader2 size={14} className="animate-spin" /> : null}
           {isFull ? 'Filled' : 'Apply'}
-        </button>
-        <button
-          type="button"
-          onClick={openPublicLink}
-          className="px-4 py-3 rounded-full border border-neutral-200 text-[10px] font-black uppercase tracking-widest text-neutral-600 hover:border-red-300"
-        >
-          Open shift page
         </button>
         <button type="button" onClick={onDismiss} className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-neutral-400 hover:text-neutral-700">
           Dismiss
@@ -1276,7 +1260,7 @@ function DiscoverTab({
                         className="inline-flex items-center gap-1 px-3 py-2 rounded-full border border-neutral-200 text-[9px] font-black uppercase tracking-widest text-neutral-600 hover:border-red-300 hover:text-red-800"
                       >
                         {inviteCopiedId === h.id ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
-                        {inviteCopiedId === h.id ? 'Copied' : 'Invite link'}
+                        {inviteCopiedId === h.id ? 'Copied' : 'Copy link'}
                       </button>
                       <button
                         type="button"
@@ -1285,21 +1269,16 @@ function DiscoverTab({
                       >
                         <Share2 size={12} /> Share
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => openWhatsAppHangoutInvite(h.id, h.title)}
-                        className="inline-flex items-center gap-1 px-3 py-2 rounded-full border border-emerald-600/35 bg-emerald-50 text-[9px] font-black uppercase tracking-widest text-emerald-900 hover:bg-emerald-100"
-                      >
-                        <MessageCircle size={12} /> WhatsApp
-                      </button>
-                      <Link
-                        href={`/join/${h.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center px-3 py-2 rounded-full text-[9px] font-black uppercase tracking-widest text-neutral-500 hover:text-red-800"
-                      >
-                        Preview
-                      </Link>
+                      {h.vendor_slug ? (
+                        <Link
+                          href={`/v/${h.vendor_slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-3 py-2 rounded-full text-[9px] font-black uppercase tracking-widest text-neutral-500 hover:text-red-800"
+                        >
+                          Preview outlet
+                        </Link>
+                      ) : null}
                     </div>
                   </div>
                 </motion.div>
@@ -1342,8 +1321,8 @@ function InstantPlanModal({
             </div>
             {phase === 'gated' ? (
               <>
-                <h2 className="font-display text-3xl md:text-4xl italic mb-2">Roster assist paused</h2>
-                <p className="text-neutral-600 text-sm">Weekly free assist used{pulse.area ? ` · ${pulse.area}` : ''}. Resets soon.</p>
+                <h2 className="font-display text-3xl md:text-4xl italic mb-2">Matching paused</h2>
+                <p className="text-neutral-600 text-sm">Weekly matching used{pulse.area ? ` · ${pulse.area}` : ''}. Resets soon.</p>
               </>
             ) : phase === 'matching' ? (
               <>
@@ -2357,40 +2336,6 @@ function HomeTab({
               </button>
               .
             </motion.p>
-            <motion.div variants={staggerItem} className="bg-white border border-red-200/90 rounded-[22px] p-3.5 shadow-[0_8px_28px_rgba(0,0,0,0.06)]">
-              <div className="flex items-center justify-between gap-3 mb-2.5">
-                <span className="text-[10px] uppercase tracking-[0.24em] font-black text-red-700">Roster assist</span>
-                {effectivePremium ? (
-                  <span
-                    className={`text-[9px] uppercase tracking-wider font-bold ${
-                      freeMode ? 'text-emerald-700' : 'text-red-700'
-                    }`}
-                  >
-                    {freeMode ? 'Unlimited' : 'Full'}
-                  </span>
-                ) : !matchMetaLoaded ? (
-                  <span className="text-[9px] tabular-nums text-neutral-400">…</span>
-                ) : matchAnonymous ? (
-                  <span className="text-[9px] tabular-nums text-neutral-500">1/wk · sign in</span>
-                ) : (credits ?? 0) > 0 ? (
-                  <span className="text-[9px] tabular-nums text-neutral-500">1/wk</span>
-                ) : (
-                  <span className="text-[9px] tabular-nums text-amber-800">Limit reached</span>
-                )}
-              </div>
-              <p className="text-[12px] text-neutral-600 leading-snug mb-2">
-                Suggests a crew line-up for <strong className="text-neutral-800">{boardCity}</strong>.
-              </p>
-              <button
-                type="button"
-                onClick={matchByVibe}
-                disabled={visiblePulseCards.length === 0}
-                className="w-full min-h-11 flex items-center justify-center gap-2 rounded-2xl bg-red-700 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(185,28,28,0.2)] active:scale-[0.99] transition-transform disabled:opacity-45 disabled:pointer-events-none"
-              >
-                <Sparkles size={18} fill="currentColor" className="shrink-0" />
-                Run roster assist
-              </button>
-            </motion.div>
             {/* Tab bar already exposes Discover / Host — avoid duplicating CTAs on mobile */}
           </motion.div>
         </div>
@@ -2475,35 +2420,6 @@ function HomeTab({
               24h window · full list in Shifts.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2 shrink-0 md:justify-end">
-            {effectivePremium ? (
-              <span
-                className={`inline-flex text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full border items-center gap-1 ${
-                  freeMode
-                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                    : 'bg-red-50 text-red-700 border-red-400'
-                }`}
-              >
-                {freeMode ? 'Unlimited matches' : (
-                  <><Star size={10} fill="currentColor"/> Black</>
-                )}
-              </span>
-            ) : !matchMetaLoaded ? (
-              <span className="inline-flex text-[10px] px-2.5 py-1 rounded-full border border-neutral-200 bg-neutral-50 text-neutral-400 tabular-nums items-center gap-1">
-                …
-              </span>
-            ) : matchAnonymous ? (
-              <span className="inline-flex text-[10px] px-2.5 py-1 rounded-full border border-neutral-200 bg-neutral-50 text-neutral-600 tabular-nums items-center gap-1">
-                1 match / wk · sign in
-              </span>
-            ) : (
-              <span className={`inline-flex text-[10px] px-2.5 py-1 rounded-full border tabular-nums items-center gap-1 ${
-                (credits ?? 0) > 0 ? 'text-neutral-500 border-neutral-200 bg-neutral-900/[0.04]' : 'text-amber-900/90 border-amber-600/35 bg-amber-100/80'
-              }`}>
-                {(credits ?? 0) > 0 ? '1 match / week' : 'No matches left'}
-              </span>
-            )}
-          </div>
         </div>
 
         {pulseLoading ? (
@@ -2531,7 +2447,7 @@ function HomeTab({
         ) : (
           <div className="relative max-md:rounded-[28px] max-md:border max-md:border-neutral-200/90 max-md:bg-gradient-to-b max-md:from-neutral-50/90 max-md:to-neutral-100/50 max-md:p-3 sm:max-md:p-4">
             <p className="text-[10px] text-neutral-500 mb-3 md:mb-0 font-bold uppercase tracking-[0.2em] px-0.5 md:hidden">
-              Pull up for more · tap a card to match
+              Pull up for more
             </p>
             {/* Mobile: one column + real scroll. Desktop: 2 columns, no nested scroll trap. */}
             <div
@@ -2548,13 +2464,10 @@ function HomeTab({
                   const PulseIcon = pickPulseIcon(pulse.vibe);
                   const stripe = ENERGY_STRIPE[pulse.energy];
                   return (
-                    <motion.button
+                    <motion.div
                       key={pulse.id}
-                      type="button"
                       variants={staggerItem}
-                      whileTap={{ scale: 0.995 }}
                       whileHover={{ y: -2 }}
-                      onClick={() => startMatch(pulse)}
                       className={`relative w-full text-left rounded-[22px] md:rounded-[26px] border border-neutral-200/90 border-l-[6px] shadow-[0_6px_28px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.03] transition-[box-shadow,transform,border-color] hover:border-red-300/90 hover:shadow-[0_14px_40px_rgba(185,28,28,0.12)] group ${stripe}`}
                     >
                       <div className="absolute top-3 right-3 h-16 w-16 rounded-full bg-gradient-to-br from-red-600/[0.07] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" aria-hidden />
@@ -2578,7 +2491,7 @@ function HomeTab({
                         </div>
                         <div className="mt-4 flex items-center justify-between gap-2 border-t border-neutral-200/70 pt-3">
                           <div className="flex items-center gap-1.5 text-[10px] text-red-700 uppercase tracking-[0.14em] font-black">
-                            <Sparkles size={11} className="shrink-0" /> Roster assist · {pulse.groupSize} people
+                            <Briefcase size={11} className="shrink-0" /> {pulse.groupSize} roles nearby
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
                             {!!pulse.liveTables && pulse.liveTables > 0 && (
@@ -2586,13 +2499,10 @@ function HomeTab({
                                 {pulse.liveTables} live
                               </span>
                             )}
-                            <span className="hidden sm:inline-flex text-[10px] font-bold uppercase tracking-widest text-neutral-400 group-hover:text-red-600 transition-colors items-center gap-0.5">
-                              Open <ChevronRight size={14} strokeWidth={2} />
-                            </span>
                           </div>
                         </div>
                       </div>
-                    </motion.button>
+                    </motion.div>
                   );
                 })}
               </motion.div>
@@ -2600,27 +2510,6 @@ function HomeTab({
           </div>
         )}
 
-        <div className="hidden md:block mt-5 bg-neutral-50 border border-neutral-200 rounded-3xl p-4 md:p-5">
-          <p className="text-[10px] font-black uppercase tracking-[0.25em] text-neutral-500 mb-3">Or describe the shift you need</p>
-          <div className="flex flex-col md:flex-row gap-3">
-            <input
-              type="text" value={vibePrompt} onChange={(e) => setVibePrompt(e.target.value)}
-              placeholder="e.g. chill, social, not too loud"
-              className="flex-1 bg-transparent border-b border-neutral-200 pb-2 text-base focus:outline-none focus:border-red-700 placeholder:text-neutral-400 transition-colors"
-            />
-            <button type="button" onClick={matchByVibe}
-              className="bg-red-700 text-white px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-800 transition-colors flex items-center justify-center gap-2 shrink-0">
-              <Send size={12}/> Run assist
-            </button>
-          </div>
-          <div className="flex flex-wrap gap-2 mt-3">
-            {VIBE_PROMPTS.map((p) => (
-              <button key={p} type="button" onClick={() => setVibePrompt(p)} className="text-[10px] uppercase tracking-widest font-bold text-neutral-500 hover:text-red-700 border border-neutral-200 hover:border-red-600 px-2.5 py-1 rounded-full transition-colors">
-                {p}
-              </button>
-            ))}
-          </div>
-        </div>
       </motion.section>
 
       <div className="hidden lg:block">

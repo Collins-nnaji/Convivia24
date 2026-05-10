@@ -31,10 +31,15 @@ export async function GET(req: NextRequest) {
     const hangouts = await sql`
       SELECT h.*, u.name as host_name, u.avatar_url as host_avatar,
              u.tier as host_tier, u.verified as host_verified,
-             v.name as venue_name, v.type as venue_type, v.city as venue_city
+             v.name as venue_name, v.type as venue_type, v.city as venue_city,
+             oa.slug as vendor_slug
       FROM hangouts h
       JOIN users u ON h.host_id = u.id
       LEFT JOIN venues v ON h.venue_id = v.id
+      LEFT JOIN outlet_applications oa
+        ON oa.user_id = h.host_id
+       AND oa.status = 'approved'
+       AND oa.slug IS NOT NULL
       WHERE h.status IN ('pending', 'confirmed')
         AND h.event_time > NOW() - INTERVAL '2 hours'
         AND (
