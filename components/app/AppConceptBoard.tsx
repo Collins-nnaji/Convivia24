@@ -281,8 +281,8 @@ export type AppTab =
 
 function resolveTabForOutlet(t: AppTab): AppTab {
   if (t === 'discover' || t === 'host') return 'demand';
-  if (t === 'profile' || t === 'circles') return 'home';
-  if (t === 'demand' || t === 'pay' || t === 'home') return t;
+  if (t === 'circles') return 'home';
+  if (t === 'demand' || t === 'pay' || t === 'home' || t === 'profile') return t;
   return 'home';
 }
 
@@ -382,7 +382,7 @@ export function AppConceptBoard({
 
   const navLabels =
     persona === 'outlet'
-      ? { home: 'Today', demand: 'Demand', pay: 'Pay' }
+      ? { home: 'Today', demand: 'Demand', pay: 'Pay', profile: 'Profile' }
       : { home: 'Today', discover: 'Shifts', host: 'Record', circles: 'Learn', profile: 'Me' };
 
   const switchTab = useCallback(
@@ -440,6 +440,8 @@ export function AppConceptBoard({
           );
         case 'pay':
           return <OutletPaymentsTab cities={cities} onSwitchTab={switchTab} />;
+        case 'profile':
+          return <OutletProfileTab initialUser={liveUser} />;
         default:
           return (
             <OutletLandingTab initialUser={liveUser} onSwitchTab={switchTab} cities={cities} />
@@ -517,6 +519,7 @@ export function AppConceptBoard({
               <DesktopNavLink label={navLabels.home} icon={<CalendarDays size={18} strokeWidth={activeTab === 'home' ? 2.5 : 2} />} active={activeTab === 'home'} onClick={() => setActiveTab('home')} />
               <DesktopNavLink label={navLabels.demand} icon={<ClipboardList size={18} strokeWidth={activeTab === 'demand' ? 2.5 : 2} />} active={activeTab === 'demand'} onClick={() => setActiveTab('demand')} />
               <DesktopNavLink label={navLabels.pay} icon={<Wallet size={18} strokeWidth={activeTab === 'pay' ? 2.5 : 2} />} active={activeTab === 'pay'} onClick={() => setActiveTab('pay')} />
+              <DesktopNavLink label={navLabels.profile} icon={<UserCircle size={18} strokeWidth={activeTab === 'profile' ? 2.5 : 2} />} active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} />
             </>
           ) : (
             <>
@@ -618,6 +621,7 @@ export function AppConceptBoard({
               <NavIcon label={navLabels.demand} icon={<ClipboardList size={20} strokeWidth={activeTab === 'demand' ? 2.5 : 2} />} active={activeTab === 'demand'} onClick={() => setActiveTab('demand')} />
               <NavIcon label={navLabels.home} icon={<CalendarDays size={20} strokeWidth={activeTab === 'home' ? 2.5 : 2} />} active={activeTab === 'home'} onClick={goNow} live />
               <NavIcon label={navLabels.pay} icon={<Wallet size={20} strokeWidth={activeTab === 'pay' ? 2.5 : 2} />} active={activeTab === 'pay'} onClick={() => setActiveTab('pay')} />
+              <NavIcon label={navLabels.profile} icon={<UserCircle size={20} strokeWidth={activeTab === 'profile' ? 2.5 : 2} />} active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} />
             </>
           ) : (
             <>
@@ -1944,9 +1948,10 @@ function HomeExploreSnippets({
 }) {
   const cards: { tab: AppTab; title: string; sub: string; Icon: typeof Ticket }[] = outletThreeTab
     ? [
-        { tab: 'home', title: 'Today', sub: 'Venue · pulse · account', Icon: CalendarDays },
+        { tab: 'home', title: 'Today', sub: 'Overview · approval', Icon: CalendarDays },
         { tab: 'demand', title: 'Demand', sub: 'Board & post shifts', Icon: ClipboardList },
         { tab: 'pay', title: 'Pay', sub: 'Settlements · rails', Icon: Wallet },
+        { tab: 'profile', title: 'Profile', sub: 'Public page · trust', Icon: UserCircle },
       ]
     : [
         { tab: 'discover', title: 'Shifts', sub: 'Future · full board', Icon: ClipboardList },
@@ -1968,7 +1973,7 @@ function HomeExploreSnippets({
           <h2 className="font-display text-xl md:text-2xl italic">Jump anywhere</h2>
         </div>
       </motion.div>
-      <div className={`grid gap-2.5 md:gap-3 ${outletThreeTab ? 'grid-cols-3' : 'grid-cols-2 lg:grid-cols-4'}`}>
+      <div className={`grid gap-2.5 md:gap-3 ${outletThreeTab ? 'grid-cols-2 lg:grid-cols-4' : 'grid-cols-2 lg:grid-cols-4'}`}>
         {cards.map(({ tab, title, sub, Icon }) => (
           <motion.button
             key={tab}
@@ -3468,7 +3473,7 @@ function OutletJumpSnippets({
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   OUTLET — landing (home + registration + outlet profile card)
+   OUTLET — landing (home + registration)
    ══════════════════════════════════════════════════════════════════════ */
 function OutletLandingTab({
   initialUser,
@@ -3484,8 +3489,6 @@ function OutletLandingTab({
   return (
     <div className="space-y-5 pb-24">
       <OutletLandingDashboard onSwitchTab={onSwitchTab} />
-
-      <OutletAccountSection initialUser={initialUser} />
 
       <section className="rounded-2xl border border-neutral-200 bg-white p-4 sm:p-5 shadow-sm">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
@@ -3506,12 +3509,32 @@ function OutletLandingTab({
           />
         ) : (
           <p className="text-sm text-neutral-500 border border-dashed border-neutral-200 rounded-xl p-3 bg-neutral-50/80">
-            Sign in on <strong className="text-neutral-700">Vendor account</strong> above, then submit for approval.
+            Sign in from the <strong className="text-neutral-700">Profile</strong> tab, then submit for approval.
           </p>
         )}
       </section>
 
       <OutletJumpSnippets onSwitchTab={onSwitchTab} metroCity={metroCity} />
+    </div>
+  );
+}
+
+function OutletProfileTab({ initialUser }: { initialUser?: any }) {
+  return (
+    <div className="max-w-4xl mx-auto space-y-5 pb-24 min-w-0">
+      <div>
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-600 mb-2 flex items-center gap-2">
+          <UserCircle size={12} aria-hidden /> Vendor profile
+        </p>
+        <h1 className="font-display text-3xl md:text-5xl italic text-neutral-900 mb-3">
+          Profile & <span className="text-red-700">public page.</span>
+        </h1>
+        <p className="text-neutral-600 text-sm md:text-base leading-relaxed max-w-2xl">
+          Manage your venue identity, contact photo, public page link, gallery, and trust checks from one place.
+        </p>
+      </div>
+
+      <OutletAccountSection initialUser={initialUser} />
     </div>
   );
 }
