@@ -6,7 +6,7 @@ import { neonAuth } from '@/lib/auth/server';
 import { getOrCreateUser } from '@/lib/db/users';
 import { syncUserWatchlistFromHostedHangouts } from '@/lib/userWatchlist';
 import { getOutletApplicationForUser, serializeOutletApplication } from '@/lib/outlet-application';
-import { isConviviaAdmin } from '@/lib/admin';
+import { isConviviaAdminAsync } from '@/lib/admin';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,13 +28,14 @@ export default async function AppRootPage() {
       const row = await getOrCreateUser(authUser);
       const syncedWatchlist = await syncUserWatchlistFromHostedHangouts(String(row.id));
       const oaRow = await getOutletApplicationForUser(String(row.id));
+      const isPlatformAdmin = await isConviviaAdminAsync(authUser.email);
       initialUser = {
         ...row,
         watchlist_cities: syncedWatchlist ?? row.watchlist_cities ?? [],
         created_at:
           row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
         outlet_application: serializeOutletApplication(oaRow),
-        is_platform_admin: isConviviaAdmin(authUser.email),
+        is_platform_admin: isPlatformAdmin,
       };
     } catch (e) {
       console.error('[AppRootPage] getOrCreateUser', e);

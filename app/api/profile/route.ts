@@ -5,7 +5,7 @@ import { getOrCreateUser } from '@/lib/db/users';
 import { isPremiumUser } from '@/lib/premium';
 import { syncUserWatchlistFromHostedHangouts } from '@/lib/userWatchlist';
 import { getOutletApplicationForUser, serializeOutletApplication } from '@/lib/outlet-application';
-import { isConviviaAdmin } from '@/lib/admin';
+import { isConviviaAdminAsync } from '@/lib/admin';
 import { ProfilePatchSchema, zodFirstError } from '@/lib/schemas';
 
 // GET /api/profile — Get current user's profile
@@ -46,6 +46,8 @@ export async function GET() {
 
     const oaRow = await getOutletApplicationForUser(String(userOut.id));
 
+    const isPlatformAdmin = await isConviviaAdminAsync(authUser.email);
+
     return NextResponse.json({
       user: {
         ...userOut,
@@ -53,7 +55,7 @@ export async function GET() {
         premium_active: premiumActive,
         connections_count: Number(connectionsResult[0]?.count || 0),
         outlet_application: serializeOutletApplication(oaRow),
-        is_platform_admin: isConviviaAdmin(authUser.email),
+        is_platform_admin: isPlatformAdmin,
       },
     });
   } catch (err) {

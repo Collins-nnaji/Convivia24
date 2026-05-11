@@ -87,8 +87,9 @@ body {
     .app-shell-root {
       -webkit-text-size-adjust: 100%;
       text-size-adjust: 100%;
-      font-size: 16px;
-      line-height: 1.5;
+      font-size: 17px;
+      line-height: 1.55;
+      letter-spacing: -0.005em;
     }
 
     .app-shell-root .font-display {
@@ -98,37 +99,87 @@ body {
     }
 
     .app-shell-root .text-\[9px\] {
-      font-size: 0.6875rem !important;
-      line-height: 1rem !important;
-    }
-
-    .app-shell-root .text-\[10px\] {
       font-size: 0.75rem !important;
       line-height: 1rem !important;
     }
 
-    .app-shell-root .text-\[11px\] {
+    .app-shell-root .text-\[10px\] {
       font-size: 0.8125rem !important;
-      line-height: 1.125rem !important;
+      line-height: 1.1rem !important;
     }
 
-    .app-shell-root .text-\[12px\],
-    .app-shell-root .text-xs {
+    .app-shell-root .text-\[11px\] {
       font-size: 0.875rem !important;
       line-height: 1.25rem !important;
     }
 
-    .app-shell-root .text-sm {
+    .app-shell-root .text-\[12px\],
+    .app-shell-root .text-xs {
       font-size: 0.9375rem !important;
-      line-height: 1.375rem !important;
+      line-height: 1.35rem !important;
+    }
+
+    .app-shell-root .text-sm {
+      font-size: 1rem !important;
+      line-height: 1.5rem !important;
     }
 
     .app-shell-root input,
     .app-shell-root textarea,
-    .app-shell-root select,
-    .app-shell-root button {
+    .app-shell-root select {
+      min-height: 48px;
       font-size: max(1rem, 16px);
+      border-radius: 16px;
     }
+
+    .app-shell-root button,
+    .app-shell-root a {
+      -webkit-touch-callout: none;
+    }
+
+    .app-shell-root button {
+      min-height: 44px;
+    }
+
+    .app-shell-root :is(button, a, input, textarea, select):focus-visible {
+      outline: 3px solid rgba(185, 28, 28, 0.34);
+      outline-offset: 3px;
+    }
+
+    .app-shell-root :is(section, article, form) {
+      scroll-margin-top: calc(env(safe-area-inset-top) + 4rem);
+      scroll-margin-bottom: calc(env(safe-area-inset-bottom) + 7rem);
+    }
+
+    .app-shell-root .rounded-\[18px\] {
+      border-radius: 24px !important;
+    }
+
+    .app-shell-root .rounded-2xl {
+      border-radius: 22px !important;
+    }
+
+    .app-shell-root .rounded-3xl {
+      border-radius: 28px !important;
+    }
+
+    .app-shell-root .tracking-\[0\.3em\],
+    .app-shell-root .tracking-\[0\.28em\],
+    .app-shell-root .tracking-\[0\.25em\],
+    .app-shell-root .tracking-\[0\.2em\] {
+      letter-spacing: 0.1em !important;
+    }
+  }
+}
+
+@media (max-width: 1023px) and (prefers-reduced-motion: reduce) {
+  .app-shell-root *,
+  .app-shell-root *::before,
+  .app-shell-root *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }
 

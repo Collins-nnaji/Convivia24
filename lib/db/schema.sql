@@ -45,6 +45,22 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- ─────────────────────────────────────
+-- APP ADMINS — platform console access
+-- ─────────────────────────────────────
+CREATE TABLE IF NOT EXISTS app_admins (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email       TEXT NOT NULL UNIQUE,
+  role        TEXT NOT NULL DEFAULT 'admin' CHECK (role IN ('owner', 'admin')),
+  added_by    TEXT,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+INSERT INTO app_admins (email, role, added_by)
+VALUES ('collinsnnaji1@gmail.com', 'owner', 'system')
+ON CONFLICT (email) DO UPDATE SET role = 'owner', updated_at = NOW();
+
+-- ─────────────────────────────────────
 -- MATCH REQUESTS — AI Match flow log (Skip/Delay/Join)
 -- ─────────────────────────────────────
 CREATE TABLE IF NOT EXISTS match_requests (

@@ -95,6 +95,42 @@ function shiftCardPayAndRequirements(h: {
   };
 }
 
+function shiftIntelligenceBadges(h: any, selectedCity: string) {
+  const badges: { label: string; tone: 'good' | 'warn' | 'neutral' }[] = [];
+  const pay = Number(h.ticket_price || 0);
+  const cityMatches =
+    selectedCity &&
+    [h.city, h.venue_city, h.location]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(selectedCity.toLowerCase()));
+  const remaining = Math.max(0, Number(h.max_guests || 0) - Number(h.current_guests || 0));
+  const hasBrief = String(h.vibe || '').trim().length >= 30;
+
+  if (cityMatches) badges.push({ label: 'Near your city', tone: 'good' });
+  if (h.vendor_slug) badges.push({ label: 'Verified outlet profile', tone: 'good' });
+  else badges.push({ label: 'No outlet profile yet', tone: 'warn' });
+  if (pay >= 15000) badges.push({ label: 'High pay', tone: 'good' });
+  else if (pay > 0) badges.push({ label: 'Pay listed', tone: 'neutral' });
+  else badges.push({ label: 'Confirm pay before accepting', tone: 'warn' });
+  if (remaining > 0 && remaining <= 2) badges.push({ label: 'Few spots left', tone: 'neutral' });
+  if (!hasBrief) badges.push({ label: 'Brief is light', tone: 'warn' });
+
+  return badges.slice(0, 4);
+}
+
+function shiftBadgeClass(tone: 'good' | 'warn' | 'neutral') {
+  if (tone === 'good') return 'border-emerald-200 bg-emerald-50 text-emerald-900';
+  if (tone === 'warn') return 'border-amber-200 bg-amber-50 text-amber-950';
+  return 'border-neutral-200 bg-neutral-50 text-neutral-700';
+}
+
+function suggestedApplicationNote(h: any) {
+  const title = String(h.title || 'this shift');
+  const role = title.split(/[·,-]/)[0]?.trim() || title;
+  const area = String(h.area || h.city || '').trim();
+  return `Available for ${role}${area ? ` in ${area}` : ''}. Payout details included.`;
+}
+
 /* ══════════════════════════════════════════════════════════════════════
    LIVE CITY PULSE  — what makes us different from Eventbrite/Meetup
    ══════════════════════════════════════════════════════════════════════ */
@@ -572,16 +608,16 @@ export function AppConceptBoard({
         </div>
       </header>
 
-      {/* Mobile top tab bar — fixed below notch (Convivia wordmark only on Home hero, not here) */}
-      <div className="lg:hidden fixed top-0 left-1/2 z-[60] w-full max-w-[min(100%,428px)] -translate-x-1/2 pointer-events-none px-2 pt-0 flex flex-col gap-1">
-        <div className="pointer-events-auto flex justify-between items-center px-2 pt-[max(0.35rem,env(safe-area-inset-top))] gap-2">
+      {/* Mobile app chrome: compact switcher at top, thumb-friendly navigation at bottom. */}
+      <div className="lg:hidden fixed top-0 left-1/2 z-[60] w-full max-w-[min(100%,428px)] -translate-x-1/2 pointer-events-none px-3 pt-0">
+        <div className="pointer-events-auto flex justify-between items-center rounded-b-[18px] border border-t-0 border-neutral-200 bg-white/[0.96] px-3 pt-[max(0.45rem,env(safe-area-inset-top))] pb-2 shadow-[0_6px_20px_rgba(0,0,0,0.06)] backdrop-blur-xl gap-2">
           {appMode === 'staff' ? (
             <>
-              <Link href="/outlet" className="text-[10px] font-black uppercase tracking-[0.18em] text-neutral-600 hover:text-red-700 py-1 min-w-0">
+              <Link href="/outlet" className="text-[11px] font-black uppercase tracking-[0.12em] text-neutral-700 hover:text-red-700 py-1 min-w-0">
                 Vendor console →
               </Link>
               <span
-                className="shrink-0 rounded-full border border-neutral-200 bg-white/90 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest text-neutral-500"
+                className="shrink-0 rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-neutral-600"
                 title="Convivia24 is for adults 18 and over"
               >
                 18+
@@ -589,12 +625,12 @@ export function AppConceptBoard({
             </>
           ) : (
             <>
-              <Link href="/" className="text-[10px] font-black uppercase tracking-[0.18em] text-neutral-600 hover:text-red-700 py-1 shrink-0">
+              <Link href="/" className="text-[11px] font-black uppercase tracking-[0.12em] text-neutral-700 hover:text-red-700 py-1 shrink-0">
                 ← Staff app
               </Link>
               <div className="flex items-center gap-2 shrink-0">
                 <span
-                  className="rounded-full border border-neutral-200 bg-white/90 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest text-neutral-500"
+                  className="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-neutral-600"
                   title="Convivia24 is for adults 18 and over"
                 >
                   18+
@@ -612,7 +648,7 @@ export function AppConceptBoard({
           )}
         </div>
         <div
-          className="pointer-events-auto flex w-full items-end justify-between gap-1 rounded-b-[22px] border border-neutral-200 border-t-0 bg-white/[0.98] backdrop-blur-xl px-2 pb-1.5 shadow-[0_8px_28px_rgba(0,0,0,0.08)]"
+          className="pointer-events-auto fixed bottom-0 left-1/2 z-[70] flex w-full max-w-[min(100%,428px)] -translate-x-1/2 items-end justify-between gap-1 rounded-t-[26px] border border-neutral-200 border-b-0 bg-white/[0.98] px-2.5 pb-[max(0.7rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_32px_rgba(0,0,0,0.12)] backdrop-blur-xl"
           role="tablist"
           aria-label="Main navigation"
         >
@@ -638,7 +674,7 @@ export function AppConceptBoard({
       {/* MAIN CONTENT */}
       <div
         ref={mainScrollRef}
-        className="w-full overflow-x-hidden px-4 sm:px-6 lg:px-12 max-lg:flex-1 max-lg:min-h-0 max-lg:overflow-y-auto max-lg:overscroll-y-contain max-lg:pt-[calc(env(safe-area-inset-top)+5.65rem)] max-lg:pb-[calc(1.35rem+env(safe-area-inset-bottom))] max-lg:scroll-pb-[calc(1.35rem+env(safe-area-inset-bottom))] max-lg:scrollbar-hide max-lg:relative max-lg:touch-pan-y lg:flex-none lg:overflow-visible lg:pb-12"
+        className="w-full overflow-x-hidden px-4 sm:px-6 lg:px-12 max-lg:flex-1 max-lg:min-h-0 max-lg:overflow-y-auto max-lg:overscroll-y-contain max-lg:pt-[calc(env(safe-area-inset-top)+3.35rem)] max-lg:pb-[calc(6.5rem+env(safe-area-inset-bottom))] max-lg:scroll-pb-[calc(6.5rem+env(safe-area-inset-bottom))] max-lg:scrollbar-hide max-lg:relative max-lg:touch-pan-y lg:flex-none lg:overflow-visible lg:pb-12"
       >
         <AnimatePresence mode="wait">
           <motion.div
@@ -674,9 +710,9 @@ function NavIcon({ icon, label, active, onClick, live }: any) {
     <button
       onClick={onClick}
       type="button"
-      className={`flex-1 min-w-0 basis-0 min-h-[48px] py-1 rounded-[14px] flex flex-col items-center justify-center gap-0.5 transition-all duration-200 active:scale-[0.96] relative ${
+      className={`flex-1 min-w-0 basis-0 min-h-[60px] py-1.5 rounded-[18px] flex flex-col items-center justify-center gap-1 transition-all duration-200 active:scale-[0.96] relative ${
         active
-          ? 'text-red-700 bg-red-50 shadow-[inset_0_0_0_1.5px_rgba(185,28,28,0.18)]'
+          ? 'text-red-700 bg-red-50 shadow-[inset_0_0_0_1.5px_rgba(185,28,28,0.18),0_6px_18px_rgba(185,28,28,0.1)]'
           : 'text-neutral-500 hover:text-neutral-800 active:bg-neutral-50'
       }`}
     >
@@ -687,7 +723,7 @@ function NavIcon({ icon, label, active, onClick, live }: any) {
         )}
       </span>
       <span
-        className={`max-w-[100%] px-0.5 text-center text-[7px] leading-[1.15] uppercase tracking-[0.1em] font-black line-clamp-2 ${active ? 'text-red-800' : ''}`}
+        className={`max-w-[100%] px-0.5 text-center text-[10px] leading-[1.05] uppercase tracking-[0.04em] font-black line-clamp-2 ${active ? 'text-red-800' : ''}`}
       >
         {label}
       </span>
@@ -902,6 +938,11 @@ function DiscoverTab({
   const [applyNote, setApplyNote] = useState('');
   const [applyingId, setApplyingId] = useState<string | null>(null);
   const [appliedIds, setAppliedIds] = useState<Record<string, string>>({}); // shiftId → status
+  const [applicationDefaults, setApplicationDefaults] = useState<{
+    payout_provider: string;
+    payout_phone: string;
+    note?: string | null;
+  } | null>(null);
 
   const loadHangouts = useCallback(() => {
     setLoading(true);
@@ -927,6 +968,33 @@ function DiscoverTab({
     loadHangouts();
   }, [loadHangouts]);
 
+  useEffect(() => {
+    if (persona === 'outlet') return;
+    fetch('/api/shifts/my-applications', { credentials: 'include' })
+      .then(async (r) => {
+        if (!r.ok) return null;
+        return r.json();
+      })
+      .then((data) => {
+        const applications = Array.isArray(data?.applications) ? data.applications : [];
+        const statuses: Record<string, string> = {};
+        for (const app of applications) {
+          if (app.shift_id && app.status) statuses[String(app.shift_id)] = String(app.status);
+        }
+        setAppliedIds(statuses);
+
+        const latestWithPayout = applications.find((app: any) => app.payout_provider && app.payout_phone);
+        if (latestWithPayout) {
+          setApplicationDefaults({
+            payout_provider: String(latestWithPayout.payout_provider),
+            payout_phone: String(latestWithPayout.payout_phone),
+            note: latestWithPayout.note ? String(latestWithPayout.note) : null,
+          });
+        }
+      })
+      .catch(() => {});
+  }, [persona]);
+
   const handleApplySubmit = async (shiftId: string) => {
     if (!applyPhone.trim()) { setJoinNote('Enter your payout phone number.'); return; }
     setApplyingId(shiftId);
@@ -941,6 +1009,11 @@ function DiscoverTab({
       const data = await res.json();
       if (res.ok) {
         setAppliedIds((prev) => ({ ...prev, [shiftId]: data.application?.status || 'pending' }));
+        setApplicationDefaults({
+          payout_provider: applyProvider,
+          payout_phone: applyPhone.trim(),
+          note: applyNote.trim() || null,
+        });
         setApplyOpenId(null);
         setApplyPhone('');
         setApplyNote('');
@@ -1085,6 +1158,7 @@ function DiscoverTab({
                 : 'bg-sky-50 text-sky-800 border-sky-200';
               const isFull = (h.current_guests || 0) >= (h.max_guests || 0);
               const payReq = shiftCardPayAndRequirements(h);
+              const smartBadges = shiftIntelligenceBadges(h, discoverCity);
               return (
                 <motion.div
                   key={h.id}
@@ -1104,6 +1178,19 @@ function DiscoverTab({
                       </div>
                     </div>
                     <h3 className="font-display text-xl md:text-2xl lg:text-3xl mb-3 md:mb-4 leading-tight text-neutral-900">{h.title}</h3>
+
+                    {persona !== 'outlet' ? (
+                      <div className="mb-3 flex flex-wrap gap-1.5">
+                        {smartBadges.map((badge) => (
+                          <span
+                            key={`${h.id}-${badge.label}`}
+                            className={`rounded-full border px-2.5 py-1 text-[8px] font-black uppercase tracking-widest ${shiftBadgeClass(badge.tone)}`}
+                          >
+                            {badge.label}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
 
                     <div className="space-y-2 mb-4 md:mb-5">
                       <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/50 px-3 py-2.5">
@@ -1184,7 +1271,18 @@ function DiscoverTab({
                       if (applyOpenId === h.id) {
                         return (
                           <div className="rounded-2xl border border-red-200 bg-red-50/60 p-4 space-y-3">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-red-700">Payout details — required to apply</p>
+                            <div>
+                              <p className="text-[10px] font-black uppercase tracking-widest text-red-700">Smart application</p>
+                              {applicationDefaults?.payout_phone ? (
+                                <p className="text-[11px] text-neutral-600 mt-1">
+                                  Reused your last payout details. Edit before sending if needed.
+                                </p>
+                              ) : (
+                                <p className="text-[11px] text-neutral-600 mt-1">
+                                  Add payout details once, then future applications prefill automatically.
+                                </p>
+                              )}
+                            </div>
                             <div className="grid grid-cols-2 gap-3">
                               <div className="flex flex-col gap-1">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Provider</label>
@@ -1239,7 +1337,13 @@ function DiscoverTab({
                       return (
                         <button
                           type="button"
-                          onClick={() => { setApplyOpenId(h.id); setApplyPhone(''); setApplyNote(''); setJoinNote(null); }}
+                          onClick={() => {
+                            setApplyOpenId(h.id);
+                            setApplyProvider(applicationDefaults?.payout_provider || 'OPay');
+                            setApplyPhone(applicationDefaults?.payout_phone || '');
+                            setApplyNote(applicationDefaults?.note || suggestedApplicationNote(h));
+                            setJoinNote(null);
+                          }}
                           disabled={joiningId === h.id}
                           className="w-full min-h-10 text-[10px] uppercase font-black tracking-widest text-white bg-neutral-900 hover:bg-red-700 px-4 py-2.5 rounded-full transition-colors flex items-center justify-center gap-1.5 shadow-md disabled:opacity-50"
                         >
@@ -2921,10 +3025,10 @@ function OutletAccountSection({ initialUser }: { initialUser?: any }) {
 
             {user?.is_platform_admin ? (
               <Link
-                href="/admin/outlets"
+                href="/admin"
                 className="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-neutral-50 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-neutral-800 hover:border-red-400"
               >
-                Admin · outlet queue
+                Admin console
               </Link>
             ) : null}
 
@@ -3445,6 +3549,8 @@ type Applicant = {
   worker_verified: boolean;
   worker_location: string | null;
   worker_certifications: string[];
+  match_score?: number;
+  match_reasons?: string[];
 };
 
 type OutletShift = {
@@ -3643,6 +3749,11 @@ function OutletApplicantsPanel() {
                             <div className="min-w-0">
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <p className="font-semibold text-neutral-900 text-sm">{a.worker_name}</p>
+                                {typeof a.match_score === 'number' && a.match_score >= 45 ? (
+                                  <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest text-emerald-900">
+                                    Strong match
+                                  </span>
+                                ) : null}
                                 {a.worker_verified && <ShieldCheck size={13} className="text-red-700 shrink-0" />}
                                 {a.worker_rating != null && (
                                   <span className="text-[10px] text-amber-700 font-semibold flex items-center gap-0.5">
@@ -3654,6 +3765,15 @@ function OutletApplicantsPanel() {
                                 {a.payout_provider} · {a.payout_phone}
                                 {a.worker_location ? ` · ${a.worker_location}` : ''}
                               </p>
+                              {Array.isArray(a.match_reasons) && a.match_reasons.length > 0 ? (
+                                <div className="mt-1 flex flex-wrap gap-1">
+                                  {a.match_reasons.map((reason) => (
+                                    <span key={`${a.id}-${reason}`} className="rounded-full border border-neutral-200 bg-neutral-50 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest text-neutral-600">
+                                      {reason}
+                                    </span>
+                                  ))}
+                                </div>
+                              ) : null}
                               {a.note && <p className="text-[11px] text-neutral-400 italic mt-0.5">"{a.note}"</p>}
                             </div>
                           </div>
@@ -4762,10 +4882,10 @@ function ProfileTab({ persona, initialUser }: { persona: StaffPersona; initialUs
       {user?.is_platform_admin ? (
         <div className="mb-6">
           <Link
-            href="/admin/outlets"
+            href="/admin"
             className="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 py-2 text-[10px] font-black uppercase tracking-widest text-neutral-800 hover:border-red-400"
           >
-            Admin · outlet queue
+            Admin console
           </Link>
         </div>
       ) : null}

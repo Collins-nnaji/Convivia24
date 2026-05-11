@@ -36,14 +36,32 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ slu
       FROM hangouts
       WHERE host_id = (SELECT user_id FROM outlet_applications WHERE id = ${vendor.id})
         AND event_time > NOW() - INTERVAL '1 day'
-        AND status NOT IN ('cancelled')
+        AND status NOT IN ('dissolved')
       ORDER BY event_time
       LIMIT 8
+    `;
+
+    const stats = await sql`
+      SELECT
+        COUNT(DISTINCT h.id)::int AS total_shifts,
+        COUNT(sa.id)::int AS total_applications,
+        COUNT(sa.id) FILTER (WHERE sa.status IN ('shortlisted', 'confirmed'))::int AS trusted_matches,
+        COUNT(DISTINCT h.id) FILTER (WHERE h.status = 'completed')::int AS completed_shifts
+      FROM hangouts h
+      LEFT JOIN shift_applications sa ON sa.shift_id = h.id
+      WHERE h.host_id = (SELECT user_id FROM outlet_applications WHERE id = ${vendor.id})
+        AND h.status <> 'dissolved'
     `;
 
     return NextResponse.json({
       vendor: { ...vendor, media: Array.from(media) },
       shifts: Array.from(shifts),
+      stats: stats[0] || {
+        total_shifts: 0,
+        total_applications: 0,
+        trusted_matches: 0,
+        completed_shifts: 0,
+      },
     });
   } catch (err) {
     console.error('GET /api/vendor/[slug] error:', err);

@@ -97,9 +97,9 @@ All variables go in two places:
 ### Admin emails
 | Variable | What it does |
 |---|---|
-| `CONVIVIA_ADMIN_EMAILS` | Comma-separated list of emails that have admin access (e.g. `collinsnnaji1@gmail.com`). Used by `lib/admin.ts` to gate `/admin/outlets` and platform-admin UI. |
+| `CONVIVIA_ADMIN_EMAILS` | Optional comma-separated admin fallback list. Admin access is now stored in the `app_admins` table and managed at `/admin`. |
 
-**If not set:** Nobody sees the admin panel or outlet approval queue.
+**Default owner:** `collinsnnaji1@gmail.com` is seeded as owner by `lib/db/migrate-v9.ts`.
 
 ---
 

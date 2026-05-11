@@ -31,10 +31,9 @@ export const metadata = {
   },
   icons: {
     icon: [
-      { url: '/icons/icon.svg', type: 'image/svg+xml' },
-      { url: '/icons/icon-maskable.svg', type: 'image/svg+xml' },
+      { url: '/Logo2.png', type: 'image/png' },
     ],
-    apple: '/icons/icon-maskable.svg',
+    apple: '/Logo2.png',
   },
 };
 

@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { neonAuth } from '@/lib/auth/server';
-import { isConviviaAdmin } from '@/lib/admin';
+import { isConviviaAdminAsync } from '@/lib/admin';
 import { getOutletApplicationForUser, serializeOutletApplication } from '@/lib/outlet-application';
 
 /** PATCH — approve / reject / mark under review. */
 export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   try {
     const { user: authUser } = await neonAuth();
-    if (!authUser?.email || !isConviviaAdmin(authUser.email)) {
+    if (!authUser?.email || !(await isConviviaAdminAsync(authUser.email))) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

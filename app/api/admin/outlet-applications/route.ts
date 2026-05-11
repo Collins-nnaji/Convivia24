@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { neonAuth } from '@/lib/auth/server';
-import { isConviviaAdmin } from '@/lib/admin';
+import { isConviviaAdminAsync } from '@/lib/admin';
 import { serializeOutletApplication } from '@/lib/outlet-application';
 
 /** GET — list applications for admin inbox. */
 export async function GET() {
   try {
     const { user: authUser } = await neonAuth();
-    if (!authUser?.email || !isConviviaAdmin(authUser.email)) {
+    if (!authUser?.email || !(await isConviviaAdminAsync(authUser.email))) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

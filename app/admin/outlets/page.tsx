@@ -64,17 +64,15 @@ export default function AdminOutletApplicationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f6f2] text-neutral-900 px-4 py-10 max-w-4xl mx-auto">
+    <div className="px-4 py-10 max-w-4xl mx-auto">
       <div className="flex items-center justify-between gap-4 mb-8">
         <div>
           <p className="text-[10px] font-black uppercase tracking-[0.28em] text-red-600">Admin</p>
           <h1 className="font-display text-3xl italic">Outlet applications</h1>
-          <p className="text-sm text-neutral-600 mt-1">
-            Set <code className="text-xs bg-neutral-200/80 px-1 rounded">CONVIVIA_ADMIN_EMAILS</code> in env with your sign-in email.
-          </p>
+          <p className="text-sm text-neutral-600 mt-1">Review vendor profile requests and approve public outlet pages.</p>
         </div>
-        <Link href="/" className="text-[10px] font-black uppercase tracking-widest text-red-700 hover:underline">
-          ← App
+        <Link href="/admin" className="text-[10px] font-black uppercase tracking-widest text-red-700 hover:underline">
+          Admin console
         </Link>
       </div>
 
