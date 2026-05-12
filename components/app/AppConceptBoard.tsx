@@ -570,20 +570,12 @@ export function AppConceptBoard({
 
         <div className="hidden lg:flex items-center justify-end gap-3 shrink-0 w-[160px] lg:w-[240px] text-right flex-wrap">
           {appMode === 'staff' ? (
-            <>
-              <span
-                className="rounded-full border border-neutral-200 bg-neutral-50 px-2 py-1 text-[9px] font-black uppercase tracking-widest text-neutral-500"
-                title="Convivia24 is for adults 18 and over"
-              >
-                18+
-              </span>
-              <Link
-                href="/outlet"
-                className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 hover:text-red-700 whitespace-nowrap"
-              >
-                Outlet →
-              </Link>
-            </>
+            <span
+              className="rounded-full border border-neutral-200 bg-neutral-50 px-2 py-1 text-[9px] font-black uppercase tracking-widest text-neutral-500"
+              title="Convivia24 is for adults 18 and over"
+            >
+              18+
+            </span>
           ) : (
             <>
               <span
@@ -592,9 +584,6 @@ export function AppConceptBoard({
               >
                 18+
               </span>
-              <Link href="/" className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 hover:text-red-700 whitespace-nowrap">
-                ← Staff app
-              </Link>
               {!liveUser ? (
                 <Link
                   href="/auth/sign-in"
@@ -612,39 +601,29 @@ export function AppConceptBoard({
       <div className="lg:hidden fixed top-0 left-1/2 z-[60] w-full max-w-[min(100%,428px)] -translate-x-1/2 pointer-events-none px-3 pt-0">
         <div className="pointer-events-auto flex justify-between items-center rounded-b-[18px] border border-t-0 border-neutral-200 bg-white/[0.96] px-3 pt-[max(0.45rem,env(safe-area-inset-top))] pb-2 shadow-[0_6px_20px_rgba(0,0,0,0.06)] backdrop-blur-xl gap-2">
           {appMode === 'staff' ? (
-            <>
-              <Link href="/outlet" className="text-[11px] font-black uppercase tracking-[0.12em] text-neutral-700 hover:text-red-700 py-1 min-w-0">
-                Vendor console →
-              </Link>
+            <span
+              className="ml-auto shrink-0 rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-neutral-600"
+              title="Convivia24 is for adults 18 and over"
+            >
+              18+
+            </span>
+          ) : (
+            <div className="ml-auto flex items-center gap-2 shrink-0">
               <span
-                className="shrink-0 rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-neutral-600"
+                className="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-neutral-600"
                 title="Convivia24 is for adults 18 and over"
               >
                 18+
               </span>
-            </>
-          ) : (
-            <>
-              <Link href="/" className="text-[11px] font-black uppercase tracking-[0.12em] text-neutral-700 hover:text-red-700 py-1 shrink-0">
-                ← Staff app
-              </Link>
-              <div className="flex items-center gap-2 shrink-0">
-                <span
-                  className="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-neutral-600"
-                  title="Convivia24 is for adults 18 and over"
+              {!liveUser ? (
+                <Link
+                  href="/auth/sign-in"
+                  className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.18em] text-red-700 hover:text-red-800 py-1"
                 >
-                  18+
-                </span>
-                {!liveUser ? (
-                  <Link
-                    href="/auth/sign-in"
-                    className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.18em] text-red-700 hover:text-red-800 py-1"
-                  >
-                    <LogIn size={12} aria-hidden /> Sign in
-                  </Link>
-                ) : null}
-              </div>
-            </>
+                  <LogIn size={12} aria-hidden /> Sign in
+                </Link>
+              ) : null}
+            </div>
           )}
         </div>
       </div>
@@ -2986,7 +2965,7 @@ function OutletAccountSection({ initialUser }: { initialUser?: any }) {
               ) : null}
             </div>
             <p className="text-[10px] text-neutral-500 text-center lg:text-left max-w-[11rem] lg:max-w-[12rem] leading-snug">
-              Contact photo · visible to workers on shifts.
+              Contact photo
             </p>
             {avatarError ? <p className="text-red-600 text-[11px] lg:col-span-1 text-center lg:text-left">{avatarError}</p> : null}
           </div>
@@ -3123,8 +3102,8 @@ function OutletAccountSection({ initialUser }: { initialUser?: any }) {
             <div className="rounded-xl border border-neutral-200 bg-white p-4 space-y-4">
               <div className="flex items-center justify-between gap-2">
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-600">Vendor public page</p>
-                  <p className="text-[12px] text-neutral-500 mt-0.5">Photos, videos, address — your shareable marketing page.</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-600">Public page</p>
+                  <p className="text-[12px] text-neutral-500 mt-0.5">What workers see before applying.</p>
                 </div>
                 {vendorShareUrl ? (
                   <button
@@ -3140,11 +3119,11 @@ function OutletAccountSection({ initialUser }: { initialUser?: any }) {
 
               {vendorShareUrl ? (
                 <a href={vendorShareUrl} target="_blank" rel="noopener noreferrer"
-                  className="block text-[11px] text-red-700 font-semibold truncate hover:underline">
-                  {vendorShareUrl}
+                  className="inline-flex rounded-full bg-red-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-red-700 hover:underline">
+                  Open public page
                 </a>
               ) : (
-                <p className="text-[11px] text-neutral-400 italic">Submit &amp; get approved to unlock your public page link.</p>
+                <p className="text-[11px] text-neutral-400 italic">Approval unlocks this link.</p>
               )}
 
               {vendorEditing ? (
@@ -3237,15 +3216,15 @@ function OutletAccountSection({ initialUser }: { initialUser?: any }) {
             </div>
 
             <div className="rounded-xl border border-neutral-200 bg-neutral-50/80 p-3 md:p-4 space-y-2">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">Verification</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">Outlet checklist</p>
               <div className="grid sm:grid-cols-2 gap-2 text-[12px] text-neutral-700">
                 <div className="rounded-lg bg-white border border-neutral-200 p-2.5">
                   <p className="font-bold text-neutral-900 text-xs">CAC &amp; venue</p>
-                  <p className="text-[11px] text-neutral-500 mt-0.5 leading-snug">Details in the form below — matched before you&apos;re live.</p>
+                  <p className="text-[11px] text-neutral-500 mt-0.5 leading-snug">Review before going live.</p>
                 </div>
                 <div className="rounded-lg bg-white border border-neutral-200 p-2.5">
                   <p className="font-bold text-neutral-900 text-xs">Payouts</p>
-                  <p className="text-[11px] text-neutral-500 mt-0.5 leading-snug">OPay · PalmPay · Moniepoint · status in staff app.</p>
+                  <p className="text-[11px] text-neutral-500 mt-0.5 leading-snug">OPay · PalmPay · Moniepoint.</p>
                 </div>
               </div>
               <a
@@ -3254,7 +3233,7 @@ function OutletAccountSection({ initialUser }: { initialUser?: any }) {
                 rel="noopener noreferrer"
                 className="inline-flex text-[10px] font-black uppercase tracking-widest text-red-700 hover:underline"
               >
-                WhatsApp ops →
+                Need help? WhatsApp ops →
               </a>
             </div>
 
@@ -3526,6 +3505,17 @@ function OutletProfileTab({ initialUser }: { initialUser?: any }) {
           Manage your venue identity, contact photo, public page link, gallery, and trust checks from one place.
         </p>
       </div>
+
+      <Link
+        href="/"
+        className="flex items-center justify-between gap-4 rounded-2xl border border-red-200 bg-red-50/80 px-4 py-3 text-red-900 shadow-sm hover:border-red-300 hover:bg-red-50"
+      >
+        <div className="min-w-0">
+          <p className="text-[10px] font-black uppercase tracking-widest text-red-700">Switch console</p>
+          <p className="text-sm font-bold">Go to staff app</p>
+        </div>
+        <span className="shrink-0 text-[10px] font-black uppercase tracking-widest">Open →</span>
+      </Link>
 
       <OutletAccountSection initialUser={initialUser} />
     </div>
@@ -4063,242 +4053,142 @@ function CareerTab({ onSwitchTab }: { onSwitchTab: (t: AppTab) => void }) {
   const confirmed = applications.filter((a) => a.status === 'confirmed');
   const pending   = applications.filter((a) => a.status === 'pending' || a.status === 'shortlisted');
   const past      = applications.filter((a) => a.status === 'rejected' || a.status === 'no_show');
-
-  const trainingModules = [
-    { id: 't1', title: 'Service & recovery', min: 6, waLink: 'Service & recovery module' },
-    { id: 't2', title: 'Hygiene essentials', min: 5, waLink: 'Hygiene essentials module' },
-    { id: 't3', title: 'Drinks & glassware', min: 8, waLink: 'Drinks & glassware module' },
-  ];
   return (
-    <div className="mx-auto w-full max-w-[min(100%,428px)] lg:max-w-6xl pb-20 px-0 lg:px-4 min-w-0">
-      {/* Mobile-first: single column · lg+: hero full width, then pay | ops side by side */}
-      <header className="mb-8 space-y-3">
+    <div className="mx-auto w-full max-w-[min(100%,428px)] lg:max-w-5xl pb-20 px-0 lg:px-4 min-w-0">
+      <header className="mb-5 space-y-2">
         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-600 flex items-center gap-2">
           <Briefcase size={12} aria-hidden /> Record
         </p>
         <h1 className="font-display text-3xl md:text-5xl italic text-neutral-900">
-          Pay, slips & <span className="text-red-700">disputes.</span>
+          My <span className="text-red-700">record.</span>
         </h1>
-        <p className="text-neutral-600 text-sm md:text-base leading-relaxed max-w-2xl">
-          One place for wallet, slip lines, and disputes — your outlet-facing rating is on{' '}
-          <button type="button" onClick={() => onSwitchTab('profile')} className="text-red-700 font-semibold underline decoration-red-600/40 underline-offset-2">
-            Profile
-          </button>
-          .
-        </p>
+        <p className="text-neutral-600 text-sm md:text-base leading-relaxed">Applications, pay status, and help.</p>
       </header>
 
-      <div className="flex flex-col gap-8 lg:flex-row lg:gap-10 lg:items-start">
-        {/* Column A — money trail (native stack on phone) */}
-        <div className="flex min-w-0 flex-1 flex-col gap-8">
-      <div className="rounded-2xl border border-teal-200/90 bg-gradient-to-br from-teal-50/80 to-white p-5 shadow-sm">
-        <div className="flex items-start gap-3">
-          <div className="shrink-0 w-11 h-11 rounded-2xl bg-teal-600 text-white flex items-center justify-center shadow-sm">
-            <Wallet size={22} aria-hidden />
+      <div className="grid grid-cols-3 gap-2 mb-4">
+        {[
+          { label: 'Hired', value: confirmed.length },
+          { label: 'Pending', value: pending.length },
+          { label: 'Closed', value: past.length },
+        ].map((item) => (
+          <div key={item.label} className="rounded-2xl border border-neutral-200 bg-white p-3 text-center shadow-sm">
+            <p className="font-display text-2xl italic text-neutral-900 tabular-nums">{item.value}</p>
+            <p className="mt-1 text-[9px] font-black uppercase tracking-widest text-neutral-500">{item.label}</p>
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-teal-900">Payments</p>
-            <h2 className="font-display text-xl italic text-neutral-900 mt-1">Your wallet & payout route</h2>
-            <p className="text-[13px] text-neutral-600 mt-2 leading-snug">
-              Link OPay / PalmPay / Moniepoint in Profile and keep ops updated if your wallet number changes.
-            </p>
-            <div className="flex flex-wrap gap-2 mt-3">
-              {['OPay', 'PalmPay', 'Moniepoint'].map((p) => (
-                <span key={p} className="text-[10px] font-black uppercase tracking-widest bg-white/90 text-teal-900 border border-teal-200 px-2.5 py-1 rounded-full shadow-sm">
-                  {p}
-                </span>
-              ))}
+        ))}
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-teal-200 bg-teal-50/70 p-4 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="shrink-0 w-10 h-10 rounded-2xl bg-teal-700 text-white flex items-center justify-center">
+                <Wallet size={20} aria-hidden />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-black uppercase tracking-widest text-teal-900">Wallet</p>
+                <p className="text-sm font-bold text-neutral-900">OPay · PalmPay · Moniepoint</p>
+              </div>
             </div>
-            <p className="text-[12px] text-neutral-500 mt-4 tabular-nums">
-              Pending (est.): <strong className="text-neutral-800">₦0</strong>
-              <span className="mx-2 text-neutral-300">·</span>
-              Paid this month (est.): <strong className="text-neutral-800">₦—</strong>
-            </p>
             <button
               type="button"
               onClick={() => onSwitchTab('profile')}
-              className="mt-3 text-[10px] font-black uppercase tracking-widest text-teal-900 hover:underline underline-offset-4"
+              className="mt-4 inline-flex min-h-[44px] w-full items-center justify-center rounded-full bg-white px-4 py-2 text-[10px] font-black uppercase tracking-widest text-teal-900 shadow-sm"
             >
-              Profile · verification & payout notes →
+              Edit payout in Profile →
             </button>
           </div>
-        </div>
-      </div>
 
-      <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
-        <div className="flex items-start gap-3 mb-4">
-          <div className="shrink-0 w-10 h-10 rounded-xl bg-red-50 border border-red-100 flex items-center justify-center text-red-700">
-            <Receipt size={20} aria-hidden />
-          </div>
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-neutral-500">Confirmed shifts</p>
-            <h2 className="font-display text-lg italic text-neutral-900 mt-0.5">Your hired work</h2>
+          <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-4 shadow-sm">
+            <div className="flex items-start gap-3">
+              <AlertCircle size={20} className="mt-0.5 shrink-0 text-amber-800" aria-hidden />
+              <div className="min-w-0">
+                <p className="text-[10px] font-black uppercase tracking-widest text-amber-900">Need help?</p>
+                <p className="mt-1 text-sm font-bold text-neutral-900">Pay or hours issue</p>
+                <a
+                  href={staffingWhatsAppUrl('Hi Convivia24 — question about my pay or shift record.')}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex min-h-[44px] items-center justify-center rounded-full bg-red-700 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white"
+                >
+                  WhatsApp support
+                </a>
+              </div>
+            </div>
           </div>
         </div>
-        {loadingApps ? (
-          <div className="space-y-2">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex items-center justify-between gap-3 p-3">
-                <div className="space-y-1.5 flex-1">
-                  <div className="skeleton h-4 w-1/2" />
-                  <div className="skeleton h-3 w-1/3" />
-                </div>
-                <div className="skeleton h-6 w-20 rounded-full" />
-              </div>
-            ))}
-          </div>
-        ) : confirmed.length === 0 ? (
-          <div className="text-center py-8 text-neutral-400 border border-dashed border-neutral-200 rounded-2xl">
-            <Briefcase size={28} className="mx-auto mb-2 opacity-40" />
-            <p className="text-sm">No confirmed shifts yet.</p>
-            <button type="button" onClick={() => onSwitchTab('discover')} className="mt-2 text-[11px] font-black uppercase tracking-widest text-red-700 hover:underline">Browse shifts →</button>
-          </div>
-        ) : (
-          <div className="rounded-xl border border-neutral-100 divide-y divide-neutral-100">
-            {confirmed.map((a) => (
-              <div key={a.id} className="p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <div>
-                  <p className="font-semibold text-neutral-900">{a.shift_title || 'Shift'}</p>
-                  <p className="text-[12px] text-neutral-500">
-                    {a.shift_location || '—'}
-                    {a.outlet_name ? ` · ${a.outlet_name}` : ''}
-                  </p>
-                  {a.shift_event_time ? (
-                    <p className="text-[11px] text-neutral-400 mt-0.5">
-                      {new Date(a.shift_event_time).toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short' })}
-                    </p>
-                  ) : null}
-                </div>
-                <div className="flex flex-wrap items-center gap-2 shrink-0">
-                  {a.shift_pay_ngn ? (
-                    <span className="text-[11px] font-bold text-neutral-800 tabular-nums">₦{Number(a.shift_pay_ngn).toLocaleString()}</span>
-                  ) : null}
-                  {a.payout_provider ? (
-                    <span className="text-[9px] font-black uppercase tracking-widest text-teal-800 bg-teal-50 border border-teal-200 px-2 py-1 rounded-full">
-                      {a.payout_provider}
-                    </span>
-                  ) : null}
-                  <span className="text-[9px] font-black uppercase tracking-widest text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-full">
-                    Confirmed
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
 
-        {/* Pending applications */}
-        {pending.length > 0 && (
-          <div className="mt-4">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-2">Pending applications ({pending.length})</p>
-            <div className="rounded-xl border border-neutral-100 divide-y divide-neutral-100">
-              {pending.map((a) => (
-                <div key={a.id} className="p-3 flex items-center justify-between gap-2">
-                  <div>
-                    <p className="font-semibold text-neutral-900 text-sm">{a.shift_title || 'Shift'}</p>
-                    <p className="text-[11px] text-neutral-500">{a.shift_location || '—'}</p>
+        <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Applications</p>
+              <h2 className="font-display text-xl italic text-neutral-900">Shift record</h2>
+            </div>
+            <button
+              type="button"
+              onClick={() => onSwitchTab('discover')}
+              className="shrink-0 rounded-full bg-red-700 px-3 py-2 text-[9px] font-black uppercase tracking-widest text-white"
+            >
+              Browse
+            </button>
+          </div>
+
+          {loadingApps ? (
+            <div className="space-y-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="flex items-center justify-between gap-3 rounded-xl border border-neutral-100 p-3">
+                  <div className="space-y-1.5 flex-1">
+                    <div className="skeleton h-4 w-1/2" />
+                    <div className="skeleton h-3 w-1/3" />
                   </div>
-                  <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full border ${
-                    a.status === 'shortlisted'
-                      ? 'text-amber-800 bg-amber-50 border-amber-200'
-                      : 'text-neutral-600 bg-neutral-50 border-neutral-200'
-                  }`}>
-                    {a.status === 'shortlisted' ? 'Shortlisted' : 'Pending'}
-                  </span>
+                  <div className="skeleton h-6 w-20 rounded-full" />
                 </div>
               ))}
             </div>
-          </div>
-        )}
-      </div>
-        </div>
-
-        {/* Column B — ops & growth (same vertical order as mobile when stacked) */}
-        <div className="flex min-w-0 flex-1 flex-col gap-8">
-      <div className="rounded-2xl border border-amber-200/90 bg-amber-50/40 p-5 shadow-sm">
-        <div className="flex items-start gap-3">
-          <AlertCircle size={22} className="text-amber-800 shrink-0 mt-0.5" aria-hidden />
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-900">Disputes</p>
-            <h2 className="font-display text-lg italic text-neutral-900 mt-0.5">Clock-in, hours, or pay don&apos;t match?</h2>
-            <p className="text-[13px] text-neutral-700 mt-1 leading-snug">
-              Shift ID + screenshots. We triage with the outlet — start here, not DMs.
-            </p>
-            <a
-              href={staffingWhatsAppUrl('Hi Convivia24 — I need help with a shift payout / dispute.')}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex mt-3 text-[10px] font-black uppercase tracking-widest text-red-700 hover:underline"
-            >
-              Open dispute thread on WhatsApp →
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/90 to-white p-5 shadow-sm">
-        <div className="flex items-start gap-3">
-          <div className="shrink-0 w-11 h-11 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-sm">
-            <GraduationCap size={22} aria-hidden />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-900">Training · under 20 minutes total</p>
-            <h2 className="font-display text-xl italic text-neutral-900 mt-1">Unlock better shifts</h2>
-            <p className="text-[13px] text-neutral-600 mt-1 leading-snug">
-              Quick modules; stronger match rank.
-            </p>
-            <p className="text-[11px] font-bold text-emerald-900 mt-2 tabular-nums">
-              {trainingModules.length} modules · ~{trainingModules.reduce((s, t) => s + t.min, 0)} min total · message us to start
-            </p>
-          </div>
-        </div>
-        <ul className="mt-4 space-y-2">
-          {trainingModules.map((m) => (
-            <li
-              key={m.id}
-              className="flex items-center justify-between gap-3 rounded-xl border border-emerald-100/80 bg-white/90 px-3 py-2.5"
-            >
-              <span className="text-sm font-semibold text-neutral-900">{m.title}</span>
-              <span className="flex items-center gap-2 shrink-0">
-                <span className="text-[10px] text-neutral-500 tabular-nums">{m.min} min</span>
-                <a
-                  href={staffingWhatsAppUrl(`Hi Convivia24 — I want to start the ${m.waLink}.`)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[9px] font-black uppercase tracking-widest text-white bg-emerald-700 px-3 py-1.5 rounded-full hover:bg-emerald-800"
-                >
-                  Start
-                </a>
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 mb-2">Shift archive</p>
-        <p className="text-[13px] text-neutral-600 leading-snug">
-          Completed shifts will list here; payouts stay in the table above.
-        </p>
-      </div>
-
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-        <button
-          type="button"
-          onClick={() => onSwitchTab('discover')}
-          className="inline-flex min-h-[48px] items-center justify-center rounded-full bg-red-700 text-white text-[10px] font-black uppercase tracking-widest px-5 py-3 hover:bg-red-800 lg:min-h-0"
-        >
-          Browse shifts
-        </button>
-        <a
-          href={staffingWhatsAppUrl('Hi Convivia24 — question about my pay or shift record.')}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex min-h-[48px] items-center justify-center rounded-full border border-neutral-300 text-neutral-800 text-[10px] font-black uppercase tracking-widest px-5 py-3 hover:border-red-400 lg:min-h-0"
-        >
-          WhatsApp support
-        </a>
-      </div>
+          ) : applications.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-neutral-200 py-8 text-center text-neutral-500">
+              <Receipt size={28} className="mx-auto mb-2 opacity-40" aria-hidden />
+              <p className="text-sm font-semibold">No applications yet.</p>
+              <button type="button" onClick={() => onSwitchTab('discover')} className="mt-2 text-[10px] font-black uppercase tracking-widest text-red-700">
+                Find shifts →
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {applications.slice(0, 8).map((a) => {
+                const isConfirmed = a.status === 'confirmed';
+                const isShortlisted = a.status === 'shortlisted';
+                return (
+                  <div key={a.id} className="rounded-2xl border border-neutral-100 bg-neutral-50/60 p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-neutral-900">{a.shift_title || 'Shift'}</p>
+                        <p className="mt-0.5 truncate text-[11px] text-neutral-500">
+                          {a.shift_location || a.outlet_name || 'Location pending'}
+                        </p>
+                      </div>
+                      <span className={`shrink-0 rounded-full border px-2 py-1 text-[9px] font-black uppercase tracking-widest ${
+                        isConfirmed
+                          ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                          : isShortlisted
+                            ? 'border-amber-200 bg-amber-50 text-amber-800'
+                            : 'border-neutral-200 bg-white text-neutral-600'
+                      }`}>
+                        {isConfirmed ? 'Hired' : isShortlisted ? 'Shortlist' : a.status || 'Pending'}
+                      </span>
+                    </div>
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] font-bold text-neutral-500">
+                      {a.shift_pay_ngn ? <span className="tabular-nums">₦{Number(a.shift_pay_ngn).toLocaleString()}</span> : null}
+                      {a.payout_provider ? <span>{a.payout_provider}</span> : null}
+                      {a.shift_event_time ? (
+                        <span>{new Date(a.shift_event_time).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' })}</span>
+                      ) : null}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -4873,10 +4763,10 @@ function ProfileTab({ persona, initialUser }: { persona: StaffPersona; initialUs
   return (
     <div className="max-w-4xl mx-auto pt-4 max-lg:pt-5 pb-20 px-0">
       <h1 className="font-display text-3xl sm:text-4xl md:text-5xl italic text-neutral-900 mb-1 px-0.5">
-        Staff <span className="text-red-700">profile.</span>
+        My <span className="text-red-700">profile.</span>
       </h1>
       <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-red-600 mb-6 flex items-center gap-2">
-        <UserIcon size={12} className="shrink-0" strokeWidth={2} aria-hidden /> Trust & payouts
+        <UserIcon size={12} className="shrink-0" strokeWidth={2} aria-hidden /> Photo · skills · payout
       </p>
 
       {user?.is_platform_admin ? (
@@ -4889,6 +4779,17 @@ function ProfileTab({ persona, initialUser }: { persona: StaffPersona; initialUs
           </Link>
         </div>
       ) : null}
+
+      <Link
+        href="/outlet"
+        className="mb-6 flex items-center justify-between gap-4 rounded-2xl border border-red-200 bg-white px-4 py-3 text-red-900 shadow-sm hover:border-red-300 hover:bg-red-50"
+      >
+        <div className="min-w-0">
+          <p className="text-[10px] font-black uppercase tracking-widest text-red-700">Switch console</p>
+          <p className="text-sm font-bold">Go to vendor console</p>
+        </div>
+        <span className="shrink-0 text-[10px] font-black uppercase tracking-widest">Open →</span>
+      </Link>
 
       <div className="bg-white backdrop-blur-xl border border-neutral-200/90 rounded-[24px] md:rounded-[40px] p-5 md:p-10 shadow-[0_12px_48px_rgba(0,0,0,0.06)] relative overflow-hidden">
         <div className="absolute top-0 right-0 w-[420px] h-[420px] bg-red-50/80 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
@@ -4994,7 +4895,17 @@ function ProfileTab({ persona, initialUser }: { persona: StaffPersona; initialUs
                     )}
                   </div>
                 ) : null}
-                <p className="text-neutral-600 text-base max-w-md mx-auto md:mx-0 leading-relaxed mb-2 mt-1">{user?.bio || 'No bio yet.'}</p>
+                {user?.bio ? (
+                  <p className="text-neutral-600 text-base max-w-md mx-auto md:mx-0 leading-relaxed mb-2 mt-1">{user.bio}</p>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setEditing(true)}
+                    className="text-sm font-bold text-red-700 hover:underline"
+                  >
+                    Add a short work note
+                  </button>
+                )}
                 {user?.location && <p className="text-neutral-400 text-sm flex items-center gap-1 justify-center md:justify-start"><MapPin size={12} /> {user.location}</p>}
                 {/* Certifications display */}
                 {persona === 'worker' && Array.isArray(user?.certifications) && user.certifications.length > 0 && (
@@ -5006,7 +4917,7 @@ function ProfileTab({ persona, initialUser }: { persona: StaffPersona; initialUs
                     ))}
                   </div>
                 )}
-                {/* Verification prompt for unverified workers */}
+                {/* Primary verification prompt for unverified workers */}
                 {persona === 'worker' && !user?.verified && (
                   <button
                     type="button"
@@ -5016,9 +4927,9 @@ function ProfileTab({ persona, initialUser }: { persona: StaffPersona; initialUs
                   >
                     <ShieldCheck size={18} className="text-amber-700 shrink-0" />
                     <div className="min-w-0">
-                      <p className="text-sm font-bold text-amber-900 leading-snug">Get verified to unlock more shifts</p>
+                      <p className="text-sm font-bold text-amber-900 leading-snug">Verify photo</p>
                       <p className="text-[11px] text-amber-700 mt-0.5">
-                        {user?.avatar_url ? 'Quick selfie check — takes 30 seconds.' : 'Upload a clear profile photo first.'}
+                        {user?.avatar_url ? 'Quick selfie check.' : 'Add a clear face photo first.'}
                       </p>
                     </div>
                     <span className="ml-auto shrink-0 text-[9px] font-black uppercase tracking-widest text-amber-800 border border-amber-300 px-3 py-1.5 rounded-full">
@@ -5039,25 +4950,27 @@ function ProfileTab({ persona, initialUser }: { persona: StaffPersona; initialUs
             </div>
 
             <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4 md:p-5 mb-6 space-y-3">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">Trust stack</p>
-              <div className="grid sm:grid-cols-2 gap-3 text-[13px] text-neutral-700">
-                <div className="rounded-xl bg-white border border-neutral-200 p-3">
-                  <p className="font-bold text-neutral-900 text-sm">NIN verification</p>
-                  <p className="text-[12px] text-neutral-500 mt-1">National ID match — in-app when live.</p>
-                </div>
-                <div className="rounded-xl bg-white border border-neutral-200 p-3">
-                  <p className="font-bold text-neutral-900 text-sm">Registered guarantor</p>
-                  <p className="text-[12px] text-neutral-500 mt-1">Digital guarantor · common in hospitality hires.</p>
-                </div>
-                <div className="rounded-xl bg-white border border-neutral-200 p-3 sm:col-span-2">
-                  <p className="font-bold text-neutral-900 text-sm">Payout wallet</p>
-                  <p className="text-[12px] text-neutral-500 mt-1 mb-2">Same-day to OPay / PalmPay / Moniepoint after sign-off.</p>
-                  <div className="flex flex-wrap gap-2">
-                    {['OPay', 'PalmPay', 'Moniepoint'].map((p) => (
-                      <span key={p} className="text-[10px] font-black uppercase tracking-widest bg-red-50 text-red-800 border border-red-200 px-2 py-1 rounded-full">{p}</span>
-                    ))}
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">Ready checklist</p>
+                <span className="text-[10px] font-black uppercase tracking-widest text-red-700">
+                  {[user?.verified, Array.isArray(user?.certifications) && user.certifications.length > 0, Boolean(user?.payout_provider || user?.payout_phone)].filter(Boolean).length}/3
+                </span>
+              </div>
+              <div className="grid gap-2 text-[13px] text-neutral-700">
+                {[
+                  { label: 'Photo verified', done: Boolean(user?.verified) },
+                  { label: 'Skills added', done: Array.isArray(user?.certifications) && user.certifications.length > 0 },
+                  { label: 'Payout ready', done: Boolean(user?.payout_provider || user?.payout_phone) },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center justify-between rounded-xl bg-white border border-neutral-200 px-3 py-3">
+                    <span className="font-bold text-neutral-900">{item.label}</span>
+                    <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-full border ${
+                      item.done ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-neutral-50 text-neutral-500 border-neutral-200'
+                    }`}>
+                      {item.done ? 'Done' : 'Add'}
+                    </span>
                   </div>
-                </div>
+                ))}
               </div>
               <a
                 href={staffingWhatsAppUrl('Hi Convivia24 — I want to complete trust verification / payout setup.')}
@@ -5065,39 +4978,11 @@ function ProfileTab({ persona, initialUser }: { persona: StaffPersona; initialUs
                 rel="noopener noreferrer"
                 className="inline-flex text-[10px] font-black uppercase tracking-widest text-red-700 hover:underline"
               >
-                Message ops on WhatsApp →
+                Need help? WhatsApp ops →
               </a>
             </div>
 
             <div className="space-y-4">
-              {/* Verification */}
-              {user?.verified ? (
-                <div className="flex items-center justify-between p-5 bg-red-50 rounded-[24px] border border-red-400">
-                  <div className="flex items-center gap-3">
-                    <ShieldCheck size={20} className="text-red-700" />
-                    <div>
-                      <p className="text-base font-bold tracking-wide">Photo verified</p>
-                      <p className="text-[10px] text-red-700 font-black tracking-widest uppercase mt-1">Matches shift selfie check-in at arrival</p>
-                    </div>
-                  </div>
-                  <span className="text-[10px] uppercase text-red-700 font-black tracking-widest">Active</span>
-                </div>
-              ) : (
-                <button onClick={() => setVerifyOpen(true)} disabled={!user?.avatar_url}
-                  className="w-full flex items-center justify-between p-5 bg-neutral-50 border border-neutral-200 hover:border-red-600 rounded-[24px] transition-colors disabled:opacity-50 group">
-                  <div className="flex items-center gap-3 text-left">
-                    <ShieldCheck size={20} className="text-neutral-500 group-hover:text-red-700 transition-colors" />
-                    <div>
-                      <p className="text-base font-bold tracking-wide">Verify photo</p>
-                      <p className="text-[10px] text-neutral-400 font-black tracking-widest uppercase mt-1">
-                        {user?.avatar_url ? 'Used for shift check-in match' : 'Upload a clear face photo first'}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-[10px] uppercase text-white bg-red-700 font-black tracking-widest px-4 py-2 rounded-md shadow-[0_0_15px_rgba(185,28,28,0.2)] group-hover:scale-105 transition-transform">Verify</span>
-                </button>
-              )}
-
               {/* Paystack upgrade card — shown only when not already Black */}
               {!user?.premium_active && (
                 <div className="rounded-[22px] border border-neutral-900/10 bg-gradient-to-br from-neutral-900 to-neutral-800 p-5 space-y-3 shadow-[0_8px_32px_rgba(0,0,0,0.18)]">
@@ -5107,16 +4992,16 @@ function ProfileTab({ persona, initialUser }: { persona: StaffPersona; initialUs
                         <Star size={10} fill="currentColor" /> Convivia Black
                       </p>
                       <p className="font-display text-xl italic text-white mt-1">
-                        Priority shifts &amp; full match access
+                        Priority shifts
                       </p>
                     </div>
                     <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 shrink-0 mt-1">₦30k/mo</span>
                   </div>
-                  <ul className="space-y-1 text-[12px] text-neutral-300">
-                    <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"/>Unlimited roster-assist matches</li>
-                    <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"/>Priority position in outlet applicant view</li>
-                    <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"/>Black badge on your profile</li>
-                  </ul>
+                  <div className="flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-widest">
+                    <span className="rounded-full bg-white/10 px-3 py-1.5 text-amber-300">Priority</span>
+                    <span className="rounded-full bg-white/10 px-3 py-1.5 text-amber-300">Black badge</span>
+                    <span className="rounded-full bg-white/10 px-3 py-1.5 text-amber-300">More matches</span>
+                  </div>
                   {upgradeError && (
                     <p className="text-[11px] text-red-400">{upgradeError}</p>
                   )}
