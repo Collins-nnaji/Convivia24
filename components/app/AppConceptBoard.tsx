@@ -647,34 +647,34 @@ export function AppConceptBoard({
             </>
           )}
         </div>
-        <div
-          className="pointer-events-auto fixed bottom-0 left-1/2 z-[70] flex w-full max-w-[min(100%,428px)] -translate-x-1/2 items-end justify-between gap-1 rounded-t-[26px] border border-neutral-200 border-b-0 bg-white/[0.98] px-2.5 pb-[max(0.7rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_32px_rgba(0,0,0,0.12)] backdrop-blur-xl"
-          role="tablist"
-          aria-label="Main navigation"
-        >
-          {appMode === 'outlet' ? (
-            <>
-              <NavIcon label={navLabels.demand} icon={<ClipboardList size={20} strokeWidth={activeTab === 'demand' ? 2.5 : 2} />} active={activeTab === 'demand'} onClick={() => setActiveTab('demand')} />
-              <NavIcon label={navLabels.home} icon={<CalendarDays size={20} strokeWidth={activeTab === 'home' ? 2.5 : 2} />} active={activeTab === 'home'} onClick={goNow} live />
-              <NavIcon label={navLabels.pay} icon={<Wallet size={20} strokeWidth={activeTab === 'pay' ? 2.5 : 2} />} active={activeTab === 'pay'} onClick={() => setActiveTab('pay')} />
-              <NavIcon label={navLabels.profile} icon={<UserCircle size={20} strokeWidth={activeTab === 'profile' ? 2.5 : 2} />} active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} />
-            </>
-          ) : (
-            <>
-              <NavIcon label={navLabels.host} icon={<Receipt size={20} strokeWidth={activeTab === 'host' ? 2.5 : 2} />} active={activeTab === 'host'} onClick={() => setActiveTab('host')} />
-              <NavIcon label={navLabels.discover} icon={<ClipboardList size={20} strokeWidth={activeTab === 'discover' ? 2.5 : 2} />} active={activeTab === 'discover'} onClick={() => setActiveTab('discover')} />
-              <NavIcon label={navLabels.home} icon={<CalendarDays size={20} strokeWidth={activeTab === 'home' ? 2.5 : 2} />} active={activeTab === 'home'} onClick={goNow} live />
-              <NavIcon label={navLabels.circles} icon={<GraduationCap size={20} strokeWidth={activeTab === 'circles' ? 2.5 : 2} />} active={activeTab === 'circles'} onClick={() => setActiveTab('circles')} />
-              <NavIcon label={navLabels.profile} icon={<UserCircle size={20} strokeWidth={activeTab === 'profile' ? 2.5 : 2} />} active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} />
-            </>
-          )}
-        </div>
+      </div>
+      <div
+        className="lg:hidden fixed bottom-0 left-1/2 z-[70] flex w-full max-w-[min(100%,428px)] -translate-x-1/2 items-center justify-between gap-1 rounded-t-[26px] border border-neutral-200 border-b-0 bg-white/[0.98] px-2.5 pb-[calc(0.6rem+env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_32px_rgba(0,0,0,0.12)] backdrop-blur-xl"
+        role="tablist"
+        aria-label="Main navigation"
+      >
+        {appMode === 'outlet' ? (
+          <>
+            <NavIcon label={navLabels.demand} icon={<ClipboardList size={20} strokeWidth={activeTab === 'demand' ? 2.5 : 2} />} active={activeTab === 'demand'} onClick={() => setActiveTab('demand')} />
+            <NavIcon label={navLabels.home} icon={<CalendarDays size={20} strokeWidth={activeTab === 'home' ? 2.5 : 2} />} active={activeTab === 'home'} onClick={goNow} live />
+            <NavIcon label={navLabels.pay} icon={<Wallet size={20} strokeWidth={activeTab === 'pay' ? 2.5 : 2} />} active={activeTab === 'pay'} onClick={() => setActiveTab('pay')} />
+            <NavIcon label={navLabels.profile} icon={<UserCircle size={20} strokeWidth={activeTab === 'profile' ? 2.5 : 2} />} active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} />
+          </>
+        ) : (
+          <>
+            <NavIcon label={navLabels.host} icon={<Receipt size={20} strokeWidth={activeTab === 'host' ? 2.5 : 2} />} active={activeTab === 'host'} onClick={() => setActiveTab('host')} />
+            <NavIcon label={navLabels.discover} icon={<ClipboardList size={20} strokeWidth={activeTab === 'discover' ? 2.5 : 2} />} active={activeTab === 'discover'} onClick={() => setActiveTab('discover')} />
+            <NavIcon label={navLabels.home} icon={<CalendarDays size={20} strokeWidth={activeTab === 'home' ? 2.5 : 2} />} active={activeTab === 'home'} onClick={goNow} live />
+            <NavIcon label={navLabels.circles} icon={<GraduationCap size={20} strokeWidth={activeTab === 'circles' ? 2.5 : 2} />} active={activeTab === 'circles'} onClick={() => setActiveTab('circles')} />
+            <NavIcon label={navLabels.profile} icon={<UserCircle size={20} strokeWidth={activeTab === 'profile' ? 2.5 : 2} />} active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} />
+          </>
+        )}
       </div>
 
       {/* MAIN CONTENT */}
       <div
         ref={mainScrollRef}
-        className="w-full overflow-x-hidden px-4 sm:px-6 lg:px-12 max-lg:flex-1 max-lg:min-h-0 max-lg:overflow-y-auto max-lg:overscroll-y-contain max-lg:pt-[calc(env(safe-area-inset-top)+3.35rem)] max-lg:pb-[calc(6.5rem+env(safe-area-inset-bottom))] max-lg:scroll-pb-[calc(6.5rem+env(safe-area-inset-bottom))] max-lg:scrollbar-hide max-lg:relative max-lg:touch-pan-y lg:flex-none lg:overflow-visible lg:pb-12"
+        className="w-full overflow-x-hidden px-4 sm:px-6 lg:px-12 max-lg:flex-1 max-lg:min-h-0 max-lg:overflow-y-auto max-lg:overscroll-y-contain max-lg:pt-[calc(env(safe-area-inset-top)+3.35rem)] max-lg:pb-[calc(7.25rem+env(safe-area-inset-bottom))] max-lg:scroll-pb-[calc(7.25rem+env(safe-area-inset-bottom))] max-lg:scrollbar-hide max-lg:relative max-lg:touch-pan-y lg:flex-none lg:overflow-visible lg:pb-12"
       >
         <AnimatePresence mode="wait">
           <motion.div
