@@ -40,6 +40,7 @@ declare module '@neondatabase/auth/react/ui' {
     replace?: (path: string) => void;
     optimistic?: boolean;
     socialProviders?: string[];
+    social?: { providers: readonly string[] };
     [key: string]: any;
   }>;
 
