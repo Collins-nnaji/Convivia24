@@ -373,13 +373,13 @@ function ScreenEventHome({
           {event.invite_live && event.slug && (
             <Card dark style={{ padding: 16, position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, transparent, ${ACCENT_COLORS[event.event_type as EventType] || '#c0975a'} 50%, transparent)` }} />
-              <Eyebrow style={{ color: 'var(--cv-accent)' }}>Live · convene.to/{event.slug}</Eyebrow>
+              <Eyebrow style={{ color: 'var(--cv-accent)' }}>Live · convivia24.com/rsvp/{event.slug}</Eyebrow>
               <h3 style={{ color: 'var(--cv-ivory)', fontSize: 19, margin: '8px 0', fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic' }}>The invite is in the world.</h3>
               <p style={{ color: 'rgba(250,246,238,.6)', fontSize: 12, marginBottom: 12 }}>
                 {stats.total} sent · {stats.in + stats.maybe + stats.out} replied · {stats.in} said yes.
               </p>
               <div style={{ display: 'flex', gap: 8 }}>
-                <Btn variant="accent" size="tiny" onClick={() => navigator.clipboard?.writeText(`https://convene.app/rsvp/${event.slug}`)}>
+                <Btn variant="accent" size="tiny" onClick={() => navigator.clipboard?.writeText(`https://convivia24.com/rsvp/${event.slug}`)}>
                   <Copy size={10} /> Copy link
                 </Btn>
                 <Btn size="tiny" style={{ background: 'rgba(255,255,255,.10)', color: 'var(--cv-ivory)' }}>
@@ -770,9 +770,9 @@ function ScreenInvite({ event, onBack }: { event: CvEvent; onBack: () => void })
               </p>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', background: 'rgba(255,255,255,.08)', borderRadius: 8, padding: '8px 10px', marginBottom: 10 }}>
                 <span style={{ flex: 1, fontSize: 11, color: 'rgba(250,246,238,.7)', fontFamily: 'var(--font-geist-mono, monospace)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  convene.app/rsvp/{event.slug || event.id.slice(0, 8)}
+                  convivia24.com/rsvp/{event.slug || event.id.slice(0, 8)}
                 </span>
-                <button onClick={() => navigator.clipboard?.writeText(`https://convene.app/rsvp/${event.slug || event.id}`)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--cv-accent)' }}>
+                <button onClick={() => navigator.clipboard?.writeText(`https://convivia24.com/rsvp/${event.slug || event.id}`)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--cv-accent)' }}>
                   <Copy size={14} />
                 </button>
               </div>
@@ -1009,7 +1009,7 @@ interface Message { role: 'user' | 'concierge'; text: string; }
 
 function ScreenConcierge({ event, onClose }: { event: CvEvent; onClose: () => void }) {
   const [thread, setThread] = useState<Message[]>([
-    { role: 'concierge', text: `I'm Convene — your planner. ${event.host_name}, ${event.event_date ? new Date(event.event_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }) : 'date TBC'}${event.city ? `, ${event.city}` : ''}. Tell me what to chase.` },
+    { role: 'concierge', text: `I'm your Convivia24 planner. ${event.host_name}, ${event.event_date ? new Date(event.event_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }) : 'date TBC'}${event.city ? `, ${event.city}` : ''}. Tell me what to chase.` },
   ]);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
