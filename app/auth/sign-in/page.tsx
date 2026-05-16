@@ -1,14 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
-import { createAuthClient } from '@neondatabase/auth/next';
-import { NeonAuthUIProvider, AuthView } from '@neondatabase/auth/react/ui';
-import { NEON_AUTH_SOCIAL_GOOGLE } from '@/lib/auth/neon-ui';
+import { AuthView } from '@neondatabase/auth/react/ui';
+import { NeonAuthProvider } from '@/components/auth/NeonAuthProvider';
 import { BrandLogo } from '@/components/BrandLogo';
-
-const authClient = createAuthClient();
 
 function safeRedirectPath(next: string | null): string {
   if (!next || !next.startsWith('/') || next.startsWith('//')) return '/';
@@ -16,7 +13,6 @@ function safeRedirectPath(next: string | null): string {
 }
 
 function SignInForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = safeRedirectPath(searchParams.get('next'));
 
@@ -44,19 +40,14 @@ function SignInForm() {
             Welcome back
           </h1>
           <p className="text-neutral-500 text-sm max-w-sm mx-auto">
-            Sign in · profile, matches, verification.
+            Sign in to plan events, guests, and invites.
           </p>
         </div>
 
-        <div className="neon-auth-ui-scope bg-white/95 backdrop-blur-xl border border-neutral-200 rounded-[24px] sm:rounded-[32px] p-5 sm:p-8 shadow-[0_24px_60px_rgba(0,0,0,0.08)] [&_button_svg]:h-[18px] [&_button_svg]:w-[18px] [&_button_svg]:shrink-0 [&_button_img]:h-[18px] [&_button_img]:w-[18px] [&_button_img]:object-contain">
-          <NeonAuthUIProvider
-            authClient={authClient}
-            navigate={(path: string) => router.push(path)}
-            replace={(path: string) => router.replace(path)}
-            social={NEON_AUTH_SOCIAL_GOOGLE}
-          >
+        <div className="neon-auth-ui-scope bg-white/95 backdrop-blur-xl border border-neutral-200 rounded-[24px] sm:rounded-[32px] p-5 sm:p-8 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+          <NeonAuthProvider>
             <AuthView view="SIGN_IN" redirectTo={redirectTo} />
-          </NeonAuthUIProvider>
+          </NeonAuthProvider>
         </div>
 
         <p className="text-center mt-6 text-sm text-neutral-600">

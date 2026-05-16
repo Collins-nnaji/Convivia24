@@ -1,16 +1,20 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { createAuthClient } from '@neondatabase/auth/next';
-import { NeonAuthUIProvider, AuthView } from '@neondatabase/auth/react/ui';
-import { NEON_AUTH_SOCIAL_GOOGLE } from '@/lib/auth/neon-ui';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
+import { AuthView } from '@neondatabase/auth/react/ui';
+import { NeonAuthProvider } from '@/components/auth/NeonAuthProvider';
 import { BrandLogo } from '@/components/BrandLogo';
 
-const authClient = createAuthClient();
+function safeRedirectPath(next: string | null): string {
+  if (!next || !next.startsWith('/') || next.startsWith('//')) return '/';
+  return next;
+}
 
-export default function SignUpPage() {
-  const router = useRouter();
+function SignUpForm() {
+  const searchParams = useSearchParams();
+  const redirectTo = safeRedirectPath(searchParams.get('next'));
 
   return (
     <main className="mobile-scroll-screen mobile-safe-screen bg-[#f8f6f2] text-neutral-900 flex items-center justify-center relative max-w-[100vw]">
@@ -33,22 +37,17 @@ export default function SignUpPage() {
             <BrandLogo className="h-8 w-auto mx-auto mb-4 object-contain" alt="Convivia24" />
           </Link>
           <h1 className="font-display text-3xl sm:text-4xl italic text-neutral-900 mb-2 px-1">
-            Start Your 24
+            Start planning
           </h1>
           <p className="text-neutral-500 text-sm max-w-sm mx-auto">
-            Create account · apply for shifts, match, verify.
+            Create your account to host events and manage guests.
           </p>
         </div>
 
-        <div className="neon-auth-ui-scope bg-white/95 backdrop-blur-xl border border-neutral-200 rounded-[24px] sm:rounded-[32px] p-5 sm:p-8 shadow-[0_24px_60px_rgba(0,0,0,0.08)] [&_button_svg]:h-[18px] [&_button_svg]:w-[18px] [&_button_svg]:shrink-0 [&_button_img]:h-[18px] [&_button_img]:w-[18px] [&_button_img]:object-contain">
-          <NeonAuthUIProvider
-            authClient={authClient}
-            navigate={(path: string) => router.push(path)}
-            replace={(path: string) => router.replace(path)}
-            social={NEON_AUTH_SOCIAL_GOOGLE}
-          >
-            <AuthView view="SIGN_UP" redirectTo="/" />
-          </NeonAuthUIProvider>
+        <div className="neon-auth-ui-scope bg-white/95 backdrop-blur-xl border border-neutral-200 rounded-[24px] sm:rounded-[32px] p-5 sm:p-8 shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+          <NeonAuthProvider>
+            <AuthView view="SIGN_UP" redirectTo={redirectTo} />
+          </NeonAuthProvider>
         </div>
 
         <p className="text-center mt-6 text-sm text-neutral-600">
@@ -68,5 +67,19 @@ export default function SignUpPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="mobile-scroll-screen mobile-safe-screen bg-[#f8f6f2] flex items-center justify-center">
+          <p className="text-neutral-500 text-sm">Loading…</p>
+        </main>
+      }
+    >
+      <SignUpForm />
+    </Suspense>
   );
 }

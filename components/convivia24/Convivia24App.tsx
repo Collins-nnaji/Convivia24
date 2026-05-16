@@ -158,6 +158,7 @@ function ScreenCreateEvent({ onCreated, onCancel }: { onCreated: (ev: CvEvent) =
     try {
       const res = await fetch('/api/convivia24/events', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           event_type: eventType,
@@ -181,7 +182,7 @@ function ScreenCreateEvent({ onCreated, onCancel }: { onCreated: (ev: CvEvent) =
 
   async function handleSignOut() {
     try {
-      await fetch('/api/auth/sign-out', { method: 'POST' });
+      await fetch('/api/auth/sign-out', { method: 'POST', credentials: 'include' });
     } finally {
       window.location.href = '/';
     }
@@ -434,7 +435,7 @@ function ScreenEventHome({
   const typeLabel = EVENT_TYPE_META[event.event_type as EventType]?.label || event.event_type;
 
   async function handleSignOut() {
-    try { await fetch('/api/auth/sign-out', { method: 'POST' }); } finally { window.location.href = '/'; }
+    try { await fetch('/api/auth/sign-out', { method: 'POST', credentials: 'include' }); } finally { window.location.href = '/'; }
   }
 
   return (
@@ -1607,7 +1608,11 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
 
   const loadEvents = useCallback(async () => {
     try {
-      const res = await fetch('/api/convivia24/events');
+      const res = await fetch('/api/convivia24/events', { credentials: 'include', cache: 'no-store' });
+      if (res.status === 401) {
+        window.location.href = '/auth/sign-in?next=/';
+        return;
+      }
       if (!res.ok) throw new Error('Failed');
       const data = await res.json();
       setEvents(data.events || []);

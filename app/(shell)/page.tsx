@@ -1,9 +1,7 @@
-import { Suspense } from 'react';
 import type { Viewport } from 'next';
 import { neonAuth } from '@/lib/auth/server';
 import { buildAppUserFromAuth } from '@/lib/auth/app-user';
-import { Convivia24App } from '@/components/convivia24/Convivia24App';
-import { LandingPage } from '@/components/convivia24/LandingPage';
+import { HomeAuthGate } from '@/components/convivia24/HomeAuthGate';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,46 +15,14 @@ export const viewport: Viewport = {
 };
 
 export default async function AppRootPage() {
-  let initialUser: Record<string, unknown> | null = null;
-
   const { user: authUser } = await neonAuth();
+  let ssrUser: Record<string, unknown> | null = null;
 
-  if (!authUser) {
-    return <LandingPage />;
-  }
-
-  try {
-    initialUser = await buildAppUserFromAuth(authUser);
-  } catch (e) {
-    console.error('[AppRootPage] buildAppUserFromAuth', e);
+  if (authUser) {
+    ssrUser = await buildAppUserFromAuth(authUser);
   }
 
   return (
-    <main
-      data-app-shell
-      className="app-shell-root relative mx-auto w-full max-lg:max-w-[min(100%,428px)] lg:max-w-none
-        max-lg:h-[100dvh] max-lg:max-h-[100dvh] max-lg:overflow-hidden max-lg:overscroll-none max-lg:touch-pan-y
-        lg:h-[100dvh] lg:overflow-hidden overflow-x-hidden"
-      style={{ background: 'var(--cv-ivory)' }}
-    >
-      <Suspense
-        fallback={
-          <div className="flex items-center justify-center h-screen" style={{ background: 'var(--cv-ivory)' }}>
-            <div
-              style={{
-                fontFamily: 'var(--font-instrument, serif)',
-                fontStyle: 'italic',
-                fontSize: 18,
-                color: 'var(--cv-muted-2)',
-              }}
-            >
-              Loading…
-            </div>
-          </div>
-        }
-      >
-        <Convivia24App initialUser={initialUser} />
-      </Suspense>
-    </main>
+    <HomeAuthGate ssrAuthenticated={Boolean(authUser)} ssrUser={ssrUser} />
   );
 }

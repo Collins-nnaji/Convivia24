@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { neonAuth } from '@/lib/auth/server';
-import { buildAppUserFromAuth } from '@/lib/auth/app-user';
+import { buildAppUserFromAuth, minimalAppUser } from '@/lib/auth/app-user';
+import { getOrCreateUser } from '@/lib/db/users';
 
 export const dynamic = 'force-dynamic';
 
 /**
- * GET /api/auth/session — lightweight session check for client hydration.
- * Returns the same app user shape as SSR initialUser when signed in.
+ * GET /api/auth/session — session check for client hydration (all users).
  */
 export async function GET() {
   try {
@@ -16,7 +16,22 @@ export async function GET() {
     }
 
     const user = await buildAppUserFromAuth(authUser);
-    return NextResponse.json({ authenticated: true, user });
+    if (user) {
+      return NextResponse.json({ authenticated: true, user });
+    }
+
+    try {
+      const row = await getOrCreateUser(authUser);
+      return NextResponse.json({
+        authenticated: true,
+        user: minimalAppUser(authUser, row as Record<string, unknown>),
+      });
+    } catch {
+      return NextResponse.json({
+        authenticated: true,
+        user: minimalAppUser(authUser),
+      });
+    }
   } catch (err) {
     console.error('[auth/session]', err);
     return NextResponse.json({ authenticated: false, user: null }, { status: 500 });
