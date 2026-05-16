@@ -15,7 +15,7 @@
           },
           {
             "/": "/*",
-            "comment": "Allow app.convivia24.com links to route inside the native shell."
+            "comment": "Allow convivia24.com links to route inside the native shell."
           }
         ]
       }

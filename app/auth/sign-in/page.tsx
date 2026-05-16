@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import { createAuthClient } from '@neondatabase/auth/next';
 import { NeonAuthUIProvider, AuthView } from '@neondatabase/auth/react/ui';
 import { NEON_AUTH_SOCIAL_GOOGLE } from '@/lib/auth/neon-ui';
@@ -9,8 +10,15 @@ import { BrandLogo } from '@/components/BrandLogo';
 
 const authClient = createAuthClient();
 
-export default function SignInPage() {
+function safeRedirectPath(next: string | null): string {
+  if (!next || !next.startsWith('/') || next.startsWith('//')) return '/';
+  return next;
+}
+
+function SignInForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = safeRedirectPath(searchParams.get('next'));
 
   return (
     <main className="mobile-scroll-screen mobile-safe-screen bg-[#f8f6f2] text-neutral-900 flex items-center justify-center relative max-w-[100vw]">
@@ -28,7 +36,7 @@ export default function SignInPage() {
           <Link
             href="/"
             className="inline-flex min-h-11 items-center justify-center rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 px-2"
-            aria-label="Back to app"
+            aria-label="Back to Convivia24"
           >
             <BrandLogo className="h-8 w-auto mx-auto mb-4 object-contain" alt="Convivia24" />
           </Link>
@@ -47,7 +55,7 @@ export default function SignInPage() {
             replace={(path: string) => router.replace(path)}
             social={NEON_AUTH_SOCIAL_GOOGLE}
           >
-            <AuthView view="SIGN_IN" redirectTo="/" />
+            <AuthView view="SIGN_IN" redirectTo={redirectTo} />
           </NeonAuthUIProvider>
         </div>
 
@@ -63,7 +71,7 @@ export default function SignInPage() {
             href="/"
             className="px-5 py-2.5 border border-neutral-200 rounded-xl text-neutral-600 text-[11px] font-bold uppercase tracking-widest hover:border-red-300 hover:text-red-800 transition-colors bg-white/80"
           >
-            Back to app
+            Back to Convivia24
           </Link>
           <Link
             href="/inquire"
@@ -74,5 +82,19 @@ export default function SignInPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="mobile-scroll-screen mobile-safe-screen bg-[#f8f6f2] flex items-center justify-center">
+          <p className="text-neutral-500 text-sm">Loading…</p>
+        </main>
+      }
+    >
+      <SignInForm />
+    </Suspense>
   );
 }

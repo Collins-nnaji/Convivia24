@@ -104,7 +104,7 @@ export default function ShiftLinkPage() {
               href="/"
               className="text-red-700 font-semibold text-sm underline-offset-4 hover:underline"
             >
-              Open the app
+              Open Convivia24
             </Link>
           </div>
         )}
@@ -167,7 +167,7 @@ export default function ShiftLinkPage() {
                   href={openInAppUrl}
                   className="w-full text-center py-3.5 rounded-full bg-red-700 text-white text-[11px] font-black uppercase tracking-widest hover:bg-red-800 transition-colors"
                 >
-                  Apply in app
+                  Apply now
                 </Link>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <button

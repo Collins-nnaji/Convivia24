@@ -28,7 +28,7 @@ export default function SignUpPage() {
           <Link
             href="/"
             className="inline-flex min-h-11 items-center justify-center rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 px-2"
-            aria-label="Back to app"
+            aria-label="Back to Convivia24"
           >
             <BrandLogo className="h-8 w-auto mx-auto mb-4 object-contain" alt="Convivia24" />
           </Link>
@@ -63,7 +63,7 @@ export default function SignUpPage() {
             href="/"
             className="px-5 py-2.5 border border-neutral-200 rounded-xl text-neutral-600 text-[11px] font-bold uppercase tracking-widest hover:border-red-300 hover:text-red-800 transition-colors bg-white/80"
           >
-            Back to app
+            Back to Convivia24
           </Link>
         </div>
       </div>

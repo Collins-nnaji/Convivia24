@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'Convivia24',
   webDir: 'native-fallback',
   server: {
-    url: process.env.CAPACITOR_SERVER_URL || 'https://app.convivia24.com',
+    url: process.env.CAPACITOR_SERVER_URL || 'https://convivia24.com',
     cleartext: false,
   },
   plugins: {

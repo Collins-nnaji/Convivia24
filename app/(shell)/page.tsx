@@ -1,8 +1,7 @@
 import { Suspense } from 'react';
 import type { Viewport } from 'next';
 import { neonAuth } from '@/lib/auth/server';
-import { getOrCreateUser } from '@/lib/db/users';
-import { isConviviaAdminAsync } from '@/lib/admin';
+import { buildAppUserFromAuth } from '@/lib/auth/app-user';
 import { Convivia24App } from '@/components/convivia24/Convivia24App';
 import { LandingPage } from '@/components/convivia24/LandingPage';
 
@@ -22,21 +21,14 @@ export default async function AppRootPage() {
 
   const { user: authUser } = await neonAuth();
 
-  // Not signed in — show the public landing page
   if (!authUser) {
     return <LandingPage />;
   }
 
   try {
-    const row = await getOrCreateUser(authUser);
-    const isPlatformAdmin = await isConviviaAdminAsync(authUser.email);
-    initialUser = {
-      ...row,
-      created_at: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
-      is_platform_admin: isPlatformAdmin,
-    };
+    initialUser = await buildAppUserFromAuth(authUser);
   } catch (e) {
-    console.error('[AppRootPage] getOrCreateUser', e);
+    console.error('[AppRootPage] buildAppUserFromAuth', e);
   }
 
   return (
@@ -47,13 +39,22 @@ export default async function AppRootPage() {
         lg:h-[100dvh] lg:overflow-hidden overflow-x-hidden"
       style={{ background: 'var(--cv-ivory)' }}
     >
-      <Suspense fallback={
-        <div className="flex items-center justify-center h-screen" style={{ background: 'var(--cv-ivory)' }}>
-          <div style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 18, color: 'var(--cv-muted-2)' }}>
-            Loading…
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center h-screen" style={{ background: 'var(--cv-ivory)' }}>
+            <div
+              style={{
+                fontFamily: 'var(--font-instrument, serif)',
+                fontStyle: 'italic',
+                fontSize: 18,
+                color: 'var(--cv-muted-2)',
+              }}
+            >
+              Loading…
+            </div>
           </div>
-        </div>
-      }>
+        }
+      >
         <Convivia24App initialUser={initialUser} />
       </Suspense>
     </main>

@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({}));
     const callbackUrl =
       (body.callback_url as string | undefined) ||
-      `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.convivia24.com'}/api/paystack/callback`;
+      `${process.env.NEXT_PUBLIC_APP_URL || 'https://convivia24.com'}/api/paystack/callback`;
 
     const res = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',

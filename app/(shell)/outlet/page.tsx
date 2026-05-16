@@ -3,10 +3,7 @@ import type { Viewport } from 'next';
 import { AppOpenSplash } from '@/components/app/AppOpenSplash';
 import { AppConceptBoard } from '@/components/app/AppConceptBoard';
 import { neonAuth } from '@/lib/auth/server';
-import { getOrCreateUser } from '@/lib/db/users';
-import { syncUserWatchlistFromHostedHangouts } from '@/lib/userWatchlist';
-import { getOutletApplicationForUser, serializeOutletApplication } from '@/lib/outlet-application';
-import { isConviviaAdminAsync } from '@/lib/admin';
+import { buildAppUserFromAuth } from '@/lib/auth/app-user';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,20 +27,9 @@ export default async function OutletAppPage() {
   const { user: authUser } = await neonAuth();
   if (authUser) {
     try {
-      const row = await getOrCreateUser(authUser);
-      const syncedWatchlist = await syncUserWatchlistFromHostedHangouts(String(row.id));
-      const oaRow = await getOutletApplicationForUser(String(row.id));
-      const isPlatformAdmin = await isConviviaAdminAsync(authUser.email);
-      initialUser = {
-        ...row,
-        watchlist_cities: syncedWatchlist ?? row.watchlist_cities ?? [],
-        created_at:
-          row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
-        outlet_application: serializeOutletApplication(oaRow),
-        is_platform_admin: isPlatformAdmin,
-      };
+      initialUser = await buildAppUserFromAuth(authUser);
     } catch (e) {
-      console.error('[OutletAppPage] getOrCreateUser', e);
+      console.error('[OutletAppPage] buildAppUserFromAuth', e);
     }
   }
 

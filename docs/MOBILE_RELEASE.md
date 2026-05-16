@@ -6,11 +6,11 @@ This repo ships the existing hosted Next.js app through Capacitor.
 
 - App name: Convivia24
 - Bundle ID / package name: `com.convivia24.app`
-- Production URL: `https://app.convivia24.com`
+- Production URL: `https://convivia24.com`
 - Custom scheme: `convivia24://`
-- Support URL: `https://app.convivia24.com/support`
-- Privacy URL: `https://app.convivia24.com/privacy`
-- Terms URL: `https://app.convivia24.com/terms`
+- Support URL: `https://convivia24.com/support`
+- Privacy URL: `https://convivia24.com/privacy`
+- Terms URL: `https://convivia24.com/terms`
 
 ## Store Copy
 
@@ -30,8 +30,8 @@ Keywords:
 
 - 1024x1024 app icon generated from the icon source in `public/icons/icon.svg`.
 - iPhone and Android phone screenshots for auth, staff home, shift board, verification, outlet console, and support.
-- Privacy policy URL: `https://app.convivia24.com/privacy`.
-- Support URL: `https://app.convivia24.com/support`.
+- Privacy policy URL: `https://convivia24.com/privacy`.
+- Support URL: `https://convivia24.com/support`.
 - Age/content declaration: 18+ staffing/work marketplace.
 - Data safety declaration: account info, profile info, photos/uploads, verification data, support messages, and app diagnostics.
 
@@ -49,8 +49,8 @@ Before submitting:
 
 - Replace `TEAMID` in `public/.well-known/apple-app-site-association` with the Apple Developer Team ID.
 - Replace `REPLACE_WITH_GOOGLE_PLAY_APP_SIGNING_SHA256` in `public/.well-known/assetlinks.json` with the Google Play app signing certificate SHA-256.
-- In Xcode, add Associated Domains: `applinks:app.convivia24.com`.
-- In Android Studio/Gradle, verify the generated app uses `com.convivia24.app` and supports verified app links for `app.convivia24.com`.
+- In Xcode, add Associated Domains: `applinks:convivia24.com`.
+- In Android Studio/Gradle, verify the generated app uses `com.convivia24.app` and supports verified app links for `convivia24.com`.
 - Add OAuth/native redirect URLs in Neon/Google auth settings if provider configuration requires explicit mobile callback URLs.
 
 ## Release Checks

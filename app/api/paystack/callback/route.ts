@@ -10,7 +10,7 @@ import { getOrCreateUser } from '@/lib/db/users';
  * flips the user to Black if charge succeeded, then redirects back to app.
  */
 export async function GET(req: NextRequest) {
-  const appBase = process.env.NEXT_PUBLIC_APP_URL || 'https://app.convivia24.com';
+  const appBase = process.env.NEXT_PUBLIC_APP_URL || 'https://convivia24.com';
   const reference = req.nextUrl.searchParams.get('reference');
 
   if (!reference) {

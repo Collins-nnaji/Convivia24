@@ -13,7 +13,7 @@
 # Redirect Netlify default host to your custom domain. Add your domain in Netlify → Domain management first.
 [[redirects]]
   from = "/*"
-  to = "https://app.convivia24.com/:splat"
+  to = "https://convivia24.com/:splat"
   status = 301
   force = true
   conditions = {Host = ["convivia24app.netlify.app"]}

@@ -6,7 +6,7 @@ import { App as CapacitorApp } from '@capacitor/app';
 import { Browser } from '@capacitor/browser';
 import { Capacitor } from '@capacitor/core';
 
-const APP_HOST = 'app.convivia24.com';
+const APP_HOST = 'convivia24.com';
 const EXTERNAL_PROTOCOLS = new Set(['http:', 'https:']);
 
 function routeFromUrl(url: string) {

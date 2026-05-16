@@ -7,7 +7,7 @@ export const metadata = {
     'Party planning, invite design, guest management, and day-of check-in — one tool for the whole life of a gathering. Weddings, birthdays, club nights, and more.',
   applicationName: 'Convivia24',
   manifest: '/manifest.json',
-  metadataBase: new URL('https://app.convivia24.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://convivia24.com'),
   appleWebApp: {
     capable: true,
     title: 'Convivia24',

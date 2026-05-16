@@ -62,7 +62,7 @@ export default function VendorPublicPage() {
   const [err, setErr] = useState('');
   const [copied, setCopied] = useState(false);
 
-  const pageUrl = typeof window !== 'undefined' ? window.location.href : `https://app.convivia24.com/v/${slug}`;
+  const pageUrl = typeof window !== 'undefined' ? window.location.href : `https://convivia24.com/v/${slug}`;
 
   useEffect(() => {
     if (!slug) return;
@@ -573,7 +573,7 @@ export default function VendorPublicPage() {
               href={primaryApplyHref}
               className="mt-5 inline-flex w-full min-h-12 items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-[10px] font-black uppercase tracking-widest text-red-800 hover:bg-red-50"
             >
-              {shifts.length > 0 ? 'Apply now' : 'Open app'} <ChevronRight size={14} />
+              {shifts.length > 0 ? 'Apply now' : 'Open Convivia24'} <ChevronRight size={14} />
             </Link>
           </section>
 

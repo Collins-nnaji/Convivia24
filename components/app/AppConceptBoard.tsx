@@ -358,20 +358,35 @@ export function AppConceptBoard({
     setLiveUser(initialUser ?? null);
   }, [initialUser]);
 
-  /** Same Neon session as staff; SSR sometimes misses cookies — hydrate once from API. */
+  /** Neon session: SSR can miss cookies — reconcile with /api/auth/session after load & on focus. */
   useEffect(() => {
-    if (initialUser != null) return;
     let cancelled = false;
-    fetch('/api/profile', { credentials: 'include' })
-      .then(async (r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        if (!cancelled && d?.user) setLiveUser(d.user);
-      })
-      .catch(() => {});
+
+    const syncSession = () => {
+      fetch('/api/auth/session', { credentials: 'include', cache: 'no-store' })
+        .then(async (r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (cancelled) return;
+          if (d?.authenticated && d.user) setLiveUser(d.user);
+          else if (!initialUser) setLiveUser(null);
+        })
+        .catch(() => {});
+    };
+
+    syncSession();
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') syncSession();
+    };
+    window.addEventListener('focus', syncSession);
+    document.addEventListener('visibilitychange', onVisible);
     return () => {
       cancelled = true;
+      window.removeEventListener('focus', syncSession);
+      document.removeEventListener('visibilitychange', onVisible);
     };
   }, [initialUser]);
+
+  const signInHref = `/auth/sign-in?next=${encodeURIComponent(appBase)}`;
 
   const [activeTab, setActiveTab] = useState<AppTab>('home');
   const [outletDemandSub, setOutletDemandSub] = useState<'board' | 'post' | 'applicants'>('board');
@@ -472,6 +487,8 @@ export function AppConceptBoard({
               cities={cities}
               addCity={addCity}
               onSwitchTab={switchTab}
+              signedIn={Boolean(liveUser)}
+              signInHref={signInHref}
             />
           );
         case 'pay':
@@ -507,6 +524,12 @@ export function AppConceptBoard({
             boardCity={staffBoardCity}
             onBoardCityChange={setStaffBoardCity}
             addCity={addCity}
+            signedIn={Boolean(liveUser)}
+            signInHref={
+              pendingInviteHangoutId
+                ? `/auth/sign-in?next=${encodeURIComponent(`${appBase}?join=${pendingInviteHangoutId}`)}`
+                : signInHref
+            }
           />
         );
       case 'host':
@@ -717,10 +740,14 @@ function InviteFromLinkBanner({
   hangoutId,
   onDismiss,
   onJoined,
+  signedIn,
+  signInHref,
 }: {
   hangoutId: string;
   onDismiss: () => void;
   onJoined: () => void;
+  signedIn: boolean;
+  signInHref: string;
 }) {
   const [h, setH] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -750,11 +777,22 @@ function InviteFromLinkBanner({
   }, [hangoutId]);
 
   const join = async () => {
+    if (!signedIn) {
+      window.location.href = signInHref;
+      return;
+    }
     setJoining(true);
     setNote(null);
     try {
-      const res = await fetch(`/api/hangouts/${hangoutId}/join`, { method: 'POST' });
+      const res = await fetch(`/api/hangouts/${hangoutId}/join`, {
+        method: 'POST',
+        credentials: 'include',
+      });
       const data = await res.json();
+      if (res.status === 401) {
+        setNote('Sign in to apply for this shift.');
+        return;
+      }
       if (res.ok) {
         onJoined();
         onDismiss();
@@ -845,7 +883,7 @@ function InviteFromLinkBanner({
           className="flex-1 min-w-[120px] py-3 rounded-full bg-neutral-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-red-700 disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {joining ? <Loader2 size={14} className="animate-spin" /> : null}
-          {isFull ? 'Filled' : 'Apply'}
+          {isFull ? 'Filled' : signedIn ? 'Apply' : 'Sign in to apply'}
         </button>
         <button type="button" onClick={onDismiss} className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-neutral-400 hover:text-neutral-700">
           Dismiss
@@ -876,6 +914,8 @@ function DiscoverTab({
   boardCity,
   onBoardCityChange,
   addCity,
+  signedIn = false,
+  signInHref = '/auth/sign-in',
 }: {
   persona: StaffPersona;
   onSwitchTab: (t: AppTab) => void;
@@ -885,6 +925,8 @@ function DiscoverTab({
   boardCity?: string;
   onBoardCityChange?: (c: string) => void;
   addCity?: (name: string) => void;
+  signedIn?: boolean;
+  signInHref?: string;
 }) {
   const [filter, setFilter] = useState<'all' | 'open' | 'curated'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -1015,6 +1057,8 @@ function DiscoverTab({
           hangoutId={pendingInviteHangoutId}
           onDismiss={onClearPendingInvite}
           onJoined={loadHangouts}
+          signedIn={signedIn}
+          signInHref={signInHref}
         />
       ) : null}
 
@@ -1638,14 +1682,45 @@ function MatchedWorkersPanel({
   );
 }
 
+function ManagementSignInGate({
+  title,
+  description,
+  signInHref,
+}: {
+  title: string;
+  description: string;
+  signInHref: string;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="max-w-md mx-auto text-center py-16 px-6 rounded-[28px] border border-neutral-200 bg-white shadow-[0_12px_40px_rgba(0,0,0,0.06)]"
+    >
+      <h2 className="font-display text-2xl italic text-neutral-900 mb-2">{title}</h2>
+      <p className="text-sm text-neutral-600 mb-6">{description}</p>
+      <Link
+        href={signInHref}
+        className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-red-700 text-white text-[11px] font-black uppercase tracking-widest hover:bg-red-800 transition-colors"
+      >
+        <LogIn size={14} aria-hidden /> Sign in
+      </Link>
+    </motion.div>
+  );
+}
+
 function HostTab({
   onPosted,
   cities,
   addCity,
+  signedIn,
+  signInHref,
 }: {
   onPosted: () => void;
   cities: string[];
   addCity: (name: string) => void;
+  signedIn: boolean;
+  signInHref: string;
 }) {
   const tableMin = 1;
   const tableMax = 40;
@@ -1681,6 +1756,16 @@ function HostTab({
       setZone((z) => (LAGOS_ZONES.includes(z as (typeof LAGOS_ZONES)[number]) ? '' : z));
     }
   }, [city]);
+
+  if (!signedIn) {
+    return (
+      <ManagementSignInGate
+        title="Sign in to post shifts"
+        description="Create and share shift links from your outlet account. Anyone can view a shared link without signing in."
+        signInHref={signInHref}
+      />
+    );
+  }
 
   const handleSubmit = async () => {
     if (!title.trim() || !vibe.trim() || !location.trim() || !eventDate || !eventTime) {
@@ -2775,7 +2860,7 @@ function OutletAccountSection({ initialUser }: { initialUser?: any }) {
   };
 
   const vendorShareUrl = vendor?.slug
-    ? `${typeof window !== 'undefined' ? window.location.origin : 'https://app.convivia24.com'}/v/${vendor.slug}`
+    ? `${typeof window !== 'undefined' ? window.location.origin : 'https://convivia24.com'}/v/${vendor.slug}`
     : null;
 
   const copyVendorLink = () => {
@@ -3556,7 +3641,13 @@ type OutletShift = {
   status: string;
 };
 
-function OutletApplicantsPanel() {
+function OutletApplicantsPanel({
+  signedIn,
+  signInHref,
+}: {
+  signedIn: boolean;
+  signInHref: string;
+}) {
   const [shifts, setShifts] = useState<OutletShift[]>([]);
   const [loadingShifts, setLoadingShifts] = useState(true);
   const [expandedShiftId, setExpandedShiftId] = useState<string | null>(null);
@@ -3566,6 +3657,11 @@ function OutletApplicantsPanel() {
   const [notice, setNotice] = useState<{ msg: string; ok: boolean } | null>(null);
 
   useEffect(() => {
+    if (!signedIn) {
+      setShifts([]);
+      setLoadingShifts(false);
+      return;
+    }
     fetch('/api/hangouts?next_hours=168', { credentials: 'include' })
       .then((r) => r.json())
       .then((d) => {
@@ -3585,7 +3681,17 @@ function OutletApplicantsPanel() {
       })
       .catch(() => setShifts([]))
       .finally(() => setLoadingShifts(false));
-  }, []);
+  }, [signedIn]);
+
+  if (!signedIn) {
+    return (
+      <ManagementSignInGate
+        title="Sign in to manage applicants"
+        description="Review and confirm workers who applied to your posted shifts."
+        signInHref={signInHref}
+      />
+    );
+  }
 
   const loadApplicants = async (shiftId: string) => {
     if (applicants[shiftId]) {
@@ -3832,6 +3938,8 @@ function OutletDemandTab({
   cities,
   addCity,
   onSwitchTab,
+  signedIn,
+  signInHref,
 }: {
   outletDemandSub: 'board' | 'post' | 'applicants';
   setOutletDemandSub: (v: 'board' | 'post' | 'applicants') => void;
@@ -3840,6 +3948,8 @@ function OutletDemandTab({
   cities: string[];
   addCity: (name: string) => void;
   onSwitchTab: (t: AppTab) => void;
+  signedIn: boolean;
+  signInHref: string;
 }) {
   return (
     <div className="space-y-5 pb-24">
@@ -3889,14 +3999,22 @@ function OutletDemandTab({
           onClearPendingInvite={onClearPendingInvite}
           cities={cities}
           addCity={addCity}
+          signedIn={signedIn}
+          signInHref={
+            pendingInviteHangoutId
+              ? `/auth/sign-in?next=${encodeURIComponent(`/outlet?join=${pendingInviteHangoutId}`)}`
+              : signInHref
+          }
         />
       ) : outletDemandSub === 'applicants' ? (
-        <OutletApplicantsPanel />
+        <OutletApplicantsPanel signedIn={signedIn} signInHref={signInHref} />
       ) : (
         <HostTab
           onPosted={() => setOutletDemandSub('board')}
           cities={cities}
           addCity={addCity}
+          signedIn={signedIn}
+          signInHref={signInHref}
         />
       )}
     </div>

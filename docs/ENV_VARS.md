@@ -63,9 +63,9 @@ All variables go in two places:
 
 | Variable | What it does |
 |---|---|
-| `NEXT_PUBLIC_APP_URL` | The canonical public URL of the app (e.g. `https://app.convivia24.com`). Used by the Paystack callback redirect so Paystack knows where to send users after payment. Also used to build the vendor shareable link in `/v/[slug]`. |
+| `NEXT_PUBLIC_APP_URL` | The canonical public URL of the app (e.g. `https://convivia24.com`). Used by the Paystack callback redirect so Paystack knows where to send users after payment. Also used to build the vendor shareable link in `/v/[slug]`. |
 
-**If not set:** Paystack callback falls back to `https://app.convivia24.com` (hardcoded default), so it works — but set it properly for any staging/preview environments.
+**If not set:** Paystack callback falls back to `https://convivia24.com` (hardcoded default), so it works — but set it properly for any staging/preview environments.
 
 ---
 
@@ -90,7 +90,7 @@ All variables go in two places:
 
 **Why it matters:** Without `PAYSTACK_SECRET_KEY`, clicking "Get Black" returns a 503 error. Without `PAYSTACK_WEBHOOK_SECRET`, the webhook still works but skips signature verification (less secure).
 
-**Webhook URL to register in Paystack:** `https://app.convivia24.com/api/paystack/webhook`
+**Webhook URL to register in Paystack:** `https://convivia24.com/api/paystack/webhook`
 
 ---
 
@@ -134,7 +134,7 @@ SENTRY_DSN=https://abc@o123.ingest.sentry.io/789
 NEXT_PUBLIC_SENTRY_DSN=https://abc@o123.ingest.sentry.io/789
 
 # App
-NEXT_PUBLIC_APP_URL=https://app.convivia24.com
+NEXT_PUBLIC_APP_URL=https://convivia24.com
 
 # Payments
 PAYSTACK_SECRET_KEY=sk_test_...

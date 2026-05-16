@@ -35,7 +35,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:scheme="https"
-                    android:host="app.convivia24.com" />
+                    android:host="convivia24.com" />
             </intent-filter>
 
         </activity>
