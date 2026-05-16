@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { CheckCircle, XCircle, AlertCircle, Loader2, ArrowRight, Camera, QrCode } from 'lucide-react';
-import { ACCENT_COLORS, ACCENT_SOFT, QRBlock } from '@/components/convene/primitives';
+import { ACCENT_COLORS, ACCENT_SOFT } from '@/components/convene/primitives';
 import type { EventType } from '@/components/convene/primitives';
 
 interface RsvpData {
@@ -27,6 +27,7 @@ export default function RSVPPage({ params }: PageProps) {
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<'invite' | 'rsvp-form' | 'confirmed' | 'pass'>('invite');
   const [rsvpState, setRsvpState] = useState<'in' | 'maybe' | 'out'>('in');
+  const [partySize, setPartySize] = useState(1);
   const [dietary, setDietary] = useState('');
   const [message, setMessage] = useState('');
   const [songRequest, setSongRequest] = useState('');
@@ -52,6 +53,7 @@ export default function RSVPPage({ params }: PageProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           state: rsvpState,
+          party_size: partySize,
           dietary: dietary || null,
           message: message || null,
           song_request: songRequest || null,
@@ -220,6 +222,38 @@ export default function RSVPPage({ params }: PageProps) {
         {rsvpState !== 'out' && (
           <>
             <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: '#a89e8e', marginBottom: 8 }}>How many in your party?</div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {[1, 2, 3, 4, 5].map(n => (
+                  <button
+                    key={n}
+                    onClick={() => setPartySize(n)}
+                    style={{
+                      flex: 1, padding: '10px 0', borderRadius: 10, cursor: 'pointer',
+                      background: partySize === n ? '#1a1714' : '#fff',
+                      color: partySize === n ? '#faf6ee' : '#1a1714',
+                      border: `1px solid ${partySize === n ? '#1a1714' : 'rgba(26,23,20,.12)'}`,
+                      fontWeight: 700, fontSize: 14, transition: 'all .15s',
+                    }}
+                  >
+                    {n}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setPartySize(p => p < 20 ? p + 1 : p)}
+                  style={{
+                    width: 40, padding: '10px 0', borderRadius: 10, cursor: 'pointer',
+                    background: partySize > 5 ? '#1a1714' : '#fff',
+                    color: partySize > 5 ? '#faf6ee' : '#1a1714',
+                    border: `1px solid ${partySize > 5 ? '#1a1714' : 'rgba(26,23,20,.12)'}`,
+                    fontWeight: 700, fontSize: 12,
+                  }}
+                >
+                  {partySize > 5 ? partySize : '+'}
+                </button>
+              </div>
+            </div>
+            <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: '#a89e8e', marginBottom: 6 }}>Dietary requirements</div>
               <input
                 className="cv-input"
@@ -307,9 +341,15 @@ export default function RSVPPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* QR */}
+        {/* QR — real scannable code encoding the RSVP URL */}
         <div style={{ background: '#fff', borderRadius: 20, padding: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
-          <QRBlock size={200} />
+          <img
+            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=0&data=${encodeURIComponent(`https://convivia24.com/rsvp/${guest.pass_token}`)}`}
+            alt="Guest pass QR code"
+            width={200}
+            height={200}
+            style={{ borderRadius: 8, display: 'block' }}
+          />
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontFamily: 'var(--font-geist-mono, monospace)', fontSize: 11, color: '#756c5e', letterSpacing: '0.12em' }}>
               {guest.pass_token.slice(0, 16).toUpperCase()}

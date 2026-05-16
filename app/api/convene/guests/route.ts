@@ -6,7 +6,8 @@ export async function GET(req: NextRequest) {
   const { user } = await neonAuth();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const eventId = new URL(req.url).searchParams.get('eventId');
+  const sp = new URL(req.url).searchParams;
+  const eventId = sp.get('eventId') || sp.get('event_id');
   if (!eventId) return NextResponse.json({ error: 'eventId required' }, { status: 400 });
 
   const event = await getEventById(eventId);
