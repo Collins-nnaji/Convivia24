@@ -4,6 +4,7 @@ import { neonAuth } from '@/lib/auth/server';
 import { getOrCreateUser } from '@/lib/db/users';
 import { isConviviaAdminAsync } from '@/lib/admin';
 import { ConveneApp } from '@/components/convene/ConveneApp';
+import { LandingPage } from '@/components/convene/LandingPage';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,18 +21,22 @@ export default async function AppRootPage() {
   let initialUser: Record<string, unknown> | null = null;
 
   const { user: authUser } = await neonAuth();
-  if (authUser) {
-    try {
-      const row = await getOrCreateUser(authUser);
-      const isPlatformAdmin = await isConviviaAdminAsync(authUser.email);
-      initialUser = {
-        ...row,
-        created_at: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
-        is_platform_admin: isPlatformAdmin,
-      };
-    } catch (e) {
-      console.error('[AppRootPage] getOrCreateUser', e);
-    }
+
+  // Not signed in — show the public landing page
+  if (!authUser) {
+    return <LandingPage />;
+  }
+
+  try {
+    const row = await getOrCreateUser(authUser);
+    const isPlatformAdmin = await isConviviaAdminAsync(authUser.email);
+    initialUser = {
+      ...row,
+      created_at: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+      is_platform_admin: isPlatformAdmin,
+    };
+  } catch (e) {
+    console.error('[AppRootPage] getOrCreateUser', e);
   }
 
   return (
