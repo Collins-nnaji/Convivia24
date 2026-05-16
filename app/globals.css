@@ -2,29 +2,68 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Convene design system tokens ─── */
 :root {
-  --foreground-rgb: 23, 23, 23;
-  --app-wash: #f8f6f2;
-  --gold-accent: #c9a84c;
+  --foreground-rgb: 26, 23, 20;
+  /* Legacy compat */
+  --app-wash: #faf6ee;
+  --gold-accent: #c0975a;
 
-  /* Mobile app feel — letter spacing and weight feel native */
-  --tracking-ui: -0.01em;
-  --tracking-label: 0.02em;
+  /* Convene core */
+  --cv-ivory:   #faf6ee;
+  --cv-ivory-2: #f4ede0;
+  --cv-ink:     #1a1714;
+  --cv-ink-2:   #2d2925;
+  --cv-muted:   #756c5e;
+  --cv-muted-2: #a89e8e;
+  --cv-paper:   #ffffff;
+  --cv-hairline: rgba(26,23,20,.10);
+  --cv-hairline-strong: rgba(26,23,20,.20);
 
-  /* Spring easing — matches iOS UIKit feel */
+  /* Default accent — overridden per event type */
+  --cv-accent:      #1a1714;
+  --cv-accent-2:    #c0975a;
+  --cv-accent-soft: rgba(26,23,20,.06);
+  --cv-accent-line: rgba(26,23,20,.20);
+  --cv-accent-deep: #000000;
+
+  /* Fonts — loaded via Google Fonts <link> in layout.tsx */
+  --font-instrument: 'Instrument Serif', 'Cormorant Garamond', Georgia, serif;
+  --font-geist: 'Geist', 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-geist-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-display-stack: 'Instrument Serif', 'Cormorant Garamond', Georgia, serif;
+  --font-sans-stack: 'Geist', 'Outfit', system-ui, -apple-system, sans-serif;
+
+  /* Radii */
+  --cv-r-card: 18px;
+  --cv-r-soft: 10px;
+  --cv-r-pill: 9999px;
+
+  /* Easing */
   --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out-smooth: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ─── Event-type accents ─── */
+.evt-wedding   { --cv-accent:#c0975a; --cv-accent-deep:#7e6235; --cv-accent-soft:rgba(192,151,90,.10);  --cv-accent-line:rgba(192,151,90,.30); }
+.evt-birthday  { --cv-accent:#e85d4b; --cv-accent-deep:#a8392b; --cv-accent-soft:rgba(232,93,75,.10);   --cv-accent-line:rgba(232,93,75,.32); }
+.evt-engage    { --cv-accent:#d97b9c; --cv-accent-deep:#9c4e6e; --cv-accent-soft:rgba(217,123,156,.10); --cv-accent-line:rgba(217,123,156,.32); }
+.evt-corporate { --cv-accent:#2a4870; --cv-accent-deep:#15263e; --cv-accent-soft:rgba(42,72,112,.08);   --cv-accent-line:rgba(42,72,112,.28); }
+.evt-club      { --cv-accent:#7c5bff; --cv-accent-deep:#4a32ad; --cv-accent-soft:rgba(124,91,255,.10);  --cv-accent-line:rgba(124,91,255,.32); }
+.evt-dinner    { --cv-accent:#8b2535; --cv-accent-deep:#5a1422; --cv-accent-soft:rgba(139,37,53,.08);   --cv-accent-line:rgba(139,37,53,.28); }
+.evt-festival  { --cv-accent:#e09f3e; --cv-accent-deep:#a06f1f; --cv-accent-soft:rgba(224,159,62,.10);  --cv-accent-line:rgba(224,159,62,.32); }
+.evt-baby      { --cv-accent:#8aa085; --cv-accent-deep:#536852; --cv-accent-soft:rgba(138,160,133,.10); --cv-accent-line:rgba(138,160,133,.32); }
+.evt-memorial  { --cv-accent:#5a6573; --cv-accent-deep:#2e3640; --cv-accent-soft:rgba(90,101,115,.08);  --cv-accent-line:rgba(90,101,115,.30); }
+
 html {
-  background: var(--app-wash);
+  background: var(--cv-ivory);
   -webkit-text-size-adjust: 100%;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: var(--app-wash);
+  color: var(--cv-ink);
+  background: var(--cv-ivory);
   overscroll-behavior-y: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -455,4 +494,51 @@ select {
     animation: none;
     background: #ede9e0;
   }
+}
+
+/* ─── Convene animations ─── */
+@keyframes cv-fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.cv-fade-up { animation: cv-fade-up 0.35s ease both; }
+
+@keyframes cv-scanner-line {
+  0%, 100% { top: 22%; }
+  50%       { top: 72%; }
+}
+.cv-scanner-line { animation: cv-scanner-line 2.4s ease-in-out infinite; }
+
+@keyframes cv-pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(1.5); }
+}
+.cv-pulse-dot { animation: cv-pulse-dot 1.6s ease-in-out infinite; }
+
+/* QR code cell */
+.cv-qr-cell { shape-rendering: crispEdges; }
+
+/* Convene scrollbar */
+.cv-scrollbar::-webkit-scrollbar { width: 0; height: 0; }
+.cv-scrollbar { scrollbar-width: none; }
+
+/* Convene input bottom-border only */
+.cv-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--cv-hairline-strong);
+  padding: 10px 0;
+  font-family: var(--font-sans-stack);
+  font-size: 15px;
+  color: var(--cv-ink);
+  outline: none;
+}
+.cv-input:focus { border-color: var(--cv-accent); }
+.cv-input::placeholder { color: var(--cv-muted-2); }
+
+/* Convene selection */
+::selection {
+  background: rgba(192,151,90,.22);
+  color: var(--cv-ink);
 }

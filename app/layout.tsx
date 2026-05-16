@@ -1,26 +1,10 @@
 import './globals.css';
-import { Plus_Jakarta_Sans, Cormorant_Garamond } from 'next/font/google';
 import { NativeAppBridge } from '@/components/app/NativeAppBridge';
 
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-jakarta',
-  weight: ['400', '500', '600', '700', '800'],
-});
-
-const cormorant = Cormorant_Garamond({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-  style: ['normal', 'italic'],
-  display: 'swap',
-  variable: '--font-cormorant',
-});
-
 export const metadata = {
-  title: 'Convivia24 | Hospitality staffing',
+  title: 'Convivia24 — Throw it. Plan it. Remember it.',
   description:
-    '18+ hospitality staffing in Lagos, Abuja, and Port Harcourt. Verified workers, open shifts, and same-day mobile-money payouts.',
+    'Party planning, invite design, guest management, and day-of check-in — one tool for the whole life of a gathering. Weddings, birthdays, club nights, and more.',
   applicationName: 'Convivia24',
   manifest: '/manifest.json',
   metadataBase: new URL('https://app.convivia24.com'),
@@ -30,9 +14,7 @@ export const metadata = {
     statusBarStyle: 'black-translucent',
   },
   icons: {
-    icon: [
-      { url: '/Logo2.png', type: 'image/png' },
-    ],
+    icon: [{ url: '/Logo2.png', type: 'image/png' }],
     apple: '/Logo2.png',
   },
 };
@@ -41,18 +23,22 @@ export const viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#f8f6f2',
+  themeColor: '#faf6ee',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=Geist:wght@300;400;500;600;700;800;900&family=Geist+Mono:wght@400;500;700&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body
-        className={`${jakarta.variable} ${cormorant.variable} font-sans bg-[#f8f6f2] text-neutral-900 antialiased`}
+        className="bg-[var(--cv-ivory)] text-[var(--cv-ink)] antialiased"
         suppressHydrationWarning
       >
         <NativeAppBridge />
