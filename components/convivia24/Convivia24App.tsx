@@ -179,14 +179,38 @@ function ScreenCreateEvent({ onCreated, onCancel }: { onCreated: (ev: CvEvent) =
     }
   }
 
+  async function handleSignOut() {
+    try {
+      await fetch('/api/auth/sign-out', { method: 'POST' });
+    } finally {
+      window.location.href = '/';
+    }
+  }
+
   return (
-    <div className="cv-scrollbar" style={{ position: 'absolute', inset: 0, overflowY: 'auto', background: 'var(--cv-ivory)', padding: '24px 18px 100px' }}>
-      <div style={{ animation: 'cv-fade-up .35s ease both' }}>
-        {onCancel && (
-          <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--cv-muted)', fontSize: 12, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 18 }}>
-            <ArrowLeft size={13} /> Cancel
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--cv-ivory)' }}>
+      {/* Navbar */}
+      <div style={{
+        flexShrink: 0, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 18px', borderBottom: '1px solid var(--cv-hairline)',
+        background: 'rgba(250,246,238,.92)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+      }}>
+        <Wordmark tone="ink" />
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {onCancel && (
+            <button onClick={onCancel} style={{ background: 'none', border: '1px solid var(--cv-hairline)', cursor: 'pointer', color: 'var(--cv-muted-2)', fontSize: 10, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 99 }}>
+              <ArrowLeft size={11} /> My events
+            </button>
+          )}
+          <button onClick={handleSignOut} style={{ background: 'none', border: '1px solid var(--cv-hairline)', cursor: 'pointer', color: 'var(--cv-muted-2)', fontSize: 10, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 99 }}>
+            <LogOut size={11} /> Sign out
           </button>
-        )}
+        </div>
+      </div>
+
+      {/* Scrollable content */}
+      <div className="cv-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '24px 18px 0' }}>
+        <div style={{ maxWidth: 520, margin: '0 auto', animation: 'cv-fade-up .35s ease both' }}>
         {step === 1 ? (
           <>
             <Eyebrow muted>Step 1 of 2 · The kind</Eyebrow>
@@ -196,7 +220,7 @@ function ScreenCreateEvent({ onCreated, onCancel }: { onCreated: (ev: CvEvent) =
             </h1>
             <p style={{ fontSize: 13, color: 'var(--cv-muted)', marginTop: 6, marginBottom: 20 }}>It changes the language, the look, the templates.</p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 20 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 8 }}>
               {EVENT_TYPES.map(et => (
                 <button
                   key={et.id}
@@ -214,10 +238,6 @@ function ScreenCreateEvent({ onCreated, onCancel }: { onCreated: (ev: CvEvent) =
                 </button>
               ))}
             </div>
-
-            <Btn fullWidth onClick={() => setStep(2)}>
-              Continue <ArrowRight size={13} />
-            </Btn>
           </>
         ) : (
           <>
@@ -229,7 +249,7 @@ function ScreenCreateEvent({ onCreated, onCancel }: { onCreated: (ev: CvEvent) =
               Set the stage.
             </h1>
 
-            <Card style={{ padding: 16, marginBottom: 16 }}>
+            <Card style={{ padding: 16, marginBottom: 8 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div>
                   <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--cv-muted-2)', marginBottom: 4 }}>Who is this for</div>
@@ -268,12 +288,28 @@ function ScreenCreateEvent({ onCreated, onCancel }: { onCreated: (ev: CvEvent) =
                 </div>
               </div>
             </Card>
-
-            <Btn fullWidth onClick={handleCreate} disabled={!hostName.trim() || loading} style={{ '--cv-accent': accent, '--cv-ink': 'var(--cv-ink)' } as React.CSSProperties}>
-              {loading ? <Loader2 size={14} className="animate-spin" /> : <><Sparkles size={13} /> Start planning</>}
-            </Btn>
           </>
         )}
+        </div>
+      </div>
+
+      {/* Sticky CTA — always visible at bottom */}
+      <div style={{
+        flexShrink: 0, padding: '12px 18px 24px',
+        background: 'rgba(250,246,238,.96)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+        borderTop: '1px solid var(--cv-hairline)',
+      }}>
+        <div style={{ maxWidth: 520, margin: '0 auto' }}>
+          {step === 1 ? (
+            <Btn fullWidth onClick={() => setStep(2)}>
+              Continue <ArrowRight size={13} />
+            </Btn>
+          ) : (
+            <Btn fullWidth onClick={handleCreate} disabled={!hostName.trim() || loading} style={{ '--cv-accent': accent } as React.CSSProperties}>
+              {loading ? <Loader2 size={14} className="animate-spin" /> : <><Sparkles size={13} /> Start planning</>}
+            </Btn>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -391,10 +427,15 @@ function ScreenEventHome({
   onNewEvent: () => void;
   userName?: string | null;
 }) {
+  const [menuOpen, setMenuOpen] = useState(false);
   const replyRate = stats.total ? (stats.in + stats.out + stats.maybe) / stats.total : 0;
   const capacityRate = event.capacity ? stats.in / event.capacity : 0;
   const daysOut = event.days_out ?? 0;
   const typeLabel = EVENT_TYPE_META[event.event_type as EventType]?.label || event.event_type;
+
+  async function handleSignOut() {
+    try { await fetch('/api/auth/sign-out', { method: 'POST' }); } finally { window.location.href = '/'; }
+  }
 
   return (
     <>
@@ -403,20 +444,48 @@ function ScreenEventHome({
           <IBtn icon={Plus} onClick={onNewEvent} />
           <IBtn icon={Pencil} onClick={onEdit} />
           {userName && (
-            <button
-              title={userName}
-              style={{
-                width: 32, height: 32, borderRadius: 9999,
-                background: 'var(--cv-accent-soft, rgba(192,151,90,.12))',
-                border: '1px solid var(--cv-accent-line, rgba(192,151,90,.25))',
-                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'default', color: 'var(--cv-ink)',
-                fontFamily: 'var(--font-geist, system-ui)', fontWeight: 700, fontSize: 11,
-                letterSpacing: '0.04em', flexShrink: 0,
-              }}
-            >
-              {userName.trim().charAt(0).toUpperCase()}
-            </button>
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => setMenuOpen(o => !o)}
+                title={userName}
+                style={{
+                  width: 32, height: 32, borderRadius: 9999,
+                  background: menuOpen ? 'var(--cv-ink)' : 'var(--cv-accent-soft, rgba(192,151,90,.12))',
+                  border: '1px solid var(--cv-accent-line, rgba(192,151,90,.25))',
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', color: menuOpen ? 'var(--cv-ivory)' : 'var(--cv-ink)',
+                  fontFamily: 'var(--font-geist, system-ui)', fontWeight: 700, fontSize: 11,
+                  letterSpacing: '0.04em', flexShrink: 0, transition: 'background .15s',
+                }}
+              >
+                {userName.trim().charAt(0).toUpperCase()}
+              </button>
+              {menuOpen && (
+                <>
+                  <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 140 }} />
+                  <div style={{
+                    position: 'absolute', top: 38, right: 0, zIndex: 150, minWidth: 160,
+                    background: 'var(--cv-ivory)', border: '1px solid var(--cv-hairline)',
+                    borderRadius: 12, boxShadow: '0 8px 28px rgba(26,23,20,.14)',
+                    padding: 6, display: 'flex', flexDirection: 'column', gap: 2,
+                  }}>
+                    <div style={{ padding: '8px 10px 6px', fontSize: 11, fontWeight: 700, color: 'var(--cv-muted-2)', borderBottom: '1px solid var(--cv-hairline)', marginBottom: 4 }}>
+                      {userName}
+                    </div>
+                    <button
+                      onClick={handleSignOut}
+                      style={{
+                        background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
+                        padding: '8px 10px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                        color: 'var(--cv-ink)', display: 'flex', alignItems: 'center', gap: 8,
+                      }}
+                    >
+                      <LogOut size={13} /> Sign out
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           )}
         </>}
       />
