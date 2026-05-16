@@ -141,7 +141,7 @@ function Dock({ active, onTab }: { active: Tab; onTab: (t: Tab) => void }) {
 // ─── SCREEN: Create Event ─────────────────────────────────────
 const EVENT_TYPES = Object.entries(EVENT_TYPE_META).map(([id, m]) => ({ id: id as EventType, ...m }));
 
-function ScreenCreateEvent({ onCreated }: { onCreated: (ev: CvEvent) => void }) {
+function ScreenCreateEvent({ onCreated, onCancel }: { onCreated: (ev: CvEvent) => void; onCancel?: () => void }) {
   const [step, setStep] = useState<1 | 2>(1);
   const [eventType, setEventType] = useState<EventType>('wedding');
   const [hostName, setHostName] = useState('');
@@ -180,8 +180,13 @@ function ScreenCreateEvent({ onCreated }: { onCreated: (ev: CvEvent) => void }) 
   }
 
   return (
-    <div className="cv-scrollbar" style={{ position: 'absolute', inset: 0, overflowY: 'auto', background: 'var(--cv-ivory)', padding: '24px 18px 40px' }}>
+    <div className="cv-scrollbar" style={{ position: 'absolute', inset: 0, overflowY: 'auto', background: 'var(--cv-ivory)', padding: '24px 18px 100px' }}>
       <div style={{ animation: 'cv-fade-up .35s ease both' }}>
+        {onCancel && (
+          <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--cv-muted)', fontSize: 12, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 18 }}>
+            <ArrowLeft size={13} /> Cancel
+          </button>
+        )}
         {step === 1 ? (
           <>
             <Eyebrow muted>Step 1 of 2 · The kind</Eyebrow>
@@ -376,13 +381,15 @@ function ScreenEditEvent({ event, onSaved, onBack }: { event: CvEvent; onSaved: 
 
 // ─── SCREEN: Event Home ───────────────────────────────────────
 function ScreenEventHome({
-  event, stats, onEdit, onConcierge, onCopy,
+  event, stats, onEdit, onConcierge, onCopy, onNewEvent, userName,
 }: {
   event: CvEvent;
   stats: { in: number; maybe: number; out: number; pending: number; total: number; arrived: number };
   onEdit: () => void;
   onConcierge: () => void;
   onCopy: (url: string, msg?: string) => void;
+  onNewEvent: () => void;
+  userName?: string | null;
 }) {
   const replyRate = stats.total ? (stats.in + stats.out + stats.maybe) / stats.total : 0;
   const capacityRate = event.capacity ? stats.in / event.capacity : 0;
@@ -393,8 +400,24 @@ function ScreenEventHome({
     <>
       <TopBar
         right={<>
+          <IBtn icon={Plus} onClick={onNewEvent} />
           <IBtn icon={Pencil} onClick={onEdit} />
-          <IBtn icon={Bell} dot />
+          {userName && (
+            <button
+              title={userName}
+              style={{
+                width: 32, height: 32, borderRadius: 9999,
+                background: 'var(--cv-accent-soft, rgba(192,151,90,.12))',
+                border: '1px solid var(--cv-accent-line, rgba(192,151,90,.25))',
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'default', color: 'var(--cv-ink)',
+                fontFamily: 'var(--font-geist, system-ui)', fontWeight: 700, fontSize: 11,
+                letterSpacing: '0.04em', flexShrink: 0,
+              }}
+            >
+              {userName.trim().charAt(0).toUpperCase()}
+            </button>
+          )}
         </>}
       />
       <ScrollPane topPad={64}>
@@ -1478,6 +1501,8 @@ function ScreenConcierge({ event, onClose }: { event: CvEvent; onClose: () => vo
 interface Convivia24AppProps { initialUser: Record<string, unknown> | null; }
 
 export function Convivia24App({ initialUser }: Convivia24AppProps) {
+  const userName = (initialUser?.name || initialUser?.email || null) as string | null;
+
   const [events, setEvents] = useState<CvEvent[]>([]);
   const [activeEvent, setActiveEvent] = useState<CvEvent | null>(null);
   const [guests, setGuests] = useState<CvGuest[]>([]);
@@ -1625,7 +1650,7 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
     }
 
     if (activeTab === 'event') {
-      if (screen === 'create') return <ScreenCreateEvent onCreated={ev => { loadEvents(); setActiveEvent(ev); setScreen('home'); }} />;
+      if (screen === 'create') return <ScreenCreateEvent onCreated={ev => { loadEvents(); setActiveEvent(ev); setScreen('home'); }} onCancel={() => setScreen('home')} />;
       return (
         <ScreenEventHome
           event={activeEvent!}
@@ -1633,6 +1658,8 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
           onEdit={() => setEditingEvent(true)}
           onConcierge={() => setShowConcierge(true)}
           onCopy={handleCopy}
+          onNewEvent={() => setScreen('create')}
+          userName={userName}
         />
       );
     }
