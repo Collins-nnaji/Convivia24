@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { neonAuth } from '@/lib/auth/server';
-import { getEventById, updateGuest, deleteGuest } from '@/lib/convene';
+import { getEventById, updateGuest, deleteGuest } from '@/lib/convivia24';
 import { neon } from '@neondatabase/serverless';
 
 type Params = { params: Promise<{ id: string }> };
 
 async function getGuestOwnerEventId(guestId: string): Promise<string | null> {
   const sql = neon(process.env.DATABASE_URL!);
-  const rows = await sql`SELECT event_id FROM convene_guests WHERE id = ${guestId} LIMIT 1`;
+  const rows = await sql`SELECT event_id FROM convivia24_guests WHERE id = ${guestId} LIMIT 1`;
   return (rows[0]?.event_id as string) ?? null;
 }
 

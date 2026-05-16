@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { neonAuth } from '@/lib/auth/server';
-import { getEventById, getGuestsForEvent, createGuest, getGuestStats } from '@/lib/convene';
+import { getEventById, getGuestsForEvent, createGuest, getGuestStats } from '@/lib/convivia24';
 
 export async function GET(req: NextRequest) {
   const { user } = await neonAuth();

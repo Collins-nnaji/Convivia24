@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowRight, Sparkles, Users, Mail, Camera, QrCode } from 'lucide-react';
-import { ACCENT_COLORS, type EventType } from '@/components/convene/primitives';
+import { ACCENT_COLORS, type EventType } from '@/components/convivia24/primitives';
 
 const FEATURES = [
   { icon: Mail,     title: 'Beautiful invites',    desc: 'Three editorial directions. Every guest gets a personalised link with their name.' },

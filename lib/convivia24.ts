@@ -2,7 +2,7 @@ import { neon } from '@neondatabase/serverless';
 
 const sql = neon(process.env.DATABASE_URL!);
 
-export interface ConveneEvent {
+export interface Convivia24Event {
   id: string;
   user_id: string;
   slug: string | null;
@@ -25,7 +25,7 @@ export interface ConveneEvent {
   updated_at: string;
 }
 
-export interface ConveneGuest {
+export interface Convivia24Guest {
   id: string;
   event_id: string;
   name: string;
@@ -45,7 +45,7 @@ export interface ConveneGuest {
   created_at: string;
 }
 
-export interface ConveneSeatingTable {
+export interface Convivia24SeatingTable {
   id: string;
   event_id: string;
   name: string;
@@ -56,7 +56,7 @@ export interface ConveneSeatingTable {
   sort_order: number;
 }
 
-export interface ConvenePhoto {
+export interface Convivia24Photo {
   id: string;
   event_id: string;
   uploader_name: string | null;
@@ -65,7 +65,7 @@ export interface ConvenePhoto {
   created_at: string;
 }
 
-export interface ConveneGift {
+export interface Convivia24Gift {
   id: string;
   event_id: string;
   title: string;
@@ -90,27 +90,27 @@ export function generateSlug(title: string, id: string): string {
 
 // ── Events ────────────────────────────────────────────────────────────────────
 
-export async function getEventsForUser(userId: string): Promise<ConveneEvent[]> {
+export async function getEventsForUser(userId: string): Promise<Convivia24Event[]> {
   const rows = await sql`
-    SELECT * FROM convene_events WHERE user_id = ${userId} ORDER BY created_at DESC
+    SELECT * FROM convivia24_events WHERE user_id = ${userId} ORDER BY created_at DESC
   `;
-  return rows as unknown as ConveneEvent[];
+  return rows as unknown as Convivia24Event[];
 }
 
-export async function getEventById(id: string): Promise<ConveneEvent | null> {
-  const rows = await sql`SELECT * FROM convene_events WHERE id = ${id} LIMIT 1`;
-  return (rows[0] as unknown as ConveneEvent) ?? null;
+export async function getEventById(id: string): Promise<Convivia24Event | null> {
+  const rows = await sql`SELECT * FROM convivia24_events WHERE id = ${id} LIMIT 1`;
+  return (rows[0] as unknown as Convivia24Event) ?? null;
 }
 
-export async function getEventBySlug(slug: string): Promise<ConveneEvent | null> {
-  const rows = await sql`SELECT * FROM convene_events WHERE slug = ${slug} LIMIT 1`;
-  return (rows[0] as unknown as ConveneEvent) ?? null;
+export async function getEventBySlug(slug: string): Promise<Convivia24Event | null> {
+  const rows = await sql`SELECT * FROM convivia24_events WHERE slug = ${slug} LIMIT 1`;
+  return (rows[0] as unknown as Convivia24Event) ?? null;
 }
 
-export async function createEvent(userId: string, data: Partial<ConveneEvent>): Promise<ConveneEvent> {
+export async function createEvent(userId: string, data: Partial<Convivia24Event>): Promise<Convivia24Event> {
   const title = data.title ?? 'My Event';
   const rows = await sql`
-    INSERT INTO convene_events (
+    INSERT INTO convivia24_events (
       user_id, title, event_type, host_name, event_date, event_time,
       city, venue, address, capacity, dress_code, invite_direction,
       invite_live, cover_url, rsvp_deadline
@@ -133,22 +133,22 @@ export async function createEvent(userId: string, data: Partial<ConveneEvent>): 
     )
     RETURNING *
   `;
-  const event = rows[0] as unknown as ConveneEvent;
+  const event = rows[0] as unknown as Convivia24Event;
 
   const slug = generateSlug(title, event.id);
   const updated = await sql`
-    UPDATE convene_events SET slug = ${slug} WHERE id = ${event.id} RETURNING *
+    UPDATE convivia24_events SET slug = ${slug} WHERE id = ${event.id} RETURNING *
   `;
-  return (updated[0] as unknown as ConveneEvent) ?? event;
+  return (updated[0] as unknown as Convivia24Event) ?? event;
 }
 
 export async function updateEvent(
   id: string,
   userId: string,
-  data: Partial<ConveneEvent>,
-): Promise<ConveneEvent | null> {
+  data: Partial<Convivia24Event>,
+): Promise<Convivia24Event | null> {
   const rows = await sql`
-    UPDATE convene_events SET
+    UPDATE convivia24_events SET
       title            = COALESCE(${data.title ?? null}, title),
       event_type       = COALESCE(${data.event_type ?? null}, event_type),
       host_name        = COALESCE(${data.host_name ?? null}, host_name),
@@ -167,30 +167,30 @@ export async function updateEvent(
     WHERE id = ${id} AND user_id = ${userId}
     RETURNING *
   `;
-  return (rows[0] as unknown as ConveneEvent) ?? null;
+  return (rows[0] as unknown as Convivia24Event) ?? null;
 }
 
 export async function deleteEvent(id: string, userId: string): Promise<void> {
-  await sql`DELETE FROM convene_events WHERE id = ${id} AND user_id = ${userId}`;
+  await sql`DELETE FROM convivia24_events WHERE id = ${id} AND user_id = ${userId}`;
 }
 
 // ── Guests ────────────────────────────────────────────────────────────────────
 
-export async function getGuestsForEvent(eventId: string): Promise<ConveneGuest[]> {
+export async function getGuestsForEvent(eventId: string): Promise<Convivia24Guest[]> {
   const rows = await sql`
-    SELECT * FROM convene_guests WHERE event_id = ${eventId} ORDER BY name ASC
+    SELECT * FROM convivia24_guests WHERE event_id = ${eventId} ORDER BY name ASC
   `;
-  return rows as unknown as ConveneGuest[];
+  return rows as unknown as Convivia24Guest[];
 }
 
-export async function getGuestByToken(token: string): Promise<ConveneGuest | null> {
-  const rows = await sql`SELECT * FROM convene_guests WHERE pass_token = ${token} LIMIT 1`;
-  return (rows[0] as unknown as ConveneGuest) ?? null;
+export async function getGuestByToken(token: string): Promise<Convivia24Guest | null> {
+  const rows = await sql`SELECT * FROM convivia24_guests WHERE pass_token = ${token} LIMIT 1`;
+  return (rows[0] as unknown as Convivia24Guest) ?? null;
 }
 
-export async function createGuest(eventId: string, data: Partial<ConveneGuest>): Promise<ConveneGuest> {
+export async function createGuest(eventId: string, data: Partial<Convivia24Guest>): Promise<Convivia24Guest> {
   const rows = await sql`
-    INSERT INTO convene_guests (
+    INSERT INTO convivia24_guests (
       event_id, name, email, phone, party_size,
       table_id, rsvp_state, dietary, relation, song_request, message
     ) VALUES (
@@ -208,12 +208,12 @@ export async function createGuest(eventId: string, data: Partial<ConveneGuest>):
     )
     RETURNING *
   `;
-  return rows[0] as unknown as ConveneGuest;
+  return rows[0] as unknown as Convivia24Guest;
 }
 
-export async function updateGuest(id: string, data: Partial<ConveneGuest>): Promise<ConveneGuest | null> {
+export async function updateGuest(id: string, data: Partial<Convivia24Guest>): Promise<Convivia24Guest | null> {
   const rows = await sql`
-    UPDATE convene_guests SET
+    UPDATE convivia24_guests SET
       name         = COALESCE(${data.name ?? null}, name),
       email        = COALESCE(${data.email ?? null}, email),
       phone        = COALESCE(${data.phone ?? null}, phone),
@@ -228,16 +228,16 @@ export async function updateGuest(id: string, data: Partial<ConveneGuest>): Prom
     WHERE id = ${id}
     RETURNING *
   `;
-  return (rows[0] as unknown as ConveneGuest) ?? null;
+  return (rows[0] as unknown as Convivia24Guest) ?? null;
 }
 
 export async function rsvpGuest(
   token: string,
   state: string,
-  data?: Partial<ConveneGuest>,
-): Promise<ConveneGuest | null> {
+  data?: Partial<Convivia24Guest>,
+): Promise<Convivia24Guest | null> {
   const rows = await sql`
-    UPDATE convene_guests SET
+    UPDATE convivia24_guests SET
       rsvp_state   = ${state},
       dietary      = COALESCE(${data?.dietary ?? null}, dietary),
       song_request = COALESCE(${data?.song_request ?? null}, song_request),
@@ -247,21 +247,21 @@ export async function rsvpGuest(
     WHERE pass_token = ${token}
     RETURNING *
   `;
-  return (rows[0] as unknown as ConveneGuest) ?? null;
+  return (rows[0] as unknown as Convivia24Guest) ?? null;
 }
 
-export async function checkInGuest(token: string): Promise<ConveneGuest | null> {
+export async function checkInGuest(token: string): Promise<Convivia24Guest | null> {
   const rows = await sql`
-    UPDATE convene_guests
+    UPDATE convivia24_guests
     SET arrived_at = NOW(), updated_at = NOW()
     WHERE pass_token = ${token}
     RETURNING *
   `;
-  return (rows[0] as unknown as ConveneGuest) ?? null;
+  return (rows[0] as unknown as Convivia24Guest) ?? null;
 }
 
 export async function deleteGuest(id: string): Promise<void> {
-  await sql`DELETE FROM convene_guests WHERE id = ${id}`;
+  await sql`DELETE FROM convivia24_guests WHERE id = ${id}`;
 }
 
 export async function getGuestStats(
@@ -275,7 +275,7 @@ export async function getGuestStats(
       COUNT(*) FILTER (WHERE rsvp_state = 'pending') AS pending,
       COUNT(*)                                        AS total,
       COUNT(*) FILTER (WHERE arrived_at IS NOT NULL) AS arrived
-    FROM convene_guests
+    FROM convivia24_guests
     WHERE event_id = ${eventId}
   `;
   const r = rows[0] ?? {};
@@ -291,19 +291,19 @@ export async function getGuestStats(
 
 // ── Seating tables ────────────────────────────────────────────────────────────
 
-export async function getTablesForEvent(eventId: string): Promise<ConveneSeatingTable[]> {
+export async function getTablesForEvent(eventId: string): Promise<Convivia24SeatingTable[]> {
   const rows = await sql`
-    SELECT * FROM convene_seating_tables WHERE event_id = ${eventId} ORDER BY sort_order ASC
+    SELECT * FROM convivia24_seating_tables WHERE event_id = ${eventId} ORDER BY sort_order ASC
   `;
-  return rows as unknown as ConveneSeatingTable[];
+  return rows as unknown as Convivia24SeatingTable[];
 }
 
 export async function createTable(
   eventId: string,
-  data: Partial<ConveneSeatingTable>,
-): Promise<ConveneSeatingTable> {
+  data: Partial<Convivia24SeatingTable>,
+): Promise<Convivia24SeatingTable> {
   const rows = await sql`
-    INSERT INTO convene_seating_tables (event_id, name, shape, seats, x_pos, y_pos, sort_order)
+    INSERT INTO convivia24_seating_tables (event_id, name, shape, seats, x_pos, y_pos, sort_order)
     VALUES (
       ${eventId},
       ${data.name ?? 'Table'},
@@ -315,15 +315,15 @@ export async function createTable(
     )
     RETURNING *
   `;
-  return rows[0] as unknown as ConveneSeatingTable;
+  return rows[0] as unknown as Convivia24SeatingTable;
 }
 
 export async function updateTable(
   id: string,
-  data: Partial<ConveneSeatingTable>,
-): Promise<ConveneSeatingTable | null> {
+  data: Partial<Convivia24SeatingTable>,
+): Promise<Convivia24SeatingTable | null> {
   const rows = await sql`
-    UPDATE convene_seating_tables SET
+    UPDATE convivia24_seating_tables SET
       name       = COALESCE(${data.name ?? null}, name),
       shape      = COALESCE(${data.shape ?? null}, shape),
       seats      = COALESCE(${data.seats ?? null}, seats),
@@ -333,20 +333,20 @@ export async function updateTable(
     WHERE id = ${id}
     RETURNING *
   `;
-  return (rows[0] as unknown as ConveneSeatingTable) ?? null;
+  return (rows[0] as unknown as Convivia24SeatingTable) ?? null;
 }
 
 export async function deleteTable(id: string): Promise<void> {
-  await sql`DELETE FROM convene_seating_tables WHERE id = ${id}`;
+  await sql`DELETE FROM convivia24_seating_tables WHERE id = ${id}`;
 }
 
 // ── Photos ────────────────────────────────────────────────────────────────────
 
-export async function getPhotosForEvent(eventId: string): Promise<ConvenePhoto[]> {
+export async function getPhotosForEvent(eventId: string): Promise<Convivia24Photo[]> {
   const rows = await sql`
-    SELECT * FROM convene_photos WHERE event_id = ${eventId} ORDER BY created_at DESC
+    SELECT * FROM convivia24_photos WHERE event_id = ${eventId} ORDER BY created_at DESC
   `;
-  return rows as unknown as ConvenePhoto[];
+  return rows as unknown as Convivia24Photo[];
 }
 
 export async function addPhoto(
@@ -354,27 +354,27 @@ export async function addPhoto(
   url: string,
   uploaderName?: string,
   caption?: string,
-): Promise<ConvenePhoto> {
+): Promise<Convivia24Photo> {
   const rows = await sql`
-    INSERT INTO convene_photos (event_id, url, uploader_name, caption)
+    INSERT INTO convivia24_photos (event_id, url, uploader_name, caption)
     VALUES (${eventId}, ${url}, ${uploaderName ?? null}, ${caption ?? null})
     RETURNING *
   `;
-  return rows[0] as unknown as ConvenePhoto;
+  return rows[0] as unknown as Convivia24Photo;
 }
 
 // ── Gifts ─────────────────────────────────────────────────────────────────────
 
-export async function getGiftsForEvent(eventId: string): Promise<ConveneGift[]> {
+export async function getGiftsForEvent(eventId: string): Promise<Convivia24Gift[]> {
   const rows = await sql`
-    SELECT * FROM convene_gifts WHERE event_id = ${eventId} ORDER BY sort_order ASC
+    SELECT * FROM convivia24_gifts WHERE event_id = ${eventId} ORDER BY sort_order ASC
   `;
-  return rows as unknown as ConveneGift[];
+  return rows as unknown as Convivia24Gift[];
 }
 
-export async function createGift(eventId: string, data: Partial<ConveneGift>): Promise<ConveneGift> {
+export async function createGift(eventId: string, data: Partial<Convivia24Gift>): Promise<Convivia24Gift> {
   const rows = await sql`
-    INSERT INTO convene_gifts (event_id, title, kind, amount_target, image_label, sort_order)
+    INSERT INTO convivia24_gifts (event_id, title, kind, amount_target, image_label, sort_order)
     VALUES (
       ${eventId},
       ${data.title ?? 'Gift'},
@@ -385,16 +385,16 @@ export async function createGift(eventId: string, data: Partial<ConveneGift>): P
     )
     RETURNING *
   `;
-  return rows[0] as unknown as ConveneGift;
+  return rows[0] as unknown as Convivia24Gift;
 }
 
-export async function pledgeGift(id: string, amount: number): Promise<ConveneGift | null> {
+export async function pledgeGift(id: string, amount: number): Promise<Convivia24Gift | null> {
   const rows = await sql`
-    UPDATE convene_gifts
+    UPDATE convivia24_gifts
     SET amount_pledged = amount_pledged + ${amount},
         claimed = (amount_pledged + ${amount} >= COALESCE(amount_target, 0) AND amount_target IS NOT NULL)
     WHERE id = ${id}
     RETURNING *
   `;
-  return (rows[0] as unknown as ConveneGift) ?? null;
+  return (rows[0] as unknown as Convivia24Gift) ?? null;
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { neonAuth } from '@/lib/auth/server';
-import { getEventById, updateEvent, deleteEvent } from '@/lib/convene';
+import { getEventById, updateEvent, deleteEvent } from '@/lib/convivia24';
 
 type Params = { params: Promise<{ id: string }> };
 

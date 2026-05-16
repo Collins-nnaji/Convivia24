@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPhotosForEvent, addPhoto } from '@/lib/convene';
+import { getPhotosForEvent, addPhoto } from '@/lib/convivia24';
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);

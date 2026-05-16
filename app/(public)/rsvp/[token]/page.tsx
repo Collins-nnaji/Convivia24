@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { CheckCircle, XCircle, AlertCircle, Loader2, ArrowRight, Camera, QrCode } from 'lucide-react';
-import { ACCENT_COLORS, ACCENT_SOFT } from '@/components/convene/primitives';
-import type { EventType } from '@/components/convene/primitives';
+import { ACCENT_COLORS, ACCENT_SOFT } from '@/components/convivia24/primitives';
+import type { EventType } from '@/components/convivia24/primitives';
 
 interface RsvpData {
   event: {
@@ -34,7 +34,7 @@ export default function RSVPPage({ params }: PageProps) {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/convene/rsvp/${token}`)
+    fetch(`/api/convivia24/rsvp/${token}`)
       .then(r => r.ok ? r.json() : Promise.reject('Not found'))
       .then(d => {
         setData(d);
@@ -48,7 +48,7 @@ export default function RSVPPage({ params }: PageProps) {
     if (!data) return;
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/convene/rsvp/${token}`, {
+      const res = await fetch(`/api/convivia24/rsvp/${token}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

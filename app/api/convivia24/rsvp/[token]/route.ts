@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getGuestByToken, getEventById, rsvpGuest } from '@/lib/convene';
+import { getGuestByToken, getEventById, rsvpGuest } from '@/lib/convivia24';
 
 type Params = { params: Promise<{ token: string }> };
 

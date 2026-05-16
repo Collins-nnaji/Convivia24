@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
 
   try {
     await sql`
-      CREATE TABLE IF NOT EXISTS convene_events (
+      CREATE TABLE IF NOT EXISTS convivia24_events (
         id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         user_id         TEXT NOT NULL,
         slug            TEXT UNIQUE,
@@ -51,15 +51,15 @@ export async function POST(req: NextRequest) {
         updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `;
-    results.push('✓ convene_events');
+    results.push('✓ convivia24_events');
 
-    await sql`CREATE INDEX IF NOT EXISTS idx_convene_events_user ON convene_events(user_id)`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_convene_events_slug ON convene_events(slug)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_convivia24_events_user ON convivia24_events(user_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_convivia24_events_slug ON convivia24_events(slug)`;
 
     await sql`
-      CREATE TABLE IF NOT EXISTS convene_guests (
+      CREATE TABLE IF NOT EXISTS convivia24_guests (
         id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        event_id        UUID NOT NULL REFERENCES convene_events(id) ON DELETE CASCADE,
+        event_id        UUID NOT NULL REFERENCES convivia24_events(id) ON DELETE CASCADE,
         name            TEXT NOT NULL,
         email           TEXT,
         phone           TEXT,
@@ -78,15 +78,15 @@ export async function POST(req: NextRequest) {
         updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `;
-    results.push('✓ convene_guests');
+    results.push('✓ convivia24_guests');
 
-    await sql`CREATE INDEX IF NOT EXISTS idx_convene_guests_event ON convene_guests(event_id)`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_convene_guests_token ON convene_guests(pass_token)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_convivia24_guests_event ON convivia24_guests(event_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_convivia24_guests_token ON convivia24_guests(pass_token)`;
 
     await sql`
-      CREATE TABLE IF NOT EXISTS convene_seating_tables (
+      CREATE TABLE IF NOT EXISTS convivia24_seating_tables (
         id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        event_id    UUID NOT NULL REFERENCES convene_events(id) ON DELETE CASCADE,
+        event_id    UUID NOT NULL REFERENCES convivia24_events(id) ON DELETE CASCADE,
         name        TEXT NOT NULL,
         shape       TEXT DEFAULT 'round',
         seats       INT DEFAULT 8,
@@ -96,14 +96,14 @@ export async function POST(req: NextRequest) {
         created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `;
-    results.push('✓ convene_seating_tables');
+    results.push('✓ convivia24_seating_tables');
 
-    await sql`CREATE INDEX IF NOT EXISTS idx_convene_tables_event ON convene_seating_tables(event_id, sort_order)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_convivia24_tables_event ON convivia24_seating_tables(event_id, sort_order)`;
 
     await sql`
-      CREATE TABLE IF NOT EXISTS convene_photos (
+      CREATE TABLE IF NOT EXISTS convivia24_photos (
         id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        event_id       UUID NOT NULL REFERENCES convene_events(id) ON DELETE CASCADE,
+        event_id       UUID NOT NULL REFERENCES convivia24_events(id) ON DELETE CASCADE,
         uploader_name  TEXT,
         url            TEXT NOT NULL,
         caption        TEXT,
@@ -111,14 +111,14 @@ export async function POST(req: NextRequest) {
         created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `;
-    results.push('✓ convene_photos');
+    results.push('✓ convivia24_photos');
 
-    await sql`CREATE INDEX IF NOT EXISTS idx_convene_photos_event ON convene_photos(event_id, created_at DESC)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_convivia24_photos_event ON convivia24_photos(event_id, created_at DESC)`;
 
     await sql`
-      CREATE TABLE IF NOT EXISTS convene_gifts (
+      CREATE TABLE IF NOT EXISTS convivia24_gifts (
         id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        event_id        UUID NOT NULL REFERENCES convene_events(id) ON DELETE CASCADE,
+        event_id        UUID NOT NULL REFERENCES convivia24_events(id) ON DELETE CASCADE,
         title           TEXT NOT NULL,
         kind            TEXT DEFAULT 'item',
         amount_target   NUMERIC,
@@ -129,14 +129,14 @@ export async function POST(req: NextRequest) {
         created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `;
-    results.push('✓ convene_gifts');
+    results.push('✓ convivia24_gifts');
 
-    await sql`CREATE INDEX IF NOT EXISTS idx_convene_gifts_event ON convene_gifts(event_id, sort_order)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_convivia24_gifts_event ON convivia24_gifts(event_id, sort_order)`;
 
     await sql`
-      CREATE TABLE IF NOT EXISTS convene_event_vendors (
+      CREATE TABLE IF NOT EXISTS convivia24_event_vendors (
         id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        event_id    UUID NOT NULL REFERENCES convene_events(id) ON DELETE CASCADE,
+        event_id    UUID NOT NULL REFERENCES convivia24_events(id) ON DELETE CASCADE,
         category    TEXT NOT NULL,
         name        TEXT NOT NULL,
         contact     TEXT,
@@ -145,14 +145,14 @@ export async function POST(req: NextRequest) {
         created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `;
-    results.push('✓ convene_event_vendors');
+    results.push('✓ convivia24_event_vendors');
 
-    await sql`CREATE INDEX IF NOT EXISTS idx_convene_vendors_event ON convene_event_vendors(event_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_convivia24_vendors_event ON convivia24_event_vendors(event_id)`;
 
     await sql`
-      CREATE TABLE IF NOT EXISTS convene_schedule (
+      CREATE TABLE IF NOT EXISTS convivia24_schedule (
         id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        event_id    UUID NOT NULL REFERENCES convene_events(id) ON DELETE CASCADE,
+        event_id    UUID NOT NULL REFERENCES convivia24_events(id) ON DELETE CASCADE,
         time_label  TEXT NOT NULL,
         title       TEXT NOT NULL,
         subtitle    TEXT,
@@ -160,15 +160,15 @@ export async function POST(req: NextRequest) {
         created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `;
-    results.push('✓ convene_schedule');
+    results.push('✓ convivia24_schedule');
 
-    await sql`CREATE INDEX IF NOT EXISTS idx_convene_schedule_event ON convene_schedule(event_id, sort_order)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_convivia24_schedule_event ON convivia24_schedule(event_id, sort_order)`;
 
     results.push('✅ Migration v10 complete — all Convene tables created.');
     return NextResponse.json({ ok: true, results });
 
   } catch (err) {
-    console.error('[migrate-v10]', err);
+    console.error('[convivia24/migrate]', err);
     const msg = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ error: msg, partial_results: results }, { status: 500 });
   }

@@ -3,8 +3,8 @@ import type { Viewport } from 'next';
 import { neonAuth } from '@/lib/auth/server';
 import { getOrCreateUser } from '@/lib/db/users';
 import { isConviviaAdminAsync } from '@/lib/admin';
-import { ConveneApp } from '@/components/convene/ConveneApp';
-import { LandingPage } from '@/components/convene/LandingPage';
+import { Convivia24App } from '@/components/convivia24/Convivia24App';
+import { LandingPage } from '@/components/convivia24/LandingPage';
 
 export const dynamic = 'force-dynamic';
 
@@ -54,7 +54,7 @@ export default async function AppRootPage() {
           </div>
         </div>
       }>
-        <ConveneApp initialUser={initialUser} />
+        <Convivia24App initialUser={initialUser} />
       </Suspense>
     </main>
   );

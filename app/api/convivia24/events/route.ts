@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { neonAuth } from '@/lib/auth/server';
-import { getEventsForUser, createEvent } from '@/lib/convene';
+import { getEventsForUser, createEvent } from '@/lib/convivia24';
 
 export async function GET() {
   const { user } = await neonAuth();

@@ -14,7 +14,7 @@ import {
   Card, Wordmark, MiddleDot, Hr,
   EVENT_TYPE_META, ACCENT_COLORS, ACCENT_SOFT, ACCENT_LINE,
   type EventType,
-} from '@/components/convene/primitives';
+} from '@/components/convivia24/primitives';
 
 // BarcodeDetector is available in Chrome/Android — use via window to avoid TS errors
 
@@ -156,7 +156,7 @@ function ScreenCreateEvent({ onCreated }: { onCreated: (ev: CvEvent) => void }) 
     if (!hostName.trim()) return;
     setLoading(true);
     try {
-      const res = await fetch('/api/convene/events', {
+      const res = await fetch('/api/convivia24/events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -292,7 +292,7 @@ function ScreenEditEvent({ event, onSaved, onBack }: { event: CvEvent; onSaved: 
     if (!hostName.trim()) return;
     setSaving(true);
     try {
-      const res = await fetch(`/api/convene/events/${event.id}`, {
+      const res = await fetch(`/api/convivia24/events/${event.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -527,7 +527,7 @@ function ScreenGuestList({
     if (!addName.trim()) return;
     setSaving(true);
     try {
-      await fetch('/api/convene/guests', {
+      await fetch('/api/convivia24/guests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ event_id: event.id, name: addName, email: addEmail || null, phone: addPhone || null, relation: addRelation || null }),
@@ -540,7 +540,7 @@ function ScreenGuestList({
 
   async function deleteGuest(id: string, name: string) {
     if (!confirm(`Remove ${name} from the guest list?`)) return;
-    await fetch(`/api/convene/guests/${id}`, { method: 'DELETE' });
+    await fetch(`/api/convivia24/guests/${id}`, { method: 'DELETE' });
     if (selectedGuest?.id === id) setSelectedGuest(null);
     onRefresh();
   }
@@ -893,7 +893,7 @@ function ScreenInvite({ event, onBack, onCopy }: { event: CvEvent; onBack: () =>
   async function saveDirection() {
     setSaving(true);
     try {
-      await fetch(`/api/convene/events/${event.id}`, {
+      await fetch(`/api/convivia24/events/${event.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ invite_direction: direction }),
@@ -906,7 +906,7 @@ function ScreenInvite({ event, onBack, onCopy }: { event: CvEvent; onBack: () =>
   async function goLive() {
     setGoingLive(true);
     try {
-      await fetch(`/api/convene/events/${event.id}`, {
+      await fetch(`/api/convivia24/events/${event.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ invite_direction: direction, invite_live: true }),
@@ -1035,14 +1035,14 @@ function ScreenScanner({ event, onBack }: { event: CvEvent; onBack: () => void }
     scanningRef.current = true;
     setScanning(true);
     try {
-      const r1 = await fetch(`/api/convene/rsvp/${token}`);
+      const r1 = await fetch(`/api/convivia24/rsvp/${token}`);
       if (!r1.ok) { setLastScan({ name: 'Unknown pass', ok: false }); return; }
       const { guest } = await r1.json();
       if (guest.arrived_at) {
         setLastScan({ name: `${guest.name} — already checked in`, ok: false });
         return;
       }
-      const r2 = await fetch(`/api/convene/guests/${guest.id}/arrive`, { method: 'POST' });
+      const r2 = await fetch(`/api/convivia24/guests/${guest.id}/arrive`, { method: 'POST' });
       if (r2.ok) {
         setLastScan({ name: guest.name, ok: true });
         setArrived(a => a + 1);
@@ -1354,7 +1354,7 @@ function ScreenConcierge({ event, onClose }: { event: CvEvent; onClose: () => vo
     setInput('');
     setBusy(true);
     try {
-      const res = await fetch('/api/convene/ai', {
+      const res = await fetch('/api/convivia24/ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1475,9 +1475,9 @@ function ScreenConcierge({ event, onClose }: { event: CvEvent; onClose: () => vo
 }
 
 // ─── MAIN APP ─────────────────────────────────────────────────
-interface ConveneAppProps { initialUser: Record<string, unknown> | null; }
+interface Convivia24AppProps { initialUser: Record<string, unknown> | null; }
 
-export function ConveneApp({ initialUser }: ConveneAppProps) {
+export function Convivia24App({ initialUser }: Convivia24AppProps) {
   const [events, setEvents] = useState<CvEvent[]>([]);
   const [activeEvent, setActiveEvent] = useState<CvEvent | null>(null);
   const [guests, setGuests] = useState<CvGuest[]>([]);
@@ -1513,7 +1513,7 @@ export function ConveneApp({ initialUser }: ConveneAppProps) {
 
   const loadEvents = useCallback(async () => {
     try {
-      const res = await fetch('/api/convene/events');
+      const res = await fetch('/api/convivia24/events');
       if (!res.ok) throw new Error('Failed');
       const data = await res.json();
       setEvents(data.events || []);
@@ -1529,7 +1529,7 @@ export function ConveneApp({ initialUser }: ConveneAppProps) {
 
   const loadGuests = useCallback(async (eventId: string) => {
     try {
-      const res = await fetch(`/api/convene/guests?eventId=${eventId}`);
+      const res = await fetch(`/api/convivia24/guests?eventId=${eventId}`);
       if (!res.ok) throw new Error('Failed');
       const data = await res.json();
       const gs: CvGuest[] = data.guests || [];
@@ -1547,7 +1547,7 @@ export function ConveneApp({ initialUser }: ConveneAppProps) {
 
   const loadPhotos = useCallback(async (eventId: string) => {
     try {
-      const res = await fetch(`/api/convene/photos?event_id=${eventId}`);
+      const res = await fetch(`/api/convivia24/photos?event_id=${eventId}`);
       if (!res.ok) return;
       const data = await res.json();
       setPhotos(data.photos || []);
@@ -1569,10 +1569,10 @@ export function ConveneApp({ initialUser }: ConveneAppProps) {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const uploadRes = await fetch('/api/convene/upload', { method: 'POST', body: formData });
+      const uploadRes = await fetch('/api/convivia24/upload', { method: 'POST', body: formData });
       if (!uploadRes.ok) { showToast('Upload failed'); return; }
       const { url } = await uploadRes.json();
-      await fetch('/api/convene/photos', {
+      await fetch('/api/convivia24/photos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ event_id: activeEvent.id, url }),
