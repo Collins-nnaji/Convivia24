@@ -29,6 +29,7 @@ import {
 import { DEFAULT_CITIES, useCityList } from '@/hooks/useCityList';
 import { OutletOnboardingForm } from '@/components/outlet/OutletOnboardingForm';
 import { MobileFirstColumn } from '@/components/app/shell/MobileFirst';
+import { signOutAndRedirect } from '@/lib/auth/sign-out-client';
 
 /** All three metros live — keep Lagos sub-areas off marketing blurbs (zones live in filters). */
 const HOSPITALITY_METROS_BEFORE_LINK =
@@ -2928,28 +2929,7 @@ function OutletAccountSection({ initialUser }: { initialUser?: any }) {
   const handleSignOut = async () => {
     setSigningOut(true);
     setProfileNotice('');
-    try {
-      const res = await fetch('/api/auth/sign-out', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setProfileNotice(
-          (data as { error?: string }).error ||
-            'Sign out failed. Try again, or clear site data for this site.'
-        );
-        setSigningOut(false);
-        return;
-      }
-    } catch {
-      setProfileNotice('Network error during sign out.');
-      setSigningOut(false);
-      return;
-    }
-    window.location.href = '/auth/sign-in';
+    await signOutAndRedirect('/');
   };
 
   if (loading) {
@@ -4808,28 +4788,7 @@ function ProfileTab({ persona, initialUser }: { persona: StaffPersona; initialUs
   const handleSignOut = async () => {
     setSigningOut(true);
     setProfileNotice('');
-    try {
-      const res = await fetch('/api/auth/sign-out', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setProfileNotice(
-          (data as { error?: string }).error ||
-            'Sign out failed. Try again, or clear site data for this site.'
-        );
-        setSigningOut(false);
-        return;
-      }
-    } catch {
-      setProfileNotice('Network error during sign out.');
-      setSigningOut(false);
-      return;
-    }
-    window.location.href = '/auth/sign-in';
+    await signOutAndRedirect('/');
   };
 
   if (loading) {

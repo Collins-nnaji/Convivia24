@@ -3,6 +3,7 @@
 import { Suspense, useCallback, useEffect, useState } from 'react';
 import { Convivia24App } from '@/components/convivia24/Convivia24App';
 import { LandingPage } from '@/components/convivia24/LandingPage';
+import { consumeSignedOutFlag } from '@/lib/auth/sign-out-client';
 
 type AuthState = 'loading' | 'signed-out' | 'signed-in';
 
@@ -16,6 +17,14 @@ async function fetchSession(): Promise<{
   });
   if (!res.ok) return { authenticated: false, user: null };
   return res.json();
+}
+
+function stripSignedOutParam() {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.has('signed_out')) return;
+  params.delete('signed_out');
+  const qs = params.toString();
+  window.history.replaceState({}, '', qs ? `/?${qs}` : '/');
 }
 
 function AppShell({ user }: { user: Record<string, unknown> | null }) {
@@ -70,14 +79,13 @@ function LoadingScreen() {
 }
 
 interface HomeAuthGateProps {
-  /** From SSR when cookies are visible server-side */
   ssrAuthenticated?: boolean;
   ssrUser?: Record<string, unknown> | null;
 }
 
 /**
- * Client session gate: Neon cookies are often missing on SSR but present in the browser.
- * Always reconcile via /api/auth/session so sign-in works for all users, not only when SSR sees cookies.
+ * Matches the earlier app: signed out → landing, signed in → app.
+ * Client session check fixes Neon cookies that SSR sometimes misses after sign-in.
  */
 export function HomeAuthGate({ ssrAuthenticated, ssrUser }: HomeAuthGateProps) {
   const [state, setState] = useState<AuthState>(
@@ -101,19 +109,17 @@ export function HomeAuthGate({ ssrAuthenticated, ssrUser }: HomeAuthGateProps) {
   }, [ssrAuthenticated]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      if (params.has('signed_out')) {
-        setUser(null);
-        setState('signed-out');
-        params.delete('signed_out');
-        const qs = params.toString();
-        window.history.replaceState({}, '', qs ? `/?${qs}` : '/');
-        return;
-      }
+    if (typeof window === 'undefined') return;
+
+    if (consumeSignedOutFlag() || new URLSearchParams(window.location.search).has('signed_out')) {
+      setUser(null);
+      setState('signed-out');
+      stripSignedOutParam();
+      return;
     }
 
-    syncSession();
+    void syncSession();
+
     const onVisible = () => {
       if (document.visibilityState === 'visible') void syncSession();
     };

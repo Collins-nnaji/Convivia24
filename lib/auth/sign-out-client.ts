@@ -2,10 +2,16 @@
 
 import { authClient } from '@/lib/auth/client';
 
+const SIGNED_OUT_KEY = 'cv_signed_out';
+
 /**
- * End Neon session and hard-navigate so HomeAuthGate does not reuse stale cookies.
+ * End Neon session and return to the public landing page (same as the earlier app).
  */
-export async function signOutAndRedirect(redirectTo = '/auth/sign-in') {
+export async function signOutAndRedirect(redirectTo = '/') {
+  if (typeof window !== 'undefined') {
+    sessionStorage.setItem(SIGNED_OUT_KEY, '1');
+  }
+
   try {
     await authClient.signOut();
   } catch (e) {
@@ -22,8 +28,14 @@ export async function signOutAndRedirect(redirectTo = '/auth/sign-in') {
     }
   }
 
-  const target = redirectTo.includes('?')
-    ? `${redirectTo}&signed_out=1`
-    : `${redirectTo}?signed_out=1`;
+  const base = redirectTo.split('?')[0] || '/';
+  const target = `${base}?signed_out=1`;
   window.location.replace(target);
+}
+
+export function consumeSignedOutFlag(): boolean {
+  if (typeof window === 'undefined') return false;
+  if (sessionStorage.getItem(SIGNED_OUT_KEY) !== '1') return false;
+  sessionStorage.removeItem(SIGNED_OUT_KEY);
+  return true;
 }

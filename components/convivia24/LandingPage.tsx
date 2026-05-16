@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowRight, Sparkles, Users, Mail, Camera, QrCode } from 'lucide-react';
-import { ACCENT_COLORS, type EventType } from '@/components/convivia24/primitives';
+import { ACCENT_COLORS, WordmarkLink, type EventType } from '@/components/convivia24/primitives';
 
 const FEATURES = [
   { icon: Mail,     title: 'Beautiful invites',    desc: 'Three editorial directions. Every guest gets a personalised link with their name.' },
@@ -40,7 +40,7 @@ export function LandingPage() {
         backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
         borderBottom: '1px solid var(--cv-hairline)',
       }}>
-        <img src="/convivia24.png" alt="Convivia24" style={{ height: 28, width: 'auto', objectFit: 'contain', display: 'block' }} draggable={false} />
+        <WordmarkLink size={22} />
         <div style={{ display: 'flex', gap: 8 }}>
           <Link href="/auth/sign-in" style={{
             padding: '8px 14px', borderRadius: 99,

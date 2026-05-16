@@ -11,11 +11,12 @@ import {
 } from 'lucide-react';
 import {
   Avatar, Eyebrow, Tag, Chip, Btn, Bar, Dial, QRBlock,
-  Card, Wordmark, MiddleDot, Hr,
+  Card, WordmarkLink, MiddleDot, Hr,
   EVENT_TYPE_META, ACCENT_COLORS, ACCENT_SOFT, ACCENT_LINE,
   type EventType,
 } from '@/components/convivia24/primitives';
 import { signOutAndRedirect } from '@/lib/auth/sign-out-client';
+import { UserNavMenu } from '@/components/convivia24/UserNavMenu';
 
 // BarcodeDetector is available in Chrome/Android — use via window to avoid TS errors
 
@@ -51,7 +52,14 @@ function accentVars(type: string) {
 }
 
 // ─── Shared layout atoms ──────────────────────────────────────
+const AppHomeContext = React.createContext<(() => void) | undefined>(undefined);
+
+function useAppHome() {
+  return React.useContext(AppHomeContext);
+}
+
 function TopBar({ left, right, dark }: { left?: React.ReactNode; right?: React.ReactNode; dark?: boolean }) {
+  const goHome = useAppHome();
   return (
     <div style={{
       position: 'absolute', top: 0, left: 0, right: 0, height: 56, zIndex: 80,
@@ -61,7 +69,7 @@ function TopBar({ left, right, dark }: { left?: React.ReactNode; right?: React.R
       backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
       borderBottom: '1px solid var(--cv-hairline)',
     }}>
-      <div>{left || <Wordmark tone={dark ? 'cream' : 'ink'} />}</div>
+      <div>{left || <WordmarkLink tone={dark ? 'cream' : 'ink'} onClick={goHome} />}</div>
       <div style={{ display: 'flex', gap: 8 }}>{right}</div>
     </div>
   );
@@ -142,7 +150,18 @@ function Dock({ active, onTab }: { active: Tab; onTab: (t: Tab) => void }) {
 // ─── SCREEN: Create Event ─────────────────────────────────────
 const EVENT_TYPES = Object.entries(EVENT_TYPE_META).map(([id, m]) => ({ id: id as EventType, ...m }));
 
-function ScreenCreateEvent({ onCreated, onCancel }: { onCreated: (ev: CvEvent) => void; onCancel?: () => void }) {
+function ScreenCreateEvent({
+  onCreated,
+  onCancel,
+  onSignOut,
+  signingOut,
+}: {
+  onCreated: (ev: CvEvent) => void;
+  onCancel?: () => void;
+  onSignOut: (e: React.MouseEvent) => void | Promise<void>;
+  signingOut?: boolean;
+}) {
+  const goHome = useAppHome();
   const [step, setStep] = useState<1 | 2>(1);
   const [eventType, setEventType] = useState<EventType>('wedding');
   const [hostName, setHostName] = useState('');
@@ -181,15 +200,6 @@ function ScreenCreateEvent({ onCreated, onCancel }: { onCreated: (ev: CvEvent) =
     }
   }
 
-  const [signingOut, setSigningOut] = useState(false);
-
-  async function handleSignOut(e?: React.MouseEvent) {
-    e?.stopPropagation();
-    if (signingOut) return;
-    setSigningOut(true);
-    await signOutAndRedirect('/auth/sign-in');
-  }
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--cv-ivory)' }}>
       {/* Navbar */}
@@ -198,7 +208,7 @@ function ScreenCreateEvent({ onCreated, onCancel }: { onCreated: (ev: CvEvent) =
         padding: '0 18px', borderBottom: '1px solid var(--cv-hairline)',
         background: 'rgba(250,246,238,.92)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
       }}>
-        <Wordmark tone="ink" />
+        <WordmarkLink tone="ink" onClick={goHome} />
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           {onCancel && (
             <button onClick={onCancel} style={{ background: 'none', border: '1px solid var(--cv-hairline)', cursor: 'pointer', color: 'var(--cv-muted-2)', fontSize: 10, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 99 }}>
@@ -207,7 +217,7 @@ function ScreenCreateEvent({ onCreated, onCancel }: { onCreated: (ev: CvEvent) =
           )}
           <button
             type="button"
-            onClick={handleSignOut}
+            onClick={onSignOut}
             disabled={signingOut}
             style={{ background: 'none', border: '1px solid var(--cv-hairline)', cursor: signingOut ? 'wait' : 'pointer', color: 'var(--cv-muted-2)', fontSize: 10, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 99, opacity: signingOut ? 0.6 : 1 }}
           >
@@ -425,7 +435,7 @@ function ScreenEditEvent({ event, onSaved, onBack }: { event: CvEvent; onSaved: 
 
 // ─── SCREEN: Event Home ───────────────────────────────────────
 function ScreenEventHome({
-  event, stats, onEdit, onConcierge, onCopy, onNewEvent, userName,
+  event, stats, onEdit, onConcierge, onCopy, onNewEvent, userName, onSignOut, signingOut,
 }: {
   event: CvEvent;
   stats: { in: number; maybe: number; out: number; pending: number; total: number; arrived: number };
@@ -434,21 +444,13 @@ function ScreenEventHome({
   onCopy: (url: string, msg?: string) => void;
   onNewEvent: () => void;
   userName?: string | null;
+  onSignOut: (e: React.MouseEvent) => void | Promise<void>;
+  signingOut?: boolean;
 }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [signingOut, setSigningOut] = useState(false);
   const replyRate = stats.total ? (stats.in + stats.out + stats.maybe) / stats.total : 0;
   const capacityRate = event.capacity ? stats.in / event.capacity : 0;
   const daysOut = event.days_out ?? 0;
   const typeLabel = EVENT_TYPE_META[event.event_type as EventType]?.label || event.event_type;
-
-  async function handleSignOut(e: React.MouseEvent) {
-    e.stopPropagation();
-    if (signingOut) return;
-    setSigningOut(true);
-    setMenuOpen(false);
-    await signOutAndRedirect('/auth/sign-in');
-  }
 
   return (
     <>
@@ -456,53 +458,9 @@ function ScreenEventHome({
         right={<>
           <IBtn icon={Plus} onClick={onNewEvent} />
           <IBtn icon={Pencil} onClick={onEdit} />
-          {userName && (
-            <div style={{ position: 'relative' }}>
-              <button
-                onClick={() => setMenuOpen(o => !o)}
-                title={userName}
-                style={{
-                  width: 32, height: 32, borderRadius: 9999,
-                  background: menuOpen ? 'var(--cv-ink)' : 'var(--cv-accent-soft, rgba(192,151,90,.12))',
-                  border: '1px solid var(--cv-accent-line, rgba(192,151,90,.25))',
-                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', color: menuOpen ? 'var(--cv-ivory)' : 'var(--cv-ink)',
-                  fontFamily: 'var(--font-geist, system-ui)', fontWeight: 700, fontSize: 11,
-                  letterSpacing: '0.04em', flexShrink: 0, transition: 'background .15s',
-                }}
-              >
-                {userName.trim().charAt(0).toUpperCase()}
-              </button>
-              {menuOpen && (
-                <>
-                  <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 140 }} />
-                  <div style={{
-                    position: 'absolute', top: 38, right: 0, zIndex: 150, minWidth: 160,
-                    background: 'var(--cv-ivory)', border: '1px solid var(--cv-hairline)',
-                    borderRadius: 12, boxShadow: '0 8px 28px rgba(26,23,20,.14)',
-                    padding: 6, display: 'flex', flexDirection: 'column', gap: 2,
-                  }}>
-                    <div style={{ padding: '8px 10px 6px', fontSize: 11, fontWeight: 700, color: 'var(--cv-muted-2)', borderBottom: '1px solid var(--cv-hairline)', marginBottom: 4 }}>
-                      {userName}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleSignOut}
-                      disabled={signingOut}
-                      style={{
-                        background: 'none', border: 'none', cursor: signingOut ? 'wait' : 'pointer', textAlign: 'left',
-                        padding: '8px 10px', borderRadius: 8, fontSize: 12, fontWeight: 600,
-                        color: 'var(--cv-ink)', display: 'flex', alignItems: 'center', gap: 8,
-                        opacity: signingOut ? 0.6 : 1,
-                      }}
-                    >
-                      <LogOut size={13} /> {signingOut ? 'Signing out…' : 'Sign out'}
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
+          {userName ? (
+            <UserNavMenu userName={userName} onSignOut={onSignOut} signingOut={signingOut} />
+          ) : null}
         </>}
       />
       <ScrollPane topPad={64}>
@@ -1600,6 +1558,21 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
   const [editingEvent, setEditingEvent] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [signingOut, setSigningOut] = useState(false);
+
+  const handleSignOut = useCallback(async (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (signingOut) return;
+    setSigningOut(true);
+    await signOutAndRedirect('/');
+  }, [signingOut]);
+
+  const goHome = useCallback(() => {
+    setActiveTab('event');
+    setScreen('home');
+    setShowConcierge(false);
+    setEditingEvent(false);
+  }, []);
 
   function showToast(msg: string) {
     setToast(msg);
@@ -1703,33 +1676,41 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
   const accent = activeEvent ? ACCENT_COLORS[activeEvent.event_type as EventType] || '#c0975a' : '#c0975a';
   const accentStyle = activeEvent ? accentVars(activeEvent.event_type) : {};
 
+  const appShell = (content: React.ReactNode) => (
+    <AppHomeContext.Provider value={goHome}>{content}</AppHomeContext.Provider>
+  );
+
   if (loadingEvents) {
-    return (
+    return appShell(
       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--cv-ivory)' }}>
         <Loader2 size={20} className="animate-spin" color="var(--cv-muted-2)" />
-      </div>
+      </div>,
     );
   }
 
   // No events — onboarding
   if (events.length === 0) {
-    return (
+    return appShell(
       <div style={{ position: 'absolute', inset: 0, ...accentStyle }}>
-        <ScreenCreateEvent onCreated={ev => { setEvents([ev]); setActiveEvent(ev); }} />
-      </div>
+        <ScreenCreateEvent
+          onCreated={ev => { setEvents([ev]); setActiveEvent(ev); }}
+          onSignOut={handleSignOut}
+          signingOut={signingOut}
+        />
+      </div>,
     );
   }
 
   // Edit event overlay
   if (editingEvent && activeEvent) {
-    return (
+    return appShell(
       <div style={{ position: 'absolute', inset: 0, background: 'var(--cv-ivory)', ...accentStyle }}>
         <ScreenEditEvent
           event={activeEvent}
           onSaved={ev => { setActiveEvent(ev); setEditingEvent(false); }}
           onBack={() => setEditingEvent(false)}
         />
-      </div>
+      </div>,
     );
   }
 
@@ -1739,7 +1720,16 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
     }
 
     if (activeTab === 'event') {
-      if (screen === 'create') return <ScreenCreateEvent onCreated={ev => { loadEvents(); setActiveEvent(ev); setScreen('home'); }} onCancel={() => setScreen('home')} />;
+      if (screen === 'create') {
+        return (
+          <ScreenCreateEvent
+            onCreated={ev => { loadEvents(); setActiveEvent(ev); setScreen('home'); }}
+            onCancel={() => setScreen('home')}
+            onSignOut={handleSignOut}
+            signingOut={signingOut}
+          />
+        );
+      }
       return (
         <ScreenEventHome
           event={activeEvent!}
@@ -1749,6 +1739,8 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
           onCopy={handleCopy}
           onNewEvent={() => setScreen('create')}
           userName={userName}
+          onSignOut={handleSignOut}
+          signingOut={signingOut}
         />
       );
     }
@@ -1782,7 +1774,7 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
     return null;
   };
 
-  return (
+  return appShell(
     <div
       data-app-shell
       style={{ position: 'relative', width: '100%', height: '100%', background: 'var(--cv-ivory)', ...accentStyle }}
@@ -1824,6 +1816,6 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
       {!showConcierge && screen !== 'scanner' && (
         <Dock active={activeTab} onTab={t => { setActiveTab(t); setScreen('home'); }} />
       )}
-    </div>
+    </div>,
   );
 }

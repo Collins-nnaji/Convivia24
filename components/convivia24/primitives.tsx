@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+import Link from 'next/link';
 
 export type EventType = 'wedding' | 'birthday' | 'engage' | 'corporate' | 'club' | 'dinner' | 'festival' | 'baby' | 'memorial';
 
@@ -263,6 +264,56 @@ export function Wordmark({ size = 19, tone = 'ink' }: { size?: number; tone?: 'i
       style={{ height: size + 6, width: 'auto', objectFit: 'contain', display: 'block' }}
       draggable={false}
     />
+  );
+}
+
+const wordmarkLinkStyle: React.CSSProperties = {
+  background: 'none',
+  border: 'none',
+  padding: 0,
+  cursor: 'pointer',
+  display: 'block',
+  lineHeight: 0,
+  textDecoration: 'none',
+};
+
+/** Navbar logo — links to `/` (landing when signed out, app home when signed in). */
+export function WordmarkLink({
+  size = 19,
+  tone = 'ink',
+  onClick,
+  href = '/',
+}: {
+  size?: number;
+  tone?: 'ink' | 'cream';
+  /** When set (signed-in app shell), resets in-app home instead of only navigating. */
+  onClick?: () => void;
+  href?: string;
+}) {
+  const mark = <Wordmark size={size} tone={tone} />;
+
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} aria-label="Home" style={wordmarkLinkStyle}>
+        {mark}
+      </button>
+    );
+  }
+
+  return (
+    <Link
+      href={href}
+      aria-label="Home"
+      style={wordmarkLinkStyle}
+      onClick={(e) => {
+        if (href === '/' && typeof window !== 'undefined' && window.location.pathname === '/') {
+          e.preventDefault();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }}
+    >
+      {mark}
+    </Link>
   );
 }
 
