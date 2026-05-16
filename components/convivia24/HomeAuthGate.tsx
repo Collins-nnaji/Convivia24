@@ -101,6 +101,18 @@ export function HomeAuthGate({ ssrAuthenticated, ssrUser }: HomeAuthGateProps) {
   }, [ssrAuthenticated]);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('signed_out')) {
+        setUser(null);
+        setState('signed-out');
+        params.delete('signed_out');
+        const qs = params.toString();
+        window.history.replaceState({}, '', qs ? `/?${qs}` : '/');
+        return;
+      }
+    }
+
     syncSession();
     const onVisible = () => {
       if (document.visibilityState === 'visible') void syncSession();

@@ -15,6 +15,7 @@ import {
   EVENT_TYPE_META, ACCENT_COLORS, ACCENT_SOFT, ACCENT_LINE,
   type EventType,
 } from '@/components/convivia24/primitives';
+import { signOutAndRedirect } from '@/lib/auth/sign-out-client';
 
 // BarcodeDetector is available in Chrome/Android — use via window to avoid TS errors
 
@@ -180,12 +181,13 @@ function ScreenCreateEvent({ onCreated, onCancel }: { onCreated: (ev: CvEvent) =
     }
   }
 
-  async function handleSignOut() {
-    try {
-      await fetch('/api/auth/sign-out', { method: 'POST', credentials: 'include' });
-    } finally {
-      window.location.href = '/';
-    }
+  const [signingOut, setSigningOut] = useState(false);
+
+  async function handleSignOut(e?: React.MouseEvent) {
+    e?.stopPropagation();
+    if (signingOut) return;
+    setSigningOut(true);
+    await signOutAndRedirect('/auth/sign-in');
   }
 
   return (
@@ -203,8 +205,13 @@ function ScreenCreateEvent({ onCreated, onCancel }: { onCreated: (ev: CvEvent) =
               <ArrowLeft size={11} /> My events
             </button>
           )}
-          <button onClick={handleSignOut} style={{ background: 'none', border: '1px solid var(--cv-hairline)', cursor: 'pointer', color: 'var(--cv-muted-2)', fontSize: 10, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 99 }}>
-            <LogOut size={11} /> Sign out
+          <button
+            type="button"
+            onClick={handleSignOut}
+            disabled={signingOut}
+            style={{ background: 'none', border: '1px solid var(--cv-hairline)', cursor: signingOut ? 'wait' : 'pointer', color: 'var(--cv-muted-2)', fontSize: 10, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 99, opacity: signingOut ? 0.6 : 1 }}
+          >
+            <LogOut size={11} /> {signingOut ? 'Signing out…' : 'Sign out'}
           </button>
         </div>
       </div>
@@ -429,13 +436,18 @@ function ScreenEventHome({
   userName?: string | null;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const replyRate = stats.total ? (stats.in + stats.out + stats.maybe) / stats.total : 0;
   const capacityRate = event.capacity ? stats.in / event.capacity : 0;
   const daysOut = event.days_out ?? 0;
   const typeLabel = EVENT_TYPE_META[event.event_type as EventType]?.label || event.event_type;
 
-  async function handleSignOut() {
-    try { await fetch('/api/auth/sign-out', { method: 'POST', credentials: 'include' }); } finally { window.location.href = '/'; }
+  async function handleSignOut(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (signingOut) return;
+    setSigningOut(true);
+    setMenuOpen(false);
+    await signOutAndRedirect('/auth/sign-in');
   }
 
   return (
@@ -474,14 +486,17 @@ function ScreenEventHome({
                       {userName}
                     </div>
                     <button
+                      type="button"
                       onClick={handleSignOut}
+                      disabled={signingOut}
                       style={{
-                        background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
+                        background: 'none', border: 'none', cursor: signingOut ? 'wait' : 'pointer', textAlign: 'left',
                         padding: '8px 10px', borderRadius: 8, fontSize: 12, fontWeight: 600,
                         color: 'var(--cv-ink)', display: 'flex', alignItems: 'center', gap: 8,
+                        opacity: signingOut ? 0.6 : 1,
                       }}
                     >
-                      <LogOut size={13} /> Sign out
+                      <LogOut size={13} /> {signingOut ? 'Signing out…' : 'Sign out'}
                     </button>
                   </div>
                 </>
