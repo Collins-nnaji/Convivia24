@@ -26,8 +26,8 @@ export default function Navigation() {
 
   useEffect(() => { setOpen(false); }, [pathname]);
 
-  // Full-screen app shell — no marketing header
-  if (pathname === '/') return null;
+  // Full-screen pages — no marketing header
+  if (pathname === '/' || pathname.startsWith('/e/') || pathname.startsWith('/rsvp/') || pathname.startsWith('/join/')) return null;
 
   return (
     <>
