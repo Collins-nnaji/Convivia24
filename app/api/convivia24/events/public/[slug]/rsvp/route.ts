@@ -7,7 +7,6 @@ export async function POST(req: NextRequest, { params }: Params) {
   const { slug } = await params;
   const event = await getEventBySlug(slug);
   if (!event) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  if (!event.invite_live) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
   const body = await req.json().catch(() => ({}));
   const name = typeof body.name === 'string' ? body.name.trim() : '';

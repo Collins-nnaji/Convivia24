@@ -7,7 +7,6 @@ export async function GET(_req: NextRequest, { params }: Params) {
   const { slug } = await params;
   const event = await getEventBySlug(slug);
   if (!event) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  if (!event.invite_live) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
   const [stats, gifts] = await Promise.all([
     getGuestStats(event.id),
@@ -30,6 +29,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       invite_direction: event.invite_direction,
       cover_url: event.cover_url,
       rsvp_deadline: event.rsvp_deadline,
+      invite_live: event.invite_live,
     },
     stats: { in: stats.in, maybe: stats.maybe, total: stats.total },
     gifts: gifts.map(g => ({

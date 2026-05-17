@@ -14,6 +14,7 @@ interface PublicEvent {
   city: string | null; venue: string | null; address: string | null;
   dress_code: string | null; invite_direction: string;
   cover_url: string | null; rsvp_deadline: string | null;
+  invite_live: boolean;
 }
 interface PublicGift {
   id: string; title: string; kind: string; amount_target: number | null;
@@ -488,21 +489,29 @@ export default function PublicEventPage({ params }: PageProps) {
               RSVP by {deadlineStr}
             </p>
           )}
-          <button
-            onClick={() => setStep('rsvp')}
-            style={{
-              width: '100%', padding: '14px 0', borderRadius: 99, border: 'none',
-              background: accent, color: '#fff',
-              fontWeight: 700, fontSize: 11, letterSpacing: '0.20em', textTransform: 'uppercase',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            }}
-          >
-            RSVP to this event <ArrowRight size={13} />
-          </button>
-          {availableGifts.length > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 12, fontSize: 11, color: fgMuted }}>
-              <Gift size={11} />
-              <span>Gift registry available</span>
+          {event.invite_live ? (
+            <>
+              <button
+                onClick={() => setStep('rsvp')}
+                style={{
+                  width: '100%', padding: '14px 0', borderRadius: 99, border: 'none',
+                  background: accent, color: '#fff',
+                  fontWeight: 700, fontSize: 11, letterSpacing: '0.20em', textTransform: 'uppercase',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                }}
+              >
+                RSVP to this event <ArrowRight size={13} />
+              </button>
+              {availableGifts.length > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 12, fontSize: 11, color: fgMuted }}>
+                  <Gift size={11} />
+                  <span>Gift registry available</span>
+                </div>
+              )}
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '14px 0' }}>
+              <p style={{ fontSize: 12, color: fgMuted, margin: 0 }}>RSVP opens soon — check back shortly.</p>
             </div>
           )}
         </div>
