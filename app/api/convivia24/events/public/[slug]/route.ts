@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getEventBySlug } from '@/lib/convivia24';
+import { getEventBySlug, getGuestStats, getGiftsForEvent } from '@/lib/convivia24';
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -9,7 +9,11 @@ export async function GET(_req: NextRequest, { params }: Params) {
   if (!event) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   if (!event.invite_live) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-  // Return only public fields — no internal IDs beyond what guests need to see
+  const [stats, gifts] = await Promise.all([
+    getGuestStats(event.id),
+    getGiftsForEvent(event.id),
+  ]);
+
   return NextResponse.json({
     event: {
       id: event.id,
@@ -27,5 +31,15 @@ export async function GET(_req: NextRequest, { params }: Params) {
       cover_url: event.cover_url,
       rsvp_deadline: event.rsvp_deadline,
     },
+    stats: { in: stats.in, maybe: stats.maybe, total: stats.total },
+    gifts: gifts.map(g => ({
+      id: g.id,
+      title: g.title,
+      kind: g.kind,
+      amount_target: g.amount_target,
+      amount_pledged: g.amount_pledged,
+      claimed: g.claimed,
+      image_label: g.image_label,
+    })),
   });
 }
