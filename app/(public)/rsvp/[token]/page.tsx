@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { CheckCircle, XCircle, AlertCircle, Loader2, ArrowRight, Camera, QrCode, UserPlus } from 'lucide-react';
 import { ACCENT_COLORS, ACCENT_SOFT } from '@/components/convivia24/primitives';
 import type { EventType } from '@/components/convivia24/primitives';
@@ -19,10 +19,9 @@ interface RsvpData {
   };
 }
 
-interface PageProps { params: { token: string } }
-
-export default function RSVPPage({ params }: PageProps) {
-  const { token } = params;
+export default function RSVPPage() {
+  const params = useParams();
+  const token = typeof params.token === 'string' ? params.token : '';
   const router = useRouter();
   const [data, setData] = useState<RsvpData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -36,6 +35,11 @@ export default function RSVPPage({ params }: PageProps) {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    if (!token) {
+      setError('This invitation link is invalid or has expired.');
+      setLoading(false);
+      return;
+    }
     async function load() {
       const guestRes = await fetch(`/api/convivia24/rsvp/${token}`);
       if (guestRes.ok) {

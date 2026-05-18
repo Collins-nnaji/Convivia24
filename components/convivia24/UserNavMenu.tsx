@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type MouseEvent } from 'react';
-import { LogOut } from 'lucide-react';
+import { LogOut, ChevronDown } from 'lucide-react';
 
 export function UserNavMenu({
   userName,
@@ -14,6 +14,10 @@ export function UserNavMenu({
 }) {
   const [open, setOpen] = useState(false);
   const initial = userName.trim().charAt(0).toUpperCase() || '?';
+  const isEmail = userName.includes('@');
+  const displayLabel = isEmail
+    ? userName.split('@')[0].slice(0, 14)
+    : userName.split(' ')[0].slice(0, 14);
 
   return (
     <div style={{ position: 'relative' }}>
@@ -22,26 +26,39 @@ export function UserNavMenu({
         title={userName}
         onClick={() => setOpen((o) => !o)}
         style={{
-          width: 32,
-          height: 32,
+          height: 34,
           borderRadius: 9999,
-          background: open ? 'var(--cv-ink)' : 'var(--cv-accent-soft, rgba(192,151,90,.12))',
-          border: '1px solid var(--cv-accent-line, rgba(192,151,90,.25))',
+          background: open ? 'rgba(26,23,20,.10)' : 'rgba(26,23,20,.06)',
+          border: 'none',
           display: 'inline-flex',
           alignItems: 'center',
-          justifyContent: 'center',
+          gap: 6,
+          padding: '0 10px 0 4px',
           cursor: 'pointer',
-          color: open ? 'var(--cv-ivory)' : 'var(--cv-ink)',
-          fontFamily: 'var(--font-geist, system-ui)',
-          fontWeight: 700,
-          fontSize: 11,
-          letterSpacing: '0.04em',
           flexShrink: 0,
           transition: 'background .15s',
         }}
       >
-        {initial}
+        {/* Avatar circle */}
+        <div style={{
+          width: 26, height: 26, borderRadius: 9999,
+          background: 'var(--cv-accent)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: '#fff', fontWeight: 800, fontSize: 11, letterSpacing: '0.02em',
+          flexShrink: 0,
+        }}>
+          {initial}
+        </div>
+        {/* Email/name label */}
+        <span style={{
+          fontSize: 11.5, fontWeight: 600, color: 'var(--cv-ink)',
+          maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+        }}>
+          {displayLabel}
+        </span>
+        <ChevronDown size={12} color="var(--cv-muted-2)" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }} />
       </button>
+
       {open ? (
         <>
           <div
@@ -52,32 +69,40 @@ export function UserNavMenu({
           <div
             style={{
               position: 'absolute',
-              top: 38,
+              top: 40,
               right: 0,
               zIndex: 150,
-              minWidth: 160,
-              background: 'var(--cv-ivory)',
-              border: '1px solid var(--cv-hairline)',
-              borderRadius: 12,
-              boxShadow: '0 8px 28px rgba(26,23,20,.14)',
+              minWidth: 200,
+              background: '#fff',
+              border: '1px solid rgba(26,23,20,.08)',
+              borderRadius: 14,
+              boxShadow: '0 12px 36px rgba(26,23,20,.14)',
               padding: 6,
               display: 'flex',
               flexDirection: 'column',
               gap: 2,
             }}
           >
-            <div
-              style={{
-                padding: '8px 10px 6px',
-                fontSize: 11,
-                fontWeight: 700,
-                color: 'var(--cv-muted-2)',
-                borderBottom: '1px solid var(--cv-hairline)',
-                marginBottom: 4,
-              }}
-            >
-              {userName}
+            {/* User info header */}
+            <div style={{ padding: '10px 12px 8px', borderBottom: '1px solid rgba(26,23,20,.06)', marginBottom: 4 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{
+                  width: 34, height: 34, borderRadius: 9999,
+                  background: 'var(--cv-accent)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#fff', fontWeight: 800, fontSize: 13, flexShrink: 0,
+                }}>
+                  {initial}
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--cv-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {userName}
+                  </div>
+                  <div style={{ fontSize: 10, color: 'var(--cv-muted-2)', marginTop: 1 }}>Signed in</div>
+                </div>
+              </div>
             </div>
+
             <button
               type="button"
               onClick={(e) => {
@@ -90,15 +115,16 @@ export function UserNavMenu({
                 border: 'none',
                 cursor: signingOut ? 'wait' : 'pointer',
                 textAlign: 'left',
-                padding: '8px 10px',
+                padding: '9px 12px',
                 borderRadius: 8,
-                fontSize: 12,
+                fontSize: 12.5,
                 fontWeight: 600,
-                color: 'var(--cv-ink)',
+                color: signingOut ? 'var(--cv-muted-2)' : '#c0392b',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 8,
                 opacity: signingOut ? 0.6 : 1,
+                width: '100%',
               }}
             >
               <LogOut size={13} /> {signingOut ? 'Signing out…' : 'Sign out'}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import {
   Loader2, ArrowRight, CheckCircle, XCircle, AlertCircle,
   Calendar, MapPin, Shirt, Users, Gift, QrCode,
@@ -26,10 +27,9 @@ type Step = 'invite' | 'rsvp' | 'gifts' | 'pass';
 
 const LS_KEY = (slug: string) => `cv24_pass_${slug}`;
 
-interface PageProps { params: { slug: string } }
-
-export default function PublicEventPage({ params }: PageProps) {
-  const { slug } = params;
+export default function PublicEventPage() {
+  const params = useParams();
+  const slug = typeof params.slug === 'string' ? params.slug : '';
 
   const [event, setEvent] = useState<PublicEvent | null>(null);
   const [stats, setStats] = useState<Stats>({ in: 0, maybe: 0, total: 0 });
@@ -56,6 +56,11 @@ export default function PublicEventPage({ params }: PageProps) {
   const [pledging, setPledging] = useState(false);
 
   useEffect(() => {
+    if (!slug) {
+      setError('This event page could not be found.');
+      setLoading(false);
+      return;
+    }
     // Check if user already RSVPed for this event
     try {
       const stored = localStorage.getItem(LS_KEY(slug));

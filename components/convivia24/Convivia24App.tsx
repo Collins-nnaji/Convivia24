@@ -1026,7 +1026,7 @@ function ScreenInvite({ event, onBack, onCopy }: { event: CvEvent; onBack: () =>
           </button>
           <span style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 18 }}>Invite</span>
         </div>}
-        right={<IBtn icon={Share2} onClick={() => event.slug && onCopy(`https://convivia24.com/e/${event.slug}`, 'Link copied')} />}
+        right={<IBtn icon={Share2} onClick={() => event.slug && onCopy(`${typeof window !== 'undefined' ? window.location.origin : 'https://convivia24.com'}/e/${event.slug}`, 'Link copied')} />}
       />
       <ScrollPane topPad={64}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'cv-fade-up .35s ease both' }}>
@@ -1068,9 +1068,9 @@ function ScreenInvite({ event, onBack, onCopy }: { event: CvEvent; onBack: () =>
               </p>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', background: 'rgba(255,255,255,.08)', borderRadius: 8, padding: '8px 10px', marginBottom: 10 }}>
                 <span style={{ flex: 1, fontSize: 11, color: 'rgba(250,246,238,.7)', fontFamily: 'var(--font-geist-mono, monospace)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  convivia24.com/e/{event.slug || event.id.slice(0, 8)}
+                  {typeof window !== 'undefined' ? window.location.host : 'convivia24.com'}/e/{event.slug}
                 </span>
-                <button onClick={() => onCopy(`https://convivia24.com/e/${event.slug || event.id}`, 'Link copied')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--cv-accent)' }}>
+                <button onClick={() => event.slug && onCopy(`${typeof window !== 'undefined' ? window.location.origin : 'https://convivia24.com'}/e/${event.slug}`, 'Link copied')} style={{ background: 'none', border: 'none', cursor: event.slug ? 'pointer' : 'not-allowed', color: 'var(--cv-accent)', opacity: event.slug ? 1 : 0.4 }} disabled={!event.slug}>
                   <Copy size={14} />
                 </button>
               </div>

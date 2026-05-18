@@ -103,9 +103,23 @@ export async function getEventById(id: string): Promise<Convivia24Event | null> 
   return (rows[0] as unknown as Convivia24Event) ?? null;
 }
 
-export async function getEventBySlug(slug: string): Promise<Convivia24Event | null> {
-  const rows = await sql`SELECT * FROM convivia24_events WHERE slug = ${slug} LIMIT 1`;
+/** Resolve by slug or full event id (legacy shared links used the uuid). */
+export async function getEventBySlug(slugOrId: string): Promise<Convivia24Event | null> {
+  const rows = await sql`
+    SELECT * FROM convivia24_events
+    WHERE slug = ${slugOrId} OR id::text = ${slugOrId}
+    LIMIT 1
+  `;
   return (rows[0] as unknown as Convivia24Event) ?? null;
+}
+
+export async function ensureEventSlug(event: Convivia24Event): Promise<Convivia24Event> {
+  if (event.slug) return event;
+  const slug = generateSlug(event.title, event.id);
+  const rows = await sql`
+    UPDATE convivia24_events SET slug = ${slug} WHERE id = ${event.id} RETURNING *
+  `;
+  return (rows[0] as unknown as Convivia24Event) ?? { ...event, slug };
 }
 
 export async function createEvent(userId: string, data: Partial<Convivia24Event>): Promise<Convivia24Event> {
