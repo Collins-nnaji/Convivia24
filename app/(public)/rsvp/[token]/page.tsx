@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { CheckCircle, XCircle, AlertCircle, Loader2, ArrowRight, Camera, QrCode, UserPlus } from 'lucide-react';
 import { ACCENT_COLORS, ACCENT_SOFT } from '@/components/convivia24/primitives';
 import type { EventType } from '@/components/convivia24/primitives';
@@ -22,6 +23,7 @@ interface PageProps { params: { token: string } }
 
 export default function RSVPPage({ params }: PageProps) {
   const { token } = params;
+  const router = useRouter();
   const [data, setData] = useState<RsvpData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,15 +36,26 @@ export default function RSVPPage({ params }: PageProps) {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/convivia24/rsvp/${token}`)
-      .then(r => r.ok ? r.json() : Promise.reject('Not found'))
-      .then(d => {
+    async function load() {
+      const guestRes = await fetch(`/api/convivia24/rsvp/${token}`);
+      if (guestRes.ok) {
+        const d = await guestRes.json();
         setData(d);
         if (d.guest.rsvp_state !== 'pending') setStep('pass');
-      })
-      .catch(() => setError('This invitation link is invalid or has expired.'))
-      .finally(() => setLoading(false));
-  }, [token]);
+        setLoading(false);
+        return;
+      }
+      // Token may be an event slug from an old shared link — redirect to the public event page
+      const eventRes = await fetch(`/api/convivia24/events/public/${token}`).catch(() => null);
+      if (eventRes?.ok) {
+        router.replace(`/e/${token}`);
+        return;
+      }
+      setError('This invitation link is invalid or has expired.');
+      setLoading(false);
+    }
+    load();
+  }, [token, router]);
 
   async function submitRSVP() {
     if (!data) return;

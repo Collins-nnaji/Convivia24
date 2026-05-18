@@ -1,3 +1,5 @@
+'use client';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { BrandLogo } from '@/components/BrandLogo';
 
@@ -7,6 +9,8 @@ const footerLinks = [
 ];
 
 export default function Footer() {
+  const pathname = usePathname();
+  if (pathname.startsWith('/e/') || pathname.startsWith('/rsvp/') || pathname.startsWith('/join/')) return null;
   return (
     <footer
       data-site-footer

@@ -536,13 +536,13 @@ function ScreenEventHome({
           {event.invite_live && event.slug && (
             <Card dark style={{ padding: 16, position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, transparent, ${ACCENT_COLORS[event.event_type as EventType] || '#c0975a'} 50%, transparent)` }} />
-              <Eyebrow style={{ color: 'var(--cv-accent)' }}>Live · convivia24.com/rsvp/{event.slug}</Eyebrow>
+              <Eyebrow style={{ color: 'var(--cv-accent)' }}>Live · convivia24.com/e/{event.slug}</Eyebrow>
               <h3 style={{ color: 'var(--cv-ivory)', fontSize: 19, margin: '8px 0', fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic' }}>The invite is in the world.</h3>
               <p style={{ color: 'rgba(250,246,238,.6)', fontSize: 12, marginBottom: 12 }}>
                 {stats.total} sent · {stats.in + stats.maybe + stats.out} replied · {stats.in} said yes.
               </p>
               <div style={{ display: 'flex', gap: 8 }}>
-                <Btn variant="accent" size="tiny" onClick={() => onCopy(`https://convivia24.com/rsvp/${event.slug}`, 'RSVP link copied')}>
+                <Btn variant="accent" size="tiny" onClick={() => onCopy(`https://convivia24.com/e/${event.slug}`, 'Event link copied')}>
                   <Copy size={10} /> Copy link
                 </Btn>
                 <Btn size="tiny" style={{ background: 'rgba(255,255,255,.10)', color: 'var(--cv-ivory)' }}>
@@ -1026,7 +1026,7 @@ function ScreenInvite({ event, onBack, onCopy }: { event: CvEvent; onBack: () =>
           </button>
           <span style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 18 }}>Invite</span>
         </div>}
-        right={<IBtn icon={Share2} onClick={() => event.slug && onCopy(`https://convivia24.com/rsvp/${event.slug}`, 'Link copied')} />}
+        right={<IBtn icon={Share2} onClick={() => event.slug && onCopy(`https://convivia24.com/e/${event.slug}`, 'Link copied')} />}
       />
       <ScrollPane topPad={64}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'cv-fade-up .35s ease both' }}>
@@ -1068,9 +1068,9 @@ function ScreenInvite({ event, onBack, onCopy }: { event: CvEvent; onBack: () =>
               </p>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', background: 'rgba(255,255,255,.08)', borderRadius: 8, padding: '8px 10px', marginBottom: 10 }}>
                 <span style={{ flex: 1, fontSize: 11, color: 'rgba(250,246,238,.7)', fontFamily: 'var(--font-geist-mono, monospace)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  convivia24.com/rsvp/{event.slug || event.id.slice(0, 8)}
+                  convivia24.com/e/{event.slug || event.id.slice(0, 8)}
                 </span>
-                <button onClick={() => onCopy(`https://convivia24.com/rsvp/${event.slug || event.id}`, 'Link copied')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--cv-accent)' }}>
+                <button onClick={() => onCopy(`https://convivia24.com/e/${event.slug || event.id}`, 'Link copied')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--cv-accent)' }}>
                   <Copy size={14} />
                 </button>
               </div>
