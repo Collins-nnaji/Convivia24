@@ -10,7 +10,7 @@ import {
   ScanLine, Eye, RefreshCw, LogOut, LogIn, Star, Zap, Download,
 } from 'lucide-react';
 import {
-  Avatar, Eyebrow, Tag, Chip, Btn, Bar, Dial, QRBlock,
+  Avatar, Eyebrow, Tag, Chip, Btn, Dial, QRBlock,
   Card, WordmarkLink, MiddleDot, Hr,
   EVENT_TYPE_META, ACCENT_COLORS, ACCENT_SOFT, ACCENT_LINE,
   type EventType,
@@ -62,15 +62,15 @@ function TopBar({ left, right, dark }: { left?: React.ReactNode; right?: React.R
   const goHome = useAppHome();
   return (
     <div style={{
-      position: 'absolute', top: 0, left: 0, right: 0, height: 56, zIndex: 80,
+      position: 'absolute', top: 0, left: 0, right: 0, height: 58, zIndex: 80,
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '0 14px',
-      background: dark ? 'rgba(20,17,14,.90)' : 'rgba(250,246,238,.88)',
-      backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-      borderBottom: '1px solid var(--cv-hairline)',
+      padding: '0 16px',
+      background: dark ? 'rgba(20,17,14,.92)' : 'rgba(250,246,238,.92)',
+      backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
+      borderBottom: `1px solid ${dark ? 'rgba(255,255,255,.07)' : 'rgba(26,23,20,.07)'}`,
     }}>
       <div>{left || <WordmarkLink tone={dark ? 'cream' : 'ink'} onClick={goHome} />}</div>
-      <div style={{ display: 'flex', gap: 8 }}>{right}</div>
+      <div style={{ display: 'flex', gap: 6 }}>{right}</div>
     </div>
   );
 }
@@ -78,14 +78,15 @@ function TopBar({ left, right, dark }: { left?: React.ReactNode; right?: React.R
 function IBtn({ icon: Icon, onClick, dark, dot, badge }: { icon: React.ElementType; onClick?: () => void; dark?: boolean; dot?: boolean; badge?: string }) {
   return (
     <button onClick={onClick} style={{
-      width: 32, height: 32, borderRadius: 9999, flexShrink: 0,
-      background: dark ? 'rgba(255,255,255,.08)' : 'rgba(255,255,255,.7)',
-      border: '1px solid var(--cv-hairline)',
+      width: 34, height: 34, borderRadius: 10, flexShrink: 0,
+      background: dark ? 'rgba(255,255,255,.09)' : 'rgba(26,23,20,.06)',
+      border: 'none',
       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-      cursor: 'pointer', color: dark ? 'var(--cv-ivory)' : 'var(--cv-ink)', position: 'relative',
+      cursor: 'pointer', color: dark ? 'rgba(250,246,238,.8)' : 'var(--cv-ink)', position: 'relative',
+      transition: 'background .15s',
     }}>
-      <Icon size={14} />
-      {dot && <span style={{ position: 'absolute', top: 4, right: 4, width: 7, height: 7, borderRadius: 99, background: 'var(--cv-accent)', border: '2px solid var(--cv-ivory)' }} />}
+      <Icon size={15} />
+      {dot && <span style={{ position: 'absolute', top: 5, right: 5, width: 6, height: 6, borderRadius: 99, background: 'var(--cv-accent)', border: '1.5px solid var(--cv-ivory)' }} />}
       {badge && <span style={{ position: 'absolute', top: -4, right: -4, minWidth: 16, height: 16, borderRadius: 99, background: 'var(--cv-accent)', color: '#fff', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px' }}>{badge}</span>}
     </button>
   );
@@ -114,31 +115,31 @@ function Dock({ active, onTab }: { active: Tab; onTab: (t: Tab) => void }) {
     { id: 'after',   label: 'After',  Icon: Image },
   ];
   return (
-    <div style={{ position: 'absolute', left: 10, right: 10, bottom: 12, zIndex: 100 }}>
+    <div style={{ position: 'absolute', left: 12, right: 12, bottom: 16, zIndex: 100 }}>
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: 5,
-        background: 'rgba(255,255,255,.92)', borderRadius: 9999,
-        border: '1px solid var(--cv-hairline)',
-        boxShadow: '0 8px 28px rgba(26,23,20,.12)',
-        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+        padding: '6px 6px',
+        background: 'rgba(26,23,20,.88)', borderRadius: 9999,
+        border: '1px solid rgba(255,255,255,.10)',
+        boxShadow: '0 12px 40px rgba(26,23,20,.30), 0 2px 8px rgba(26,23,20,.15)',
+        backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
       }}>
         {tabs.map(({ id, label, Icon }) => (
           <button
             key={id}
             onClick={() => onTab(id)}
             style={{
-              flex: 1, minHeight: 44, padding: 4,
-              background: active === id ? 'var(--cv-accent-soft)' : 'transparent',
+              flex: 1, minHeight: 46, padding: '6px 4px',
+              background: active === id ? 'rgba(255,255,255,.12)' : 'transparent',
               border: 'none', cursor: 'pointer', borderRadius: 9999,
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2,
-              color: active === id ? 'var(--cv-accent)' : 'var(--cv-muted-2)',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3,
+              color: active === id ? '#fff' : 'rgba(255,255,255,.45)',
               fontFamily: 'var(--font-geist, system-ui)', fontWeight: 700,
-              fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase',
-              transition: 'color .15s',
+              fontSize: 8.5, letterSpacing: '0.10em', textTransform: 'uppercase',
+              transition: 'color .15s, background .15s',
             }}
           >
-            <Icon size={15} strokeWidth={active === id ? 2.2 : 1.6} />
+            <Icon size={16} strokeWidth={active === id ? 2.2 : 1.5} />
             <span>{label}</span>
           </button>
         ))}
@@ -435,7 +436,7 @@ function ScreenEditEvent({ event, onSaved, onBack }: { event: CvEvent; onSaved: 
 
 // ─── SCREEN: Event Home ───────────────────────────────────────
 function ScreenEventHome({
-  event, stats, onEdit, onConcierge, onCopy, onNewEvent, userName, onSignOut, signingOut,
+  event, stats, onEdit, onConcierge, onCopy, onNewEvent, userName, onSignOut, signingOut, invitedEvents,
 }: {
   event: CvEvent;
   stats: { in: number; maybe: number; out: number; pending: number; total: number; arrived: number };
@@ -446,9 +447,9 @@ function ScreenEventHome({
   userName?: string | null;
   onSignOut: (e: React.MouseEvent) => void | Promise<void>;
   signingOut?: boolean;
+  invitedEvents?: (CvEvent & { guest_name: string; guest_rsvp_state: string; pass_token: string })[];
 }) {
   const replyRate = stats.total ? (stats.in + stats.out + stats.maybe) / stats.total : 0;
-  const capacityRate = event.capacity ? stats.in / event.capacity : 0;
   const daysOut = event.days_out ?? 0;
   const typeLabel = EVENT_TYPE_META[event.event_type as EventType]?.label || event.event_type;
 
@@ -482,59 +483,54 @@ function ScreenEventHome({
             )}
           </section>
 
-          {/* Metrics card */}
-          <Card style={{ padding: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <Dial value={daysOut > 0 ? 1 - daysOut / 365 : 1} size={80} stroke={5}>
-                <span style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 22, color: 'var(--cv-ink)', fontVariantNumeric: 'tabular-nums' }}>{daysOut}</span>
-                <span style={{ fontSize: 8, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--cv-muted-2)', fontWeight: 700 }}>days</span>
-              </Dial>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--cv-muted)' }}>
-                  <span>Replied</span><span style={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{Math.round(replyRate * 100)}%</span>
-                </div>
-                <Bar value={replyRate} />
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--cv-muted)', marginTop: 2 }}>
-                  <span>Capacity</span><span style={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{stats.in}/{event.capacity}</span>
-                </div>
-                <Bar value={capacityRate} accent />
-              </div>
-            </div>
-          </Card>
-
-          {/* Four corners */}
+          {/* Countdown + reply rate row */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <Card style={{ padding: '14px 16px' }}>
+              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--cv-muted-2)', marginBottom: 6 }}>Days out</div>
+              <div style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 40, lineHeight: 1, color: 'var(--cv-ink)', fontVariantNumeric: 'tabular-nums' }}>{daysOut}</div>
+              <div style={{ height: 3, background: 'var(--cv-hairline)', borderRadius: 99, marginTop: 10, overflow: 'hidden' }}>
+                <div style={{ width: `${Math.min(100, (1 - daysOut / 365) * 100)}%`, height: '100%', background: 'var(--cv-accent)', borderRadius: 99, transition: 'width .4s' }} />
+              </div>
+            </Card>
+            <Card style={{ padding: '14px 16px' }}>
+              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--cv-muted-2)', marginBottom: 6 }}>Replied</div>
+              <div style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 40, lineHeight: 1, color: 'var(--cv-ink)', fontVariantNumeric: 'tabular-nums' }}>{Math.round(replyRate * 100)}<span style={{ fontSize: 18 }}>%</span></div>
+              <div style={{ height: 3, background: 'var(--cv-hairline)', borderRadius: 99, marginTop: 10, overflow: 'hidden' }}>
+                <div style={{ width: `${replyRate * 100}%`, height: '100%', background: 'var(--cv-accent)', borderRadius: 99, transition: 'width .4s' }} />
+              </div>
+            </Card>
+          </div>
+
+          {/* Stats row */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
             {[
-              { label: 'Guests', val: stats.total, sub: 'invited', v: Math.min(1, stats.total / Math.max(1, event.capacity)), Icon: Users },
-              { label: 'Invite', val: event.invite_live ? 'LIVE' : 'DRAFT', sub: event.invite_live ? 'sent & tracking' : 'not sent yet', v: event.invite_live ? 0.95 : 0.10, Icon: Mail },
-              { label: 'Coming', val: stats.in, sub: 'confirmed yes', v: Math.min(1, stats.in / Math.max(1, stats.total)), Icon: CheckCircle },
-              { label: 'Pending', val: stats.pending, sub: 'no reply yet', v: stats.pending / Math.max(1, stats.total), Icon: Clock },
-            ].map(({ label, val, sub, v, Icon: IconComp }) => (
-              <Card key={label} style={{ padding: 12 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.20em', textTransform: 'uppercase', color: 'var(--cv-muted-2)' }}>{label}</span>
-                  <IconComp size={12} color="var(--cv-accent)" />
-                </div>
-                <div style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 26, color: 'var(--cv-ink)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{val}</div>
-                <div style={{ fontSize: 10.5, color: 'var(--cv-muted)', marginTop: 3 }}>{sub}</div>
-                <div style={{ height: 3, background: 'var(--cv-hairline)', borderRadius: 99, marginTop: 10, overflow: 'hidden' }}>
-                  <div style={{ width: `${v * 100}%`, height: '100%', background: 'var(--cv-accent)', borderRadius: 99, transition: 'width .4s' }} />
-                </div>
-              </Card>
+              { label: 'Guests', val: stats.total, Icon: Users },
+              { label: 'Coming', val: stats.in, Icon: CheckCircle },
+              { label: 'Maybe', val: stats.maybe, Icon: Clock },
+              { label: 'Pending', val: stats.pending, Icon: AlertCircle },
+            ].map(({ label, val, Icon: IconComp }) => (
+              <div key={label} style={{ background: '#fff', borderRadius: 14, border: '1px solid var(--cv-hairline)', padding: '10px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                <IconComp size={13} color="var(--cv-accent)" />
+                <div style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 22, color: 'var(--cv-ink)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{val}</div>
+                <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--cv-muted-2)' }}>{label}</div>
+              </div>
             ))}
           </div>
 
           {/* AI concierge card */}
-          <Card tinted style={{ padding: 14 }} onClick={onConcierge}>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-              <Sparkles size={16} color="var(--cv-accent)" style={{ flexShrink: 0, marginTop: 2 }} />
-              <div>
-                <div style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 17, color: 'var(--cv-ink)', marginBottom: 4 }}>The concierge is ready.</div>
-                <p style={{ fontSize: 12.5, color: 'var(--cv-muted)' }}>Ask for venues, a theme, a timeline, vendor pitches, or weather forecasts. Tap to open.</p>
-              </div>
-              <ChevronRight size={16} color="var(--cv-muted-2)" style={{ marginLeft: 'auto', flexShrink: 0 }} />
+          <div
+            onClick={onConcierge}
+            style={{ background: 'var(--cv-ink)', borderRadius: 18, padding: '14px 16px', cursor: 'pointer', display: 'flex', gap: 12, alignItems: 'center', boxShadow: '0 4px 20px rgba(26,23,20,.12)' }}
+          >
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Sparkles size={16} color="var(--cv-accent)" />
             </div>
-          </Card>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 16, color: '#faf6ee', marginBottom: 2 }}>AI Concierge</div>
+              <p style={{ fontSize: 11.5, color: 'rgba(250,246,238,.55)', lineHeight: 1.4 }}>Venues, timelines, vendor pitches &amp; more</p>
+            </div>
+            <ChevronRight size={16} color="rgba(250,246,238,.35)" style={{ flexShrink: 0 }} />
+          </div>
 
           {/* Invite live card */}
           {event.invite_live && event.slug && (
@@ -557,6 +553,46 @@ function ScreenEventHome({
           )}
 
         </div>
+
+        {/* Invited events strip */}
+        {invitedEvents && invitedEvents.length > 0 && (
+          <div style={{ marginTop: 24 }}>
+            <Eyebrow style={{ marginBottom: 10 }}>Events you&rsquo;re invited to</Eyebrow>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {invitedEvents.map(ev => {
+                const evAccent = ACCENT_COLORS[ev.event_type as EventType] || '#c0975a';
+                const dateStr = ev.event_date
+                  ? new Date(ev.event_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+                  : null;
+                const stateLabel = ev.guest_rsvp_state === 'in' ? 'Going' : ev.guest_rsvp_state === 'maybe' ? 'Maybe' : ev.guest_rsvp_state === 'out' ? 'Can\'t go' : 'Pending';
+                return (
+                  <a
+                    key={ev.id}
+                    href={`/rsvp/${ev.pass_token}`}
+                    style={{ display: 'block', textDecoration: 'none' }}
+                  >
+                    <Card style={{ padding: '12px 14px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 16, color: 'var(--cv-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {ev.title}
+                          </div>
+                          <div style={{ fontSize: 11, color: 'var(--cv-muted)', marginTop: 2 }}>
+                            {ev.host_name}{dateStr ? ` · ${dateStr}` : ''}
+                          </div>
+                        </div>
+                        <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: evAccent, background: `${evAccent}18`, borderRadius: 99, padding: '3px 8px', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                          {stateLabel}
+                        </div>
+                      </div>
+                    </Card>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
       </ScrollPane>
     </>
   );
@@ -1559,6 +1595,7 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
   const [uploading, setUploading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [signingOut, setSigningOut] = useState(false);
+  const [invitedEvents, setInvitedEvents] = useState<(CvEvent & { guest_name: string; guest_rsvp_state: string; pass_token: string })[]>([]);
 
   const handleSignOut = useCallback(async (e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -1596,16 +1633,23 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
 
   const loadEvents = useCallback(async () => {
     try {
-      const res = await fetch('/api/convivia24/events', { credentials: 'include', cache: 'no-store' });
-      if (res.status === 401) {
+      const [evRes, invRes] = await Promise.all([
+        fetch('/api/convivia24/events', { credentials: 'include', cache: 'no-store' }),
+        fetch('/api/convivia24/my-invites', { credentials: 'include', cache: 'no-store' }),
+      ]);
+      if (evRes.status === 401) {
         window.location.href = '/auth/sign-in?next=/';
         return;
       }
-      if (!res.ok) throw new Error('Failed');
-      const data = await res.json();
+      if (!evRes.ok) throw new Error('Failed');
+      const data = await evRes.json();
       setEvents(data.events || []);
       if (data.events?.length > 0 && !activeEvent) {
         setActiveEvent(data.events[0]);
+      }
+      if (invRes.ok) {
+        const invData = await invRes.json();
+        setInvitedEvents(invData.events || []);
       }
     } catch (e) {
       console.error(e);
@@ -1688,8 +1732,85 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
     );
   }
 
-  // No events — onboarding
+  // No events — show invited events or onboarding
   if (events.length === 0) {
+    if (invitedEvents.length > 0) {
+      return appShell(
+        <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', background: 'var(--cv-ivory)', padding: '40px 20px 80px', ...accentStyle }}>
+          <div style={{ maxWidth: 420, margin: '0 auto' }}>
+            <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.30em', textTransform: 'uppercase', color: 'var(--cv-muted-2)', marginBottom: 6 }}>
+              Your invitations
+            </div>
+            <h1 style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 30, lineHeight: 1, color: 'var(--cv-ink)', marginBottom: 24 }}>
+              Events you&rsquo;re invited to
+            </h1>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {invitedEvents.map(ev => {
+                const accent = ACCENT_COLORS[ev.event_type as EventType] || '#c0975a';
+                const dateStr = ev.event_date
+                  ? new Date(ev.event_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+                  : null;
+                const stateLabel = ev.guest_rsvp_state === 'in' ? 'Going' : ev.guest_rsvp_state === 'maybe' ? 'Maybe' : ev.guest_rsvp_state === 'out' ? 'Can\'t go' : 'Pending';
+                return (
+                  <a
+                    key={ev.id}
+                    href={`/rsvp/${ev.pass_token}`}
+                    style={{
+                      display: 'block', textDecoration: 'none',
+                      background: '#fff', borderRadius: 16,
+                      border: '1px solid rgba(26,23,20,.10)',
+                      padding: '16px 18px',
+                      boxShadow: '0 2px 12px rgba(26,23,20,.06)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.24em', textTransform: 'uppercase', color: accent, marginBottom: 4 }}>
+                          {ev.event_type}
+                        </div>
+                        <div style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 20, color: 'var(--cv-ink)', lineHeight: 1.1, marginBottom: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {ev.title}
+                        </div>
+                        <div style={{ fontSize: 12, color: 'var(--cv-muted)', lineHeight: 1.4 }}>
+                          {ev.host_name}{dateStr ? ` · ${dateStr}` : ''}{ev.city ? ` · ${ev.city}` : ''}
+                        </div>
+                      </div>
+                      <div style={{ flexShrink: 0, fontSize: 10, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: accent, background: `${accent}18`, borderRadius: 99, padding: '4px 10px', whiteSpace: 'nowrap' }}>
+                        {stateLabel}
+                      </div>
+                    </div>
+                  </a>
+                );
+              })}
+            </div>
+            <div style={{ marginTop: 32, paddingTop: 24, borderTop: '1px solid rgba(26,23,20,.08)' }}>
+              <p style={{ fontSize: 12, color: 'var(--cv-muted-2)', marginBottom: 12 }}>Want to host your own event?</p>
+              <button
+                onClick={() => setScreen('create')}
+                style={{
+                  width: '100%', padding: '13px 0', borderRadius: 99, border: 'none',
+                  background: 'var(--cv-ink)', color: 'var(--cv-ivory)',
+                  fontWeight: 700, fontSize: 11, letterSpacing: '0.20em', textTransform: 'uppercase', cursor: 'pointer',
+                }}
+              >
+                Create an event
+              </button>
+            </div>
+          </div>
+          {screen === 'create' && (
+            <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'var(--cv-ivory)', ...accentStyle }}>
+              <ScreenCreateEvent
+                onCreated={ev => { setEvents([ev]); setActiveEvent(ev); setScreen('home'); }}
+                onCancel={() => setScreen('home')}
+                onSignOut={handleSignOut}
+                signingOut={signingOut}
+              />
+            </div>
+          )}
+        </div>,
+      );
+    }
+
     return appShell(
       <div style={{ position: 'absolute', inset: 0, ...accentStyle }}>
         <ScreenCreateEvent
@@ -1741,6 +1862,7 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
           userName={userName}
           onSignOut={handleSignOut}
           signingOut={signingOut}
+          invitedEvents={invitedEvents}
         />
       );
     }

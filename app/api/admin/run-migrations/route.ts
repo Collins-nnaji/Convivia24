@@ -164,7 +164,15 @@ export async function POST(req: NextRequest) {
 
     await sql`CREATE INDEX IF NOT EXISTS idx_convivia24_schedule_event ON convivia24_schedule(event_id, sort_order)`;
 
-    results.push('✅ Migration v10 complete — all Convene tables created.');
+    // v11: link guests to signed-in user accounts
+    await sql`
+      ALTER TABLE convivia24_guests
+      ADD COLUMN IF NOT EXISTS linked_user_id TEXT
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS idx_convivia24_guests_user ON convivia24_guests(linked_user_id) WHERE linked_user_id IS NOT NULL`;
+    results.push('✓ convivia24_guests.linked_user_id (v11)');
+
+    results.push('✅ Migration v11 complete — all Convene tables created.');
     return NextResponse.json({ ok: true, results });
 
   } catch (err) {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CheckCircle, XCircle, AlertCircle, Loader2, ArrowRight, Camera, QrCode } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle, Loader2, ArrowRight, Camera, QrCode, UserPlus } from 'lucide-react';
 import { ACCENT_COLORS, ACCENT_SOFT } from '@/components/convivia24/primitives';
 import type { EventType } from '@/components/convivia24/primitives';
 
@@ -25,7 +25,7 @@ export default function RSVPPage({ params }: PageProps) {
   const [data, setData] = useState<RsvpData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [step, setStep] = useState<'invite' | 'rsvp-form' | 'confirmed' | 'pass'>('invite');
+  const [step, setStep] = useState<'invite' | 'rsvp-form' | 'confirmed' | 'account' | 'pass'>('invite');
   const [rsvpState, setRsvpState] = useState<'in' | 'maybe' | 'out'>('in');
   const [partySize, setPartySize] = useState(1);
   const [dietary, setDietary] = useState('');
@@ -62,7 +62,7 @@ export default function RSVPPage({ params }: PageProps) {
       if (!res.ok) throw new Error('Failed');
       const updated = await res.json();
       setData(prev => prev ? { ...prev, guest: { ...prev.guest, rsvp_state: rsvpState } } : prev);
-      setStep(rsvpState === 'out' ? 'confirmed' : 'pass');
+      setStep(rsvpState === 'out' ? 'confirmed' : 'account');
     } catch {
       alert('Something went wrong. Please try again.');
     } finally {
@@ -321,6 +321,61 @@ export default function RSVPPage({ params }: PageProps) {
       </div>
     </div>
   );
+
+  // ── Account prompt ───────────────────────────────────────────
+  if (step === 'account') {
+    const signInUrl = `/auth/sign-in?next=${encodeURIComponent(`/rsvp/${token}`)}`;
+    const signUpUrl = `/auth/sign-up?next=${encodeURIComponent(`/rsvp/${token}`)}`;
+    return (
+      <div style={{ minHeight: '100dvh', background: '#faf6ee', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
+        <div style={{ maxWidth: 360, width: '100%', textAlign: 'center' }}>
+          <img src="/convivia24.png" alt="Convivia24" style={{ height: 28, width: 'auto', margin: '0 auto 32px', opacity: 0.6 }} />
+          <div style={{ width: 56, height: 56, borderRadius: '50%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+            <UserPlus size={24} color="#fff" />
+          </div>
+          <div style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 30, lineHeight: 1.05, color: '#1a1714', marginBottom: 12 }}>
+            You&rsquo;re on the list.
+          </div>
+          <p style={{ fontSize: 13.5, color: '#756c5e', lineHeight: 1.6, marginBottom: 28 }}>
+            Create a free account to access your guest pass, track your invite, and get event updates from {event.host_name}.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <a
+              href={signUpUrl}
+              style={{
+                display: 'block', width: '100%', padding: '14px 0', borderRadius: 99,
+                background: accent, color: '#fff', textDecoration: 'none',
+                fontWeight: 700, fontSize: 11, letterSpacing: '0.20em', textTransform: 'uppercase',
+                textAlign: 'center',
+              }}
+            >
+              Create an account
+            </a>
+            <a
+              href={signInUrl}
+              style={{
+                display: 'block', width: '100%', padding: '14px 0', borderRadius: 99,
+                background: '#fff', color: '#1a1714', textDecoration: 'none',
+                fontWeight: 700, fontSize: 11, letterSpacing: '0.20em', textTransform: 'uppercase',
+                textAlign: 'center', border: '1px solid rgba(26,23,20,.15)',
+              }}
+            >
+              Sign in
+            </a>
+            <button
+              onClick={() => setStep('pass')}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                fontSize: 12, color: '#a89e8e', marginTop: 4, padding: '8px 0',
+              }}
+            >
+              Skip — view my guest pass
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // ── Guest pass (QR) ──────────────────────────────────────────
   return (

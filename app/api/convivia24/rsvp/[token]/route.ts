@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getGuestByToken, getEventById, rsvpGuest } from '@/lib/convivia24';
+import { getGuestByToken, getEventById, rsvpGuest, linkGuestToUser } from '@/lib/convivia24';
+import { neonAuth } from '@/lib/auth/server';
 
 type Params = { params: Promise<{ token: string }> };
 
@@ -11,6 +12,12 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
   const event = await getEventById(guest.event_id);
   if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+
+  // Auto-link if a signed-in user opens their invite
+  const { user } = await neonAuth();
+  if (user && !guest.linked_user_id) {
+    await linkGuestToUser(token, user.id).catch(() => null);
+  }
 
   const { user_id: _uid, ...safeEvent } = event as unknown as Record<string, unknown> & { user_id: string };
   void _uid;

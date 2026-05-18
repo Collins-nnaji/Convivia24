@@ -42,6 +42,7 @@ export interface Convivia24Guest {
   arrived_at: string | null;
   invite_sent_at: string | null;
   invite_opened_at: string | null;
+  linked_user_id: string | null;
   created_at: string;
 }
 
@@ -248,6 +249,26 @@ export async function rsvpGuest(
     RETURNING *
   `;
   return (rows[0] as unknown as Convivia24Guest) ?? null;
+}
+
+export async function linkGuestToUser(token: string, userId: string): Promise<Convivia24Guest | null> {
+  const rows = await sql`
+    UPDATE convivia24_guests SET linked_user_id = ${userId}, updated_at = NOW()
+    WHERE pass_token = ${token} AND (linked_user_id IS NULL OR linked_user_id = ${userId})
+    RETURNING *
+  `;
+  return (rows[0] as unknown as Convivia24Guest) ?? null;
+}
+
+export async function getInvitedEventsForUser(userId: string): Promise<(Convivia24Event & { guest_name: string; guest_rsvp_state: string; pass_token: string })[]> {
+  const rows = await sql`
+    SELECT e.*, g.name AS guest_name, g.rsvp_state AS guest_rsvp_state, g.pass_token
+    FROM convivia24_events e
+    JOIN convivia24_guests g ON g.event_id = e.id
+    WHERE g.linked_user_id = ${userId}
+    ORDER BY e.event_date ASC NULLS LAST, e.created_at DESC
+  `;
+  return rows as unknown as (Convivia24Event & { guest_name: string; guest_rsvp_state: string; pass_token: string })[];
 }
 
 export async function checkInGuest(token: string): Promise<Convivia24Guest | null> {
