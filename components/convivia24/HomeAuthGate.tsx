@@ -31,7 +31,8 @@ function AppShell({ user }: { user: Record<string, unknown> | null }) {
   return (
     <main
       data-app-shell
-      className="app-shell-root relative mx-auto w-full max-lg:max-w-[min(100%,428px)] lg:max-w-none
+      data-cv-host
+      className="app-shell-root cv-web-host relative mx-auto w-full max-lg:max-w-[min(100%,428px)] lg:max-w-[min(680px,94vw)]
         max-lg:h-[100dvh] max-lg:max-h-[100dvh] max-lg:overflow-hidden max-lg:overscroll-none max-lg:touch-pan-y
         lg:h-[100dvh] lg:overflow-hidden overflow-x-hidden"
       style={{ background: 'var(--cv-ivory)' }}

@@ -539,6 +539,45 @@ select {
 .cv-input:focus { border-color: var(--cv-accent); }
 .cv-input::placeholder { color: var(--cv-muted-2); }
 
+/* ─── Desktop web: larger type; mobile/tablet unchanged (≤1023px) ─── */
+@media (min-width: 1024px) {
+  .app-shell-root.cv-web-host {
+    --cv-web-scale: 1.3;
+    font-size: 18px;
+    line-height: 1.5;
+  }
+
+  .app-shell-root.cv-web-host .cv-app-inner {
+    zoom: var(--cv-web-scale);
+  }
+
+  .app-shell-root.cv-web-host .cv-input {
+    font-size: 18px;
+    padding: 12px 0;
+  }
+
+  .app-shell-root.cv-web-host [data-convivia-dock] button {
+    min-height: 52px;
+    font-size: 8px !important;
+    letter-spacing: 0.06em !important;
+  }
+}
+
+/* Firefox / browsers without zoom: scale the app frame instead */
+@supports not (zoom: 1) {
+  @media (min-width: 1024px) {
+    .app-shell-root.cv-web-host .cv-app-inner {
+      zoom: unset;
+      transform: scale(var(--cv-web-scale, 1.3));
+      transform-origin: top center;
+      width: calc(100% / var(--cv-web-scale, 1.3));
+      height: calc(100% / var(--cv-web-scale, 1.3));
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+}
+
 /* Convene selection */
 ::selection {
   background: rgba(192,151,90,.22);

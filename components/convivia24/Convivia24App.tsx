@@ -2288,7 +2288,11 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
   const accentStyle = activeEvent ? accentVars(activeEvent.event_type) : {};
 
   const appShell = (content: React.ReactNode) => (
-    <AppHomeContext.Provider value={goHome}>{content}</AppHomeContext.Provider>
+    <AppHomeContext.Provider value={goHome}>
+      <div className="cv-app-inner" style={{ position: 'relative', width: '100%', height: '100%' }}>
+        {content}
+      </div>
+    </AppHomeContext.Provider>
   );
 
   if (loadingEvents) {
@@ -2543,10 +2547,7 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
   };
 
   return appShell(
-    <div
-      data-app-shell
-      style={{ position: 'relative', width: '100%', height: '100%', background: 'var(--cv-ivory)', ...accentStyle }}
-    >
+    <div style={{ position: 'relative', width: '100%', height: '100%', background: 'var(--cv-ivory)', ...accentStyle }}>
       {renderContent()}
 
       {/* Toast notification */}
