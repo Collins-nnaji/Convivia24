@@ -27,6 +27,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       address: event.address,
       dress_code: event.dress_code,
       invite_direction: event.invite_direction,
+      invite_customization: event.invite_customization ?? {},
       cover_url: event.cover_url,
       rsvp_deadline: event.rsvp_deadline,
       invite_live: event.invite_live,

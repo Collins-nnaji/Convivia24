@@ -5,13 +5,15 @@ import { useRouter, useParams } from 'next/navigation';
 import { CheckCircle, XCircle, AlertCircle, Loader2, ArrowRight, Camera, QrCode, UserPlus } from 'lucide-react';
 import { ACCENT_COLORS, ACCENT_SOFT } from '@/components/convivia24/primitives';
 import type { EventType } from '@/components/convivia24/primitives';
+import { InvitePreview } from '@/components/convivia24/inviteTemplates';
+import { normalizeInviteTemplate, parseInviteCustomization } from '@/lib/invite';
 
 interface RsvpData {
   event: {
     id: string; title: string; host_name: string; event_type: string;
     event_date: string | null; event_time: string | null; city: string | null;
     venue: string | null; address: string | null; dress_code: string | null;
-    invite_direction: string; capacity: number;
+    invite_direction: string; invite_customization?: unknown; capacity: number;
   };
   guest: {
     id: string; name: string; rsvp_state: string; party_size: number;
@@ -108,80 +110,23 @@ export default function RSVPPage() {
   const dateStr = event.event_date
     ? new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
     : '—';
-  const direction = event.invite_direction || 'editorial';
+  const template = normalizeInviteTemplate(event.invite_direction);
+  const customization = parseInviteCustomization(event.invite_customization);
+  const ctaLabel = customization.ctaLabel || 'Reply →';
 
   // ── Invite screen ────────────────────────────────────────────
   if (step === 'invite') return (
-    <div style={{ minHeight: '100dvh', background: direction === 'bold' ? '#1a1714' : '#f4ede0', display: 'flex', flexDirection: 'column' }}>
-      {/* The invitation */}
-      <div style={{ flex: 1, position: 'relative', overflow: 'hidden', padding: '60px 28px 28px' }}>
-        {direction !== 'bold' && (
-          <svg width="100%" height="100%" viewBox="0 0 360 700" style={{ position: 'absolute', inset: 0, opacity: 0.5, pointerEvents: 'none' }}>
-            {Array.from({ length: 9 }).map((_, i) => (
-              <ellipse key={i} cx="280" cy="120" rx={20 + i * 24} ry={14 + i * 10} fill="none" stroke={accent} strokeWidth="0.4" opacity={0.15 + i * 0.04} />
-            ))}
-          </svg>
-        )}
-        {direction === 'bold' && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 100, background: accent }} />}
-
-        <div style={{ position: 'relative' }}>
-          {/* Eyebrow */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 700, fontSize: 9.5, letterSpacing: '0.32em', textTransform: 'uppercase', color: direction === 'bold' ? 'rgba(250,246,238,.7)' : accent, marginBottom: 16 }}>
-            {direction !== 'bold' && <span style={{ width: 18, height: 1, background: 'currentColor', display: 'inline-block' }} />}
-            {event.event_type} · {event.city || 'an occasion'}
-          </div>
-
-          {/* For */}
-          <div style={{ fontSize: 11, fontWeight: 500, color: direction === 'bold' ? 'rgba(250,246,238,.6)' : 'rgba(26,23,20,.55)', marginBottom: 4 }}>For</div>
-          <div style={{
-            fontFamily: direction === 'bold' ? 'var(--font-geist, sans-serif)' : 'var(--font-instrument, serif)',
-            fontStyle: direction === 'bold' ? 'normal' : 'italic',
-            fontWeight: direction === 'bold' ? 900 : 400,
-            fontSize: direction === 'bold' ? 52 : 52,
-            lineHeight: .96, letterSpacing: direction === 'bold' ? '-0.04em' : '-0.02em',
-            color: direction === 'bold' ? '#faf6ee' : '#1a1714',
-            wordBreak: 'break-word', marginBottom: 32,
-          }}>
-            {guest.name}.
-          </div>
-
-          {/* From */}
-          <div style={{ fontSize: 11, fontWeight: 500, color: direction === 'bold' ? 'rgba(250,246,238,.55)' : 'rgba(26,23,20,.5)', marginBottom: 4 }}>From</div>
-          <div style={{
-            fontFamily: direction === 'bold' ? 'var(--font-geist, sans-serif)' : 'var(--font-instrument, serif)',
-            fontStyle: 'italic',
-            fontWeight: direction === 'bold' ? 900 : 400,
-            fontSize: direction === 'bold' ? 46 : 46,
-            lineHeight: 1.02, letterSpacing: '-0.02em',
-            color: direction === 'bold' ? '#faf6ee' : '#1a1714',
-            wordBreak: 'break-word',
-          }}>
-            {event.host_name}.
-          </div>
-        </div>
+    <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', background: '#faf6ee' }}>
+      <div style={{ flex: 1, minHeight: 0, maxWidth: 420, width: '100%', margin: '0 auto' }}>
+        <InvitePreview
+          event={event}
+          template={template}
+          customization={customization}
+          recipient={guest.name}
+          showCta={false}
+        />
       </div>
-
-      {/* Bottom details + CTA */}
-      <div style={{
-        padding: '20px 28px 40px',
-        borderTop: `1px solid ${direction === 'bold' ? 'rgba(255,255,255,.12)' : 'rgba(26,23,20,.18)'}`,
-        background: direction === 'bold' ? 'rgba(0,0,0,.4)' : 'rgba(244,237,224,.92)',
-      }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 20, color: direction === 'bold' ? '#faf6ee' : '#1a1714', fontSize: 12.5 }}>
-          <div>
-            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', textTransform: 'uppercase', color: direction === 'bold' ? 'rgba(250,246,238,.5)' : 'rgba(26,23,20,.5)', marginBottom: 4 }}>When</div>
-            {dateStr}<br />{event.event_time || ''}
-          </div>
-          <div>
-            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', textTransform: 'uppercase', color: direction === 'bold' ? 'rgba(250,246,238,.5)' : 'rgba(26,23,20,.5)', marginBottom: 4 }}>Where</div>
-            {event.venue || '—'}<br />{event.city || '—'}
-          </div>
-        </div>
-        {event.dress_code && (
-          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.20em', textTransform: 'uppercase', color: direction === 'bold' ? 'rgba(250,246,238,.55)' : 'rgba(26,23,20,.55)', marginBottom: 16 }}>
-            {event.dress_code}
-          </div>
-        )}
+      <div style={{ padding: '16px 24px 40px', maxWidth: 420, width: '100%', margin: '0 auto' }}>
         <button
           onClick={() => setStep('rsvp-form')}
           style={{
@@ -191,7 +136,7 @@ export default function RSVPPage() {
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }}
         >
-          Reply to this invitation <ArrowRight size={13} />
+          {ctaLabel.replace('→', '').trim() || 'Reply'} <ArrowRight size={13} />
         </button>
       </div>
     </div>

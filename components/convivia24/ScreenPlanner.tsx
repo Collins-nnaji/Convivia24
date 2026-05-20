@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   CalendarDays, Sparkles, Send, Loader2, Plus, Trash2, Check, Clock,
-  CheckCircle, ChevronRight, ListChecks, Target, X,
+  CheckCircle, ChevronRight, ListChecks, Target, X, ArrowLeft,
 } from 'lucide-react';
 import { Eyebrow, Chip, Btn, Card, Dial, Bar, type EventType, ACCENT_COLORS } from '@/components/convivia24/primitives';
 
@@ -65,7 +65,14 @@ function tasksStorageKey(eventId: string) {
   return `cv-planner-tasks-${eventId}`;
 }
 
-export function ScreenPlanner({ event, onToast }: { event: CvEvent; onToast: (msg: string) => void }) {
+export function ScreenPlanner({
+  event, onToast, onBack, eventSwitcher,
+}: {
+  event: CvEvent;
+  onToast: (msg: string) => void;
+  onBack?: () => void;
+  eventSwitcher?: React.ReactNode;
+}) {
   const [panel, setPanel] = useState<PlannerPanel>('timeline');
   const [items, setItems] = useState<ScheduleItem[]>([]);
   const [loadingSchedule, setLoadingSchedule] = useState(true);
@@ -221,13 +228,30 @@ export function ScreenPlanner({ event, onToast }: { event: CvEvent; onToast: (ms
         backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
         borderBottom: '1px solid var(--cv-hairline)',
       }}>
-        <Eyebrow muted>Planner</Eyebrow>
-        <h1 style={{
-          fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic',
-          fontSize: 'clamp(22px, 5vw, 26px)', lineHeight: 1.05, marginTop: 4, color: 'var(--cv-ink)',
-        }}>
-          {event.host_name}
-        </h1>
+        {eventSwitcher}
+        <p style={{ fontSize: 11, color: 'var(--cv-muted)', margin: '0 0 10px', lineHeight: 1.4 }}>
+          Timeline and AI planning for this event. Use ← back to return to Event home.
+        </p>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <Eyebrow muted>Planner</Eyebrow>
+            <h1 style={{
+              fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic',
+              fontSize: 'clamp(22px, 5vw, 26px)', lineHeight: 1.05, marginTop: 4, color: 'var(--cv-ink)',
+            }}>
+              {event.host_name}
+            </h1>
+          </div>
+          {onBack && (
+            <button type="button" onClick={onBack} aria-label="Back" style={{
+              width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+              border: '1px solid var(--cv-hairline)', background: 'var(--cv-paper)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+            }}>
+              <ArrowLeft size={16} color="var(--cv-muted)" />
+            </button>
+          )}
+        </div>
 
         <div style={{
           display: 'flex', marginTop: 12, background: 'var(--cv-paper)',

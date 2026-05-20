@@ -17,6 +17,7 @@ export interface Convivia24Event {
   capacity: number;
   dress_code: string | null;
   invite_direction: string;
+  invite_customization?: unknown;
   invite_live: boolean;
   cover_url: string | null;
   rsvp_deadline: string | null;
@@ -160,8 +161,13 @@ export async function createEvent(userId: string, data: Partial<Convivia24Event>
 export async function updateEvent(
   id: string,
   userId: string,
-  data: Partial<Convivia24Event>,
+  data: Partial<Convivia24Event> & { invite_customization?: unknown },
 ): Promise<Convivia24Event | null> {
+  const customizationJson =
+    data.invite_customization !== undefined
+      ? JSON.stringify(data.invite_customization)
+      : null;
+
   const rows = await sql`
     UPDATE convivia24_events SET
       title            = COALESCE(${data.title ?? null}, title),
@@ -175,6 +181,7 @@ export async function updateEvent(
       capacity         = COALESCE(${data.capacity ?? null}, capacity),
       dress_code       = COALESCE(${data.dress_code ?? null}, dress_code),
       invite_direction = COALESCE(${data.invite_direction ?? null}, invite_direction),
+      invite_customization = COALESCE(${customizationJson}::jsonb, invite_customization),
       invite_live      = COALESCE(${data.invite_live ?? null}, invite_live),
       cover_url        = COALESCE(${data.cover_url ?? null}, cover_url),
       rsvp_deadline    = COALESCE(${data.rsvp_deadline ?? null}::date, rsvp_deadline),

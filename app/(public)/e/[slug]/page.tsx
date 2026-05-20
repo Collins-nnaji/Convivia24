@@ -4,16 +4,19 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import {
   Loader2, ArrowRight, CheckCircle, XCircle, AlertCircle,
-  Calendar, MapPin, Shirt, Users, Gift, QrCode,
+  Users, Gift, QrCode,
 } from 'lucide-react';
 import { ACCENT_COLORS, ACCENT_SOFT } from '@/components/convivia24/primitives';
 import type { EventType } from '@/components/convivia24/primitives';
+import { InvitePreview } from '@/components/convivia24/inviteTemplates';
+import { normalizeInviteTemplate, parseInviteCustomization } from '@/lib/invite';
 
 interface PublicEvent {
   id: string; slug: string | null; title: string; event_type: string;
   host_name: string; event_date: string | null; event_time: string | null;
   city: string | null; venue: string | null; address: string | null;
   dress_code: string | null; invite_direction: string;
+  invite_customization?: unknown;
   cover_url: string | null; rsvp_deadline: string | null;
   invite_live: boolean;
 }
@@ -143,12 +146,13 @@ export default function PublicEventPage() {
 
   const accent = ACCENT_COLORS[event.event_type as EventType] || '#c0975a';
   const accentSoft = ACCENT_SOFT[event.event_type as EventType] || 'rgba(192,151,90,.10)';
-  const isBold = (event.invite_direction || 'editorial') === 'bold';
-  const bg = isBold ? '#1a1714' : '#f4ede0';
-  const fg = isBold ? '#faf6ee' : '#1a1714';
-  const fgMuted = isBold ? 'rgba(250,246,238,.55)' : 'rgba(26,23,20,.5)';
-  const border = isBold ? 'rgba(255,255,255,.12)' : 'rgba(26,23,20,.15)';
-  const panelBg = isBold ? 'rgba(0,0,0,.35)' : 'rgba(244,237,224,.92)';
+  const inviteTemplate = normalizeInviteTemplate(event.invite_direction);
+  const inviteCustomization = parseInviteCustomization(event.invite_customization);
+  const isDarkInvite = inviteTemplate === 'bold' || inviteTemplate === 'festive';
+  const fg = isDarkInvite ? '#faf6ee' : '#1a1714';
+  const fgMuted = isDarkInvite ? 'rgba(250,246,238,.55)' : 'rgba(26,23,20,.5)';
+  const border = isDarkInvite ? 'rgba(255,255,255,.12)' : 'rgba(26,23,20,.15)';
+  const panelBg = isDarkInvite ? 'rgba(0,0,0,.35)' : 'rgba(244,237,224,.92)';
 
   const dateStr = event.event_date
     ? new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
@@ -418,73 +422,24 @@ export default function PublicEventPage() {
 
   // ── Invite / event detail ──────────────────────────────────────
   return (
-    <div style={{ minHeight: '100dvh', background: bg, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100dvh', background: '#faf6ee', display: 'flex', flexDirection: 'column' }}>
 
-      {/* Hero */}
-      <div style={{ position: 'relative', flex: 1, overflow: 'hidden', padding: '60px 28px 40px' }}>
-        {!isBold && (
-          <svg width="100%" height="100%" viewBox="0 0 360 600" style={{ position: 'absolute', inset: 0, opacity: 0.45, pointerEvents: 'none' }}>
-            {Array.from({ length: 9 }).map((_, i) => (
-              <ellipse key={i} cx="300" cy="100" rx={20 + i * 26} ry={14 + i * 11} fill="none" stroke={accent} strokeWidth="0.4" opacity={0.12 + i * 0.04} />
-            ))}
-          </svg>
-        )}
-        {isBold && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 100, background: accent }} />}
-        {event.cover_url && (
-          <div style={{ position: 'absolute', inset: 0 }}>
-            <img src={event.cover_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.18 }} />
-          </div>
-        )}
-
-        <div style={{ position: 'relative', maxWidth: 480, margin: '0 auto' }}>
-          {/* Eyebrow */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 700, fontSize: 9.5, letterSpacing: '0.32em', textTransform: 'uppercase', color: isBold ? 'rgba(250,246,238,.7)' : accent, marginBottom: 20 }}>
-            {!isBold && <span style={{ width: 18, height: 1, background: 'currentColor', display: 'inline-block' }} />}
-            {event.event_type} · {event.city || 'an occasion'}
-          </div>
-
-          {/* Title */}
-          <div style={{
-            fontFamily: isBold ? 'var(--font-geist, sans-serif)' : 'var(--font-instrument, serif)',
-            fontStyle: isBold ? 'normal' : 'italic',
-            fontWeight: isBold ? 900 : 400,
-            fontSize: 52, lineHeight: 0.96,
-            letterSpacing: isBold ? '-0.04em' : '-0.02em',
-            color: fg, wordBreak: 'break-word', marginBottom: 12,
-          }}>
-            {event.title}.
-          </div>
-          <div style={{ fontSize: 13, color: fgMuted, marginBottom: 28 }}>Hosted by {event.host_name}</div>
-
-          {/* Details */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
-            {dateStr && (
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, color: fg }}>
-                <Calendar size={14} color={accent} style={{ marginTop: 2, flexShrink: 0 }} />
-                <span>{dateStr}{event.event_time ? ` · ${event.event_time}` : ''}</span>
-              </div>
-            )}
-            {(event.venue || event.city) && (
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, color: fg }}>
-                <MapPin size={14} color={accent} style={{ marginTop: 2, flexShrink: 0 }} />
-                <span>{[event.venue, event.city].filter(Boolean).join(', ')}</span>
-              </div>
-            )}
-            {event.dress_code && (
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, color: fg }}>
-                <Shirt size={14} color={accent} style={{ marginTop: 2, flexShrink: 0 }} />
-                <span>{event.dress_code}</span>
-              </div>
-            )}
-            {stats.in > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: accent }}>
-                <Users size={14} color={accent} style={{ flexShrink: 0 }} />
-                <span>{stats.in} {stats.in === 1 ? 'person' : 'people'} going{stats.maybe > 0 ? ` · ${stats.maybe} maybe` : ''}</span>
-              </div>
-            )}
-          </div>
-        </div>
+      <div style={{ flex: 1, minHeight: 420, maxWidth: 480, width: '100%', margin: '0 auto' }}>
+        <InvitePreview
+          event={event}
+          template={inviteTemplate}
+          customization={inviteCustomization}
+          recipient="You"
+          showCta={false}
+        />
       </div>
+
+      {stats.in > 0 && (
+        <div style={{ maxWidth: 480, margin: '0 auto', width: '100%', padding: '0 28px 8px', display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: accent }}>
+          <Users size={14} />
+          <span>{stats.in} {stats.in === 1 ? 'person' : 'people'} going{stats.maybe > 0 ? ` · ${stats.maybe} maybe` : ''}</span>
+        </div>
+      )}
 
       {/* Bottom panel */}
       <div style={{ padding: '24px 28px 48px', borderTop: `1px solid ${border}`, background: panelBg }}>

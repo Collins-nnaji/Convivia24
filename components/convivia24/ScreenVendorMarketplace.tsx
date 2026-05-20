@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Search, Store, MapPin, Plus, Check, Eye, RefreshCw, Loader2,
   X, Utensils, Wine, Music, Camera, LayoutGrid, Gift, Heart, Sparkles,
-  ChevronRight, Trash2, ExternalLink, Bookmark,
+  ChevronRight, Trash2, ExternalLink, Bookmark, ArrowLeft,
 } from 'lucide-react';
 import { Eyebrow, Chip, Btn, Card, Tag, type EventType, EVENT_TYPE_META, ACCENT_COLORS } from '@/components/convivia24/primitives';
 
@@ -61,7 +61,14 @@ const EVENT_VENDOR_NEEDS: Partial<Record<EventType, string[]>> = {
   memorial:  ['Venue', 'Catering', 'Florist'],
 };
 
-export function ScreenVendorMarketplace({ event, onToast }: { event: CvEvent; onToast: (msg: string) => void }) {
+export function ScreenVendorMarketplace({
+  event, onToast, onBack, eventSwitcher,
+}: {
+  event: CvEvent;
+  onToast: (msg: string) => void;
+  onBack?: () => void;
+  eventSwitcher?: React.ReactNode;
+}) {
   const [tab, setTab] = useState<VendorTab>('browse');
   const [category, setCategory] = useState('All');
   const [query, setQuery] = useState('');
@@ -152,6 +159,10 @@ export function ScreenVendorMarketplace({ event, onToast }: { event: CvEvent; on
         backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
         borderBottom: '1px solid var(--cv-hairline)',
       }}>
+        {eventSwitcher}
+        <p style={{ fontSize: 11, color: 'var(--cv-muted)', margin: '0 0 10px', lineHeight: 1.4 }}>
+          Shortlist vendors for this event. Use ← back to return to Event home.
+        </p>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <Eyebrow muted>Vendors</Eyebrow>
@@ -165,19 +176,35 @@ export function ScreenVendorMarketplace({ event, onToast }: { event: CvEvent; on
               {typeLabel}{event.city ? ` · ${event.city}` : ''} · {event.capacity} guests
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => load(true)}
-            disabled={refreshing}
-            aria-label="Refresh"
-            style={{
-              width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-              border: '1px solid var(--cv-hairline)', background: 'var(--cv-paper)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-            }}
-          >
-            <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} color="var(--cv-muted)" />
-          </button>
+          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+            {onBack && (
+              <button
+                type="button"
+                onClick={onBack}
+                aria-label="Back"
+                style={{
+                  width: 44, height: 44, borderRadius: 12,
+                  border: '1px solid var(--cv-hairline)', background: 'var(--cv-paper)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                }}
+              >
+                <ArrowLeft size={16} color="var(--cv-muted)" />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => load(true)}
+              disabled={refreshing}
+              aria-label="Refresh"
+              style={{
+                width: 44, height: 44, borderRadius: 12,
+                border: '1px solid var(--cv-hairline)', background: 'var(--cv-paper)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+              }}
+            >
+              <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} color="var(--cv-muted)" />
+            </button>
+          </div>
         </div>
 
         {/* Tab bar — 44px touch targets */}

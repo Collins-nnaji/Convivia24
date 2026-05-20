@@ -8,8 +8,9 @@ import {
   LayoutGrid, Utensils, Wine, Heart, Music, Gift, Phone,
   Send, Pencil, Trash2, CheckCircle, XCircle, AlertCircle,
   ScanLine, Eye, RefreshCw, LogOut, LogIn, Star, Zap, Download,
-  Store, CalendarDays, ClipboardList,
+  Store, CalendarDays,
 } from 'lucide-react';
+import { EventSwitcher } from '@/components/convivia24/EventSwitcher';
 import {
   Avatar, Eyebrow, Tag, Chip, Btn, Dial, QRBlock,
   Card, WordmarkLink, MiddleDot, Hr,
@@ -20,6 +21,15 @@ import { signOutAndRedirect } from '@/lib/auth/sign-out-client';
 import { UserNavMenu } from '@/components/convivia24/UserNavMenu';
 import { ScreenVendorMarketplace } from '@/components/convivia24/ScreenVendorMarketplace';
 import { ScreenPlanner } from '@/components/convivia24/ScreenPlanner';
+import {
+  InvitePreview,
+  INVITE_TEMPLATE_META,
+  DEFAULT_INVITE_CUSTOMIZATION,
+  parseInviteCustomization,
+  normalizeInviteTemplate,
+  type InviteTemplateId,
+  type InviteCustomization,
+} from '@/components/convivia24/inviteTemplates';
 
 // BarcodeDetector is available in Chrome/Android — use via window to avoid TS errors
 
@@ -29,6 +39,7 @@ interface CvEvent {
   host_name: string; event_date: string | null; event_time: string | null;
   city: string | null; venue: string | null; address: string | null;
   capacity: number; dress_code: string | null; invite_direction: string;
+  invite_customization?: unknown;
   invite_live: boolean; cover_url: string | null; rsvp_deadline: string | null;
   days_out: number | null; created_at: string; updated_at: string;
   stats?: { in: number; maybe: number; out: number; pending: number; total: number; arrived: number };
@@ -41,8 +52,15 @@ interface CvGuest {
 }
 interface CvPhoto { id: string; event_id: string; url: string; uploader_name: string | null; caption: string | null; created_at: string; }
 
-type Tab = 'event' | 'vendors' | 'planner';
-type EventSection = 'overview' | 'guests' | 'invite' | 'activities' | 'after';
+type Tab = 'event' | 'invite' | 'checkin';
+type InviteHubTab = 'design' | 'guests';
+type CheckInHubTab = 'door' | 'photos';
+const INVITE_SUBNAV_H = 52;
+const CHECKIN_SUBNAV_H = 52;
+const FLOW_DISMISS_KEY = 'cv24_host_flow_dismissed';
+
+const ACTIVE_EVENT_STORAGE_KEY = 'cv24_active_event_id';
+type UtilityPage = 'vendors' | 'planner';
 type Screen = 'home' | 'create' | 'edit' | 'guest-list' | 'seating' | 'invite-designer' | 'invite-preview' | 'scanner' | 'dashboard' | 'photos' | 'thankyou' | 'concierge';
 
 // ─── Accent helpers ───────────────────────────────────────────
@@ -57,7 +75,6 @@ function accentVars(type: string) {
 
 // ─── Shared layout atoms ──────────────────────────────────────
 const AppHomeContext = React.createContext<(() => void) | undefined>(undefined);
-
 function useAppHome() {
   return React.useContext(AppHomeContext);
 }
@@ -110,11 +127,65 @@ function ScrollPane({ children, topPad = 56, bottomPad = 80, dark }: { children:
   );
 }
 
-function Dock({ active, onTab }: { active: Tab; onTab: (t: Tab) => void }) {
-  const tabs: { id: Tab; label: string; Icon: React.ElementType }[] = [
+function SegmentTabs<T extends string>({
+  tabs, active, onChange,
+}: {
+  tabs: { id: T; label: string; count?: number }[];
+  active: T;
+  onChange: (id: T) => void;
+}) {
+  return (
+    <div style={{
+      position: 'absolute', top: 58, left: 0, right: 0, zIndex: 79,
+      padding: '8px 14px 10px',
+      background: 'rgba(250,246,238,.94)',
+      backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
+      borderBottom: '1px solid rgba(26,23,20,.07)',
+    }}>
+      <div style={{
+        display: 'flex', gap: 4, padding: 4, borderRadius: 12,
+        background: 'var(--cv-paper)', border: '1px solid var(--cv-hairline)',
+      }}>
+        {tabs.map(t => {
+          const on = active === t.id;
+          return (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => onChange(t.id)}
+              style={{
+                flex: 1, minHeight: 36, padding: '8px 10px', borderRadius: 9, border: 'none', cursor: 'pointer',
+                background: on ? 'var(--cv-ink)' : 'transparent',
+                color: on ? 'var(--cv-ivory)' : 'var(--cv-muted)',
+                fontFamily: 'var(--font-geist, system-ui)', fontWeight: 700,
+                fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                transition: 'background .15s, color .15s',
+              }}
+            >
+              {t.label}
+              {t.count != null && t.count > 0 && (
+                <span style={{
+                  fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 99,
+                  background: on ? 'rgba(255,255,255,.18)' : 'var(--cv-accent-soft)',
+                  color: on ? 'var(--cv-ivory)' : 'var(--cv-accent)',
+                }}>
+                  {t.count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function Dock({ active, onTab, inviteNeedsAttention }: { active: Tab; onTab: (t: Tab) => void; inviteNeedsAttention?: boolean }) {
+  const tabs: { id: Tab; label: string; Icon: React.ElementType; dot?: boolean }[] = [
     { id: 'event',   label: 'Event',    Icon: Home },
-    { id: 'vendors', label: 'Vendors',  Icon: Store },
-    { id: 'planner', label: 'Planner',  Icon: CalendarDays },
+    { id: 'invite',  label: 'Invite',   Icon: Mail, dot: inviteNeedsAttention },
+    { id: 'checkin', label: 'Check-in', Icon: ScanLine },
   ];
   return (
     <div style={{ position: 'absolute', left: 12, right: 12, bottom: 16, zIndex: 100 }}>
@@ -126,23 +197,26 @@ function Dock({ active, onTab }: { active: Tab; onTab: (t: Tab) => void }) {
         boxShadow: '0 12px 40px rgba(26,23,20,.30), 0 2px 8px rgba(26,23,20,.15)',
         backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
       }}>
-        {tabs.map(({ id, label, Icon }) => (
+        {tabs.map(({ id, label, Icon, dot }) => (
           <button
             key={id}
             onClick={() => onTab(id)}
             style={{
-              flex: 1, minHeight: 46, padding: '6px 4px',
+              flex: 1, minHeight: 46, padding: '6px 2px',
               background: active === id ? 'rgba(255,255,255,.12)' : 'transparent',
               border: 'none', cursor: 'pointer', borderRadius: 9999,
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3,
               color: active === id ? '#fff' : 'rgba(255,255,255,.45)',
               fontFamily: 'var(--font-geist, system-ui)', fontWeight: 700,
-              fontSize: 8.5, letterSpacing: '0.10em', textTransform: 'uppercase',
-              transition: 'color .15s, background .15s',
+              fontSize: 7.5, letterSpacing: '0.08em', textTransform: 'uppercase',
+              transition: 'color .15s, background .15s', position: 'relative',
             }}
           >
-            <Icon size={16} strokeWidth={active === id ? 2.2 : 1.5} />
+            <Icon size={15} strokeWidth={active === id ? 2.2 : 1.5} />
             <span>{label}</span>
+            {dot && active !== id && (
+              <span style={{ position: 'absolute', top: 6, right: '18%', width: 6, height: 6, borderRadius: 99, background: '#e85d4b' }} />
+            )}
           </button>
         ))}
       </div>
@@ -150,42 +224,107 @@ function Dock({ active, onTab }: { active: Tab; onTab: (t: Tab) => void }) {
   );
 }
 
-const EVENT_SECTIONS: { id: EventSection; label: string; Icon: React.ElementType }[] = [
-  { id: 'overview',   label: 'Overview',   Icon: Home },
-  { id: 'guests',     label: 'Guests',     Icon: Users },
-  { id: 'invite',     label: 'Invite',     Icon: Mail },
-  { id: 'activities', label: 'Activities', Icon: ClipboardList },
-  { id: 'after',      label: 'After',      Icon: Image },
-];
-
-function EventSubNav({ section, onSection, inviteLive }: { section: EventSection; onSection: (s: EventSection) => void; inviteLive: boolean }) {
+function FlowHint({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{
-      display: 'flex', gap: 6, overflowX: 'auto', padding: '8px 14px',
-      borderBottom: '1px solid var(--cv-hairline)', background: 'rgba(250,246,238,.96)',
-      WebkitOverflowScrolling: 'touch',
-    }} className="cv-scrollbar">
-      {EVENT_SECTIONS.map(({ id, label, Icon }) => (
-        <button
-          key={id}
-          type="button"
-          onClick={() => onSection(id)}
-          style={{
-            flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 5,
-            padding: '7px 12px', borderRadius: 9999, border: 'none', cursor: 'pointer',
-            background: section === id ? 'var(--cv-ink)' : 'var(--cv-paper)',
-            color: section === id ? 'var(--cv-ivory)' : 'var(--cv-muted)',
-            fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
-            position: 'relative',
-          }}
-        >
-          <Icon size={12} strokeWidth={section === id ? 2.2 : 1.5} />
-          {label}
-          {id === 'invite' && !inviteLive && (
-            <span style={{ position: 'absolute', top: 4, right: 4, width: 6, height: 6, borderRadius: 99, background: '#e85d4b' }} />
-          )}
+    <p style={{ fontSize: 11.5, color: 'var(--cv-muted)', lineHeight: 1.5, margin: 0 }}>{children}</p>
+  );
+}
+
+function HostFlowGuide({
+  onDismiss, onGoInvite, onGoGuests, onGoCheckIn,
+}: {
+  onDismiss: () => void;
+  onGoInvite: () => void;
+  onGoGuests: () => void;
+  onGoCheckIn: () => void;
+}) {
+  const steps = [
+    { n: 1, title: 'Event', body: 'Set date, venue & planning tools.' },
+    { n: 2, title: 'Invite', body: 'Design your card, go live, add guests.', onClick: onGoInvite },
+    { n: 3, title: 'Check-in', body: 'Scan passes & collect photos on the night.', onClick: onGoCheckIn },
+  ];
+  return (
+    <Card tinted style={{ padding: 14 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, marginBottom: 12 }}>
+        <div>
+          <Eyebrow muted>How hosting works</Eyebrow>
+          <FlowHint>Three tabs at the bottom — same order as your event timeline.</FlowHint>
+        </div>
+        <button type="button" onClick={onDismiss} aria-label="Dismiss guide" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--cv-muted-2)' }}>
+          <X size={14} />
         </button>
-      ))}
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {steps.map(s => (
+          <button
+            key={s.n}
+            type="button"
+            onClick={s.onClick}
+            disabled={!s.onClick}
+            style={{
+              textAlign: 'left', padding: '10px 12px', borderRadius: 10, cursor: s.onClick ? 'pointer' : 'default',
+              border: '1px solid var(--cv-hairline)', background: '#fff',
+              display: 'flex', gap: 12, alignItems: 'flex-start',
+              opacity: s.onClick ? 1 : 1,
+            }}
+          >
+            <span style={{
+              width: 22, height: 22, borderRadius: 99, flexShrink: 0,
+              background: 'var(--cv-ink)', color: 'var(--cv-ivory)',
+              fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>{s.n}</span>
+            <span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--cv-ink)' }}>{s.title}</span>
+              <span style={{ display: 'block', fontSize: 11, color: 'var(--cv-muted)', marginTop: 2, lineHeight: 1.4 }}>{s.body}</span>
+            </span>
+            {s.onClick && <ChevronRight size={14} color="var(--cv-muted-2)" style={{ flexShrink: 0, marginTop: 4 }} />}
+          </button>
+        ))}
+      </div>
+      <button
+        type="button"
+        onClick={onGoGuests}
+        style={{
+          width: '100%', marginTop: 10, padding: '10px 0', background: 'none', border: 'none',
+          cursor: 'pointer', fontSize: 11.5, color: 'var(--cv-accent)', fontWeight: 600,
+        }}
+      >
+        Already live? Jump to guest list →
+      </button>
+    </Card>
+  );
+}
+
+function QuickFlowNav({ onGoInvite, onGoGuests, onGoCheckIn }: {
+  onGoInvite: () => void;
+  onGoGuests: () => void;
+  onGoCheckIn: () => void;
+}) {
+  const items = [
+    { label: 'Invite', sub: 'Card & link', Icon: Mail, onClick: onGoInvite },
+    { label: 'Guests', sub: 'RSVP list', Icon: Users, onClick: onGoGuests },
+    { label: 'Check-in', sub: 'Scan & photos', Icon: ScanLine, onClick: onGoCheckIn },
+  ];
+  return (
+    <div>
+      <Eyebrow muted style={{ marginBottom: 8 }}>Quick jump</Eyebrow>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+        {items.map(({ label, sub, Icon, onClick }) => (
+          <button
+            key={label}
+            type="button"
+            onClick={onClick}
+            style={{
+              padding: '12px 8px', borderRadius: 12, border: '1px solid var(--cv-hairline)', background: '#fff',
+              cursor: 'pointer', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+            }}
+          >
+            <Icon size={16} color="var(--cv-accent)" />
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--cv-ink)' }}>{label}</span>
+            <span style={{ fontSize: 9.5, color: 'var(--cv-muted)', lineHeight: 1.3 }}>{sub}</span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
@@ -207,10 +346,10 @@ function InviteNotLiveBanner({ onGoToInvite, compact }: { onGoToInvite: () => vo
       <Mail size={compact ? 14 : 16} color="#c45a4a" style={{ flexShrink: 0 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: compact ? 10 : 10.5, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#a33' }}>
-          Invite not live yet
+          Next: publish your invite
         </div>
         <div style={{ fontSize: compact ? 11 : 12.5, color: 'var(--cv-muted)', marginTop: 2, lineHeight: 1.4 }}>
-          Go to Invite to design and publish your guest page.
+          Open Invite → pick a style → Go live. Then add guests on the Guest list tab.
         </div>
       </div>
       <ChevronRight size={14} color="#a33" style={{ flexShrink: 0 }} />
@@ -552,7 +691,8 @@ function ScreenEditEvent({ event, onSaved, onBack, onDelete }: { event: CvEvent;
 // ─── SCREEN: Event Home ───────────────────────────────────────
 function ScreenEventHome({
   event, stats, onEdit, onConcierge, onCopy, onNewEvent, userName, onSignOut, signingOut, invitedEvents,
-  embedded, onGoToInvite, showInviteBanner,
+  onGoToInvite, onOpenVendors, onOpenPlanner, eventSwitcher,
+  onGoInviteGuests, onGoCheckIn, showFlowGuide, onDismissFlowGuide,
 }: {
   event: CvEvent;
   stats: { in: number; maybe: number; out: number; pending: number; total: number; arrived: number };
@@ -564,9 +704,14 @@ function ScreenEventHome({
   onSignOut: (e: React.MouseEvent) => void | Promise<void>;
   signingOut?: boolean;
   invitedEvents?: (CvEvent & { guest_name: string; guest_rsvp_state: string; pass_token: string })[];
-  embedded?: boolean;
   onGoToInvite?: () => void;
-  showInviteBanner?: boolean;
+  onOpenVendors?: () => void;
+  onOpenPlanner?: () => void;
+  eventSwitcher?: React.ReactNode;
+  onGoInviteGuests?: () => void;
+  onGoCheckIn?: () => void;
+  showFlowGuide?: boolean;
+  onDismissFlowGuide?: () => void;
 }) {
   const replyRate = stats.total ? (stats.in + stats.out + stats.maybe) / stats.total : 0;
   const daysOut = event.days_out ?? 0;
@@ -575,9 +720,23 @@ function ScreenEventHome({
   const content = (
     <>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'cv-fade-up .35s ease both' }}>
+          {eventSwitcher}
 
-          {showInviteBanner && !event.invite_live && onGoToInvite && (
+          {!event.invite_live && onGoToInvite && (
             <InviteNotLiveBanner onGoToInvite={onGoToInvite} />
+          )}
+
+          {showFlowGuide && onDismissFlowGuide && onGoToInvite && onGoInviteGuests && onGoCheckIn && (
+            <HostFlowGuide
+              onDismiss={onDismissFlowGuide}
+              onGoInvite={onGoToInvite}
+              onGoGuests={onGoInviteGuests}
+              onGoCheckIn={onGoCheckIn}
+            />
+          )}
+
+          {onGoToInvite && onGoInviteGuests && onGoCheckIn && (
+            <QuickFlowNav onGoInvite={onGoToInvite} onGoGuests={onGoInviteGuests} onGoCheckIn={onGoCheckIn} />
           )}
 
           {/* Hero */}
@@ -621,13 +780,27 @@ function ScreenEventHome({
               { label: 'Coming', val: stats.in, Icon: CheckCircle },
               { label: 'Maybe', val: stats.maybe, Icon: Clock },
               { label: 'Pending', val: stats.pending, Icon: AlertCircle },
-            ].map(({ label, val, Icon: IconComp }) => (
-              <div key={label} style={{ background: '#fff', borderRadius: 14, border: '1px solid var(--cv-hairline)', padding: '10px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                <IconComp size={13} color="var(--cv-accent)" />
-                <div style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 22, color: 'var(--cv-ink)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{val}</div>
-                <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--cv-muted-2)' }}>{label}</div>
-              </div>
-            ))}
+            ].map(({ label, val, Icon: IconComp }) => {
+              const clickable = label === 'Guests' && onGoInviteGuests;
+              const Wrapper = clickable ? 'button' : 'div';
+              return (
+                <Wrapper
+                  key={label}
+                  type={clickable ? 'button' : undefined}
+                  onClick={clickable ? onGoInviteGuests : undefined}
+                  style={{
+                    background: '#fff', borderRadius: 14, border: '1px solid var(--cv-hairline)', padding: '10px 8px',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                    cursor: clickable ? 'pointer' : 'default',
+                    ...(clickable ? { border: '1px solid var(--cv-accent-line)' } : {}),
+                  }}
+                >
+                  <IconComp size={13} color="var(--cv-accent)" />
+                  <div style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 22, color: 'var(--cv-ink)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{val}</div>
+                  <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--cv-muted-2)' }}>{label}</div>
+                </Wrapper>
+              );
+            })}
           </div>
 
           {/* AI concierge card */}
@@ -658,11 +831,43 @@ function ScreenEventHome({
                 <Btn variant="accent" size="tiny" onClick={() => onCopy(`https://convivia24.com/e/${event.slug}`, 'Event link copied')}>
                   <Copy size={10} /> Copy link
                 </Btn>
-                <Btn size="tiny" style={{ background: 'rgba(255,255,255,.10)', color: 'var(--cv-ivory)' }}>
+                <Btn
+                  size="tiny"
+                  style={{ background: 'rgba(255,255,255,.10)', color: 'var(--cv-ivory)' }}
+                  onClick={() => {
+                    const url = `${typeof window !== 'undefined' ? window.location.origin : 'https://convivia24.com'}/e/${event.slug}`;
+                    window.open(url, '_blank', 'noopener,noreferrer');
+                  }}
+                >
                   <Eye size={10} /> Preview
                 </Btn>
               </div>
             </Card>
+          )}
+
+          {(onOpenVendors || onOpenPlanner) && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              {onOpenVendors && (
+                <button type="button" onClick={onOpenVendors} style={{
+                  padding: '14px 12px', borderRadius: 14, border: '1px solid var(--cv-hairline)', background: '#fff',
+                  cursor: 'pointer', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 6,
+                }}>
+                  <Store size={16} color="var(--cv-accent)" />
+                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--cv-ink)' }}>Vendors</span>
+                  <span style={{ fontSize: 10, color: 'var(--cv-muted)', lineHeight: 1.35 }}>Find &amp; save vendors</span>
+                </button>
+              )}
+              {onOpenPlanner && (
+                <button type="button" onClick={onOpenPlanner} style={{
+                  padding: '14px 12px', borderRadius: 14, border: '1px solid var(--cv-hairline)', background: '#fff',
+                  cursor: 'pointer', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 6,
+                }}>
+                  <CalendarDays size={16} color="var(--cv-accent)" />
+                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--cv-ink)' }}>Planner</span>
+                  <span style={{ fontSize: 10, color: 'var(--cv-muted)', lineHeight: 1.35 }}>Timeline &amp; run of show</span>
+                </button>
+              )}
+            </div>
           )}
 
           <button
@@ -721,10 +926,6 @@ function ScreenEventHome({
     </>
   );
 
-  if (embedded) {
-    return <div style={{ paddingBottom: 8 }}>{content}</div>;
-  }
-
   return (
     <>
       <TopBar
@@ -750,7 +951,7 @@ const RSVP_META: Record<string, { label: string; color: string; Icon: React.Elem
 };
 
 function ScreenGuestList({
-  event, guests, stats, onBack, onRefresh, onCopy, embedded, inviteBanner,
+  event, guests, stats, onBack, onRefresh, onCopy, embedded, inviteBanner, eventSwitcher, hideEventSwitcher,
 }: {
   event: CvEvent; guests: CvGuest[];
   stats: { in: number; maybe: number; out: number; pending: number; total: number; arrived: number };
@@ -758,6 +959,8 @@ function ScreenGuestList({
   onCopy: (url: string, msg?: string) => void;
   embedded?: boolean;
   inviteBanner?: React.ReactNode;
+  eventSwitcher?: React.ReactNode;
+  hideEventSwitcher?: boolean;
 }) {
   const [filter, setFilter] = useState<string>('all');
   const [showAdd, setShowAdd] = useState(false);
@@ -837,6 +1040,22 @@ function ScreenGuestList({
 
   const guestBody = (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, animation: 'cv-fade-up .35s ease both' }}>
+          {!hideEventSwitcher && eventSwitcher}
+
+          {embedded && (
+            <>
+              <Card tinted style={{ padding: 12 }}>
+                <FlowHint>
+                  Tap <strong>+</strong> to add someone. Expand a guest to copy their personal RSVP link or email an invite.
+                  {!event.invite_live && ' Go live on the Invite card tab first so links work for guests.'}
+                </FlowHint>
+              </Card>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
+                <IBtn icon={Plus} onClick={() => setShowAdd(v => !v)} />
+                <IBtn icon={Download} onClick={exportCSV} />
+              </div>
+            </>
+          )}
 
           {/* Filter chips */}
           <div style={{ display: 'flex', gap: 6, overflowX: 'auto' }} className="cv-scrollbar">
@@ -1029,147 +1248,56 @@ function ScreenGuestList({
 }
 
 // ─── SCREEN: Invite Designer ──────────────────────────────────
-type InviteDir = 'editorial' | 'bold' | 'mono';
-
-function InvitePreview({ event, direction, recipient = 'You' }: { event: CvEvent; direction: InviteDir; recipient?: string }) {
-  const accent = ACCENT_COLORS[event.event_type as EventType] || '#c0975a';
-  const dateStr = event.event_date
-    ? new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-    : '—';
-
-  if (direction === 'bold') return (
-    <div style={{ height: '100%', background: '#1a1714', color: '#faf6ee', padding: '44px 22px 22px', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 100, background: accent }} />
-      <div style={{ position: 'relative' }}>
-        <div style={{ display: 'inline-block', padding: '6px 10px', background: '#fff', color: '#000', fontWeight: 900, fontSize: 9, letterSpacing: '0.24em', textTransform: 'uppercase', marginBottom: 10 }}>
-          {event.event_date ? new Date(event.event_date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '--'} / {EVENT_TYPE_META[event.event_type as EventType]?.label?.toUpperCase() || 'EVENT'}
-        </div>
-        <div style={{ fontWeight: 600, fontSize: 11, letterSpacing: '0.20em', textTransform: 'uppercase', color: 'rgba(250,246,238,.7)', marginBottom: 20 }}>For {recipient}</div>
-        <div style={{ fontWeight: 900, fontSize: 64, letterSpacing: '-0.04em', lineHeight: .84, color: '#faf6ee', fontFamily: 'var(--font-geist, sans-serif)', wordBreak: 'break-word' }}>
-          {event.host_name.toUpperCase()}
-        </div>
-      </div>
-      <div style={{ marginTop: 'auto', paddingTop: 18, borderTop: '1px solid rgba(250,246,238,.15)' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, fontSize: 11.5, color: '#faf6ee', marginBottom: 14 }}>
-          <div>
-            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'rgba(250,246,238,.5)', marginBottom: 3 }}>When</div>
-            {dateStr}<br/>{event.event_time || '—'}
-          </div>
-          <div>
-            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'rgba(250,246,238,.5)', marginBottom: 3 }}>Where</div>
-            {event.venue || '—'}<br/>{event.city || '—'}
-          </div>
-        </div>
-        <div style={{ width: '100%', padding: '11px 0', borderRadius: 99, background: accent, textAlign: 'center', color: '#fff', fontWeight: 700, fontSize: 10, letterSpacing: '0.20em', textTransform: 'uppercase' }}>
-          Reply →
-        </div>
-      </div>
-    </div>
-  );
-
-  if (direction === 'mono') return (
-    <div style={{ height: '100%', background: '#faf6ee', color: '#1a1714', padding: '44px 22px 22px', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-geist-mono, monospace)', position: 'relative' }}>
-      <div style={{ fontSize: 9, letterSpacing: '0.20em', color: 'rgba(26,23,20,.5)', marginBottom: 20 }}>
-        doc/inv · {event.id?.slice(0, 8) || '00000000'}
-        <br />for: {recipient}
-      </div>
-      <div style={{ fontSize: 11, letterSpacing: '0.10em', color: 'rgba(26,23,20,.55)', marginBottom: 6 }}>─── {event.event_type} ───</div>
-      <div style={{ fontSize: 32, fontWeight: 400, color: '#1a1714', letterSpacing: '0.02em', lineHeight: 1.1, wordBreak: 'break-word' }}>
-        {event.host_name}
-      </div>
-      <div style={{ height: 1, borderTop: '1px dashed rgba(26,23,20,.25)', margin: '16px 0' }} />
-      <div style={{ fontSize: 11, color: 'rgba(26,23,20,.7)', lineHeight: 1.7 }}>
-        {event.event_date ? `date: ${dateStr}` : 'date: tbc'}<br />
-        {event.event_time ? `time: ${event.event_time}` : 'time: tbc'}<br />
-        {event.venue ? `venue: ${event.venue}` : ''}<br />
-        {event.city ? `city: ${event.city}` : ''}
-      </div>
-      <div style={{ marginTop: 'auto', paddingTop: 14 }}>
-        <div style={{ height: 1, borderTop: '1px dashed rgba(26,23,20,.20)', marginBottom: 12 }} />
-        <div style={{ width: '100%', padding: '10px 0', border: '1px solid rgba(26,23,20,.30)', textAlign: 'center', color: '#1a1714', fontFamily: 'var(--font-geist-mono, monospace)', fontSize: 10, letterSpacing: '0.20em', textTransform: 'uppercase' }}>
-          [reply] →
-        </div>
-      </div>
-    </div>
-  );
-
-  // Editorial (default)
-  return (
-    <div style={{ height: '100%', background: '#f4ede0', color: '#1a1714', padding: '44px 26px 26px', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
-      <svg width="100%" height="100%" viewBox="0 0 360 720" style={{ position: 'absolute', inset: 0, opacity: 0.4, pointerEvents: 'none' }}>
-        {Array.from({ length: 9 }).map((_, i) => (
-          <ellipse key={i} cx="280" cy="120" rx={20 + i * 24} ry={14 + i * 10} fill="none" stroke={accent} strokeWidth="0.4" opacity={0.15 + i * 0.04} />
-        ))}
-      </svg>
-      <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 700, fontSize: 9.5, letterSpacing: '0.32em', textTransform: 'uppercase', color: accent }}>
-          <span style={{ width: 18, height: 1, background: 'currentColor' }} />
-          {EVENT_TYPE_META[event.event_type as EventType]?.label || 'Event'}
-          {event.city ? ` · ${event.city}` : ''}
-        </div>
-        <div style={{ marginTop: 10, fontSize: 11, fontWeight: 500, color: 'rgba(26,23,20,.55)' }}>For</div>
-        <div style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 44, lineHeight: .96, color: '#1a1714', letterSpacing: '-0.02em', marginTop: 2 }}>
-          {recipient}.
-        </div>
-        <div style={{ marginTop: 28 }}>
-          <div style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 14, color: 'rgba(26,23,20,.5)' }}>From</div>
-          <div style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 46, color: '#1a1714', letterSpacing: '-0.02em', lineHeight: 1.02, wordBreak: 'break-word' }}>
-            {event.host_name}.
-          </div>
-        </div>
-        <div style={{ marginTop: 'auto', paddingTop: 16, borderTop: '1px solid rgba(26,23,20,.18)' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, fontSize: 11.5, color: '#1a1714' }}>
-            <div>
-              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'rgba(26,23,20,.5)', marginBottom: 3 }}>When</div>
-              {dateStr}<br />{event.event_time || ''}
-            </div>
-            <div>
-              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'rgba(26,23,20,.5)', marginBottom: 3 }}>Where</div>
-              {event.venue || '—'}<br />{event.city || '—'}
-            </div>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14 }}>
-            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'rgba(26,23,20,.5)' }}>
-              {event.dress_code || (event.event_type === 'wedding' ? 'Black tie' : 'Smart casual')}
-            </div>
-            <div style={{ padding: '10px 18px', borderRadius: 99, background: '#1a1714', color: '#f4ede0', fontWeight: 700, fontSize: 10, letterSpacing: '0.20em', textTransform: 'uppercase' }}>
-              Reply →
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ScreenInvite({ event, onBack, onCopy, embedded, onEventUpdated }: {
+function ScreenInvite({ event, onBack, onCopy, embedded, onEventUpdated, eventSwitcher, hideEventSwitcher, onGoToGuests }: {
   event: CvEvent;
   onBack?: () => void;
   onCopy: (url: string, msg?: string) => void;
   embedded?: boolean;
   onEventUpdated?: (ev: CvEvent) => void;
+  eventSwitcher?: React.ReactNode;
+  hideEventSwitcher?: boolean;
+  onGoToGuests?: () => void;
 }) {
-  const [direction, setDirection] = useState<InviteDir>((event.invite_direction as InviteDir) || 'editorial');
+  const [template, setTemplate] = useState<InviteTemplateId>(
+    () => normalizeInviteTemplate(event.invite_direction),
+  );
+  const [customization, setCustomization] = useState<InviteCustomization>(
+    () => parseInviteCustomization(event.invite_customization),
+  );
   const [saving, setSaving] = useState(false);
-  const [savedDir, setSavedDir] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [goingLive, setGoingLive] = useState(false);
+  const [showCustomize, setShowCustomize] = useState(false);
 
-  const dirs: { id: InviteDir; label: string }[] = [
-    { id: 'editorial', label: 'Editorial' },
-    { id: 'bold', label: 'Bold' },
-    { id: 'mono', label: 'Mono' },
-  ];
+  useEffect(() => {
+    setTemplate(normalizeInviteTemplate(event.invite_direction));
+    setCustomization(parseInviteCustomization(event.invite_customization));
+  }, [event.id, event.invite_direction, event.invite_customization]);
 
-  async function saveDirection() {
+  function patchCustomization(patch: Partial<InviteCustomization>) {
+    setCustomization(prev => ({ ...prev, ...patch }));
+  }
+
+  const invitePayload = () => ({
+    invite_direction: template,
+    invite_customization: customization,
+  });
+
+  async function saveInvite() {
     setSaving(true);
     try {
-      await fetch(`/api/convivia24/events/${event.id}`, {
+      const res = await fetch(`/api/convivia24/events/${event.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ invite_direction: direction }),
+        credentials: 'include',
+        body: JSON.stringify(invitePayload()),
       });
-      setSavedDir(true);
-      setTimeout(() => setSavedDir(false), 2000);
+      if (res.ok) {
+        const data = await res.json();
+        onEventUpdated?.(data.event);
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      }
     } finally { setSaving(false); }
   }
 
@@ -1180,7 +1308,7 @@ function ScreenInvite({ event, onBack, onCopy, embedded, onEventUpdated }: {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ invite_direction: direction, invite_live: true }),
+        body: JSON.stringify({ ...invitePayload(), invite_live: true }),
       });
       if (res.ok) {
         const data = await res.json();
@@ -1191,30 +1319,111 @@ function ScreenInvite({ event, onBack, onCopy, embedded, onEventUpdated }: {
 
   const inviteBody = (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'cv-fade-up .35s ease both' }}>
+          {!hideEventSwitcher && eventSwitcher}
+
+          {embedded && (
+            <Card tinted style={{ padding: 12 }}>
+              <FlowHint>
+                <strong style={{ color: 'var(--cv-ink)', fontWeight: 600 }}>Step 1–3:</strong> Choose a look → customize → Save, then Go live.
+                {onGoToGuests && (event.invite_live ? ' Then add guests on the Guest list tab.' : ' After going live, add guests on the Guest list tab.')}
+              </FlowHint>
+            </Card>
+          )}
 
           <div>
-            <Eyebrow muted>Choose a direction</Eyebrow>
-            <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-              {dirs.map(d => (
-                <Chip key={d.id} on={direction === d.id} onClick={() => setDirection(d.id)} style={{ flex: 1, justifyContent: 'center' }}>{d.label}</Chip>
+            <Eyebrow muted>1 · Pick a style</Eyebrow>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginTop: 10 }}>
+              {INVITE_TEMPLATE_META.map(t => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setTemplate(t.id)}
+                  style={{
+                    textAlign: 'left', padding: '10px 12px', borderRadius: 12, cursor: 'pointer',
+                    background: template === t.id ? 'var(--cv-accent-soft)' : 'rgba(255,255,255,.65)',
+                    border: `1.5px solid ${template === t.id ? 'var(--cv-accent)' : 'var(--cv-hairline)'}`,
+                    transition: 'all .15s',
+                  }}
+                >
+                  <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--cv-ink)' }}>{t.label}</div>
+                  <div style={{ fontSize: 10.5, color: 'var(--cv-muted)', marginTop: 2 }}>{t.description}</div>
+                </button>
               ))}
             </div>
           </div>
 
-          {/* Preview */}
           <div style={{ borderRadius: 18, overflow: 'hidden', height: 480, border: '1px solid var(--cv-hairline)', boxShadow: '0 8px 24px rgba(26,23,20,.10)' }}>
-            <InvitePreview event={event} direction={direction} recipient="Guest" />
+            <InvitePreview event={event} template={template} customization={customization} recipient="Guest" />
           </div>
 
+          <button
+            type="button"
+            onClick={() => setShowCustomize(v => !v)}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%',
+              padding: '12px 14px', borderRadius: 12, border: '1px solid var(--cv-hairline)',
+              background: 'rgba(255,255,255,.65)', cursor: 'pointer', fontSize: 12.5, fontWeight: 600,
+              color: 'var(--cv-ink)',
+            }}
+          >
+            2 · Customize copy & details
+            <ChevronRight size={14} style={{ transform: showCustomize ? 'rotate(90deg)' : 'none', transition: 'transform .2s' }} />
+          </button>
+
+          {showCustomize && (
+            <Card style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div>
+                <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--cv-muted-2)', marginBottom: 6 }}>Tagline</div>
+                <input
+                  className="cv-input"
+                  placeholder="Wedding · Lagos (leave blank for default)"
+                  value={customization.tagline ?? ''}
+                  onChange={e => patchCustomization({ tagline: e.target.value })}
+                />
+              </div>
+              <div>
+                <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--cv-muted-2)', marginBottom: 6 }}>Welcome note</div>
+                <textarea
+                  className="cv-input"
+                  rows={3}
+                  placeholder="A short personal line for your guests…"
+                  value={customization.welcomeNote ?? ''}
+                  onChange={e => patchCustomization({ welcomeNote: e.target.value })}
+                  style={{ resize: 'vertical', minHeight: 72 }}
+                />
+              </div>
+              <div>
+                <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--cv-muted-2)', marginBottom: 6 }}>Button label</div>
+                <input
+                  className="cv-input"
+                  placeholder="Reply →"
+                  value={customization.ctaLabel ?? DEFAULT_INVITE_CUSTOMIZATION.ctaLabel}
+                  onChange={e => patchCustomization({ ctaLabel: e.target.value })}
+                />
+              </div>
+              <div>
+                <Eyebrow muted style={{ marginBottom: 8 }}>Show on invite</Eyebrow>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  <Chip on={customization.showDate !== false} onClick={() => patchCustomization({ showDate: customization.showDate === false })}>Date & time</Chip>
+                  <Chip on={customization.showVenue !== false} onClick={() => patchCustomization({ showVenue: customization.showVenue === false })}>Venue</Chip>
+                  <Chip on={customization.showDressCode !== false} onClick={() => patchCustomization({ showDressCode: customization.showDressCode === false })}>Dress code</Chip>
+                </div>
+              </div>
+            </Card>
+          )}
+
           <Card tinted style={{ padding: 12 }}>
-            <p style={{ fontSize: 12.5, color: 'var(--cv-muted)', margin: 0 }}>
-              Each guest receives a unique version with their name. The invite lives at a shareable link. Going live makes it accessible.
-            </p>
+            <Eyebrow muted>3 · Publish</Eyebrow>
+            <div style={{ marginTop: 6 }}>
+              <FlowHint>
+                Save keeps your draft. <strong>Go live</strong> opens the public page so guests can RSVP. Each guest gets a personal link with their name and QR pass.
+              </FlowHint>
+            </div>
           </Card>
 
           <div style={{ display: 'flex', gap: 8 }}>
-            <Btn variant="ghost" style={{ flex: 1 }} onClick={saveDirection} disabled={saving}>
-              {saving ? <Loader2 size={13} className="animate-spin" /> : savedDir ? <><Check size={13} /> Saved</> : 'Save direction'}
+            <Btn variant="ghost" style={{ flex: 1 }} onClick={saveInvite} disabled={saving}>
+              {saving ? <Loader2 size={13} className="animate-spin" /> : saved ? <><Check size={13} /> Saved</> : 'Save draft'}
             </Btn>
             <Btn style={{ flex: 1 }} onClick={goLive} disabled={goingLive}>
               {goingLive ? <Loader2 size={13} className="animate-spin" /> : <><Zap size={13} /> {event.invite_live ? 'Update live' : 'Go live'}</>}
@@ -1223,9 +1432,9 @@ function ScreenInvite({ event, onBack, onCopy, embedded, onEventUpdated }: {
 
           {event.invite_live && (
             <Card dark style={{ padding: 14 }}>
-              <Eyebrow style={{ color: 'var(--cv-accent)' }}>Live</Eyebrow>
+              <Eyebrow style={{ color: 'var(--cv-accent)' }}>Your invite is live</Eyebrow>
               <p style={{ fontSize: 12.5, color: 'rgba(250,246,238,.7)', margin: '6px 0 10px' }}>
-                Share this link with guests. Each person gets their own personalised pass with QR code for door entry.
+                Share this link anywhere. Guests RSVP here; each gets a named invite and door QR on their phone.
               </p>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', background: 'rgba(255,255,255,.08)', borderRadius: 8, padding: '8px 10px', marginBottom: 10 }}>
                 <span style={{ flex: 1, fontSize: 11, color: 'rgba(250,246,238,.7)', fontFamily: 'var(--font-geist-mono, monospace)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -1235,6 +1444,11 @@ function ScreenInvite({ event, onBack, onCopy, embedded, onEventUpdated }: {
                   <Copy size={14} />
                 </button>
               </div>
+              {onGoToGuests && (
+                <Btn variant="accent" size="sm" fullWidth onClick={onGoToGuests} style={{ marginTop: 10 }}>
+                  <Users size={13} /> Add guests & send links
+                </Btn>
+              )}
             </Card>
           )}
         </div>
@@ -1260,7 +1474,85 @@ function ScreenInvite({ event, onBack, onCopy, embedded, onEventUpdated }: {
   );
 }
 
-// ─── SCREEN: Activities (Scanner + Live Dashboard) ────────────
+// ─── SCREEN: Invite hub (design + guests) ─────────────────────
+function ScreenInviteHub({
+  event, guests, stats, onCopy, onEventUpdated, onRefreshGuests, eventSwitcher,
+  hubTab, onHubTabChange,
+}: {
+  event: CvEvent;
+  guests: CvGuest[];
+  stats: { in: number; maybe: number; out: number; pending: number; total: number; arrived: number };
+  onCopy: (url: string, msg?: string) => void;
+  onEventUpdated?: (ev: CvEvent) => void;
+  onRefreshGuests: () => void;
+  eventSwitcher?: React.ReactNode;
+  hubTab: InviteHubTab;
+  onHubTabChange: (tab: InviteHubTab) => void;
+}) {
+  const scrollTop = 58 + INVITE_SUBNAV_H + 8;
+  const inviteBanner = !event.invite_live && hubTab === 'design' ? (
+    <InviteNotLiveBanner onGoToInvite={() => onHubTabChange('design')} compact />
+  ) : null;
+
+  return (
+    <>
+      <TopBar
+        left={
+          <div>
+            <span style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 18, display: 'block' }}>Invite</span>
+            <span style={{ fontSize: 10, color: 'var(--cv-muted)', display: 'block', marginTop: 2 }}>Card, guests & RSVPs</span>
+          </div>
+        }
+        right={hubTab === 'design' ? (
+          <IBtn icon={Share2} onClick={() => event.slug && onCopy(`${typeof window !== 'undefined' ? window.location.origin : 'https://convivia24.com'}/e/${event.slug}`, 'Link copied')} />
+        ) : null}
+      />
+      <SegmentTabs<InviteHubTab>
+        active={hubTab}
+        onChange={onHubTabChange}
+        tabs={[
+          { id: 'design', label: 'Invite card' },
+          { id: 'guests', label: 'Guest list', count: stats.total },
+        ]}
+      />
+      <ScrollPane topPad={scrollTop}>
+        {eventSwitcher}
+        <div style={{ marginBottom: 10 }}>
+          <FlowHint>
+            {hubTab === 'design'
+              ? 'Design how your event looks to guests, then go live.'
+              : 'Add people, copy personal RSVP links, and track who replied.'}
+          </FlowHint>
+        </div>
+        {hubTab === 'design' ? (
+          <>
+            {inviteBanner}
+            <ScreenInvite
+              event={event}
+              onCopy={onCopy}
+              onEventUpdated={onEventUpdated}
+              embedded
+              hideEventSwitcher
+              onGoToGuests={() => onHubTabChange('guests')}
+            />
+          </>
+        ) : (
+          <ScreenGuestList
+            event={event}
+            guests={guests}
+            stats={stats}
+            onRefresh={onRefreshGuests}
+            onCopy={onCopy}
+            embedded
+            hideEventSwitcher
+          />
+        )}
+      </ScrollPane>
+    </>
+  );
+}
+
+// ─── SCREEN: Check-in (scanner, run of show, photos) ──────────
 function ScreenScanner({ event, onBack }: { event: CvEvent; onBack: () => void }) {
   const [arrived, setArrived] = useState(0);
   const [lastScan, setLastScan] = useState<{ name: string; ok: boolean } | null>(null);
@@ -1437,7 +1729,7 @@ function ScreenScanner({ event, onBack }: { event: CvEvent; onBack: () => void }
         {/* Actions */}
         <div style={{ display: 'flex', gap: 8 }}>
           <Btn variant="ghost" style={{ flex: 1, background: 'rgba(255,255,255,.08)', color: '#faf6ee', borderColor: 'rgba(255,255,255,.15)' }} onClick={onBack}>
-            <ArrowLeft size={12} /> Back
+            <ArrowLeft size={12} /> Back to Check-in
           </Btn>
           <Btn style={{ flex: 1 }} onClick={() => { setArrived(a => a + 1); setLastScan({ name: 'Walk-in guest', ok: true }); setTimeout(() => setLastScan(null), 2500); }}>
             <Plus size={12} /> Walk-in
@@ -1448,16 +1740,25 @@ function ScreenScanner({ event, onBack }: { event: CvEvent; onBack: () => void }
   );
 }
 
-function ScreenLiveDash({ event, stats, onScanner, embedded, inviteBanner, onOpenPlanner }: {
+function ScreenCheckIn({
+  event, stats, photos, onScanner, onUploadPhoto, uploading, onOpenPlanner, eventSwitcher,
+  hubTab, onHubTabChange,
+}: {
   event: CvEvent;
   stats: { in: number; maybe: number; out: number; pending: number; total: number; arrived: number };
+  photos: CvPhoto[];
   onScanner: () => void;
-  embedded?: boolean;
-  inviteBanner?: React.ReactNode;
+  onUploadPhoto: (file: File) => void;
+  uploading: boolean;
   onOpenPlanner?: () => void;
+  eventSwitcher?: React.ReactNode;
+  hubTab: CheckInHubTab;
+  onHubTabChange: (tab: CheckInHubTab) => void;
 }) {
+  const fileRef = useRef<HTMLInputElement>(null);
   const capacity = event.capacity || 150;
   const pct = Math.round((stats.arrived / capacity) * 100);
+  const scrollTop = 58 + CHECKIN_SUBNAV_H + 8;
   const [schedule, setSchedule] = useState<{ time_label: string; title: string; subtitle: string | null }[]>([]);
 
   useEffect(() => {
@@ -1474,281 +1775,148 @@ function ScreenLiveDash({ event, stats, onScanner, embedded, inviteBanner, onOpe
   ];
   const runOfShow = schedule.length > 0 ? schedule : fallback;
 
-  const dashBody = (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'cv-fade-up .35s ease both' }}>
-          {inviteBanner}
-
-          <Card style={{ padding: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
-              <div style={{ flex: 1 }}>
-                <Eyebrow muted>In the room</Eyebrow>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                  <span style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 64, lineHeight: 1, color: 'var(--cv-accent)', fontVariantNumeric: 'tabular-nums' }}>{stats.arrived}</span>
-                  <span style={{ fontSize: 14, color: 'var(--cv-muted)' }}>/ {capacity}</span>
-                </div>
-                <div style={{ fontSize: 11, color: 'var(--cv-muted)', marginTop: 4 }}>{pct}% capacity</div>
-              </div>
-              <Dial value={pct / 100} size={64} stroke={5}>
-                <span style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 16, fontVariantNumeric: 'tabular-nums' }}>{pct}%</span>
-              </Dial>
+  const doorBody = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <Card style={{ padding: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
+          <div style={{ flex: 1 }}>
+            <Eyebrow muted>In the room</Eyebrow>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+              <span style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 64, lineHeight: 1, color: 'var(--cv-accent)', fontVariantNumeric: 'tabular-nums' }}>{stats.arrived}</span>
+              <span style={{ fontSize: 14, color: 'var(--cv-muted)' }}>/ {capacity}</span>
             </div>
-          </Card>
+            <div style={{ fontSize: 11, color: 'var(--cv-muted)', marginTop: 4 }}>{pct}% capacity</div>
+          </div>
+          <Dial value={pct / 100} size={64} stroke={5}>
+            <span style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 16, fontVariantNumeric: 'tabular-nums' }}>{pct}%</span>
+          </Dial>
+        </div>
+      </Card>
 
-          <Card flat style={{ padding: 0 }}>
-            <div style={{ padding: '12px 14px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Eyebrow muted>Run of show</Eyebrow>
-              {schedule.length === 0 && onOpenPlanner && (
-                <button type="button" onClick={onOpenPlanner} style={{ background: 'none', border: 'none', fontSize: 10, fontWeight: 700, color: 'var(--cv-accent)', letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer' }}>
-                  Edit in Planner
-                </button>
-              )}
+      <Card flat style={{ padding: 0 }}>
+        <div style={{ padding: '12px 14px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Eyebrow muted>Run of show</Eyebrow>
+          {schedule.length === 0 && onOpenPlanner && (
+            <button type="button" onClick={onOpenPlanner} style={{ background: 'none', border: 'none', fontSize: 10, fontWeight: 700, color: 'var(--cv-accent)', letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer' }}>
+              Edit in Planner
+            </button>
+          )}
+        </div>
+        {runOfShow.map((r, i, a) => (
+          <div key={`${r.time_label}-${i}`} style={{ padding: '12px 14px', display: 'flex', gap: 12, alignItems: 'center', borderBottom: i < a.length - 1 ? '1px solid var(--cv-hairline)' : 'none', minHeight: 56 }}>
+            <span style={{ width: 44, fontSize: 12, fontWeight: 700, color: i === 0 ? 'var(--cv-accent)' : 'var(--cv-ink)', fontVariantNumeric: 'tabular-nums', fontFamily: 'var(--font-geist-mono, monospace)' }}>{r.time_label}</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 600 }}>{r.title}</div>
+              {r.subtitle && <div style={{ fontSize: 11, color: 'var(--cv-muted)', marginTop: 2 }}>{r.subtitle}</div>}
             </div>
-            {runOfShow.map((r, i, a) => (
-              <div key={`${r.time_label}-${i}`} style={{ padding: '12px 14px', display: 'flex', gap: 12, alignItems: 'center', borderBottom: i < a.length - 1 ? '1px solid var(--cv-hairline)' : 'none', minHeight: 56 }}>
-                <span style={{ width: 44, fontSize: 12, fontWeight: 700, color: i === 0 ? 'var(--cv-accent)' : 'var(--cv-ink)', fontVariantNumeric: 'tabular-nums', fontFamily: 'var(--font-geist-mono, monospace)' }}>{r.time_label}</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>{r.title}</div>
-                  {r.subtitle && <div style={{ fontSize: 11, color: 'var(--cv-muted)', marginTop: 2 }}>{r.subtitle}</div>}
-                </div>
-                {i === 0 && <Tag>NEXT</Tag>}
+            {i === 0 && <Tag>NEXT</Tag>}
+          </div>
+        ))}
+      </Card>
+
+      <Btn fullWidth onClick={onScanner}>
+        <ScanLine size={13} /> Open QR scanner
+      </Btn>
+      <FlowHint>Point the camera at each guest&rsquo;s pass QR code. They receive it after they RSVP.</FlowHint>
+    </div>
+  );
+
+  const photosBody = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div>
+        <Eyebrow muted>Photo wall</Eyebrow>
+        <h2 style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 26, lineHeight: 1.05, color: 'var(--cv-ink)', marginTop: 4, marginBottom: 8 }}>
+          Memories from the night.
+        </h2>
+        <FlowHint>Upload shots from your phone. Guests can add photos from their pass link too.</FlowHint>
+      </div>
+      <div style={{ marginTop: 4 }}>
+        {photos.length > 0 ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+            {photos.map(p => (
+              <div key={p.id} style={{ borderRadius: 12, overflow: 'hidden', aspectRatio: '1', border: '1px solid var(--cv-hairline)', background: 'var(--cv-ivory-2)' }}>
+                <img src={p.url} alt={p.caption || ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
             ))}
+            {uploading && (
+              <div style={{ borderRadius: 12, aspectRatio: '1', border: '1px dashed var(--cv-hairline)', background: 'var(--cv-ivory-2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Loader2 size={20} className="animate-spin" color="var(--cv-muted-2)" />
+              </div>
+            )}
+          </div>
+        ) : (
+          <Card tinted style={{ padding: 24, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+            <Camera size={24} color="var(--cv-muted-2)" />
+            <div style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 18, color: 'var(--cv-ink)' }}>Photos live here.</div>
+            <p style={{ fontSize: 12.5, color: 'var(--cv-muted)' }}>Upload from the night. Guests can add theirs from their pass link.</p>
+            <Btn onClick={() => fileRef.current?.click()} disabled={uploading}>
+              {uploading ? <Loader2 size={13} className="animate-spin" /> : <><Camera size={13} /> Add first photo</>}
+            </Btn>
           </Card>
+        )}
+      </div>
 
-          <Btn fullWidth onClick={onScanner}>
-            <QrCode size={13} /> Open door scanner
-          </Btn>
+      <div>
+        <Hr />
+        <div style={{ paddingTop: 14 }}>
+          <Eyebrow muted>Thank yous</Eyebrow>
+          <p style={{ fontSize: 13, color: 'var(--cv-muted)', marginTop: 8, marginBottom: 12 }}>
+            The concierge can draft personalised notes for each guest. Open the concierge and ask it to write a thank-you.
+          </p>
+          <Card tinted style={{ padding: 14 }}>
+            <div style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 15, color: 'var(--cv-ink)', marginBottom: 8 }}>
+              Dear Tunde,
+            </div>
+            <p style={{ fontSize: 12.5, color: 'var(--cv-muted)', lineHeight: 1.6 }}>
+              Your presence on the night made the room what it was. Thank you for travelling, for the honeymoon fund — and for dancing until the very end.
+            </p>
+            <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
+              <Chip style={{ padding: '6px 10px', fontSize: 10 }}>Warmer</Chip>
+              <Chip style={{ padding: '6px 10px', fontSize: 10 }}>Shorter</Chip>
+              <Chip style={{ padding: '6px 10px', fontSize: 10 }}>Mention the gift</Chip>
+            </div>
+          </Card>
         </div>
+      </div>
+    </div>
   );
-
-  if (embedded) return dashBody;
 
   return (
     <>
       <TopBar
-        left={<div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <span style={{ width: 8, height: 8, borderRadius: 99, background: '#e85d4b', display: 'inline-block' }} className="cv-pulse-dot" />
-          <span style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 18 }}>Activities</span>
-        </div>}
-        right={<>
-          <IBtn icon={QrCode} onClick={onScanner} />
-          <IBtn icon={Bell} dot />
-        </>}
-      />
-      <ScrollPane topPad={64}>{dashBody}</ScrollPane>
-    </>
-  );
-}
-
-// ─── SCREEN: After (Photo Wall + Thank Yous) ──────────────────
-function ScreenAfter({
-  event, photos, onUploadPhoto, uploading, embedded, inviteBanner,
-}: {
-  event: CvEvent; photos: CvPhoto[];
-  onUploadPhoto: (file: File) => void;
-  uploading: boolean;
-  embedded?: boolean;
-  inviteBanner?: React.ReactNode;
-}) {
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  const afterBody = (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'cv-fade-up .35s ease both' }}>
-          {inviteBanner}
-
-          <Eyebrow muted>{event.host_name}</Eyebrow>
-          <h2 style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 30, lineHeight: 1.02, color: 'var(--cv-ink)', marginTop: -4 }}>
-            The night<br />in photographs.
-          </h2>
-
-          {photos.length > 0 ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
-              {photos.map(p => (
-                <div key={p.id} style={{ borderRadius: 12, overflow: 'hidden', aspectRatio: '1', border: '1px solid var(--cv-hairline)', background: 'var(--cv-ivory-2)' }}>
-                  <img src={p.url} alt={p.caption || ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </div>
-              ))}
-              {uploading && (
-                <div style={{ borderRadius: 12, aspectRatio: '1', border: '1px dashed var(--cv-hairline)', background: 'var(--cv-ivory-2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Loader2 size={20} className="animate-spin" color="var(--cv-muted-2)" />
-                </div>
-              )}
-            </div>
-          ) : (
-            <Card tinted style={{ padding: 24, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-              <Camera size={24} color="var(--cv-muted-2)" />
-              <div style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 18, color: 'var(--cv-ink)' }}>Photos live here.</div>
-              <p style={{ fontSize: 12.5, color: 'var(--cv-muted)' }}>Upload from the night. Guests can add theirs from their pass link.</p>
-              <Btn onClick={() => fileRef.current?.click()} disabled={uploading}>
-                {uploading ? <Loader2 size={13} className="animate-spin" /> : <><Camera size={13} /> Add first photo</>}
-              </Btn>
-            </Card>
-          )}
-
-          {/* Thank you section */}
-          <div style={{ paddingTop: 8 }}>
-            <Hr />
-            <div style={{ paddingTop: 14 }}>
-              <Eyebrow muted>Thank yous</Eyebrow>
-              <p style={{ fontSize: 13, color: 'var(--cv-muted)', marginTop: 8, marginBottom: 12 }}>
-                The concierge can draft personalised notes for each guest. Open the concierge and ask it to write a thank-you.
-              </p>
-              <Card tinted style={{ padding: 14 }}>
-                <div style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 15, color: 'var(--cv-ink)', marginBottom: 8 }}>
-                  Dear Tunde,
-                </div>
-                <p style={{ fontSize: 12.5, color: 'var(--cv-muted)', lineHeight: 1.6 }}>
-                  Your presence on the night made the room what it was. Thank you for travelling, for the honeymoon fund — and for dancing until the very end.
-                </p>
-                <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-                  <Chip style={{ padding: '6px 10px', fontSize: 10 }}>Warmer</Chip>
-                  <Chip style={{ padding: '6px 10px', fontSize: 10 }}>Shorter</Chip>
-                  <Chip style={{ padding: '6px 10px', fontSize: 10 }}>Mention the gift</Chip>
-                </div>
-              </Card>
+        left={
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <span style={{ width: 8, height: 8, borderRadius: 99, background: '#e85d4b', display: 'inline-block' }} className="cv-pulse-dot" />
+            <div>
+              <span style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 18, display: 'block' }}>Check-in</span>
+              <span style={{ fontSize: 10, color: 'var(--cv-muted)', display: 'block', marginTop: 2 }}>Door · timeline · photos</span>
             </div>
           </div>
-
-        </div>
-  );
-
-  if (embedded) {
-    return (
-      <div>
-        <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => e.target.files?.[0] && onUploadPhoto(e.target.files[0])} />
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
-          {uploading
-            ? <Loader2 size={16} className="animate-spin" color="var(--cv-accent)" />
-            : <IBtn icon={Camera} onClick={() => fileRef.current?.click()} />}
-        </div>
-        {afterBody}
-      </div>
-    );
-  }
-
-  return (
-    <>
-      <TopBar
-        left={<div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <span style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 18 }}>After</span>
-        </div>}
-        right={
+        }
+        right={hubTab === 'photos' ? (
           uploading
             ? <Loader2 size={16} className="animate-spin" color="var(--cv-accent)" />
             : <IBtn icon={Camera} onClick={() => fileRef.current?.click()} />
-        }
+        ) : (
+          <IBtn icon={ScanLine} onClick={onScanner} />
+        )}
+      />
+      <SegmentTabs<CheckInHubTab>
+        active={hubTab}
+        onChange={onHubTabChange}
+        tabs={[
+          { id: 'door', label: 'At the door' },
+          { id: 'photos', label: 'Photos', count: photos.length },
+        ]}
       />
       <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => e.target.files?.[0] && onUploadPhoto(e.target.files[0])} />
-      <ScrollPane topPad={64}>{afterBody}</ScrollPane>
+      <ScrollPane topPad={scrollTop}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'cv-fade-up .35s ease both' }}>
+          {eventSwitcher}
+          {hubTab === 'door' ? doorBody : photosBody}
+        </div>
+      </ScrollPane>
     </>
-  );
-}
-
-// ─── SCREEN: Event Hub (unified event ecosystem) ────────────────
-function ScreenEventHub({
-  event, section, onSection, stats, guests, photos, uploading,
-  onEdit, onConcierge, onCopy, onNewEvent, onEventUpdated,
-  onRefreshGuests, onUploadPhoto, onScanner, onOpenPlanner, userName, onSignOut, signingOut, invitedEvents,
-}: {
-  event: CvEvent;
-  section: EventSection;
-  onSection: (s: EventSection) => void;
-  stats: { in: number; maybe: number; out: number; pending: number; total: number; arrived: number };
-  guests: CvGuest[];
-  photos: CvPhoto[];
-  uploading: boolean;
-  onEdit: () => void;
-  onConcierge: () => void;
-  onCopy: (url: string, msg?: string) => void;
-  onNewEvent: () => void;
-  onEventUpdated: (ev: CvEvent) => void;
-  onRefreshGuests: () => void;
-  onUploadPhoto: (file: File) => void;
-  onScanner: () => void;
-  onOpenPlanner: () => void;
-  userName?: string | null;
-  onSignOut: (e: React.MouseEvent) => void | Promise<void>;
-  signingOut?: boolean;
-  invitedEvents?: (CvEvent & { guest_name: string; guest_rsvp_state: string; pass_token: string })[];
-}) {
-  const inviteBanner = !event.invite_live && section !== 'invite'
-    ? <InviteNotLiveBanner onGoToInvite={() => onSection('invite')} compact />
-    : null;
-
-  return (
-    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column' }}>
-      <TopBar
-        left={
-          <span style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 17, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {event.host_name}
-          </span>
-        }
-        right={<>
-          <IBtn icon={Plus} onClick={onNewEvent} />
-          <IBtn icon={Pencil} onClick={onEdit} />
-          {userName ? <UserNavMenu userName={userName} onSignOut={onSignOut} signingOut={signingOut} /> : null}
-        </>}
-      />
-      <EventSubNav section={section} onSection={onSection} inviteLive={event.invite_live} />
-      <div className="cv-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '12px 14px 88px' }}>
-        {section === 'overview' && (
-          <ScreenEventHome
-            event={event}
-            stats={stats}
-            onEdit={onEdit}
-            onConcierge={onConcierge}
-            onCopy={onCopy}
-            onNewEvent={onNewEvent}
-            userName={userName}
-            onSignOut={onSignOut}
-            signingOut={signingOut}
-            invitedEvents={invitedEvents}
-            embedded
-            showInviteBanner
-            onGoToInvite={() => onSection('invite')}
-          />
-        )}
-        {section === 'guests' && (
-          <ScreenGuestList
-            event={event}
-            guests={guests}
-            stats={stats}
-            onRefresh={onRefreshGuests}
-            onCopy={onCopy}
-            embedded
-            inviteBanner={inviteBanner}
-          />
-        )}
-        {section === 'invite' && (
-          <ScreenInvite
-            event={event}
-            onCopy={onCopy}
-            embedded
-            onEventUpdated={onEventUpdated}
-          />
-        )}
-        {section === 'activities' && (
-          <ScreenLiveDash
-            event={event}
-            stats={stats}
-            onScanner={onScanner}
-            onOpenPlanner={onOpenPlanner}
-            embedded
-            inviteBanner={inviteBanner}
-          />
-        )}
-        {section === 'after' && (
-          <ScreenAfter
-            event={event}
-            photos={photos}
-            onUploadPhoto={onUploadPhoto}
-            uploading={uploading}
-            embedded
-            inviteBanner={inviteBanner}
-          />
-        )}
-      </div>
-    </div>
   );
 }
 
@@ -1915,7 +2083,16 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
   const [photos, setPhotos] = useState<CvPhoto[]>([]);
   const [stats, setStats] = useState({ in: 0, maybe: 0, out: 0, pending: 0, total: 0, arrived: 0 });
   const [activeTab, setActiveTab] = useState<Tab>('event');
-  const [eventSection, setEventSection] = useState<EventSection>('overview');
+  const [inviteHubTab, setInviteHubTab] = useState<InviteHubTab>('design');
+  const [checkinHubTab, setCheckinHubTab] = useState<CheckInHubTab>('door');
+  const [flowGuideDismissed, setFlowGuideDismissed] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(FLOW_DISMISS_KEY) === '1') setFlowGuideDismissed(true);
+    } catch { /* ignore */ }
+  }, []);
+  const [utilityPage, setUtilityPage] = useState<UtilityPage | null>(null);
   const [screen, setScreen] = useState<Screen>('home');
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [showConcierge, setShowConcierge] = useState(false);
@@ -1934,7 +2111,7 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
 
   const goHome = useCallback(() => {
     setActiveTab('event');
-    setEventSection('overview');
+    setUtilityPage(null);
     setScreen('home');
     setShowConcierge(false);
     setEditingEvent(false);
@@ -1975,6 +2152,11 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
       const evs: CvEvent[] = data.events || [];
       setEvents(evs);
       setActiveEvent(prev => {
+        const stored = typeof window !== 'undefined' ? localStorage.getItem(ACTIVE_EVENT_STORAGE_KEY) : null;
+        if (stored) {
+          const fromStorage = evs.find(e => e.id === stored);
+          if (fromStorage) return fromStorage;
+        }
         if (prev && evs.some(e => e.id === prev.id)) return prev;
         return evs[0] ?? null;
       });
@@ -2029,6 +2211,20 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
     setActiveEvent(ev);
     setEvents(prev => prev.map(e => (e.id === ev.id ? ev : e)));
   }, []);
+
+  const selectEvent = useCallback((eventId: string) => {
+    const next = events.find(e => e.id === eventId);
+    if (!next) return;
+    setActiveEvent(next);
+    setScreen('home');
+    setUtilityPage(null);
+    setShowConcierge(false);
+    try { localStorage.setItem(ACTIVE_EVENT_STORAGE_KEY, eventId); } catch { /* private mode */ }
+  }, [events]);
+
+  const eventSwitcherEl = events.length > 1 && activeEvent ? (
+    <EventSwitcher events={events} activeEvent={activeEvent} onSelect={selectEvent} />
+  ) : null;
 
   async function handleUploadPhoto(file: File) {
     if (!activeEvent || uploading) return;
@@ -2136,7 +2332,13 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
           {screen === 'create' && (
             <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'var(--cv-ivory)', ...accentStyle }}>
               <ScreenCreateEvent
-                onCreated={ev => { setEvents(prev => [ev, ...prev]); setActiveEvent(ev); setScreen('home'); setEventSection('overview'); }}
+                onCreated={ev => {
+                  setEvents(prev => [ev, ...prev]);
+                  setActiveEvent(ev);
+                  setScreen('home');
+                  setActiveTab('event');
+                  try { localStorage.setItem(ACTIVE_EVENT_STORAGE_KEY, ev.id); } catch { /* ignore */ }
+                }}
                 onCancel={() => setScreen('home')}
                 onSignOut={handleSignOut}
                 signingOut={signingOut}
@@ -2150,7 +2352,12 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
     return appShell(
       <div style={{ position: 'absolute', inset: 0, ...accentStyle }}>
         <ScreenCreateEvent
-          onCreated={ev => { setEvents([ev]); setActiveEvent(ev); setScreen('home'); }}
+          onCreated={ev => {
+            setEvents([ev]);
+            setActiveEvent(ev);
+            setScreen('home');
+            try { localStorage.setItem(ACTIVE_EVENT_STORAGE_KEY, ev.id); } catch { /* ignore */ }
+          }}
           onSignOut={handleSignOut}
           signingOut={signingOut}
         />
@@ -2177,7 +2384,9 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
               setActiveEvent(null);
               setScreen('home');
             } else {
-              setActiveEvent(remaining[0]);
+              const next = remaining[0];
+              setActiveEvent(next);
+              try { localStorage.setItem(ACTIVE_EVENT_STORAGE_KEY, next.id); } catch { /* ignore */ }
             }
             showToast('Event deleted');
           }}
@@ -2193,42 +2402,108 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
       return <ScreenConcierge event={activeEvent} onClose={() => setShowConcierge(false)} />;
     }
 
-    if (activeTab === 'event') {
-      if (screen === 'scanner') {
-        return <ScreenScanner event={activeEvent} onBack={() => setScreen('home')} />;
-      }
+    if (utilityPage === 'vendors') {
       return (
-        <ScreenEventHub
+        <ScreenVendorMarketplace
           event={activeEvent}
-          section={eventSection}
-          onSection={setEventSection}
-          stats={stats}
-          guests={guests}
-          photos={photos}
-          uploading={uploading}
-          onEdit={() => setEditingEvent(true)}
-          onConcierge={() => setShowConcierge(true)}
-          onCopy={handleCopy}
-          onNewEvent={() => setScreen('create')}
-          onEventUpdated={handleEventUpdated}
-          onRefreshGuests={() => loadGuests(activeEvent.id)}
-          onUploadPhoto={handleUploadPhoto}
-          onScanner={() => setScreen('scanner')}
-          onOpenPlanner={() => setActiveTab('planner')}
-          userName={userName}
-          onSignOut={handleSignOut}
-          signingOut={signingOut}
-          invitedEvents={invitedEvents}
+          onToast={showToast}
+          onBack={() => setUtilityPage(null)}
+          eventSwitcher={eventSwitcherEl}
         />
       );
     }
 
-    if (activeTab === 'vendors') {
-      return <ScreenVendorMarketplace event={activeEvent} onToast={showToast} />;
+    if (utilityPage === 'planner') {
+      return (
+        <ScreenPlanner
+          event={activeEvent}
+          onToast={showToast}
+          onBack={() => setUtilityPage(null)}
+          eventSwitcher={eventSwitcherEl}
+        />
+      );
     }
 
-    if (activeTab === 'planner') {
-      return <ScreenPlanner event={activeEvent} onToast={showToast} />;
+    if (activeTab === 'event') {
+      if (screen === 'scanner') {
+        return <ScreenScanner event={activeEvent} onBack={() => setScreen('home')} />;
+      }
+      if (screen === 'create') {
+        return (
+          <ScreenCreateEvent
+            onCreated={ev => {
+              setEvents(prev => [ev, ...prev]);
+              setActiveEvent(ev);
+              setScreen('home');
+              try { localStorage.setItem(ACTIVE_EVENT_STORAGE_KEY, ev.id); } catch { /* ignore */ }
+            }}
+            onCancel={() => setScreen('home')}
+            onSignOut={handleSignOut}
+            signingOut={signingOut}
+          />
+        );
+      }
+      return (
+        <ScreenEventHome
+          event={activeEvent}
+          stats={stats}
+          onEdit={() => setEditingEvent(true)}
+          onConcierge={() => setShowConcierge(true)}
+          onCopy={handleCopy}
+          onNewEvent={() => setScreen('create')}
+          onGoToInvite={() => { setInviteHubTab('design'); setActiveTab('invite'); }}
+          onGoInviteGuests={() => { setInviteHubTab('guests'); setActiveTab('invite'); }}
+          onGoCheckIn={() => { setCheckinHubTab('door'); setActiveTab('checkin'); }}
+          onOpenVendors={() => setUtilityPage('vendors')}
+          onOpenPlanner={() => setUtilityPage('planner')}
+          userName={userName}
+          onSignOut={handleSignOut}
+          signingOut={signingOut}
+          invitedEvents={invitedEvents}
+          eventSwitcher={eventSwitcherEl}
+          showFlowGuide={!flowGuideDismissed}
+          onDismissFlowGuide={() => {
+            setFlowGuideDismissed(true);
+            try { localStorage.setItem(FLOW_DISMISS_KEY, '1'); } catch { /* ignore */ }
+          }}
+        />
+      );
+    }
+
+    if (activeTab === 'invite') {
+      return (
+        <ScreenInviteHub
+          event={activeEvent}
+          guests={guests}
+          stats={stats}
+          onCopy={handleCopy}
+          onEventUpdated={handleEventUpdated}
+          onRefreshGuests={() => loadGuests(activeEvent.id)}
+          eventSwitcher={eventSwitcherEl}
+          hubTab={inviteHubTab}
+          onHubTabChange={setInviteHubTab}
+        />
+      );
+    }
+
+    if (activeTab === 'checkin') {
+      if (screen === 'scanner') {
+        return <ScreenScanner event={activeEvent} onBack={() => setScreen('home')} />;
+      }
+      return (
+        <ScreenCheckIn
+          event={activeEvent}
+          stats={stats}
+          photos={photos}
+          onScanner={() => setScreen('scanner')}
+          onUploadPhoto={handleUploadPhoto}
+          uploading={uploading}
+          onOpenPlanner={() => setUtilityPage('planner')}
+          eventSwitcher={eventSwitcherEl}
+          hubTab={checkinHubTab}
+          onHubTabChange={setCheckinHubTab}
+        />
+      );
     }
 
     return null;
@@ -2273,19 +2548,18 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
         </button>
       )}
 
-      {!showConcierge && screen !== 'scanner' && (
-        <Dock active={activeTab} onTab={t => { if (screen === 'create') return; setActiveTab(t); setScreen('home'); }} />
-      )}
-
-      {screen === 'create' && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'var(--cv-ivory)', ...accentStyle }}>
-          <ScreenCreateEvent
-            onCreated={ev => { setEvents(prev => [ev, ...prev]); setActiveEvent(ev); setScreen('home'); setEventSection('overview'); }}
-            onCancel={() => setScreen('home')}
-            onSignOut={handleSignOut}
-            signingOut={signingOut}
-          />
-        </div>
+      {!showConcierge && !utilityPage && screen !== 'scanner' && (
+        <Dock
+          active={activeTab}
+          inviteNeedsAttention={!!activeEvent && !activeEvent.invite_live}
+          onTab={t => {
+            setActiveTab(t);
+            setScreen('home');
+            setUtilityPage(null);
+            if (t === 'invite' && activeTab !== 'invite') setInviteHubTab('design');
+            if (t === 'checkin' && activeTab !== 'checkin') setCheckinHubTab('door');
+          }}
+        />
       )}
     </div>,
   );
