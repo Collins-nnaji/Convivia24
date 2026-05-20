@@ -406,7 +406,6 @@ function ScreenCreateEvent({
 
 // ─── SCREEN: Edit Event ───────────────────────────────────────
 function ScreenEditEvent({ event, onSaved, onBack, onDelete }: { event: CvEvent; onSaved: (ev: CvEvent) => void; onBack: () => void; onDelete: () => void | Promise<void> }) {
-  const [hostName, setHostName] = useState(event.host_name);
   const [city, setCity] = useState(event.city || '');
   const [date, setDate] = useState(event.event_date ? event.event_date.slice(0, 10) : '');
   const [eventTime, setEventTime] = useState(event.event_time || '');
@@ -420,15 +419,13 @@ function ScreenEditEvent({ event, onSaved, onBack, onDelete }: { event: CvEvent;
   const accent = ACCENT_COLORS[event.event_type as EventType] || '#c0975a';
 
   async function handleSave() {
-    if (!hostName.trim()) return;
     setSaving(true);
     try {
       const res = await fetch(`/api/convivia24/events/${event.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
-          host_name: hostName,
-          title: hostName,
           city: city || null,
           event_date: date || null,
           event_time: eventTime || null,
@@ -478,7 +475,22 @@ function ScreenEditEvent({ event, onSaved, onBack, onDelete }: { event: CvEvent;
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div>
                 <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--cv-muted-2)', marginBottom: 4 }}>Event name</div>
-                <input className="cv-input" value={hostName} onChange={e => setHostName(e.target.value)} style={{ '--cv-accent': accent } as React.CSSProperties} />
+                <div style={{
+                  padding: '12px 14px', borderRadius: 12,
+                  background: 'var(--cv-ivory-2)', border: '1px solid var(--cv-hairline)',
+                }}>
+                  <div style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 20, color: 'var(--cv-ink)', lineHeight: 1.2 }}>
+                    {event.host_name}
+                  </div>
+                  {event.slug && (
+                    <div style={{ fontSize: 11, color: 'var(--cv-muted)', marginTop: 8, fontFamily: 'var(--font-geist-mono, monospace)' }}>
+                      convivia24.com/e/{event.slug}
+                    </div>
+                  )}
+                  <p style={{ fontSize: 11, color: 'var(--cv-muted-2)', marginTop: 8, marginBottom: 0, lineHeight: 1.45 }}>
+                    Locked — your invite link is built from this name. Create a new event if you need a different title.
+                  </p>
+                </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <div>
@@ -510,7 +522,7 @@ function ScreenEditEvent({ event, onSaved, onBack, onDelete }: { event: CvEvent;
               </div>
             </div>
           </Card>
-          <Btn fullWidth onClick={handleSave} disabled={!hostName.trim() || saving || deleting} style={{ '--cv-accent': accent } as React.CSSProperties}>
+          <Btn fullWidth onClick={handleSave} disabled={saving || deleting} style={{ '--cv-accent': accent } as React.CSSProperties}>
             {saving ? <Loader2 size={14} className="animate-spin" /> : saved ? <><Check size={13} /> Saved</> : <><Check size={13} /> Save changes</>}
           </Btn>
           <div style={{ marginTop: 8, paddingTop: 20, borderTop: '1px solid var(--cv-hairline)' }}>
@@ -2013,6 +2025,11 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
     }
   }, [activeEvent]);
 
+  const handleEventUpdated = useCallback((ev: CvEvent) => {
+    setActiveEvent(ev);
+    setEvents(prev => prev.map(e => (e.id === ev.id ? ev : e)));
+  }, []);
+
   async function handleUploadPhoto(file: File) {
     if (!activeEvent || uploading) return;
     setUploading(true);
@@ -2168,11 +2185,6 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
       </div>,
     );
   }
-
-  const handleEventUpdated = useCallback((ev: CvEvent) => {
-    setActiveEvent(ev);
-    setEvents(prev => prev.map(e => (e.id === ev.id ? ev : e)));
-  }, []);
 
   const renderContent = () => {
     if (!activeEvent) return null;

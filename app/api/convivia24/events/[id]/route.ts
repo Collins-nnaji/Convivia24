@@ -25,8 +25,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   if (existing.user_id !== user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-  const body = await req.json().catch(() => ({}));
-  let event = await updateEvent(id, user.id, body);
+  const body = await req.json().catch(() => ({})) as Record<string, unknown>;
+  // Slug is derived from the original event name — never allow renaming via PATCH.
+  const { title: _t, host_name: _h, slug: _s, ...patchable } = body;
+  let event = await updateEvent(id, user.id, patchable);
   if (event && body.invite_live) {
     event = await ensureEventSlug(event);
   }
