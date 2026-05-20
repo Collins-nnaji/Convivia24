@@ -52,7 +52,7 @@ interface CvGuest {
 }
 interface CvPhoto { id: string; event_id: string; url: string; uploader_name: string | null; caption: string | null; created_at: string; }
 
-type Tab = 'event' | 'invite' | 'checkin';
+type Tab = 'event' | 'invite' | 'vendors' | 'planner' | 'checkin';
 type InviteHubTab = 'design' | 'guests';
 type CheckInHubTab = 'door' | 'photos';
 const INVITE_SUBNAV_H = 52;
@@ -60,7 +60,6 @@ const CHECKIN_SUBNAV_H = 52;
 const FLOW_DISMISS_KEY = 'cv24_host_flow_dismissed';
 
 const ACTIVE_EVENT_STORAGE_KEY = 'cv24_active_event_id';
-type UtilityPage = 'vendors' | 'planner';
 type Screen = 'home' | 'create' | 'edit' | 'guest-list' | 'seating' | 'invite-designer' | 'invite-preview' | 'scanner' | 'dashboard' | 'photos' | 'thankyou' | 'concierge';
 
 // ─── Accent helpers ───────────────────────────────────────────
@@ -185,6 +184,8 @@ function Dock({ active, onTab, inviteNeedsAttention }: { active: Tab; onTab: (t:
   const tabs: { id: Tab; label: string; Icon: React.ElementType; dot?: boolean }[] = [
     { id: 'event',   label: 'Event',    Icon: Home },
     { id: 'invite',  label: 'Invite',   Icon: Mail, dot: inviteNeedsAttention },
+    { id: 'vendors', label: 'Vendors',  Icon: Store },
+    { id: 'planner', label: 'Planner',  Icon: CalendarDays },
     { id: 'checkin', label: 'Check-in', Icon: ScanLine },
   ];
   return (
@@ -208,7 +209,7 @@ function Dock({ active, onTab, inviteNeedsAttention }: { active: Tab; onTab: (t:
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3,
               color: active === id ? '#fff' : 'rgba(255,255,255,.45)',
               fontFamily: 'var(--font-geist, system-ui)', fontWeight: 700,
-              fontSize: 7.5, letterSpacing: '0.08em', textTransform: 'uppercase',
+              fontSize: 6.5, letterSpacing: '0.06em', textTransform: 'uppercase',
               transition: 'color .15s, background .15s', position: 'relative',
             }}
           >
@@ -231,24 +232,26 @@ function FlowHint({ children }: { children: React.ReactNode }) {
 }
 
 function HostFlowGuide({
-  onDismiss, onGoInvite, onGoGuests, onGoCheckIn,
+  onDismiss, onGoInvite, onGoGuests, onGoVendors, onGoCheckIn,
 }: {
   onDismiss: () => void;
   onGoInvite: () => void;
   onGoGuests: () => void;
+  onGoVendors: () => void;
   onGoCheckIn: () => void;
 }) {
   const steps = [
-    { n: 1, title: 'Event', body: 'Set date, venue & planning tools.' },
+    { n: 1, title: 'Event', body: 'Overview, date, venue & stats.' },
     { n: 2, title: 'Invite', body: 'Design your card, go live, add guests.', onClick: onGoInvite },
-    { n: 3, title: 'Check-in', body: 'Scan passes & collect photos on the night.', onClick: onGoCheckIn },
+    { n: 3, title: 'Vendors', body: 'Marketplace & your shortlist.', onClick: onGoVendors },
+    { n: 4, title: 'Check-in', body: 'Scan passes & photos on the night.', onClick: onGoCheckIn },
   ];
   return (
     <Card tinted style={{ padding: 14 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, marginBottom: 12 }}>
         <div>
           <Eyebrow muted>How hosting works</Eyebrow>
-          <FlowHint>Three tabs at the bottom — same order as your event timeline.</FlowHint>
+          <FlowHint>Five tabs at the bottom — plan, invite, then run the night.</FlowHint>
         </div>
         <button type="button" onClick={onDismiss} aria-label="Dismiss guide" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--cv-muted-2)' }}>
           <X size={14} />
@@ -709,6 +712,7 @@ function ScreenEventHome({
   onOpenPlanner?: () => void;
   eventSwitcher?: React.ReactNode;
   onGoInviteGuests?: () => void;
+  onGoVendors?: () => void;
   onGoCheckIn?: () => void;
   showFlowGuide?: boolean;
   onDismissFlowGuide?: () => void;
@@ -726,11 +730,12 @@ function ScreenEventHome({
             <InviteNotLiveBanner onGoToInvite={onGoToInvite} />
           )}
 
-          {showFlowGuide && onDismissFlowGuide && onGoToInvite && onGoInviteGuests && onGoCheckIn && (
+          {showFlowGuide && onDismissFlowGuide && onGoToInvite && onGoInviteGuests && onGoVendors && onGoCheckIn && (
             <HostFlowGuide
               onDismiss={onDismissFlowGuide}
               onGoInvite={onGoToInvite}
               onGoGuests={onGoInviteGuests}
+              onGoVendors={onGoVendors}
               onGoCheckIn={onGoCheckIn}
             />
           )}
@@ -2092,7 +2097,6 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
       if (localStorage.getItem(FLOW_DISMISS_KEY) === '1') setFlowGuideDismissed(true);
     } catch { /* ignore */ }
   }, []);
-  const [utilityPage, setUtilityPage] = useState<UtilityPage | null>(null);
   const [screen, setScreen] = useState<Screen>('home');
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [showConcierge, setShowConcierge] = useState(false);
@@ -2111,7 +2115,6 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
 
   const goHome = useCallback(() => {
     setActiveTab('event');
-    setUtilityPage(null);
     setScreen('home');
     setShowConcierge(false);
     setEditingEvent(false);
@@ -2217,7 +2220,6 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
     if (!next) return;
     setActiveEvent(next);
     setScreen('home');
-    setUtilityPage(null);
     setShowConcierge(false);
     try { localStorage.setItem(ACTIVE_EVENT_STORAGE_KEY, eventId); } catch { /* private mode */ }
   }, [events]);
@@ -2402,28 +2404,6 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
       return <ScreenConcierge event={activeEvent} onClose={() => setShowConcierge(false)} />;
     }
 
-    if (utilityPage === 'vendors') {
-      return (
-        <ScreenVendorMarketplace
-          event={activeEvent}
-          onToast={showToast}
-          onBack={() => setUtilityPage(null)}
-          eventSwitcher={eventSwitcherEl}
-        />
-      );
-    }
-
-    if (utilityPage === 'planner') {
-      return (
-        <ScreenPlanner
-          event={activeEvent}
-          onToast={showToast}
-          onBack={() => setUtilityPage(null)}
-          eventSwitcher={eventSwitcherEl}
-        />
-      );
-    }
-
     if (activeTab === 'event') {
       if (screen === 'scanner') {
         return <ScreenScanner event={activeEvent} onBack={() => setScreen('home')} />;
@@ -2453,9 +2433,10 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
           onNewEvent={() => setScreen('create')}
           onGoToInvite={() => { setInviteHubTab('design'); setActiveTab('invite'); }}
           onGoInviteGuests={() => { setInviteHubTab('guests'); setActiveTab('invite'); }}
+          onGoVendors={() => setActiveTab('vendors')}
           onGoCheckIn={() => { setCheckinHubTab('door'); setActiveTab('checkin'); }}
-          onOpenVendors={() => setUtilityPage('vendors')}
-          onOpenPlanner={() => setUtilityPage('planner')}
+          onOpenVendors={() => setActiveTab('vendors')}
+          onOpenPlanner={() => setActiveTab('planner')}
           userName={userName}
           onSignOut={handleSignOut}
           signingOut={signingOut}
@@ -2466,6 +2447,26 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
             setFlowGuideDismissed(true);
             try { localStorage.setItem(FLOW_DISMISS_KEY, '1'); } catch { /* ignore */ }
           }}
+        />
+      );
+    }
+
+    if (activeTab === 'vendors') {
+      return (
+        <ScreenVendorMarketplace
+          event={activeEvent}
+          onToast={showToast}
+          eventSwitcher={eventSwitcherEl}
+        />
+      );
+    }
+
+    if (activeTab === 'planner') {
+      return (
+        <ScreenPlanner
+          event={activeEvent}
+          onToast={showToast}
+          eventSwitcher={eventSwitcherEl}
         />
       );
     }
@@ -2498,7 +2499,7 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
           onScanner={() => setScreen('scanner')}
           onUploadPhoto={handleUploadPhoto}
           uploading={uploading}
-          onOpenPlanner={() => setUtilityPage('planner')}
+          onOpenPlanner={() => setActiveTab('planner')}
           eventSwitcher={eventSwitcherEl}
           hubTab={checkinHubTab}
           onHubTabChange={setCheckinHubTab}
@@ -2548,14 +2549,13 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
         </button>
       )}
 
-      {!showConcierge && !utilityPage && screen !== 'scanner' && (
+      {!showConcierge && screen !== 'scanner' && (
         <Dock
           active={activeTab}
           inviteNeedsAttention={!!activeEvent && !activeEvent.invite_live}
           onTab={t => {
             setActiveTab(t);
             setScreen('home');
-            setUtilityPage(null);
             if (t === 'invite' && activeTab !== 'invite') setInviteHubTab('design');
             if (t === 'checkin' && activeTab !== 'checkin') setCheckinHubTab('door');
           }}

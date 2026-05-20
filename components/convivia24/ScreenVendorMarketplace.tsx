@@ -161,7 +161,7 @@ export function ScreenVendorMarketplace({
       }}>
         {eventSwitcher}
         <p style={{ fontSize: 11, color: 'var(--cv-muted)', margin: '0 0 10px', lineHeight: 1.4 }}>
-          Shortlist vendors for this event. Use ← back to return to Event home.
+          Browse the marketplace and save vendors to this event&rsquo;s shortlist.
         </p>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
           <div style={{ flex: 1, minWidth: 0 }}>

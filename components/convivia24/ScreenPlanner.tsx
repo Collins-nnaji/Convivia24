@@ -230,7 +230,7 @@ export function ScreenPlanner({
       }}>
         {eventSwitcher}
         <p style={{ fontSize: 11, color: 'var(--cv-muted)', margin: '0 0 10px', lineHeight: 1.4 }}>
-          Timeline and AI planning for this event. Use ← back to return to Event home.
+          Build your run of show and use AI to plan the weeks leading up to the event.
         </p>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
