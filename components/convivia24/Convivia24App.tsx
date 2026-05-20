@@ -8,6 +8,7 @@ import {
   LayoutGrid, Utensils, Wine, Heart, Music, Gift, Phone,
   Send, Pencil, Trash2, CheckCircle, XCircle, AlertCircle,
   ScanLine, Eye, RefreshCw, LogOut, LogIn, Star, Zap, Download,
+  Store, CalendarDays, ClipboardList,
 } from 'lucide-react';
 import {
   Avatar, Eyebrow, Tag, Chip, Btn, Dial, QRBlock,
@@ -17,6 +18,8 @@ import {
 } from '@/components/convivia24/primitives';
 import { signOutAndRedirect } from '@/lib/auth/sign-out-client';
 import { UserNavMenu } from '@/components/convivia24/UserNavMenu';
+import { ScreenVendorMarketplace } from '@/components/convivia24/ScreenVendorMarketplace';
+import { ScreenPlanner } from '@/components/convivia24/ScreenPlanner';
 
 // BarcodeDetector is available in Chrome/Android — use via window to avoid TS errors
 
@@ -38,7 +41,8 @@ interface CvGuest {
 }
 interface CvPhoto { id: string; event_id: string; url: string; uploader_name: string | null; caption: string | null; created_at: string; }
 
-type Tab = 'event' | 'guests' | 'invite' | 'tonight' | 'after';
+type Tab = 'event' | 'vendors' | 'planner';
+type EventSection = 'overview' | 'guests' | 'invite' | 'activities' | 'after';
 type Screen = 'home' | 'create' | 'edit' | 'guest-list' | 'seating' | 'invite-designer' | 'invite-preview' | 'scanner' | 'dashboard' | 'photos' | 'thankyou' | 'concierge';
 
 // ─── Accent helpers ───────────────────────────────────────────
@@ -108,11 +112,9 @@ function ScrollPane({ children, topPad = 56, bottomPad = 80, dark }: { children:
 
 function Dock({ active, onTab }: { active: Tab; onTab: (t: Tab) => void }) {
   const tabs: { id: Tab; label: string; Icon: React.ElementType }[] = [
-    { id: 'event',   label: 'Event',  Icon: Home },
-    { id: 'guests',  label: 'Guests', Icon: Users },
-    { id: 'invite',  label: 'Invite', Icon: Mail },
-    { id: 'tonight', label: 'Tonight',Icon: Sparkles },
-    { id: 'after',   label: 'After',  Icon: Image },
+    { id: 'event',   label: 'Event',    Icon: Home },
+    { id: 'vendors', label: 'Vendors',  Icon: Store },
+    { id: 'planner', label: 'Planner',  Icon: CalendarDays },
   ];
   return (
     <div style={{ position: 'absolute', left: 12, right: 12, bottom: 16, zIndex: 100 }}>
@@ -145,6 +147,74 @@ function Dock({ active, onTab }: { active: Tab; onTab: (t: Tab) => void }) {
         ))}
       </div>
     </div>
+  );
+}
+
+const EVENT_SECTIONS: { id: EventSection; label: string; Icon: React.ElementType }[] = [
+  { id: 'overview',   label: 'Overview',   Icon: Home },
+  { id: 'guests',     label: 'Guests',     Icon: Users },
+  { id: 'invite',     label: 'Invite',     Icon: Mail },
+  { id: 'activities', label: 'Activities', Icon: ClipboardList },
+  { id: 'after',      label: 'After',      Icon: Image },
+];
+
+function EventSubNav({ section, onSection, inviteLive }: { section: EventSection; onSection: (s: EventSection) => void; inviteLive: boolean }) {
+  return (
+    <div style={{
+      display: 'flex', gap: 6, overflowX: 'auto', padding: '8px 14px',
+      borderBottom: '1px solid var(--cv-hairline)', background: 'rgba(250,246,238,.96)',
+      WebkitOverflowScrolling: 'touch',
+    }} className="cv-scrollbar">
+      {EVENT_SECTIONS.map(({ id, label, Icon }) => (
+        <button
+          key={id}
+          type="button"
+          onClick={() => onSection(id)}
+          style={{
+            flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 5,
+            padding: '7px 12px', borderRadius: 9999, border: 'none', cursor: 'pointer',
+            background: section === id ? 'var(--cv-ink)' : 'var(--cv-paper)',
+            color: section === id ? 'var(--cv-ivory)' : 'var(--cv-muted)',
+            fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
+            position: 'relative',
+          }}
+        >
+          <Icon size={12} strokeWidth={section === id ? 2.2 : 1.5} />
+          {label}
+          {id === 'invite' && !inviteLive && (
+            <span style={{ position: 'absolute', top: 4, right: 4, width: 6, height: 6, borderRadius: 99, background: '#e85d4b' }} />
+          )}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function InviteNotLiveBanner({ onGoToInvite, compact }: { onGoToInvite: () => void; compact?: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={onGoToInvite}
+      style={{
+        width: '100%', textAlign: 'left', cursor: 'pointer',
+        padding: compact ? '10px 12px' : '14px 14px',
+        borderRadius: 12,
+        border: '1px solid rgba(232,93,75,.35)',
+        background: 'rgba(232,93,75,.08)',
+        display: 'flex', alignItems: 'center', gap: 10,
+      }}
+    >
+      <Mail size={compact ? 14 : 16} color="#c45a4a" style={{ flexShrink: 0 }} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: compact ? 10 : 10.5, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#a33' }}>
+          Invite not live yet
+        </div>
+        <div style={{ fontSize: compact ? 11 : 12.5, color: 'var(--cv-muted)', marginTop: 2, lineHeight: 1.4 }}>
+          Go to Invite to design and publish your guest page.
+        </div>
+      </div>
+      <ChevronRight size={14} color="#a33" style={{ flexShrink: 0 }} />
+    </button>
   );
 }
 
@@ -335,7 +405,7 @@ function ScreenCreateEvent({
 }
 
 // ─── SCREEN: Edit Event ───────────────────────────────────────
-function ScreenEditEvent({ event, onSaved, onBack }: { event: CvEvent; onSaved: (ev: CvEvent) => void; onBack: () => void }) {
+function ScreenEditEvent({ event, onSaved, onBack, onDelete }: { event: CvEvent; onSaved: (ev: CvEvent) => void; onBack: () => void; onDelete: () => void | Promise<void> }) {
   const [hostName, setHostName] = useState(event.host_name);
   const [city, setCity] = useState(event.city || '');
   const [date, setDate] = useState(event.event_date ? event.event_date.slice(0, 10) : '');
@@ -345,6 +415,7 @@ function ScreenEditEvent({ event, onSaved, onBack }: { event: CvEvent; onSaved: 
   const [dressCode, setDressCode] = useState(event.dress_code || '');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const accent = ACCENT_COLORS[event.event_type as EventType] || '#c0975a';
 
@@ -374,6 +445,20 @@ function ScreenEditEvent({ event, onSaved, onBack }: { event: CvEvent; onSaved: 
       console.error(e);
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!confirm(`Delete "${event.host_name}"? This permanently removes guests, photos, and your invite link.`)) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/convivia24/events/${event.id}`, { method: 'DELETE', credentials: 'include' });
+      if (!res.ok) throw new Error('Failed');
+      await onDelete();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -425,9 +510,27 @@ function ScreenEditEvent({ event, onSaved, onBack }: { event: CvEvent; onSaved: 
               </div>
             </div>
           </Card>
-          <Btn fullWidth onClick={handleSave} disabled={!hostName.trim() || saving} style={{ '--cv-accent': accent } as React.CSSProperties}>
+          <Btn fullWidth onClick={handleSave} disabled={!hostName.trim() || saving || deleting} style={{ '--cv-accent': accent } as React.CSSProperties}>
             {saving ? <Loader2 size={14} className="animate-spin" /> : saved ? <><Check size={13} /> Saved</> : <><Check size={13} /> Save changes</>}
           </Btn>
+          <div style={{ marginTop: 8, paddingTop: 20, borderTop: '1px solid var(--cv-hairline)' }}>
+            <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--cv-muted-2)', marginBottom: 10 }}>Danger zone</div>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={deleting || saving}
+              style={{
+                width: '100%', padding: '12px 0', borderRadius: 12,
+                border: '1px solid rgba(180,60,50,.35)', background: 'rgba(180,60,50,.08)',
+                color: '#a33', fontWeight: 700, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase',
+                cursor: deleting || saving ? 'wait' : 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                opacity: deleting || saving ? 0.6 : 1,
+              }}
+            >
+              {deleting ? <Loader2 size={13} className="animate-spin" /> : <><Trash2 size={13} /> Delete event</>}
+            </button>
+          </div>
         </div>
       </ScrollPane>
     </>
@@ -437,6 +540,7 @@ function ScreenEditEvent({ event, onSaved, onBack }: { event: CvEvent; onSaved: 
 // ─── SCREEN: Event Home ───────────────────────────────────────
 function ScreenEventHome({
   event, stats, onEdit, onConcierge, onCopy, onNewEvent, userName, onSignOut, signingOut, invitedEvents,
+  embedded, onGoToInvite, showInviteBanner,
 }: {
   event: CvEvent;
   stats: { in: number; maybe: number; out: number; pending: number; total: number; arrived: number };
@@ -448,24 +552,21 @@ function ScreenEventHome({
   onSignOut: (e: React.MouseEvent) => void | Promise<void>;
   signingOut?: boolean;
   invitedEvents?: (CvEvent & { guest_name: string; guest_rsvp_state: string; pass_token: string })[];
+  embedded?: boolean;
+  onGoToInvite?: () => void;
+  showInviteBanner?: boolean;
 }) {
   const replyRate = stats.total ? (stats.in + stats.out + stats.maybe) / stats.total : 0;
   const daysOut = event.days_out ?? 0;
   const typeLabel = EVENT_TYPE_META[event.event_type as EventType]?.label || event.event_type;
 
-  return (
+  const content = (
     <>
-      <TopBar
-        right={<>
-          <IBtn icon={Plus} onClick={onNewEvent} />
-          <IBtn icon={Pencil} onClick={onEdit} />
-          {userName ? (
-            <UserNavMenu userName={userName} onSignOut={onSignOut} signingOut={signingOut} />
-          ) : null}
-        </>}
-      />
-      <ScrollPane topPad={64}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'cv-fade-up .35s ease both' }}>
+
+          {showInviteBanner && !event.invite_live && onGoToInvite && (
+            <InviteNotLiveBanner onGoToInvite={onGoToInvite} />
+          )}
 
           {/* Hero */}
           <section>
@@ -552,6 +653,19 @@ function ScreenEventHome({
             </Card>
           )}
 
+          <button
+            type="button"
+            onClick={onNewEvent}
+            style={{
+              width: '100%', padding: '12px 0', borderRadius: 12,
+              border: '1px dashed var(--cv-hairline)', background: 'transparent',
+              color: 'var(--cv-muted)', fontWeight: 700, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            }}
+          >
+            <Plus size={13} /> Create another event
+          </button>
+
         </div>
 
         {/* Invited events strip */}
@@ -592,8 +706,25 @@ function ScreenEventHome({
             </div>
           </div>
         )}
+    </>
+  );
 
-      </ScrollPane>
+  if (embedded) {
+    return <div style={{ paddingBottom: 8 }}>{content}</div>;
+  }
+
+  return (
+    <>
+      <TopBar
+        right={<>
+          <IBtn icon={Plus} onClick={onNewEvent} />
+          <IBtn icon={Pencil} onClick={onEdit} />
+          {userName ? (
+            <UserNavMenu userName={userName} onSignOut={onSignOut} signingOut={signingOut} />
+          ) : null}
+        </>}
+      />
+      <ScrollPane topPad={64}>{content}</ScrollPane>
     </>
   );
 }
@@ -607,12 +738,14 @@ const RSVP_META: Record<string, { label: string; color: string; Icon: React.Elem
 };
 
 function ScreenGuestList({
-  event, guests, stats, onBack, onRefresh, onCopy,
+  event, guests, stats, onBack, onRefresh, onCopy, embedded, inviteBanner,
 }: {
   event: CvEvent; guests: CvGuest[];
   stats: { in: number; maybe: number; out: number; pending: number; total: number; arrived: number };
-  onBack: () => void; onRefresh: () => void;
+  onBack?: () => void; onRefresh: () => void;
   onCopy: (url: string, msg?: string) => void;
+  embedded?: boolean;
+  inviteBanner?: React.ReactNode;
 }) {
   const [filter, setFilter] = useState<string>('all');
   const [showAdd, setShowAdd] = useState(false);
@@ -690,20 +823,7 @@ function ScreenGuestList({
 
   const replyRate = stats.total ? (stats.in + stats.out + stats.maybe) / stats.total : 0;
 
-  return (
-    <>
-      <TopBar
-        left={<div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 99, background: 'rgba(255,255,255,.7)', border: '1px solid var(--cv-hairline)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <ArrowLeft size={13} />
-          </button>
-          <span style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 18 }}>Guests</span>
-        </div>}
-        right={<>
-          <IBtn icon={Plus} onClick={() => setShowAdd(v => !v)} />
-        </>}
-      />
-      <ScrollPane topPad={64}>
+  const guestBody = (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, animation: 'cv-fade-up .35s ease both' }}>
 
           {/* Filter chips */}
@@ -861,6 +981,36 @@ function ScreenGuestList({
             </Card>
           )}
         </div>
+  );
+
+  if (embedded) {
+    return (
+      <div>
+        {inviteBanner}
+        {guestBody}
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <TopBar
+        left={<div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {onBack && (
+            <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 99, background: 'rgba(255,255,255,.7)', border: '1px solid var(--cv-hairline)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <ArrowLeft size={13} />
+            </button>
+          )}
+          <span style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 18 }}>Guests</span>
+        </div>}
+        right={<>
+          <IBtn icon={Plus} onClick={() => setShowAdd(v => !v)} />
+          <IBtn icon={Download} onClick={exportCSV} />
+        </>}
+      />
+      <ScrollPane topPad={64}>
+        {inviteBanner}
+        {guestBody}
       </ScrollPane>
     </>
   );
@@ -980,7 +1130,13 @@ function InvitePreview({ event, direction, recipient = 'You' }: { event: CvEvent
   );
 }
 
-function ScreenInvite({ event, onBack, onCopy }: { event: CvEvent; onBack: () => void; onCopy: (url: string, msg?: string) => void }) {
+function ScreenInvite({ event, onBack, onCopy, embedded, onEventUpdated }: {
+  event: CvEvent;
+  onBack?: () => void;
+  onCopy: (url: string, msg?: string) => void;
+  embedded?: boolean;
+  onEventUpdated?: (ev: CvEvent) => void;
+}) {
   const [direction, setDirection] = useState<InviteDir>((event.invite_direction as InviteDir) || 'editorial');
   const [saving, setSaving] = useState(false);
   const [savedDir, setSavedDir] = useState(false);
@@ -1008,27 +1164,20 @@ function ScreenInvite({ event, onBack, onCopy }: { event: CvEvent; onBack: () =>
   async function goLive() {
     setGoingLive(true);
     try {
-      await fetch(`/api/convivia24/events/${event.id}`, {
+      const res = await fetch(`/api/convivia24/events/${event.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ invite_direction: direction, invite_live: true }),
       });
-      window.location.reload();
+      if (res.ok) {
+        const data = await res.json();
+        onEventUpdated?.(data.event);
+      }
     } finally { setGoingLive(false); }
   }
 
-  return (
-    <>
-      <TopBar
-        left={<div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 99, background: 'rgba(255,255,255,.7)', border: '1px solid var(--cv-hairline)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <ArrowLeft size={13} />
-          </button>
-          <span style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 18 }}>Invite</span>
-        </div>}
-        right={<IBtn icon={Share2} onClick={() => event.slug && onCopy(`${typeof window !== 'undefined' ? window.location.origin : 'https://convivia24.com'}/e/${event.slug}`, 'Link copied')} />}
-      />
-      <ScrollPane topPad={64}>
+  const inviteBody = (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'cv-fade-up .35s ease both' }}>
 
           <div>
@@ -1077,12 +1226,29 @@ function ScreenInvite({ event, onBack, onCopy }: { event: CvEvent; onBack: () =>
             </Card>
           )}
         </div>
-      </ScrollPane>
+  );
+
+  if (embedded) return inviteBody;
+
+  return (
+    <>
+      <TopBar
+        left={<div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {onBack && (
+            <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 99, background: 'rgba(255,255,255,.7)', border: '1px solid var(--cv-hairline)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <ArrowLeft size={13} />
+            </button>
+          )}
+          <span style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 18 }}>Invite</span>
+        </div>}
+        right={<IBtn icon={Share2} onClick={() => event.slug && onCopy(`${typeof window !== 'undefined' ? window.location.origin : 'https://convivia24.com'}/e/${event.slug}`, 'Link copied')} />}
+      />
+      <ScrollPane topPad={64}>{inviteBody}</ScrollPane>
     </>
   );
 }
 
-// ─── SCREEN: Tonight (Scanner + Live Dashboard) ───────────────
+// ─── SCREEN: Activities (Scanner + Live Dashboard) ────────────
 function ScreenScanner({ event, onBack }: { event: CvEvent; onBack: () => void }) {
   const [arrived, setArrived] = useState(0);
   const [lastScan, setLastScan] = useState<{ name: string; ok: boolean } | null>(null);
@@ -1270,28 +1436,35 @@ function ScreenScanner({ event, onBack }: { event: CvEvent; onBack: () => void }
   );
 }
 
-function ScreenLiveDash({ event, stats, onScanner }: {
+function ScreenLiveDash({ event, stats, onScanner, embedded, inviteBanner, onOpenPlanner }: {
   event: CvEvent;
   stats: { in: number; maybe: number; out: number; pending: number; total: number; arrived: number };
   onScanner: () => void;
+  embedded?: boolean;
+  inviteBanner?: React.ReactNode;
+  onOpenPlanner?: () => void;
 }) {
   const capacity = event.capacity || 150;
   const pct = Math.round((stats.arrived / capacity) * 100);
+  const [schedule, setSchedule] = useState<{ time_label: string; title: string; subtitle: string | null }[]>([]);
 
-  return (
-    <>
-      <TopBar
-        left={<div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <span style={{ width: 8, height: 8, borderRadius: 99, background: '#e85d4b', display: 'inline-block' }} className="cv-pulse-dot" />
-          <span style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 18 }}>Tonight</span>
-        </div>}
-        right={<>
-          <IBtn icon={QrCode} onClick={onScanner} />
-          <IBtn icon={Bell} dot />
-        </>}
-      />
-      <ScrollPane topPad={64}>
+  useEffect(() => {
+    fetch(`/api/convivia24/schedule?eventId=${event.id}`, { credentials: 'include' })
+      .then(r => r.ok ? r.json() : { items: [] })
+      .then(d => setSchedule((d.items || []).map((i: { time_label: string; title: string; subtitle: string | null }) => ({
+        time_label: i.time_label, title: i.title, subtitle: i.subtitle,
+      }))));
+  }, [event.id]);
+
+  const fallback = [
+    { time_label: '19:30', title: 'Ceremony begins', subtitle: 'All guests seated' },
+    { time_label: '20:00', title: 'Cocktail hour', subtitle: 'Garden · live music' },
+  ];
+  const runOfShow = schedule.length > 0 ? schedule : fallback;
+
+  const dashBody = (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'cv-fade-up .35s ease both' }}>
+          {inviteBanner}
 
           <Card style={{ padding: 16 }}>
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
@@ -1312,18 +1485,18 @@ function ScreenLiveDash({ event, stats, onScanner }: {
           <Card flat style={{ padding: 0 }}>
             <div style={{ padding: '12px 14px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Eyebrow muted>Run of show</Eyebrow>
+              {schedule.length === 0 && onOpenPlanner && (
+                <button type="button" onClick={onOpenPlanner} style={{ background: 'none', border: 'none', fontSize: 10, fontWeight: 700, color: 'var(--cv-accent)', letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer' }}>
+                  Edit in Planner
+                </button>
+              )}
             </div>
-            {[
-              { t: '19:30', l: 'Ceremony begins', s: 'All guests seated' },
-              { t: '20:00', l: 'Cocktail hour', s: 'Garden · live music' },
-              { t: '20:30', l: 'Dinner service', s: '3 courses · catering briefed' },
-              { t: '22:00', l: 'Toasts & speeches', s: '4 speakers · ~20 min' },
-            ].map((r, i, a) => (
-              <div key={i} style={{ padding: '10px 14px', display: 'flex', gap: 12, alignItems: 'center', borderBottom: i < a.length - 1 ? '1px solid var(--cv-hairline)' : 'none' }}>
-                <span style={{ width: 44, fontSize: 12, fontWeight: 700, color: i === 0 ? 'var(--cv-accent)' : 'var(--cv-ink)', fontVariantNumeric: 'tabular-nums', fontFamily: 'var(--font-geist-mono, monospace)' }}>{r.t}</span>
+            {runOfShow.map((r, i, a) => (
+              <div key={`${r.time_label}-${i}`} style={{ padding: '12px 14px', display: 'flex', gap: 12, alignItems: 'center', borderBottom: i < a.length - 1 ? '1px solid var(--cv-hairline)' : 'none', minHeight: 56 }}>
+                <span style={{ width: 44, fontSize: 12, fontWeight: 700, color: i === 0 ? 'var(--cv-accent)' : 'var(--cv-ink)', fontVariantNumeric: 'tabular-nums', fontFamily: 'var(--font-geist-mono, monospace)' }}>{r.time_label}</span>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12.5, fontWeight: 600 }}>{r.l}</div>
-                  <div style={{ fontSize: 10.5, color: 'var(--cv-muted)' }}>{r.s}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600 }}>{r.title}</div>
+                  {r.subtitle && <div style={{ fontSize: 11, color: 'var(--cv-muted)', marginTop: 2 }}>{r.subtitle}</div>}
                 </div>
                 {i === 0 && <Tag>NEXT</Tag>}
               </div>
@@ -1334,37 +1507,42 @@ function ScreenLiveDash({ event, stats, onScanner }: {
             <QrCode size={13} /> Open door scanner
           </Btn>
         </div>
-      </ScrollPane>
+  );
+
+  if (embedded) return dashBody;
+
+  return (
+    <>
+      <TopBar
+        left={<div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <span style={{ width: 8, height: 8, borderRadius: 99, background: '#e85d4b', display: 'inline-block' }} className="cv-pulse-dot" />
+          <span style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 18 }}>Activities</span>
+        </div>}
+        right={<>
+          <IBtn icon={QrCode} onClick={onScanner} />
+          <IBtn icon={Bell} dot />
+        </>}
+      />
+      <ScrollPane topPad={64}>{dashBody}</ScrollPane>
     </>
   );
 }
 
 // ─── SCREEN: After (Photo Wall + Thank Yous) ──────────────────
 function ScreenAfter({
-  event, photos, onUploadPhoto, uploading,
+  event, photos, onUploadPhoto, uploading, embedded, inviteBanner,
 }: {
   event: CvEvent; photos: CvPhoto[];
   onUploadPhoto: (file: File) => void;
   uploading: boolean;
+  embedded?: boolean;
+  inviteBanner?: React.ReactNode;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
 
-  return (
-    <>
-      <TopBar
-        left={<div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <span style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 18 }}>After</span>
-        </div>}
-        right={
-          uploading
-            ? <Loader2 size={16} className="animate-spin" color="var(--cv-accent)" />
-            : <IBtn icon={Camera} onClick={() => fileRef.current?.click()} />
-        }
-      />
-      <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => e.target.files?.[0] && onUploadPhoto(e.target.files[0])} />
-
-      <ScrollPane topPad={64}>
+  const afterBody = (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'cv-fade-up .35s ease both' }}>
+          {inviteBanner}
 
           <Eyebrow muted>{event.host_name}</Eyebrow>
           <h2 style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 30, lineHeight: 1.02, color: 'var(--cv-ink)', marginTop: -4 }}>
@@ -1420,8 +1598,145 @@ function ScreenAfter({
           </div>
 
         </div>
-      </ScrollPane>
+  );
+
+  if (embedded) {
+    return (
+      <div>
+        <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => e.target.files?.[0] && onUploadPhoto(e.target.files[0])} />
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+          {uploading
+            ? <Loader2 size={16} className="animate-spin" color="var(--cv-accent)" />
+            : <IBtn icon={Camera} onClick={() => fileRef.current?.click()} />}
+        </div>
+        {afterBody}
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <TopBar
+        left={<div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <span style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 18 }}>After</span>
+        </div>}
+        right={
+          uploading
+            ? <Loader2 size={16} className="animate-spin" color="var(--cv-accent)" />
+            : <IBtn icon={Camera} onClick={() => fileRef.current?.click()} />
+        }
+      />
+      <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => e.target.files?.[0] && onUploadPhoto(e.target.files[0])} />
+      <ScrollPane topPad={64}>{afterBody}</ScrollPane>
     </>
+  );
+}
+
+// ─── SCREEN: Event Hub (unified event ecosystem) ────────────────
+function ScreenEventHub({
+  event, section, onSection, stats, guests, photos, uploading,
+  onEdit, onConcierge, onCopy, onNewEvent, onEventUpdated,
+  onRefreshGuests, onUploadPhoto, onScanner, onOpenPlanner, userName, onSignOut, signingOut, invitedEvents,
+}: {
+  event: CvEvent;
+  section: EventSection;
+  onSection: (s: EventSection) => void;
+  stats: { in: number; maybe: number; out: number; pending: number; total: number; arrived: number };
+  guests: CvGuest[];
+  photos: CvPhoto[];
+  uploading: boolean;
+  onEdit: () => void;
+  onConcierge: () => void;
+  onCopy: (url: string, msg?: string) => void;
+  onNewEvent: () => void;
+  onEventUpdated: (ev: CvEvent) => void;
+  onRefreshGuests: () => void;
+  onUploadPhoto: (file: File) => void;
+  onScanner: () => void;
+  onOpenPlanner: () => void;
+  userName?: string | null;
+  onSignOut: (e: React.MouseEvent) => void | Promise<void>;
+  signingOut?: boolean;
+  invitedEvents?: (CvEvent & { guest_name: string; guest_rsvp_state: string; pass_token: string })[];
+}) {
+  const inviteBanner = !event.invite_live && section !== 'invite'
+    ? <InviteNotLiveBanner onGoToInvite={() => onSection('invite')} compact />
+    : null;
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column' }}>
+      <TopBar
+        left={
+          <span style={{ fontFamily: 'var(--font-instrument, serif)', fontStyle: 'italic', fontSize: 17, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {event.host_name}
+          </span>
+        }
+        right={<>
+          <IBtn icon={Plus} onClick={onNewEvent} />
+          <IBtn icon={Pencil} onClick={onEdit} />
+          {userName ? <UserNavMenu userName={userName} onSignOut={onSignOut} signingOut={signingOut} /> : null}
+        </>}
+      />
+      <EventSubNav section={section} onSection={onSection} inviteLive={event.invite_live} />
+      <div className="cv-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '12px 14px 88px' }}>
+        {section === 'overview' && (
+          <ScreenEventHome
+            event={event}
+            stats={stats}
+            onEdit={onEdit}
+            onConcierge={onConcierge}
+            onCopy={onCopy}
+            onNewEvent={onNewEvent}
+            userName={userName}
+            onSignOut={onSignOut}
+            signingOut={signingOut}
+            invitedEvents={invitedEvents}
+            embedded
+            showInviteBanner
+            onGoToInvite={() => onSection('invite')}
+          />
+        )}
+        {section === 'guests' && (
+          <ScreenGuestList
+            event={event}
+            guests={guests}
+            stats={stats}
+            onRefresh={onRefreshGuests}
+            onCopy={onCopy}
+            embedded
+            inviteBanner={inviteBanner}
+          />
+        )}
+        {section === 'invite' && (
+          <ScreenInvite
+            event={event}
+            onCopy={onCopy}
+            embedded
+            onEventUpdated={onEventUpdated}
+          />
+        )}
+        {section === 'activities' && (
+          <ScreenLiveDash
+            event={event}
+            stats={stats}
+            onScanner={onScanner}
+            onOpenPlanner={onOpenPlanner}
+            embedded
+            inviteBanner={inviteBanner}
+          />
+        )}
+        {section === 'after' && (
+          <ScreenAfter
+            event={event}
+            photos={photos}
+            onUploadPhoto={onUploadPhoto}
+            uploading={uploading}
+            embedded
+            inviteBanner={inviteBanner}
+          />
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -1588,6 +1903,7 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
   const [photos, setPhotos] = useState<CvPhoto[]>([]);
   const [stats, setStats] = useState({ in: 0, maybe: 0, out: 0, pending: 0, total: 0, arrived: 0 });
   const [activeTab, setActiveTab] = useState<Tab>('event');
+  const [eventSection, setEventSection] = useState<EventSection>('overview');
   const [screen, setScreen] = useState<Screen>('home');
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [showConcierge, setShowConcierge] = useState(false);
@@ -1606,6 +1922,7 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
 
   const goHome = useCallback(() => {
     setActiveTab('event');
+    setEventSection('overview');
     setScreen('home');
     setShowConcierge(false);
     setEditingEvent(false);
@@ -1643,10 +1960,12 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
       }
       if (!evRes.ok) throw new Error('Failed');
       const data = await evRes.json();
-      setEvents(data.events || []);
-      if (data.events?.length > 0 && !activeEvent) {
-        setActiveEvent(data.events[0]);
-      }
+      const evs: CvEvent[] = data.events || [];
+      setEvents(evs);
+      setActiveEvent(prev => {
+        if (prev && evs.some(e => e.id === prev.id)) return prev;
+        return evs[0] ?? null;
+      });
       if (invRes.ok) {
         const invData = await invRes.json();
         setInvitedEvents(invData.events || []);
@@ -1656,7 +1975,7 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
     } finally {
       setLoadingEvents(false);
     }
-  }, [activeEvent]);
+  }, []);
 
   const loadGuests = useCallback(async (eventId: string) => {
     try {
@@ -1800,7 +2119,7 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
           {screen === 'create' && (
             <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'var(--cv-ivory)', ...accentStyle }}>
               <ScreenCreateEvent
-                onCreated={ev => { setEvents([ev]); setActiveEvent(ev); setScreen('home'); }}
+                onCreated={ev => { setEvents(prev => [ev, ...prev]); setActiveEvent(ev); setScreen('home'); setEventSection('overview'); }}
                 onCancel={() => setScreen('home')}
                 onSignOut={handleSignOut}
                 signingOut={signingOut}
@@ -1814,7 +2133,7 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
     return appShell(
       <div style={{ position: 'absolute', inset: 0, ...accentStyle }}>
         <ScreenCreateEvent
-          onCreated={ev => { setEvents([ev]); setActiveEvent(ev); }}
+          onCreated={ev => { setEvents([ev]); setActiveEvent(ev); setScreen('home'); }}
           onSignOut={handleSignOut}
           signingOut={signingOut}
         />
@@ -1828,37 +2147,62 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
       <div style={{ position: 'absolute', inset: 0, background: 'var(--cv-ivory)', ...accentStyle }}>
         <ScreenEditEvent
           event={activeEvent}
-          onSaved={ev => { setActiveEvent(ev); setEditingEvent(false); }}
+          onSaved={ev => { setActiveEvent(ev); setEvents(prev => prev.map(e => e.id === ev.id ? ev : e)); setEditingEvent(false); }}
           onBack={() => setEditingEvent(false)}
+          onDelete={async () => {
+            const deletedId = activeEvent.id;
+            const remaining = events.filter(e => e.id !== deletedId);
+            setEvents(remaining);
+            setGuests([]);
+            setPhotos([]);
+            setEditingEvent(false);
+            if (remaining.length === 0) {
+              setActiveEvent(null);
+              setScreen('home');
+            } else {
+              setActiveEvent(remaining[0]);
+            }
+            showToast('Event deleted');
+          }}
         />
       </div>,
     );
   }
 
+  const handleEventUpdated = useCallback((ev: CvEvent) => {
+    setActiveEvent(ev);
+    setEvents(prev => prev.map(e => (e.id === ev.id ? ev : e)));
+  }, []);
+
   const renderContent = () => {
-    if (showConcierge && activeEvent) {
+    if (!activeEvent) return null;
+
+    if (showConcierge) {
       return <ScreenConcierge event={activeEvent} onClose={() => setShowConcierge(false)} />;
     }
 
     if (activeTab === 'event') {
-      if (screen === 'create') {
-        return (
-          <ScreenCreateEvent
-            onCreated={ev => { loadEvents(); setActiveEvent(ev); setScreen('home'); }}
-            onCancel={() => setScreen('home')}
-            onSignOut={handleSignOut}
-            signingOut={signingOut}
-          />
-        );
+      if (screen === 'scanner') {
+        return <ScreenScanner event={activeEvent} onBack={() => setScreen('home')} />;
       }
       return (
-        <ScreenEventHome
-          event={activeEvent!}
+        <ScreenEventHub
+          event={activeEvent}
+          section={eventSection}
+          onSection={setEventSection}
           stats={stats}
+          guests={guests}
+          photos={photos}
+          uploading={uploading}
           onEdit={() => setEditingEvent(true)}
           onConcierge={() => setShowConcierge(true)}
           onCopy={handleCopy}
           onNewEvent={() => setScreen('create')}
+          onEventUpdated={handleEventUpdated}
+          onRefreshGuests={() => loadGuests(activeEvent.id)}
+          onUploadPhoto={handleUploadPhoto}
+          onScanner={() => setScreen('scanner')}
+          onOpenPlanner={() => setActiveTab('planner')}
           userName={userName}
           onSignOut={handleSignOut}
           signingOut={signingOut}
@@ -1867,30 +2211,12 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
       );
     }
 
-    if (activeTab === 'guests') {
-      return (
-        <ScreenGuestList
-          event={activeEvent!}
-          guests={guests}
-          stats={stats}
-          onBack={() => setActiveTab('event')}
-          onRefresh={() => loadGuests(activeEvent!.id)}
-          onCopy={handleCopy}
-        />
-      );
+    if (activeTab === 'vendors') {
+      return <ScreenVendorMarketplace event={activeEvent} onToast={showToast} />;
     }
 
-    if (activeTab === 'invite') {
-      return <ScreenInvite event={activeEvent!} onBack={() => setActiveTab('event')} onCopy={handleCopy} />;
-    }
-
-    if (activeTab === 'tonight') {
-      if (screen === 'scanner') return <ScreenScanner event={activeEvent!} onBack={() => setScreen('home')} />;
-      return <ScreenLiveDash event={activeEvent!} stats={stats} onScanner={() => setScreen('scanner')} />;
-    }
-
-    if (activeTab === 'after') {
-      return <ScreenAfter event={activeEvent!} photos={photos} onUploadPhoto={handleUploadPhoto} uploading={uploading} />;
+    if (activeTab === 'planner') {
+      return <ScreenPlanner event={activeEvent} onToast={showToast} />;
     }
 
     return null;
@@ -1919,7 +2245,7 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
       )}
 
       {/* Floating concierge FAB */}
-      {!showConcierge && activeEvent && screen !== 'scanner' && (
+      {!showConcierge && activeEvent && screen !== 'scanner' && activeTab === 'event' && (
         <button
           onClick={() => setShowConcierge(true)}
           style={{
@@ -1936,7 +2262,18 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
       )}
 
       {!showConcierge && screen !== 'scanner' && (
-        <Dock active={activeTab} onTab={t => { setActiveTab(t); setScreen('home'); }} />
+        <Dock active={activeTab} onTab={t => { if (screen === 'create') return; setActiveTab(t); setScreen('home'); }} />
+      )}
+
+      {screen === 'create' && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'var(--cv-ivory)', ...accentStyle }}>
+          <ScreenCreateEvent
+            onCreated={ev => { setEvents(prev => [ev, ...prev]); setActiveEvent(ev); setScreen('home'); setEventSection('overview'); }}
+            onCancel={() => setScreen('home')}
+            onSignOut={handleSignOut}
+            signingOut={signingOut}
+          />
+        </div>
       )}
     </div>,
   );

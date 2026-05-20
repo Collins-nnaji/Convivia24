@@ -433,3 +433,110 @@ export async function pledgeGift(id: string, amount: number): Promise<Convivia24
   `;
   return (rows[0] as unknown as Convivia24Gift) ?? null;
 }
+
+// ── Schedule ──────────────────────────────────────────────────────────────────
+
+export interface Convivia24ScheduleItem {
+  id: string;
+  event_id: string;
+  time_label: string;
+  title: string;
+  subtitle: string | null;
+  sort_order: number;
+  created_at: string;
+}
+
+export async function getScheduleForEvent(eventId: string): Promise<Convivia24ScheduleItem[]> {
+  const rows = await sql`
+    SELECT * FROM convivia24_schedule WHERE event_id = ${eventId} ORDER BY sort_order ASC, created_at ASC
+  `;
+  return rows as unknown as Convivia24ScheduleItem[];
+}
+
+export async function createScheduleItem(
+  eventId: string,
+  data: { time_label: string; title: string; subtitle?: string | null; sort_order?: number },
+): Promise<Convivia24ScheduleItem> {
+  const rows = await sql`
+    INSERT INTO convivia24_schedule (event_id, time_label, title, subtitle, sort_order)
+    VALUES (
+      ${eventId},
+      ${data.time_label},
+      ${data.title},
+      ${data.subtitle ?? null},
+      ${data.sort_order ?? 0}
+    )
+    RETURNING *
+  `;
+  return rows[0] as unknown as Convivia24ScheduleItem;
+}
+
+export async function deleteScheduleItem(id: string, eventId: string): Promise<void> {
+  await sql`DELETE FROM convivia24_schedule WHERE id = ${id} AND event_id = ${eventId}`;
+}
+
+// ── Event vendors ───────────────────────────────────────────────────────────────
+
+export interface Convivia24EventVendor {
+  id: string;
+  event_id: string;
+  category: string;
+  name: string;
+  contact: string | null;
+  status: string;
+  notes: string | null;
+  created_at: string;
+}
+
+export async function getEventVendors(eventId: string): Promise<Convivia24EventVendor[]> {
+  const rows = await sql`
+    SELECT * FROM convivia24_event_vendors WHERE event_id = ${eventId} ORDER BY created_at DESC
+  `;
+  return rows as unknown as Convivia24EventVendor[];
+}
+
+export async function createEventVendor(
+  eventId: string,
+  data: { category: string; name: string; contact?: string | null; notes?: string | null },
+): Promise<Convivia24EventVendor> {
+  const rows = await sql`
+    INSERT INTO convivia24_event_vendors (event_id, category, name, contact, notes, status)
+    VALUES (${eventId}, ${data.category}, ${data.name}, ${data.contact ?? null}, ${data.notes ?? null}, 'saved')
+    RETURNING *
+  `;
+  return rows[0] as unknown as Convivia24EventVendor;
+}
+
+export async function deleteEventVendor(id: string, eventId: string): Promise<void> {
+  await sql`DELETE FROM convivia24_event_vendors WHERE id = ${id} AND event_id = ${eventId}`;
+}
+
+export interface MarketplaceVendor {
+  id: string;
+  business_name: string;
+  business_type: string | null;
+  city_name: string | null;
+  slug: string | null;
+  description: string | null;
+  logo_url: string | null;
+}
+
+export async function getMarketplaceVendors(city?: string | null): Promise<MarketplaceVendor[]> {
+  const rows = city
+    ? await sql`
+        SELECT id, business_name, business_type, city_name, slug, description, logo_url
+        FROM outlet_applications
+        WHERE status = 'approved' AND slug IS NOT NULL
+          AND (city_name ILIKE ${'%' + city + '%'} OR city_name IS NULL)
+        ORDER BY business_name ASC
+        LIMIT 40
+      `
+    : await sql`
+        SELECT id, business_name, business_type, city_name, slug, description, logo_url
+        FROM outlet_applications
+        WHERE status = 'approved' AND slug IS NOT NULL
+        ORDER BY business_name ASC
+        LIMIT 40
+      `;
+  return rows as unknown as MarketplaceVendor[];
+}
