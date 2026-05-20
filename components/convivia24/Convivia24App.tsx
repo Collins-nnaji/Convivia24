@@ -180,46 +180,80 @@ function SegmentTabs<T extends string>({
   );
 }
 
+const DOCK_TABS: { id: Tab; label: string; Icon: React.ElementType; dot?: boolean }[] = [
+  { id: 'event',   label: 'Event',    Icon: Home },
+  { id: 'invite',  label: 'Invite',   Icon: Mail },
+  { id: 'vendors', label: 'Vendors',  Icon: Store },
+  { id: 'planner', label: 'Planner',  Icon: CalendarDays },
+  { id: 'checkin', label: 'Check-in', Icon: ScanLine },
+];
+
 function Dock({ active, onTab, inviteNeedsAttention }: { active: Tab; onTab: (t: Tab) => void; inviteNeedsAttention?: boolean }) {
-  const tabs: { id: Tab; label: string; Icon: React.ElementType; dot?: boolean }[] = [
-    { id: 'event',   label: 'Event',    Icon: Home },
-    { id: 'invite',  label: 'Invite',   Icon: Mail, dot: inviteNeedsAttention },
-    { id: 'vendors', label: 'Vendors',  Icon: Store },
-    { id: 'planner', label: 'Planner',  Icon: CalendarDays },
-    { id: 'checkin', label: 'Check-in', Icon: ScanLine },
-  ];
   return (
-    <div style={{ position: 'absolute', left: 12, right: 12, bottom: 16, zIndex: 100 }}>
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '6px 6px',
-        background: 'rgba(26,23,20,.88)', borderRadius: 9999,
-        border: '1px solid rgba(255,255,255,.10)',
-        boxShadow: '0 12px 40px rgba(26,23,20,.30), 0 2px 8px rgba(26,23,20,.15)',
-        backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
-      }}>
-        {tabs.map(({ id, label, Icon, dot }) => (
-          <button
-            key={id}
-            onClick={() => onTab(id)}
-            style={{
-              flex: 1, minHeight: 46, padding: '6px 2px',
-              background: active === id ? 'rgba(255,255,255,.12)' : 'transparent',
-              border: 'none', cursor: 'pointer', borderRadius: 9999,
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3,
-              color: active === id ? '#fff' : 'rgba(255,255,255,.45)',
-              fontFamily: 'var(--font-geist, system-ui)', fontWeight: 700,
-              fontSize: 6.5, letterSpacing: '0.06em', textTransform: 'uppercase',
-              transition: 'color .15s, background .15s', position: 'relative',
-            }}
-          >
-            <Icon size={15} strokeWidth={active === id ? 2.2 : 1.5} />
-            <span>{label}</span>
-            {dot && active !== id && (
-              <span style={{ position: 'absolute', top: 6, right: '18%', width: 6, height: 6, borderRadius: 99, background: '#e85d4b' }} />
-            )}
-          </button>
-        ))}
+    <div
+      data-convivia-dock
+      style={{
+        position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 100,
+        padding: '0 8px max(16px, env(safe-area-inset-bottom))',
+        pointerEvents: 'none',
+      }}
+    >
+      <div
+        style={{
+          pointerEvents: 'auto',
+          display: 'flex', alignItems: 'stretch',
+          gap: 2,
+          padding: '6px 6px',
+          background: 'rgba(26,23,20,.92)', borderRadius: 20,
+          border: '1px solid rgba(255,255,255,.10)',
+          boxShadow: '0 12px 40px rgba(26,23,20,.30), 0 2px 8px rgba(26,23,20,.15)',
+          backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
+        }}
+      >
+        {DOCK_TABS.map(({ id, label, Icon, dot }) => {
+          const showDot = (id === 'invite' && inviteNeedsAttention) || dot;
+          const on = active === id;
+          return (
+            <button
+              key={id}
+              type="button"
+              data-dock-tab={id}
+              onClick={() => onTab(id)}
+              style={{
+                flex: '1 1 0',
+                minWidth: 0,
+                minHeight: 48,
+                padding: '6px 2px',
+                background: on ? 'rgba(255,255,255,.14)' : 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                borderRadius: 14,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 3,
+                color: on ? '#fff' : 'rgba(255,255,255,.5)',
+                fontFamily: 'var(--font-geist, system-ui)',
+                fontWeight: 700,
+                fontSize: 6,
+                letterSpacing: '0.03em',
+                textTransform: 'uppercase',
+                transition: 'color .15s, background .15s',
+                position: 'relative',
+              }}
+            >
+              <Icon size={15} strokeWidth={on ? 2.2 : 1.5} />
+              <span style={{ lineHeight: 1.1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{label}</span>
+              {showDot && !on && (
+                <span style={{
+                  position: 'absolute', top: 5, right: 6,
+                  width: 6, height: 6, borderRadius: 99, background: '#e85d4b',
+                }} />
+              )}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -694,7 +728,7 @@ function ScreenEditEvent({ event, onSaved, onBack, onDelete }: { event: CvEvent;
 // ─── SCREEN: Event Home ───────────────────────────────────────
 function ScreenEventHome({
   event, stats, onEdit, onConcierge, onCopy, onNewEvent, userName, onSignOut, signingOut, invitedEvents,
-  onGoToInvite, onOpenVendors, onOpenPlanner, eventSwitcher,
+  onGoToInvite, onGoVendors, onGoPlanner, eventSwitcher,
   onGoInviteGuests, onGoCheckIn, showFlowGuide, onDismissFlowGuide,
 }: {
   event: CvEvent;
@@ -708,11 +742,10 @@ function ScreenEventHome({
   signingOut?: boolean;
   invitedEvents?: (CvEvent & { guest_name: string; guest_rsvp_state: string; pass_token: string })[];
   onGoToInvite?: () => void;
-  onOpenVendors?: () => void;
-  onOpenPlanner?: () => void;
+  onGoVendors?: () => void;
+  onGoPlanner?: () => void;
   eventSwitcher?: React.ReactNode;
   onGoInviteGuests?: () => void;
-  onGoVendors?: () => void;
   onGoCheckIn?: () => void;
   showFlowGuide?: boolean;
   onDismissFlowGuide?: () => void;
@@ -850,10 +883,10 @@ function ScreenEventHome({
             </Card>
           )}
 
-          {(onOpenVendors || onOpenPlanner) && (
+          {(onGoVendors || onGoPlanner) && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              {onOpenVendors && (
-                <button type="button" onClick={onOpenVendors} style={{
+              {onGoVendors && (
+                <button type="button" onClick={onGoVendors} style={{
                   padding: '14px 12px', borderRadius: 14, border: '1px solid var(--cv-hairline)', background: '#fff',
                   cursor: 'pointer', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 6,
                 }}>
@@ -862,8 +895,8 @@ function ScreenEventHome({
                   <span style={{ fontSize: 10, color: 'var(--cv-muted)', lineHeight: 1.35 }}>Find &amp; save vendors</span>
                 </button>
               )}
-              {onOpenPlanner && (
-                <button type="button" onClick={onOpenPlanner} style={{
+              {onGoPlanner && (
+                <button type="button" onClick={onGoPlanner} style={{
                   padding: '14px 12px', borderRadius: 14, border: '1px solid var(--cv-hairline)', background: '#fff',
                   cursor: 'pointer', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 6,
                 }}>
@@ -2434,9 +2467,8 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
           onGoToInvite={() => { setInviteHubTab('design'); setActiveTab('invite'); }}
           onGoInviteGuests={() => { setInviteHubTab('guests'); setActiveTab('invite'); }}
           onGoVendors={() => setActiveTab('vendors')}
+          onGoPlanner={() => setActiveTab('planner')}
           onGoCheckIn={() => { setCheckinHubTab('door'); setActiveTab('checkin'); }}
-          onOpenVendors={() => setActiveTab('vendors')}
-          onOpenPlanner={() => setActiveTab('planner')}
           userName={userName}
           onSignOut={handleSignOut}
           signingOut={signingOut}
