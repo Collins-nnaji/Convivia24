@@ -4,9 +4,13 @@ import { neonAuth } from '@/lib/auth/server';
 import { getOrCreateUser } from '@/lib/db/users';
 import { outletPostingBlocked } from '@/lib/outlet-application';
 import { ShiftPostSchema, zodFirstError } from '@/lib/schemas';
+import { rateLimit } from '@/lib/rate-limit';
 
-// GET /api/hangouts — ?city=Lagos&next_hours=24 (optional window for “Today”) &category=&type=&free=1
+// GET /api/hangouts — ?city=Lagos&next_hours=24&category=&type=&free=1&page=1&limit=20
 export async function GET(req: NextRequest) {
+  const limited = await rateLimit(req, 'hangouts:get', 120, 60);
+  if (limited) return limited;
+
   try {
     const { searchParams } = new URL(req.url);
     const city     = searchParams.get('city');
@@ -15,6 +19,10 @@ export async function GET(req: NextRequest) {
     const type     = searchParams.get('type');
     const freeOnly = searchParams.get('free') === '1';
     const areaEmpty = !area || !area.trim();
+
+    const page  = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '20', 10)));
+    const offset = (page - 1) * limit;
 
     /** When set (e.g. 24), only return shifts with event_time within the next N hours (Today/home). */
     const nextHoursRaw = searchParams.get('next_hours');
@@ -70,14 +78,17 @@ export async function GET(req: NextRequest) {
           OR h.ticket_price = 0
         )
       ORDER BY h.event_time ASC
+      LIMIT ${limit} OFFSET ${offset}
     `;
 
-    const attendees = await sql`
+    const hangoutIds = hangouts.map((h) => h.id as string);
+    const attendees = hangoutIds.length > 0 ? await sql`
       SELECT a.hangout_id, a.user_id, u.name, u.avatar_url, u.verified
       FROM attendees a
       JOIN users u ON a.user_id = u.id
       WHERE a.status = 'attending'
-    `;
+        AND a.hangout_id = ANY(${hangoutIds}::uuid[])
+    ` : [];
 
     const serialized = hangouts.map((h) => {
       const d = h.event_time instanceof Date ? h.event_time : new Date(h.event_time as string);
@@ -93,7 +104,10 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    return NextResponse.json({ hangouts: serialized });
+    return NextResponse.json(
+      { hangouts: serialized, page, limit },
+      { headers: { 'Cache-Control': 's-maxage=30, stale-while-revalidate=60' } },
+    );
   } catch (err) {
     console.error('Error fetching hangouts:', err);
     return NextResponse.json({ error: 'Failed to load hangouts.' }, { status: 500 });

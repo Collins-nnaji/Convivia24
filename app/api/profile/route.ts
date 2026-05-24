@@ -7,9 +7,13 @@ import { syncUserWatchlistFromHostedHangouts } from '@/lib/userWatchlist';
 import { getOutletApplicationForUser, serializeOutletApplication } from '@/lib/outlet-application';
 import { isConviviaAdminAsync } from '@/lib/admin';
 import { ProfilePatchSchema, zodFirstError } from '@/lib/schemas';
+import { rateLimit } from '@/lib/rate-limit';
 
 // GET /api/profile — Get current user's profile
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const limited = await rateLimit(req, 'profile:get', 60, 60);
+  if (limited) return limited;
+
   try {
     const { user: authUser } = await neonAuth();
     if (!authUser) {

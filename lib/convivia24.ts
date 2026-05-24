@@ -198,9 +198,17 @@ export async function deleteEvent(id: string, userId: string): Promise<void> {
 
 // ── Guests ────────────────────────────────────────────────────────────────────
 
-export async function getGuestsForEvent(eventId: string): Promise<Convivia24Guest[]> {
+export async function getGuestsForEvent(
+  eventId: string,
+  page = 1,
+  limit = 100,
+): Promise<Convivia24Guest[]> {
+  const offset = (page - 1) * limit;
   const rows = await sql`
-    SELECT * FROM convivia24_guests WHERE event_id = ${eventId} ORDER BY name ASC
+    SELECT * FROM convivia24_guests
+    WHERE event_id = ${eventId}
+    ORDER BY name ASC
+    LIMIT ${limit} OFFSET ${offset}
   `;
   return rows as unknown as Convivia24Guest[];
 }

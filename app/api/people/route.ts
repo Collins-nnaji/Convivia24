@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db';
+import { rateLimit } from '@/lib/rate-limit';
 
 // GET /api/people?city=Lagos
 // Returns two groups:
 //   activity_groups — upcoming hangouts with their attendees (grouped by event)
 //   open_to_meet   — users who flagged themselves as open to meeting, no specific event
 export async function GET(req: NextRequest) {
+  const limited = await rateLimit(req, 'people:get', 60, 60);
+  if (limited) return limited;
+
   try {
     const { searchParams } = new URL(req.url);
     const city = searchParams.get('city') || 'Lagos';
@@ -73,7 +77,10 @@ export async function GET(req: NextRequest) {
       LIMIT 24
     `;
 
-    return NextResponse.json({ activity_groups, open_to_meet });
+    return NextResponse.json(
+      { activity_groups, open_to_meet },
+      { headers: { 'Cache-Control': 's-maxage=30, stale-while-revalidate=60' } },
+    );
   } catch (err) {
     console.error('Error fetching people:', err);
     return NextResponse.json({ error: 'Failed to load.' }, { status: 500 });

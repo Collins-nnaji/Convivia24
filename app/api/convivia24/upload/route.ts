@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadFile } from '@/lib/storage';
+import { rateLimit } from '@/lib/rate-limit';
 
 const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
 
-/** Public upload for event photos (no auth required — guests can upload) */
+/** Upload endpoint for event photos. Rate-limited to 5 uploads/min per IP. */
 export async function POST(req: NextRequest) {
+  const limited = await rateLimit(req, 'upload', 5, 60);
+  if (limited) return limited;
+
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
