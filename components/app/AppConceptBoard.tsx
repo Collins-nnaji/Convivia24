@@ -17,7 +17,7 @@ import {
 import { BrandLogo } from '@/components/BrandLogo';
 import type { StaffPersona } from '@/hooks/useStaffPersona';
 
-export type AppShellMode = 'staff' | 'outlet';
+export type AppShellMode = 'staff' | 'outlet' | 'brand' | 'field';
 import { buildHangoutInviteMessage, whatsAppSendPrefilledUrl } from '@/lib/hangout-invite-share';
 import { everythingFree } from '@/lib/premium';
 import {

@@ -7,7 +7,11 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, X, LogIn } from 'lucide-react';
 import { BrandLogo } from '@/components/BrandLogo';
 
-const LINKS: { label: string; href: string }[] = [];
+const LINKS: { label: string; href: string }[] = [
+  { label: 'For brands', href: '/#for-brands' },
+  { label: 'Contact', href: '/#contact' },
+  { label: 'Staffing', href: '/hire' },
+];
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -23,7 +27,7 @@ export default function Navigation() {
   useEffect(() => { setOpen(false); }, [pathname]);
 
   // Full-screen app shells — no duplicate marketing header
-  if (pathname === '/' || pathname === '/outlet') return null;
+  if (pathname === '/' || pathname === '/outlet' || pathname === '/staff' || pathname === '/field' || pathname === '/hire') return null;
 
   return (
     <>
@@ -72,10 +76,10 @@ export default function Navigation() {
 
             {/* Sign In / Dashboard */}
             <Link
-              href="/auth/sign-in"
+              href="/auth/sign-in?next=/staff"
               className="ml-3 px-4 py-2 border border-neutral-300 hover:border-red-400 text-neutral-600 hover:text-red-800 text-[11px] font-black uppercase tracking-[0.15em] transition-all flex items-center gap-2"
             >
-              <LogIn size={14} /> Sign In
+              <LogIn size={14} /> Client portal
             </Link>
           </nav>
 
@@ -141,10 +145,10 @@ export default function Navigation() {
                     Inquire
                   </Link>
                   <Link
-                    href="/auth/sign-in"
+                    href="/auth/sign-in?next=/staff"
                     className="block w-full text-center py-3.5 border border-neutral-200 text-neutral-600 text-[12px] font-black uppercase tracking-[0.15em] transition-colors hover:border-red-300 hover:text-red-800"
                   >
-                    Sign In →
+                    Client portal →
                   </Link>
                 </div>
               </nav>

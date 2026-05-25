@@ -1,16 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import { createAuthClient } from '@neondatabase/auth/next';
 import { NeonAuthUIProvider, AuthView } from '@neondatabase/auth/react/ui';
 import { NEON_AUTH_SOCIAL_GOOGLE } from '@/lib/auth/neon-ui';
 import { BrandLogo } from '@/components/BrandLogo';
+import { navigateAfterAuth, resolveAuthNextPath } from '@/lib/auth/navigate-after-auth';
 
 const authClient = createAuthClient();
 
-export default function SignInPage() {
-  const router = useRouter();
+function SignInForm() {
+  const searchParams = useSearchParams();
+  const nextPath = resolveAuthNextPath(searchParams, '/');
 
   return (
     <main className="mobile-scroll-screen mobile-safe-screen bg-[#f8f6f2] text-neutral-900 flex items-center justify-center relative max-w-[100vw]">
@@ -36,18 +39,18 @@ export default function SignInPage() {
             Welcome back
           </h1>
           <p className="text-neutral-500 text-sm max-w-sm mx-auto">
-            Sign in · profile, matches, verification.
+            Sign in to your Convivia24 account.
           </p>
         </div>
 
         <div className="neon-auth-ui-scope bg-white/95 backdrop-blur-xl border border-neutral-200 rounded-[24px] sm:rounded-[32px] p-5 sm:p-8 shadow-[0_24px_60px_rgba(0,0,0,0.08)] [&_button_svg]:h-[18px] [&_button_svg]:w-[18px] [&_button_svg]:shrink-0 [&_button_img]:h-[18px] [&_button_img]:w-[18px] [&_button_img]:object-contain">
           <NeonAuthUIProvider
             authClient={authClient}
-            navigate={(path: string) => router.push(path)}
-            replace={(path: string) => router.replace(path)}
+            navigate={(path: string) => navigateAfterAuth(path)}
+            replace={(path: string) => navigateAfterAuth(path)}
             social={NEON_AUTH_SOCIAL_GOOGLE}
           >
-            <AuthView view="SIGN_IN" redirectTo="/" />
+            <AuthView view="SIGN_IN" redirectTo={nextPath} />
           </NeonAuthUIProvider>
         </div>
 
@@ -58,21 +61,23 @@ export default function SignInPage() {
           </Link>
         </p>
 
-        <div className="mt-6 flex flex-wrap gap-3 justify-center">
+        <div className="mt-6 flex justify-center">
           <Link
             href="/"
             className="px-5 py-2.5 border border-neutral-200 rounded-xl text-neutral-600 text-[11px] font-bold uppercase tracking-widest hover:border-red-300 hover:text-red-800 transition-colors bg-white/80"
           >
-            Back to app
-          </Link>
-          <Link
-            href="/inquire"
-            className="px-5 py-2.5 border border-red-200 rounded-xl text-red-800 text-[11px] font-bold uppercase tracking-widest hover:border-red-400 hover:bg-red-50 transition-colors bg-white/80"
-          >
-            Contact
+            Back to home
           </Link>
         </div>
       </div>
     </main>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={<main className="min-h-[100dvh] bg-[#f8f6f2] flex items-center justify-center text-neutral-400">Loading…</main>}>
+      <SignInForm />
+    </Suspense>
   );
 }

@@ -34,8 +34,28 @@ module.exports = {
         animation: {
           blob: "blob 7s infinite",
           'spin-slow': 'spin 12s linear infinite',
+          'landing-ken-burns': 'landingKenBurns 24s ease-in-out infinite alternate',
+          'landing-float': 'landingFloat 7s ease-in-out infinite',
+          'landing-glow': 'landingGlow 5s ease-in-out infinite alternate',
+          'landing-shine': 'landingShine 3s ease-in-out infinite',
         },
         keyframes: {
+          landingKenBurns: {
+            '0%': { transform: 'scale(1.06) translate(0, 0)' },
+            '100%': { transform: 'scale(1.14) translate(-1%, -1%)' },
+          },
+          landingFloat: {
+            '0%, 100%': { transform: 'translateY(0)' },
+            '50%': { transform: 'translateY(-14px)' },
+          },
+          landingGlow: {
+            '0%': { opacity: '0.35', transform: 'scale(1)' },
+            '100%': { opacity: '0.65', transform: 'scale(1.08)' },
+          },
+          landingShine: {
+            '0%, 100%': { opacity: '0.4' },
+            '50%': { opacity: '1' },
+          },
           blob: {
             "0%": {
               transform: "translate(0px, 0px) scale(1)",

@@ -3,7 +3,8 @@ import { BrandLogo } from '@/components/BrandLogo';
 
 const footerLinks = [
   { label: 'Home', href: '/' },
-  { label: 'Inquire', href: '/inquire' },
+  { label: 'For brands', href: '/inquire' },
+  { label: 'Staffing', href: '/hire' },
 ];
 
 export default function Footer() {
@@ -28,7 +29,7 @@ export default function Footer() {
             </div>
           </div>
           <p className="text-[10px] text-neutral-500 leading-relaxed pr-2">
-            Hospitality staffing · Lagos, Abuja, PH · verified · same-day pay. <span className="font-semibold text-neutral-600">18+</span>
+            FMCG brand activation · guest passes · sampling · photo wall. <span className="font-semibold text-neutral-600">18+</span>
           </p>
           <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-neutral-100 text-[10px] text-neutral-500">
             <span>&copy; 2026 Convivia24</span>

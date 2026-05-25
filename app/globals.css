@@ -7,6 +7,14 @@
   --app-wash: #f8f6f2;
   --gold-accent: #c9a84c;
 
+  /* FMCG activation aliases (same palette as app shell) */
+  --cv-ivory: #f8f6f2;
+  --cv-gold: #c9a84c;
+  --cv-ink: #171717;
+  --cv-muted: #756c5e;
+  --cv-paper: #ffffff;
+  --cv-hairline: rgba(23, 23, 23, 0.1);
+
   /* Mobile app feel — letter spacing and weight feel native */
   --tracking-ui: -0.01em;
   --tracking-label: 0.02em;
@@ -20,6 +28,49 @@
 html {
   background: var(--app-wash);
   -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Landing page — hero mesh & section polish */
+.landing-hero-mesh {
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(201, 168, 76, 0.18), transparent 55%),
+    radial-gradient(ellipse 40% 30% at 90% 20%, rgba(201, 168, 76, 0.08), transparent 50%),
+    radial-gradient(ellipse 35% 25% at 5% 60%, rgba(185, 28, 28, 0.04), transparent 45%);
+}
+
+.landing-card-shine {
+  position: relative;
+  overflow: hidden;
+}
+.landing-card-shine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 60%
+  );
+  transform: translateX(-120%);
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+.landing-card-shine:hover::after {
+  transform: translateX(120%);
+}
+
+.landing-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.35;
+  mix-blend-mode: overlay;
 }
 
 body {
