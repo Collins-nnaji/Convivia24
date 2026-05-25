@@ -7,12 +7,13 @@ import { ArrowRight, Check } from 'lucide-react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 
 const INQUIRY_TYPES = [
+  'Brand Activation Brief',
+  'Guestlist & VIP Experience',
+  'Redemption Tracking Campaign',
+  'Live Brand Screen Sponsorship',
+  'Agency Partnership',
+  'Press & Media',
   'General Inquiry',
-  'Worker onboarding',
-  'Outlet onboarding',
-  'Corporate staffing',
-  'Partnerships',
-  'Press',
 ];
 
 const fadeUp = {
@@ -92,11 +93,11 @@ export default function InquirePage() {
               variants={fadeUp}
               className="font-display text-4xl sm:text-6xl md:text-7xl font-light italic tracking-tight text-cream leading-[0.9] mb-6"
             >
-              Start a<br />conversation.
+              Brief us on<br />your activation.
             </motion.h1>
 
             <motion.p variants={fadeUp} className="text-cream/50 text-base leading-relaxed mb-12 max-w-md">
-              Partnerships, press, or general questions — we read everything; reply within 48h.
+              Brand activations, agency partnerships, or general enquiries — we read everything and respond within 48 hours.
             </motion.p>
 
             {/* What happens next */}

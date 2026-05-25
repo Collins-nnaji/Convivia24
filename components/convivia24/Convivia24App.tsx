@@ -8,9 +8,10 @@ import {
   LayoutGrid, Utensils, Wine, Heart, Music, Gift, Phone,
   Send, Pencil, Trash2, CheckCircle, XCircle, AlertCircle,
   ScanLine, Eye, RefreshCw, LogOut, LogIn, Star, Zap, Download,
-  Store, CalendarDays,
+  Store, CalendarDays, Compass,
 } from 'lucide-react';
 import { EventSwitcher } from '@/components/convivia24/EventSwitcher';
+import { ScreenDiscover } from '@/components/convivia24/ScreenDiscover';
 import {
   Avatar, Eyebrow, Tag, Chip, Btn, Dial, QRBlock,
   Card, WordmarkLink, MiddleDot, Hr,
@@ -52,7 +53,7 @@ interface CvGuest {
 }
 interface CvPhoto { id: string; event_id: string; url: string; uploader_name: string | null; caption: string | null; created_at: string; }
 
-type Tab = 'event' | 'invite' | 'vendors' | 'planner' | 'checkin';
+type Tab = 'event' | 'invite' | 'vendors' | 'planner' | 'checkin' | 'discover';
 type InviteHubTab = 'design' | 'guests';
 type CheckInHubTab = 'door' | 'photos';
 const INVITE_SUBNAV_H = 52;
@@ -181,11 +182,12 @@ function SegmentTabs<T extends string>({
 }
 
 const DOCK_TABS: { id: Tab; label: string; Icon: React.ElementType; dot?: boolean }[] = [
-  { id: 'event',   label: 'Event',    Icon: Home },
-  { id: 'invite',  label: 'Invite',   Icon: Mail },
-  { id: 'vendors', label: 'Vendors',  Icon: Store },
-  { id: 'planner', label: 'Planner',  Icon: CalendarDays },
-  { id: 'checkin', label: 'Check-in', Icon: ScanLine },
+  { id: 'event',    label: 'Event',    Icon: Home },
+  { id: 'invite',   label: 'Invite',   Icon: Mail },
+  { id: 'discover', label: 'Discover', Icon: Compass },
+  { id: 'vendors',  label: 'Vendors',  Icon: Store },
+  { id: 'planner',  label: 'Planner',  Icon: CalendarDays },
+  { id: 'checkin',  label: 'Check-in', Icon: ScanLine },
 ];
 
 function Dock({ active, onTab, inviteNeedsAttention }: { active: Tab; onTab: (t: Tab) => void; inviteNeedsAttention?: boolean }) {
@@ -2435,6 +2437,10 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
   }
 
   const renderContent = () => {
+    if (activeTab === 'discover') {
+      return <ScreenDiscover onToast={showToast} />;
+    }
+
     if (!activeEvent) return null;
 
     if (showConcierge) {
@@ -2591,6 +2597,7 @@ export function Convivia24App({ initialUser }: Convivia24AppProps) {
             setScreen('home');
             if (t === 'invite' && activeTab !== 'invite') setInviteHubTab('design');
             if (t === 'checkin' && activeTab !== 'checkin') setCheckinHubTab('door');
+            if (t === 'discover') setShowConcierge(false);
           }}
         />
       )}
