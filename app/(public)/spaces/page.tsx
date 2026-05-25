@@ -105,7 +105,7 @@ export default function SpacesPage() {
       {SPACES.map((space, i) => {
         const isLight = i % 2 === 1;
         return (
-          <section key={space.num} className={isLight ? 'bg-cream py-24 sm:py-32' : 'bg-obsidian py-24 sm:py-32'}>
+          <section key={space.num} className={isLight ? 'bg-cream py-18 sm:py-24' : 'bg-obsidian py-18 sm:py-24'}>
             <div className="max-w-6xl mx-auto px-5 sm:px-8">
               <motion.div
                 initial="hidden"

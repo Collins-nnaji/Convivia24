@@ -11,7 +11,7 @@ const footerLinks = [
 
 export default function Footer() {
   return (
-    <footer className="mt-24 bg-obsidian border-t border-gold/20">
+    <footer className="bg-obsidian border-t border-gold/20">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-14 pb-12">
 
         {/* Top row */}

@@ -71,7 +71,7 @@ export default function ConviviumPage() {
       </section>
 
       {/* ═══════════ ETYMOLOGY — CREAM WITH IMAGE ═══════════ */}
-      <section className="bg-cream py-28 sm:py-36">
+      <section className="bg-cream py-20 sm:py-28">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <motion.div
             initial="hidden"
@@ -125,7 +125,7 @@ export default function ConviviumPage() {
       </section>
 
       {/* ═══════════ BENEFITS WITH IMAGE ═══════════ */}
-      <section className="bg-obsidian py-28 sm:py-36">
+      <section className="bg-obsidian py-20 sm:py-28">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <motion.div
             initial="hidden"
@@ -163,7 +163,7 @@ export default function ConviviumPage() {
       </section>
 
       {/* ═══════════ MEMBER ACCESS CARD — CREAM ═══════════ */}
-      <section className="bg-cream py-28 sm:py-36">
+      <section className="bg-cream py-20 sm:py-28">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <motion.div
             initial="hidden"
@@ -213,7 +213,7 @@ export default function ConviviumPage() {
       </section>
 
       {/* ═══════════ WHO IS AT THE TABLE ═══════════ */}
-      <section className="bg-obsidian py-28 sm:py-36">
+      <section className="bg-obsidian py-20 sm:py-28">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <motion.div
             initial="hidden"
