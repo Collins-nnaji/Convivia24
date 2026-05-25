@@ -32,7 +32,6 @@ import {
   Globe,
 } from 'lucide-react';
 import { BrandLogo } from '@/components/BrandLogo';
-import { BRAND_LOGO_SRC } from '@/lib/brand';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -165,10 +164,7 @@ const INQUIRY_TYPES = [
 ];
 
 const NAV_LINKS = [
-  { label: 'Platform', href: '#platform' },
   { label: 'Insights', href: '/insights' },
-  { label: 'For brands', href: '#for-brands' },
-  { label: 'Contact', href: '#contact' },
 ];
 
 // ─── sub-components ───────────────────────────────────────────────────────────
@@ -264,9 +260,6 @@ function FeatureCard({
 }
 
 function HeroBackground({ reduceMotion }: { reduceMotion: boolean }) {
-  const { scrollYProgress } = useScroll();
-  const logoY = useTransform(scrollYProgress, [0, 0.4], ['0%', '10%']);
-
   return (
     <div className="absolute inset-0 z-0 overflow-hidden bg-[#f8f6f2]">
       <div
@@ -274,20 +267,6 @@ function HeroBackground({ reduceMotion }: { reduceMotion: boolean }) {
                    w-[900px] h-[600px]
                    bg-[radial-gradient(ellipse_at_top,rgba(201,168,76,0.13)_0%,transparent_65%)]"
       />
-
-      <motion.div
-        style={{ y: reduceMotion ? 0 : logoY }}
-        className="pointer-events-none absolute inset-0 flex items-center justify-center"
-      >
-        <motion.img
-          src={BRAND_LOGO_SRC}
-          alt=""
-          draggable={false}
-          className="w-[min(88vw,520px)] max-h-[42vh] object-contain opacity-[0.09] select-none"
-          animate={reduceMotion ? undefined : { y: [0, -10, 0], scale: [1, 1.02, 1] }}
-          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
-        />
-      </motion.div>
 
       <div className="absolute inset-0 landing-hero-mesh pointer-events-none" />
 
@@ -622,9 +601,9 @@ export function ActivationLandingPage() {
       </section>
 
       {/* ══════════════════════════ GROWTH ARC ════════════════════════════════ */}
-      <section className="bg-[#f8f6f2] py-24 sm:py-32 px-5 sm:px-8">
+      <section className="bg-[#f8f6f2] py-14 sm:py-20 px-5 sm:px-8">
         <div className="max-w-5xl mx-auto">
-          <FadeUp className="text-center mb-20">
+          <FadeUp className="text-center mb-12">
             <SectionLabel>The growth arc</SectionLabel>
             <h2 className="font-display text-4xl sm:text-5xl lg:text-[3.25rem] font-bold text-neutral-900 leading-tight text-balance">
               Conception to
@@ -680,7 +659,7 @@ export function ActivationLandingPage() {
       </section>
 
       {/* ══════════════════════════ BOLD STATEMENT ════════════════════════════ */}
-      <section className="bg-neutral-900 py-20 sm:py-28 px-5 sm:px-8 overflow-hidden relative">
+      <section className="bg-neutral-900 py-14 sm:py-20 px-5 sm:px-8 overflow-hidden relative">
         <div
           className="pointer-events-none absolute inset-0 opacity-40"
           style={{
@@ -732,9 +711,9 @@ export function ActivationLandingPage() {
       </section>
 
       {/* ══════════════════════════ PLATFORM FEATURES ══════════════════════════ */}
-      <section id="platform" className="bg-white py-24 sm:py-32 px-5 sm:px-8">
+      <section id="platform" className="bg-white py-14 sm:py-20 px-5 sm:px-8">
         <div className="max-w-5xl mx-auto">
-          <FadeUp className="text-center mb-16">
+          <FadeUp className="text-center mb-12">
             <SectionLabel>Platform</SectionLabel>
             <h2 className="font-display text-4xl sm:text-5xl font-bold text-neutral-900">
               Everything in one place
@@ -753,9 +732,9 @@ export function ActivationLandingPage() {
       </section>
 
       {/* ══════════════════════════ FOR BRANDS ══════════════════════════════════ */}
-      <section id="for-brands" className="bg-[#f8f6f2] py-24 sm:py-32 px-5 sm:px-8">
+      <section id="for-brands" className="bg-[#f8f6f2] py-14 sm:py-20 px-5 sm:px-8">
         <div className="max-w-5xl mx-auto">
-          <FadeUp className="text-center mb-16">
+          <FadeUp className="text-center mb-12">
             <SectionLabel>For brands</SectionLabel>
             <h2 className="font-display text-4xl sm:text-5xl font-bold text-neutral-900 leading-tight text-balance">
               Six things we promise
@@ -792,79 +771,49 @@ export function ActivationLandingPage() {
         </div>
       </section>
 
-      {/* ══════════════════════════ STAFFING ══════════════════════════════════ */}
-      <section id="staffing" className="bg-neutral-900 py-24 sm:py-32 px-5 sm:px-8 relative overflow-hidden">
+      {/* ══════════════════════════ PLATFORM IDENTITY ════════════════════════ */}
+      <section className="bg-neutral-900 py-16 sm:py-20 px-5 sm:px-8 relative overflow-hidden">
         <div
-          className="pointer-events-none absolute inset-0"
+          className="pointer-events-none absolute inset-0 opacity-40"
           style={{
             backgroundImage:
-              'linear-gradient(rgba(201,168,76,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(201,168,76,0.05) 1px, transparent 1px)',
+              'linear-gradient(rgba(201,168,76,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(201,168,76,0.06) 1px, transparent 1px)',
             backgroundSize: '48px 48px',
           }}
         />
         <div className="pointer-events-none absolute top-0 right-0 w-[420px] h-[420px]
                         bg-[radial-gradient(ellipse_at_top_right,rgba(201,168,76,0.14)_0%,transparent_60%)]" />
         <div className="relative z-10 max-w-5xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <FadeUp>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gold mb-4">Hospitality staffing</p>
-              <h2 className="font-display text-4xl sm:text-5xl font-bold text-white leading-tight mb-6">
-                Nigeria&apos;s fastest
-                <br />
-                <em className="not-italic text-gold">hospitality hire.</em>
-              </h2>
-              <p className="text-white/55 text-base sm:text-lg leading-relaxed mb-8 max-w-md">
-                Waiters, bartenders, kitchen staff, and events crew — verified, background-checked,
-                and available same day. Outlets post a shift and workers apply within minutes.
-              </p>
-              <motion.a
-                href="#contact"
-                whileHover={{ scale: 1.03, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full
-                           bg-gold text-white text-[12px] font-black uppercase tracking-widest
-                           shadow-[0_12px_36px_-8px_rgba(201,168,76,0.5)] hover:bg-gold-light transition-colors"
-              >
-                Get in touch <ArrowRight size={14} />
-              </motion.a>
-            </FadeUp>
-
-            <FadeUp delay={0.12}>
-              <div className="grid grid-cols-2 gap-4">
-                {[
-                  { role: 'Waiters & Servers', cities: 'Lagos · Abuja · PH', icon: Users },
-                  { role: 'Bartenders', cities: 'Lagos · Abuja · PH', icon: Sparkles },
-                  { role: 'Kitchen Staff', cities: 'Lagos · Abuja · PH', icon: Zap },
-                  { role: 'Events Crew', cities: 'Lagos · Abuja · PH', icon: Star },
-                ].map(({ role, cities, icon: Icon }, i) => (
-                  <motion.div
-                    key={role}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.1 + i * 0.08, duration: 0.5, ease: easeOut }}
-                    whileHover={{ y: -4, backgroundColor: 'rgba(255,255,255,0.1)' }}
-                    className="bg-white/[0.06] rounded-2xl border border-white/[0.08] p-5 backdrop-blur-sm"
-                  >
-                    <Icon size={18} className="text-gold mb-3" />
-                    <p className="font-bold text-white text-sm leading-snug mb-1">{role}</p>
-                    <p className="text-[10px] text-white/45 font-medium">{cities}</p>
-                  </motion.div>
-                ))}
-              </div>
-              <div className="mt-6 flex flex-wrap gap-5">
-                {[
-                  { v: 'Same-day hire', i: Zap },
-                  { v: 'Same-day payout', i: CheckCircle2 },
-                  { v: 'Background-checked', i: Shield },
-                ].map(({ v, i: Icon }) => (
-                  <span key={v} className="flex items-center gap-2 text-[11px] font-semibold text-white/45">
-                    <Icon size={11} className="text-gold" />
-                    {v}
-                  </span>
-                ))}
-              </div>
-            </FadeUp>
+          <FadeUp className="text-center mb-12">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gold mb-4">Our model</p>
+            <h2 className="font-display text-4xl sm:text-5xl font-bold text-white leading-tight mb-4">
+              A platform.{' '}
+              <em className="not-italic text-gold">Not an agency.</em>
+            </h2>
+            <p className="text-white/55 text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
+              Convivia24 is software — not headcount. Your activations run on our platform,
+              giving you real-time data and control that no traditional agency can match.
+            </p>
+          </FadeUp>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { icon: BarChart3, title: 'Live data, not decks', body: 'Every check-in and redemption hits your dashboard instantly — no waiting for an end-of-campaign debrief.' },
+              { icon: Shield, title: 'Your data. Always.', body: 'You own the consumer data. Exported, auditable, and NDPR-compliant from day one.' },
+              { icon: Globe, title: 'Scale without friction', body: 'Run simultaneous activations across Lagos, Abuja, and PH from a single dashboard. No ops overhead.' },
+              { icon: Zap, title: 'Compliance baked in', body: 'Age gates, sampling limits, and consent flows live in the platform — not managed via someone\'s spreadsheet.' },
+            ].map(({ icon: Icon, title, body }, i) => (
+              <FadeUp key={title} delay={i * 0.07}>
+                <motion.div
+                  whileHover={{ y: -4 }}
+                  className="bg-white/[0.06] rounded-2xl border border-white/[0.08] p-6 backdrop-blur-sm
+                             hover:bg-white/[0.10] transition-colors duration-300 h-full"
+                >
+                  <Icon size={20} className="text-gold mb-4" />
+                  <h3 className="font-bold text-white text-sm mb-2 leading-snug">{title}</h3>
+                  <p className="text-[13px] text-white/50 leading-relaxed">{body}</p>
+                </motion.div>
+              </FadeUp>
+            ))}
           </div>
         </div>
       </section>
@@ -904,9 +853,9 @@ export function ActivationLandingPage() {
       </section>
 
       {/* ══════════════════════════ TESTIMONIALS ══════════════════════════════ */}
-      <section className="bg-white py-24 sm:py-32 px-5 sm:px-8">
+      <section className="bg-white py-14 sm:py-20 px-5 sm:px-8">
         <div className="max-w-5xl mx-auto">
-          <FadeUp className="text-center mb-14">
+          <FadeUp className="text-center mb-10">
             <SectionLabel>Brand results</SectionLabel>
             <h2 className="font-display text-4xl sm:text-5xl font-bold text-neutral-900">Proof in the field</h2>
           </FadeUp>
@@ -949,7 +898,7 @@ export function ActivationLandingPage() {
       </section>
 
       {/* ══════════════════════════ CONTACT ══════════════════════════════════ */}
-      <section id="contact" className="bg-[#f8f6f2] py-24 sm:py-32 px-5 sm:px-8 border-t border-neutral-200/60">
+      <section id="contact" className="bg-[#f8f6f2] py-14 sm:py-20 px-5 sm:px-8 border-t border-neutral-200/60">
         <div className="max-w-5xl mx-auto">
           <div className="grid lg:grid-cols-[1fr_1.3fr] gap-16 items-start">
             <div className="lg:sticky lg:top-28">
