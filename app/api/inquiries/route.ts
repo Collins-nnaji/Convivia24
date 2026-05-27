@@ -9,6 +9,25 @@ type InquiryBody = {
   message: string;
 };
 
+export async function GET(req: NextRequest) {
+  const secret = req.headers.get('x-admin-secret');
+  if (secret !== process.env.ADMIN_SECRET) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const { searchParams } = new URL(req.url);
+    const status = searchParams.get('status');
+    const rows = status
+      ? await sql`SELECT * FROM inquiries WHERE status = ${status} ORDER BY created_at DESC`
+      : await sql`SELECT * FROM inquiries ORDER BY created_at DESC LIMIT 200`;
+    return NextResponse.json({ inquiries: rows });
+  } catch (err) {
+    console.error('[GET /api/inquiries]', err);
+    return NextResponse.json({ error: 'Failed to fetch inquiries.' }, { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { name, email, company, inquiry_type, message } =

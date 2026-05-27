@@ -7,7 +7,7 @@ const footerLinks = [
   { label: 'Events',        href: '/events' },
   { label: 'The Spaces',    href: '/spaces' },
   { label: 'The Convivium', href: '/convivium' },
-  { label: 'Reserve',       href: '/inquire' },
+  { label: 'Reserve',       href: '/reserve' },
 ];
 
 export default function Footer() {
@@ -55,7 +55,7 @@ export default function Footer() {
             <span>&copy; 2026 Convivia24</span>
             <span className="text-cream/20">Lagos &middot; Abuja &middot; London</span>
           </div>
-          <Link href="/inquire" className="text-gold/60 hover:text-gold font-semibold transition-colors uppercase tracking-wider text-[10px]">
+          <Link href="/reserve" className="text-gold/60 hover:text-gold font-semibold transition-colors uppercase tracking-wider text-[10px]">
             Reserve a Table &rarr;
           </Link>
         </div>

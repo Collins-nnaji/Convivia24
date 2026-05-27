@@ -11,6 +11,20 @@ function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 }
 
+export async function GET(req: NextRequest) {
+  const secret = req.headers.get('x-admin-secret');
+  if (secret !== process.env.ADMIN_SECRET) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  try {
+    const rows = await sql`SELECT * FROM waitlist ORDER BY created_at DESC`;
+    return NextResponse.json({ waitlist: rows });
+  } catch (err) {
+    console.error('[GET /api/waitlist]', err);
+    return NextResponse.json({ error: 'Failed to fetch waitlist.' }, { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { email, company, name } = (await req.json()) as WaitlistBody;
