@@ -7,8 +7,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 
 const LINKS = [
+  { label: 'Menu',          href: '/menu' },
+  { label: 'Events',        href: '/events' },
+  { label: 'The Convivium', href: '/convivium' },
   { label: 'The Spaces',    href: '/spaces' },
-  { label: 'The Convivium',  href: '/convivium' },
 ];
 
 export default function Navigation() {
@@ -33,7 +35,6 @@ export default function Navigation() {
       }`}>
         <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
 
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-3 shrink-0 group" aria-label="Convivia24">
             <img
               src="/convivia24.png"
@@ -47,7 +48,6 @@ export default function Navigation() {
             </span>
           </Link>
 
-          {/* Desktop links */}
           <nav className="hidden md:flex items-center gap-1">
             {LINKS.map(({ label, href }) => {
               const active = pathname === href;
@@ -75,11 +75,10 @@ export default function Navigation() {
               href="/inquire"
               className="ml-2 px-5 py-2 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.15em] transition-colors duration-150"
             >
-              Inquire
+              Reserve
             </Link>
           </nav>
 
-          {/* Mobile hamburger */}
           <button
             type="button"
             onClick={() => setOpen(v => !v)}
@@ -91,10 +90,8 @@ export default function Navigation() {
         </div>
       </header>
 
-      {/* Spacer */}
       <div className="h-16" />
 
-      {/* Mobile drawer */}
       <AnimatePresence>
         {open && (
           <>
@@ -107,7 +104,6 @@ export default function Navigation() {
               className="fixed inset-0 z-40 bg-black/60 md:hidden"
               onClick={() => setOpen(false)}
             />
-
             <motion.div
               key="drawer"
               initial={{ opacity: 0, y: -6 }}
@@ -119,10 +115,9 @@ export default function Navigation() {
               <div className="border-b border-gold/10 px-5 py-2.5 flex items-center gap-2">
                 <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
                 <span className="text-[8px] font-black uppercase tracking-[0.3em] text-cream/40">
-                  Lagos · Abuja · London
+                  Open from 11am · Lagos · Abuja · London
                 </span>
               </div>
-
               <nav className="px-5 py-3 divide-y divide-gold/10">
                 {LINKS.map(({ label, href }) => {
                   const active = pathname === href;
@@ -139,13 +134,12 @@ export default function Navigation() {
                     </Link>
                   );
                 })}
-
                 <div className="pt-4 pb-2">
                   <Link
                     href="/inquire"
                     className="block w-full text-center py-3.5 bg-gold hover:bg-gold-light text-obsidian text-[12px] font-black uppercase tracking-[0.15em] transition-colors"
                   >
-                    Inquire
+                    Reserve a Table
                   </Link>
                 </div>
               </nav>

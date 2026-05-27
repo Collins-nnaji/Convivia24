@@ -7,65 +7,80 @@ import { SectionLabel } from '@/components/ui/SectionLabel';
 
 const TICKER_ITEMS = [
   'Come to the Table',
+  'Brunch · Lunch · Dinner · Late Night',
+  'The Bar · The Terrace · Private Dining',
   'Lagos · Abuja · London',
   'The Convivium',
-  'Where African Business Convenes',
-  'The Floor · The Table · Wellness',
-  'Chambers · Deal Rooms · The Library',
-  'A Hotel. A Club. A Network.',
+  'African Kitchen · World Craft',
+  'From 11am Until Late',
   'Come to the Table',
 ];
 
 const SPACES = [
-  { num: '01', name: 'The Floor', desc: 'Not a lobby. A living room for the continent\'s most ambitious.', image: '/The Spaces.png' },
-  { num: '02', name: 'The Table', desc: 'A destination restaurant. Open to the city. Reserved for the serious.', image: '/Convivium3.png' },
-  { num: '03', name: 'Chambers', desc: 'Rooms built for recovery and performance. Zero clutter. Total command.', image: '/The Spaces2.png' },
-  { num: '04', name: 'Deal Rooms', desc: 'Private meeting rooms named after African cities. Every conversation matters.', image: '/dealrooms.png' },
-  { num: '05', name: 'The Library', desc: 'A quiet floor for thinking. No phones. Just ideas.', image: '/Convivium.png' },
-  { num: '06', name: 'Wellness & Relaxation', desc: 'A sanctuary for recovery. Spa, plunge pool, and quiet spaces to restore.', image: '/The Spaces3.png' },
-];
-
-const LOCATIONS = [
-  { city: 'Lagos', label: 'The Flagship', desc: 'Victoria Island. The mother house. Where the deals move and the culture is loudest.' },
-  { city: 'Abuja', label: 'The Capital', desc: 'Political energy. Diplomatic corridors. A different table, the same philosophy.' },
-  { city: 'London', label: 'The Bridge', desc: 'Mayfair. The diaspora\'s home. The bridge for international partners engaging Africa.' },
+  { num: '01', name: 'The Floor', desc: 'The main dining room. 80 covers. Warm lighting, open plan, and always moving.', image: '/The Spaces.png' },
+  { num: '02', name: 'The Table', desc: 'Six seats. One sitting. A prix fixe menu written for the evening. Reserve weeks ahead.', image: '/Convivium3.png' },
+  { num: '03', name: 'The Bar', desc: 'A cocktail bar with a personality. Opens at 4pm. Late night Thursday to Saturday.', image: '/The Spaces2.png' },
+  { num: '04', name: 'The Terrace', desc: 'Open-air dining on the upper floor. City views. Walk-in for drinks; reservations for dinner.', image: '/The Spaces3.png' },
+  { num: '05', name: 'Private Dining', desc: 'Three rooms. 10 to 40 covers. Events, celebrations, and working lunches that matter.', image: '/dealrooms.png' },
+  { num: '06', name: 'The Lounge', desc: 'Late-night bar and listening room. DJs Thursday to Saturday. Open until 3am.', image: '/Convivium.png' },
 ];
 
 const PILLARS = [
-  { num: '01', title: 'The Hotel', desc: 'Not just accommodation. A headquarters for ambition. Every guest is here because they\'re building, closing, or celebrating.' },
-  { num: '02', title: 'The Club', desc: 'The Convivium. A members\' network with a hotel attached. Annual access to every table, every room, every introduction.' },
-  { num: '03', title: 'The Network', desc: 'You will leave with more than you arrived with. More relationships, more ideas, more deals, more energy.' },
+  { num: '01', title: 'The Kitchen', desc: 'African food culture elevated to its highest expression. Every dish is rooted in the continent — and finished with the same rigour as anywhere in the world.' },
+  { num: '02', title: 'The Bar', desc: 'A cocktail bar that takes itself seriously without taking itself too seriously. The list rotates. The craft does not.' },
+  { num: '03', title: 'The Room', desc: 'You share a table with people who are building things. The conversations that start here rarely end here.' },
+];
+
+const MENU_PREVIEW = [
+  {
+    category: 'Small Plates',
+    items: ['Asun Skewers · scotch bonnet glaze', 'Pepper Soup Dumplings · ukpaka dipping sauce', 'Crab Akara · mango avocado, pickled cucumber', 'Puff Puff · truffle honey, aged parmesan'],
+  },
+  {
+    category: 'Mains',
+    items: ['Wagyu Suya · suya spice rub, tiger nut salsa', 'Whole Bream · jollof-smoked butter, yam purée', 'Ẹ̀gúsí Risotto · toasted melon seed, parmesan', 'Oha Leaf Pasta · crayfish, crispy garlic'],
+  },
+  {
+    category: 'From the Bar',
+    items: ['Convivia Negroni · palm wine-washed gin', 'Lagos Sour · Nigerian rum, tamarind, lime', 'Zobo Smash · hibiscus gin, mint, cucumber', 'The 24 · daily-changing. Ask the bar.'],
+  },
 ];
 
 const PROGRAMMING = [
   {
-    frequency: 'Annual',
-    name: 'The Gathering',
-    desc: 'A three-day leadership summit bringing together Convivia24 members, partners, and thinkers across Africa and the diaspora. By invitation only.',
+    frequency: 'Saturday & Sunday',
+    name: 'Jazz Brunch',
+    desc: 'Live jazz quartet, extended brunch menu, bottomless mimosas, and the slowest morning you\'ve had all week. 12pm to 5pm.',
+  },
+  {
+    frequency: 'Thursday – Saturday',
+    name: 'Late Night',
+    desc: 'The kitchen closes. The bar does not. DJs from 11pm. Bar menu until 2am. The Lounge open until 3am.',
   },
   {
     frequency: 'Monthly',
-    name: 'Convivia Dinners',
-    desc: 'Twelve people. One table. An agenda set by a member with something to say. No phones. No panels. Just conversation.',
-  },
-  {
-    frequency: 'Quarterly',
-    name: 'Founder Residency',
-    desc: 'Thirty days of space, structure, and introductions for founders at a critical moment in their build. Applications open to members.',
+    name: 'Convivia Dinner',
+    desc: 'Twelve people. One table. A menu written for the evening. Not advertised — member and guest invitations only.',
   },
 ];
 
 const QUOTES = [
   {
-    text: 'I have stayed in finer hotels. I have never been in a room that so reliably puts the right people in front of me.',
+    text: 'I have eaten at restaurants on four continents. I have never been at a table where the food and the room are both this good.',
     name: 'Chidi O.',
     role: 'Managing Director · Lagos',
   },
   {
-    text: 'The Convivium is the only subscription on my P&L I would never cut. Every visit returns more than it costs.',
+    text: 'The Wagyu Suya is the best thing I have eaten in Lagos in ten years. I have ordered it on every visit since.',
     name: 'Amara K.',
     role: 'Founder · Abuja',
   },
+];
+
+const LOCATIONS = [
+  { city: 'Lagos', label: 'The Flagship', desc: 'Victoria Island. The mother house. Where the deals move and the culture is loudest.' },
+  { city: 'Abuja', label: 'The Capital', desc: 'Political energy. Diplomatic corridors. A different table, the same philosophy.' },
+  { city: 'London', label: 'The Bridge', desc: 'Mayfair. The diaspora\'s home. The bridge for African business and international guests.' },
 ];
 
 const fadeUp = {
@@ -76,7 +91,7 @@ const fadeUp = {
 export default function HomePage() {
   return (
     <>
-      {/* ═══════════════════════════ HERO ═══════════════════════════ */}
+      {/* ═══ HERO ═══ */}
       <section className="relative min-h-[90vh] sm:min-h-[100vh] bg-obsidian flex items-center overflow-hidden -mt-16 pt-16">
         <div className="absolute inset-0">
           <img src="/Homepage.png" alt="" className="w-full h-full object-cover" />
@@ -92,7 +107,7 @@ export default function HomePage() {
               variants={{ visible: { transition: { staggerChildren: 0.12 } } }}
             >
               <motion.div variants={fadeUp}>
-                <SectionLabel>A Hotel. A Club. A Table.</SectionLabel>
+                <SectionLabel>Restaurant · Bar · Lounge</SectionLabel>
               </motion.div>
 
               <motion.h1
@@ -108,9 +123,8 @@ export default function HomePage() {
               </motion.div>
 
               <motion.p variants={fadeUp} className="text-base sm:text-lg text-cream/70 max-w-lg leading-relaxed mb-8 sm:mb-10">
-                Convivia24 is a luxury hotel and members club built for the people shaping African business.
-                Every person who walks through the door is here because they&apos;re building something,
-                closing something, or celebrating something.
+                Convivia24 is a restaurant, bar, and members lounge built for the people shaping African business.
+                Open from brunch through late night. The food is serious. The bar is open. The room selects itself.
               </motion.p>
 
               <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 sm:gap-4">
@@ -118,13 +132,13 @@ export default function HomePage() {
                   href="/inquire"
                   className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.2em] transition-colors"
                 >
-                  Inquire <ArrowRight size={14} />
+                  Reserve a Table <ArrowRight size={14} />
                 </Link>
                 <Link
-                  href="/spaces"
+                  href="/menu"
                   className="inline-flex items-center justify-center gap-2 px-7 py-3.5 border border-cream/30 text-cream text-[11px] font-black uppercase tracking-[0.2em] hover:border-cream/60 hover:bg-cream/5 transition-colors backdrop-blur-sm"
                 >
-                  The Spaces
+                  View the Menu
                 </Link>
               </motion.div>
             </motion.div>
@@ -132,7 +146,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══════════════════════════ TICKER ═══════════════════════════ */}
+      {/* ═══ TICKER ═══ */}
       <div className="bg-obsidian border-y border-gold/10 overflow-hidden py-4">
         <motion.div
           className="flex whitespace-nowrap w-max"
@@ -148,7 +162,7 @@ export default function HomePage() {
         </motion.div>
       </div>
 
-      {/* ═══════════════════════════ CONCEPT — CREAM ═══════════════════════════ */}
+      {/* ═══ THE EXPERIENCE ═══ */}
       <section className="bg-cream py-20 sm:py-28">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <motion.div
@@ -158,7 +172,7 @@ export default function HomePage() {
             variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
           >
             <motion.div variants={fadeUp}>
-              <SectionLabel variant="light">The Vision</SectionLabel>
+              <SectionLabel variant="light">The Experience</SectionLabel>
             </motion.div>
 
             <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center mb-12 sm:mb-16">
@@ -167,16 +181,16 @@ export default function HomePage() {
                   variants={fadeUp}
                   className="font-display text-3xl sm:text-5xl md:text-7xl font-light italic text-obsidian tracking-tight mb-4 sm:mb-6"
                 >
-                  Where African business<br />is done.
+                  Where African<br />food is done.
                 </motion.h2>
                 <motion.p variants={fadeUp} className="text-obsidian/60 text-base sm:text-lg max-w-2xl leading-relaxed">
-                  Other hotels offer stillness. Others perfect the art of service. Convivia24 is built for encounter &mdash;
-                  the kind that turns a corridor conversation into a joint venture, and a dinner into a decade-long partnership.
+                  Other restaurants serve food. Convivia24 is built for encounter &mdash;
+                  the kind where the food is good enough to make the conversation stop, and the
+                  company good enough to make you forget about the food.
                 </motion.p>
               </div>
-
               <motion.div variants={fadeUp} className="relative">
-                <img src="/Homepage2.png" alt="Convivia24 interior" className="w-full aspect-[4/3] object-cover" />
+                <img src="/Homepage2.png" alt="Convivia24 dining room" className="w-full aspect-[4/3] object-cover" />
                 <div className="absolute top-0 left-0 w-full h-1 bg-gold" />
               </motion.div>
             </div>
@@ -194,8 +208,63 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══════════════════════════ SPACES PREVIEW ═══════════════════════════ */}
+      {/* ═══ MENU PREVIEW ═══ */}
       <section className="bg-obsidian py-20 sm:py-28">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-80px' }}
+            variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
+          >
+            <motion.div variants={fadeUp}>
+              <SectionLabel>The Menu</SectionLabel>
+            </motion.div>
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-12">
+              <motion.h2
+                variants={fadeUp}
+                className="font-display text-3xl sm:text-5xl md:text-6xl font-light italic text-cream tracking-tight"
+              >
+                A taste of what<br />is on the table.
+              </motion.h2>
+              <motion.div variants={fadeUp}>
+                <Link
+                  href="/menu"
+                  className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-gold/70 hover:text-gold transition-colors group"
+                >
+                  Full menu <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </motion.div>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-px bg-gold/10">
+              {MENU_PREVIEW.map((section) => (
+                <motion.div
+                  key={section.category}
+                  variants={fadeUp}
+                  className="bg-obsidian p-8 sm:p-10"
+                >
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gold/50 mb-6">{section.category}</p>
+                  <ul className="space-y-4">
+                    {section.items.map((item) => {
+                      const [name, rest] = item.split(' · ');
+                      return (
+                        <li key={item} className="border-b border-gold/10 pb-4 last:border-0 last:pb-0">
+                          <p className="font-display text-lg italic text-cream leading-snug">{name}</p>
+                          {rest && <p className="text-cream/35 text-xs mt-1">{rest}</p>}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ═══ THE SPACES ═══ */}
+      <section className="bg-cream py-20 sm:py-28">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <motion.div
             initial="hidden"
@@ -204,17 +273,15 @@ export default function HomePage() {
             variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
           >
             <motion.div variants={fadeUp}>
-              <SectionLabel>The Spaces</SectionLabel>
+              <SectionLabel variant="light">The Restaurant</SectionLabel>
             </motion.div>
-
             <motion.h2
               variants={fadeUp}
-              className="font-display text-3xl sm:text-5xl md:text-7xl font-light italic text-cream tracking-tight mb-4 sm:mb-6"
+              className="font-display text-3xl sm:text-5xl md:text-7xl font-light italic text-obsidian tracking-tight mb-4 sm:mb-6"
             >
-              Six spaces. One philosophy.
+              Six spaces.<br />One philosophy.
             </motion.h2>
-
-            <motion.p variants={fadeUp} className="text-cream/50 text-base sm:text-lg max-w-2xl leading-relaxed mb-10 sm:mb-12">
+            <motion.p variants={fadeUp} className="text-obsidian/50 text-base sm:text-lg max-w-2xl leading-relaxed mb-10 sm:mb-12">
               Every design decision asks one question: does this create the conditions for a great conversation?
             </motion.p>
 
@@ -223,27 +290,18 @@ export default function HomePage() {
                 <motion.div
                   key={space.num}
                   variants={fadeUp}
-                  className="group relative overflow-hidden bg-obsidian-50 border border-gold/10 hover:border-gold/30 p-7 transition-all duration-500 cursor-default"
+                  className="group relative overflow-hidden bg-obsidian border border-gold/10 hover:border-gold/30 p-7 transition-all duration-500"
                 >
-                  {/* image reveal on hover */}
                   <div
-                    className="absolute inset-0 opacity-0 group-hover:opacity-15 transition-opacity duration-700 bg-cover bg-center"
+                    className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-700 bg-cover bg-center"
                     style={{ backgroundImage: `url(${space.image})` }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-obsidian/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-                  <span className="absolute top-4 right-5 font-display text-6xl italic text-gold/[0.06] leading-none select-none">
-                    {space.num}
-                  </span>
-
+                  <div className="absolute inset-0 bg-gradient-to-t from-obsidian/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <span className="absolute top-4 right-5 font-display text-6xl italic text-gold/[0.06] leading-none select-none">{space.num}</span>
                   <span className="text-[9px] font-black uppercase tracking-[0.3em] text-gold/50 block mb-3 relative z-10">{space.num}</span>
                   <h3 className="font-display text-xl italic text-cream mb-2 relative z-10 group-hover:text-gold transition-colors duration-300">{space.name}</h3>
                   <p className="text-cream/40 text-sm leading-relaxed mb-5 relative z-10">{space.desc}</p>
-
-                  <Link
-                    href="/spaces"
-                    className="text-gold/60 hover:text-gold text-[10px] font-black uppercase tracking-[0.2em] transition-colors inline-flex items-center gap-1.5 relative z-10"
-                  >
+                  <Link href="/spaces" className="text-gold/60 hover:text-gold text-[10px] font-black uppercase tracking-[0.2em] transition-colors inline-flex items-center gap-1.5 relative z-10">
                     Explore <ArrowRight size={11} />
                   </Link>
                 </motion.div>
@@ -253,8 +311,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══════════════════════════ PROGRAMMING ═══════════════════════════ */}
-      <section className="bg-cream py-20 sm:py-28">
+      {/* ═══ PROGRAMMING / EVENTS ═══ */}
+      <section className="bg-obsidian py-20 sm:py-28">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <motion.div
             initial="hidden"
@@ -263,65 +321,47 @@ export default function HomePage() {
             variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
           >
             <motion.div variants={fadeUp}>
-              <SectionLabel variant="light">Programming</SectionLabel>
+              <SectionLabel>Events & Programming</SectionLabel>
             </motion.div>
-
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-end mb-12">
               <motion.h2
                 variants={fadeUp}
-                className="font-display text-3xl sm:text-5xl md:text-6xl font-light italic text-obsidian tracking-tight"
+                className="font-display text-3xl sm:text-5xl md:text-6xl font-light italic text-cream tracking-tight"
               >
                 Life at<br />the table.
               </motion.h2>
-              <motion.p variants={fadeUp} className="text-obsidian/60 text-base sm:text-lg leading-relaxed">
-                Convivia24 is not just a place to sleep. It is a calendar. A season. A reason to be in the room.
-              </motion.p>
+              <motion.div variants={fadeUp} className="flex flex-col gap-3">
+                <p className="text-cream/60 text-base sm:text-lg leading-relaxed">
+                  Convivia24 is not just a restaurant. It is a calendar. A season. A reason to be in the room.
+                </p>
+                <Link href="/events" className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-gold/70 hover:text-gold transition-colors group self-start">
+                  All events <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </motion.div>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-px bg-obsidian/10">
+            <div className="grid md:grid-cols-3 gap-px bg-gold/10">
               {PROGRAMMING.map((p) => (
-                <motion.div
-                  key={p.name}
-                  variants={fadeUp}
-                  className="bg-cream p-8 sm:p-10 group hover:bg-cream-dark transition-colors duration-300"
-                >
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gold-dark mb-4">{p.frequency}</p>
-                  <h3 className="font-display text-2xl sm:text-3xl italic text-obsidian mb-4">{p.name}</h3>
-                  <p className="text-obsidian/50 text-sm leading-relaxed">{p.desc}</p>
+                <motion.div key={p.name} variants={fadeUp} className="bg-obsidian p-8 sm:p-10 group hover:bg-obsidian-50 transition-colors duration-300">
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gold/50 mb-4">{p.frequency}</p>
+                  <h3 className="font-display text-2xl sm:text-3xl italic text-cream mb-4">{p.name}</h3>
+                  <p className="text-cream/50 text-sm leading-relaxed">{p.desc}</p>
                 </motion.div>
               ))}
             </div>
-
-            <motion.div variants={fadeUp} className="mt-8 flex justify-start">
-              <Link
-                href="/convivium"
-                className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-obsidian/50 hover:text-obsidian transition-colors group"
-              >
-                View membership <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
-              </Link>
-            </motion.div>
           </motion.div>
         </div>
       </section>
 
-      {/* ═══════════════════════════ FULL-WIDTH IMAGE BREAK ═══════════════════════════ */}
+      {/* ═══ IMAGE BREAK ═══ */}
       <section className="relative bg-obsidian">
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-        >
-          <img
-            src="/Convivium2.png"
-            alt="Convivia24 arched corridor"
-            className="w-full h-[40vh] sm:h-[50vh] object-cover"
-          />
+        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
+          <img src="/Convivium2.png" alt="Convivia24 interior" className="w-full h-[40vh] sm:h-[50vh] object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-cream via-transparent to-obsidian/40" />
         </motion.div>
       </section>
 
-      {/* ═══════════════════════════ CONVIVIUM TEASER — CREAM ═══════════════════════════ */}
+      {/* ═══ CONVIVIUM TEASER ═══ */}
       <section className="bg-cream py-20 sm:py-28">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <motion.div
@@ -333,24 +373,23 @@ export default function HomePage() {
             <motion.div variants={fadeUp}>
               <SectionLabel variant="light">Membership</SectionLabel>
             </motion.div>
-
             <motion.h2
               variants={fadeUp}
               className="font-display text-3xl sm:text-5xl md:text-7xl font-light italic text-obsidian tracking-tight mb-4 sm:mb-6"
             >
-              Not a membership.<br />A table.
+              Not a loyalty card.<br />A permanent table.
             </motion.h2>
-
             <motion.p variants={fadeUp} className="text-obsidian/60 text-lg leading-relaxed mb-8 max-w-3xl">
-              The Convivium is Convivia24&apos;s members club &mdash; open to non-staying guests who want permanent access
-              to The Floor, The Table, the Deal Rooms, and The Roof. Your recurring seat at the table. Your network with a hotel attached.
+              The Convivium is Convivia24&apos;s membership programme. Annual access to guaranteed reservations,
+              monthly member dinners, exclusive bar programmes, and priority late-night entry.
+              Membership is by application.
             </motion.p>
-
             <motion.div variants={fadeUp} className="space-y-3 mb-10 max-w-3xl">
               {[
-                'Priority booking across all properties and spaces',
-                'Introductions to fellow members — operators, founders, executives',
-                'Invitations to private Convivia Dinners and The Gathering',
+                'Guaranteed table — even when fully booked',
+                'Monthly Convivia Dinner — exclusive menu, not available to the public',
+                'Member wine programme — curated selections delivered quarterly',
+                'Priority late-night entry to The Lounge on sold-out nights',
               ].map((benefit) => (
                 <div key={benefit} className="flex items-start gap-3">
                   <span className="w-1.5 h-1.5 rounded-full bg-gold mt-2 shrink-0" />
@@ -358,12 +397,8 @@ export default function HomePage() {
                 </div>
               ))}
             </motion.div>
-
             <motion.div variants={fadeUp}>
-              <Link
-                href="/convivium"
-                className="inline-flex items-center gap-2 px-7 py-3.5 bg-obsidian hover:bg-obsidian-50 text-cream text-[11px] font-black uppercase tracking-[0.2em] transition-colors"
-              >
+              <Link href="/convivium" className="inline-flex items-center gap-2 px-7 py-3.5 bg-obsidian hover:bg-obsidian-50 text-cream text-[11px] font-black uppercase tracking-[0.2em] transition-colors">
                 The Convivium <ArrowRight size={14} />
               </Link>
             </motion.div>
@@ -371,7 +406,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══════════════════════════ SOCIAL PROOF ═══════════════════════════ */}
+      {/* ═══ SOCIAL PROOF ═══ */}
       <section className="bg-obsidian py-20 sm:py-28">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <motion.div
@@ -380,10 +415,7 @@ export default function HomePage() {
             viewport={{ once: true, margin: '-80px' }}
             variants={{ visible: { transition: { staggerChildren: 0.12 } } }}
           >
-            <motion.div variants={fadeUp}>
-              <SectionLabel>At the table</SectionLabel>
-            </motion.div>
-
+            <motion.div variants={fadeUp}><SectionLabel>At the table</SectionLabel></motion.div>
             <div className="grid md:grid-cols-2 gap-10 lg:gap-20 mt-8">
               {QUOTES.map((q) => (
                 <motion.div key={q.name} variants={fadeUp} className="border-l border-gold/20 pl-7">
@@ -404,7 +436,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══════════════════════════ LOCATIONS ═══════════════════════════ */}
+      {/* ═══ LOCATIONS ═══ */}
       <section className="bg-obsidian border-t border-gold/10 py-20 sm:py-28">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <motion.div
@@ -413,17 +445,13 @@ export default function HomePage() {
             viewport={{ once: true, margin: '-80px' }}
             variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
           >
-            <motion.div variants={fadeUp}>
-              <SectionLabel>Locations</SectionLabel>
-            </motion.div>
-
+            <motion.div variants={fadeUp}><SectionLabel>Locations</SectionLabel></motion.div>
             <motion.h2
               variants={fadeUp}
               className="font-display text-3xl sm:text-5xl md:text-7xl font-light italic text-cream tracking-tight mb-10 sm:mb-14"
             >
-              Where the money moves.
+              Where the table is set.
             </motion.h2>
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-0 mb-10 sm:mb-14 border border-gold/10 divide-y md:divide-y-0 md:divide-x divide-gold/10">
               {LOCATIONS.map((loc, i) => (
                 <motion.div
@@ -440,30 +468,22 @@ export default function HomePage() {
                 </motion.div>
               ))}
             </div>
-
             <motion.div variants={fadeUp}>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-cream/20">
-                Coming &middot; Accra &middot; Nairobi &middot; Kigali
-              </p>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-cream/20">Coming &middot; Accra &middot; Nairobi &middot; Kigali</p>
             </motion.div>
           </motion.div>
         </div>
       </section>
 
-      {/* ═══════════════════════════ FINAL CTA ═══════════════════════════ */}
+      {/* ═══ CTA ═══ */}
       <section className="bg-gold">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-12 sm:py-16 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
           <div>
-            <h2 className="font-display text-2xl sm:text-4xl italic text-obsidian mb-2">
-              Reserve your place at the table.
-            </h2>
-            <p className="text-obsidian/60 text-sm">Lagos &middot; Abuja &middot; London</p>
+            <h2 className="font-display text-2xl sm:text-4xl italic text-obsidian mb-2">Reserve your place at the table.</h2>
+            <p className="text-obsidian/60 text-sm">Lagos &middot; Abuja &middot; London &middot; Open from 11am</p>
           </div>
-          <Link
-            href="/inquire"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-obsidian hover:bg-obsidian-50 text-cream text-[11px] font-black uppercase tracking-[0.2em] transition-colors shrink-0"
-          >
-            Inquire <ArrowRight size={14} />
+          <Link href="/inquire" className="inline-flex items-center gap-2 px-8 py-4 bg-obsidian hover:bg-obsidian-50 text-cream text-[11px] font-black uppercase tracking-[0.2em] transition-colors shrink-0">
+            Reserve <ArrowRight size={14} />
           </Link>
         </div>
       </section>
