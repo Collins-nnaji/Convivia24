@@ -3,20 +3,19 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Mail, Calendar, UtensilsCrossed, Users, ImagePlus, CalendarCheck, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Calendar, Receipt, ScanLine, ImagePlus, Plus, LogOut, Menu } from 'lucide-react';
 
 type AdminCtx = { secret: string };
 const Ctx = createContext<AdminCtx>({ secret: '' });
 export const useAdmin = () => useContext(Ctx);
 
 const NAV = [
-  { href: '/admin',             label: 'Dashboard',    icon: LayoutDashboard },
-  { href: '/admin/inquiries',   label: 'Inquiries',    icon: Mail },
-  { href: '/admin/reservations',label: 'Reservations', icon: CalendarCheck },
-  { href: '/admin/menu',        label: 'Menu',         icon: UtensilsCrossed },
-  { href: '/admin/events',      label: 'Events',       icon: Calendar },
-  { href: '/admin/members',     label: 'Members',      icon: Users },
-  { href: '/admin/media',       label: 'Media',        icon: ImagePlus },
+  { href: '/admin',         label: 'Dashboard',    icon: LayoutDashboard },
+  { href: '/admin/events',  label: 'Events',       icon: Calendar },
+  { href: '/admin/orders',  label: 'Orders',       icon: Receipt },
+  { href: '/admin/scan',    label: 'Door Scanner', icon: ScanLine },
+  { href: '/create',        label: 'New Event',    icon: Plus },
+  { href: '/admin/media',   label: 'Media',        icon: ImagePlus },
 ];
 
 function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -26,7 +25,7 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
       {open && <div className="fixed inset-0 bg-black/60 z-30 lg:hidden" onClick={onClose} />}
       <aside className={`fixed top-0 left-0 h-full w-56 bg-[#0a0a0a] border-r border-[#c9a84c]/15 z-40 flex flex-col transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
         <div className="px-5 py-6 border-b border-[#c9a84c]/10">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c9a84c]/50 mb-1">Admin</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c9a84c]/50 mb-1">Organizer</p>
           <p className="text-lg font-light italic text-[#f5f0e8] tracking-tight">Convivia24</p>
         </div>
         <nav className="flex-1 py-4 overflow-y-auto">

@@ -4,13 +4,13 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Sparkles } from 'lucide-react';
 
 const LINKS = [
-  { label: 'Menu',          href: '/menu' },
-  { label: 'Events',        href: '/events' },
-  { label: 'The Convivium', href: '/convivium' },
-  { label: 'The Spaces',    href: '/spaces' },
+  { label: 'Discover',     href: '/events' },
+  { label: 'AI Concierge', href: '/concierge' },
+  { label: 'My Tickets',   href: '/tickets' },
+  { label: 'Sell Tickets', href: '/create' },
 ];
 
 export default function Navigation() {
@@ -44,13 +44,13 @@ export default function Navigation() {
             />
             <span className="hidden sm:flex items-center gap-1.5">
               <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
-              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-cream/40">Lagos · Abuja · London</span>
+              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-cream/40">Events · Tickets · AI</span>
             </span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-1">
             {LINKS.map(({ label, href }) => {
-              const active = pathname === href;
+              const active = pathname === href || (href !== '/' && pathname.startsWith(href));
               return (
                 <Link
                   key={href}
@@ -72,10 +72,10 @@ export default function Navigation() {
             })}
 
             <Link
-              href="/reserve"
-              className="ml-2 px-5 py-2 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.15em] transition-colors duration-150"
+              href="/events"
+              className="ml-2 inline-flex items-center gap-1.5 px-5 py-2 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.15em] transition-colors duration-150"
             >
-              Reserve
+              <Sparkles size={13} /> Find Events
             </Link>
           </nav>
 
@@ -115,7 +115,7 @@ export default function Navigation() {
               <div className="border-b border-gold/10 px-5 py-2.5 flex items-center gap-2">
                 <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
                 <span className="text-[8px] font-black uppercase tracking-[0.3em] text-cream/40">
-                  Open from 11am · Lagos · Abuja · London
+                  Events · Tickets · AI · Lagos · Abuja · London
                 </span>
               </div>
               <nav className="px-5 py-3 divide-y divide-gold/10">
@@ -136,10 +136,10 @@ export default function Navigation() {
                 })}
                 <div className="pt-4 pb-2">
                   <Link
-                    href="/reserve"
+                    href="/events"
                     className="block w-full text-center py-3.5 bg-gold hover:bg-gold-light text-obsidian text-[12px] font-black uppercase tracking-[0.15em] transition-colors"
                   >
-                    Reserve a Table
+                    Find Events
                   </Link>
                 </div>
               </nav>

@@ -1,265 +1,148 @@
 'use client';
 
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { Suspense, useEffect, useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { Search, X } from 'lucide-react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
+import EventCard, { type EventCardData } from '@/components/EventCard';
+import { CATEGORIES, CATEGORY_LABELS } from '@/lib/categories';
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 28 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.65, ease: 'easeOut' } },
-};
+function DiscoverInner() {
+  const params = useSearchParams();
+  const router = useRouter();
+  const [events, setEvents] = useState<EventCardData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState(params.get('q') ?? '');
 
-const WEEKLY = [
-  {
-    day: 'Saturday & Sunday',
-    name: 'Jazz Brunch',
-    time: '12pm – 5pm',
-    desc: 'A live jazz quartet, an extended brunch menu, and bottomless mimosas. The slowest, best morning of your week. Walk-ins welcome.',
-    image: '/Convivium3.png',
-    booking: true,
-  },
-  {
-    day: 'Thursday',
-    name: 'The Listening Room',
-    time: '9pm – 1am',
-    desc: 'Curated vinyl sets in The Lounge. The kitchen runs a late-night bar menu. A quieter, more considered night than the weekend — but just as long.',
-    image: '/Convivium.png',
-    booking: false,
-  },
-  {
-    day: 'Friday & Saturday',
-    name: 'Late Night',
-    time: '11pm – 3am',
-    desc: 'The kitchen closes. The bar does not. DJs on the floor, bar menu until 2am, The Lounge open until 3am. Dress for the occasion.',
-    image: '/The Spaces2.png',
-    booking: false,
-  },
-];
+  const category = params.get('category') ?? '';
+  const city = params.get('city') ?? '';
 
-const SIGNATURE = [
-  {
-    freq: 'Monthly',
-    name: 'Convivia Dinner',
-    desc: 'Twelve people. One table. A menu written the morning of. The guest list is curated — Convivium members may bring one guest. No menus printed. No phones on the table. One of the best nights you will have this month.',
-    access: 'Member & guest invitations only',
-  },
-  {
-    freq: 'Quarterly',
-    name: 'Founder\'s Table',
-    desc: 'An intimate dinner for six founders, convened by a Convivium member host. The format is simple: everyone brings a problem; everyone leaves with at least one solution. Dinner is included.',
-    access: 'By application — Convivium members only',
-  },
-  {
-    freq: 'Annual',
-    name: 'The Gathering',
-    desc: 'Our annual dinner-summit. One evening, one room, the people who matter most in the city that night. A keynote address, a long table, and the kind of conversation you only have once a year.',
-    access: 'Invitation only — waitlist open',
-  },
-];
+  useEffect(() => {
+    setLoading(true);
+    const qs = new URLSearchParams();
+    if (params.get('q')) qs.set('q', params.get('q')!);
+    if (category) qs.set('category', category);
+    if (city) qs.set('city', city);
+    fetch(`/api/events?${qs.toString()}`)
+      .then((r) => r.json())
+      .then((d) => setEvents(d.events ?? []))
+      .catch(() => setEvents([]))
+      .finally(() => setLoading(false));
+  }, [params, category, city]);
 
-const PRIVATE_SPACES = [
-  { name: 'The Whole Restaurant', capacity: 'Up to 200 guests', desc: 'Exclusive buyout. Full kitchen, bar, and floor staff. The entire Convivia24 experience — yours alone.' },
-  { name: 'Private Dining Room A', capacity: '12 – 24 guests', desc: 'Named after an African city. Boardroom-style or long table. AV, dedicated service, bespoke menu.' },
-  { name: 'Private Dining Room B', capacity: '10 – 16 guests', desc: 'More intimate. Better for working dinners, celebrations, and anything that requires focus.' },
-  { name: 'The Terrace', capacity: 'Up to 80 guests', desc: 'Open-air. Lagos skyline. Canapé receptions, standing drinks, or seated dinner under the sky.' },
-  { name: 'The Bar', capacity: 'Up to 60 guests', desc: 'Cocktail reception or exclusive bar hire. Our team designs a bespoke drinks programme for your event.' },
-];
+  function setParam(key: string, value: string) {
+    const next = new URLSearchParams(params.toString());
+    if (value) next.set(key, value); else next.delete(key);
+    router.push(`/events?${next.toString()}`);
+  }
 
-export default function EventsPage() {
+  const cities = Array.from(new Set(events.map((e) => e.city))).sort();
+  const hasFilters = !!(category || city || params.get('q'));
+
   return (
     <>
-      {/* ═══ HERO ═══ */}
+      {/* HERO */}
       <section className="relative bg-obsidian -mt-16 pt-16 overflow-hidden">
-        <div className="relative">
-          <img src="/conv1.png" alt="Convivia24 events" className="w-full h-[45vh] sm:h-[55vh] object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/40 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-obsidian/70 to-transparent" />
-        </div>
-        <div className="relative max-w-6xl mx-auto px-5 sm:px-8 -mt-36 pb-16 z-10">
-          <motion.div initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.12 } } }}>
-            <motion.div variants={fadeUp}>
-              <SectionLabel>Programming & Events</SectionLabel>
-            </motion.div>
-            <motion.h1
-              variants={fadeUp}
-              className="font-display text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-light italic tracking-tight text-cream leading-[0.9] mb-6"
-            >
-              Life at<br />the table.
-            </motion.h1>
-            <motion.p variants={fadeUp} className="text-cream/60 text-base sm:text-lg max-w-xl leading-relaxed">
-              Convivia24 is not just a restaurant. It is a calendar. A season. A reason to be in the room.
-            </motion.p>
-          </motion.div>
+        <img src="/conv1.png" alt="" className="w-full h-[32vh] sm:h-[40vh] object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-obsidian/80 to-transparent" />
+        <div className="relative max-w-6xl mx-auto px-5 sm:px-8 -mt-28 pb-10 z-10">
+          <SectionLabel>Discover</SectionLabel>
+          <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-light italic tracking-tight text-cream leading-[0.9] mb-6">
+            Every event<br />worth your night.
+          </h1>
+
+          {/* SEARCH */}
+          <form
+            onSubmit={(e) => { e.preventDefault(); setParam('q', query.trim()); }}
+            className="flex items-center gap-3 max-w-xl bg-obsidian/80 backdrop-blur border border-gold/20 focus-within:border-gold/50 px-4 py-3"
+          >
+            <Search size={18} className="text-gold/60 shrink-0" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search events, venues, cities…"
+              className="flex-1 bg-transparent border-0 focus:ring-0 text-cream text-sm placeholder-cream/30 outline-none p-0"
+            />
+            <button type="submit" className="text-[10px] font-black uppercase tracking-[0.2em] text-gold hover:text-gold-light shrink-0">Search</button>
+          </form>
         </div>
       </section>
 
-      {/* ═══ WEEKLY PROGRAMMING ═══ */}
-      <section className="bg-obsidian py-20 sm:py-28">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-80px' }}
-            variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
+      {/* FILTERS */}
+      <section className="bg-obsidian border-y border-gold/10 sticky top-16 z-20 backdrop-blur">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 flex items-center gap-2 overflow-x-auto">
+          <button
+            onClick={() => setParam('category', '')}
+            className={`shrink-0 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] border transition-colors ${!category ? 'bg-gold text-obsidian border-gold' : 'border-gold/20 text-cream/50 hover:text-cream'}`}
           >
-            <motion.div variants={fadeUp}><SectionLabel>Every Week</SectionLabel></motion.div>
-            <motion.h2
-              variants={fadeUp}
-              className="font-display text-3xl sm:text-5xl md:text-6xl font-light italic text-cream tracking-tight mb-10 sm:mb-14"
+            All
+          </button>
+          {CATEGORIES.map((c) => (
+            <button
+              key={c}
+              onClick={() => setParam('category', c)}
+              className={`shrink-0 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] border transition-colors ${category === c ? 'bg-gold text-obsidian border-gold' : 'border-gold/20 text-cream/50 hover:text-cream'}`}
             >
-              The regular table.
-            </motion.h2>
-
-            <div className="grid md:grid-cols-3 gap-px bg-gold/10">
-              {WEEKLY.map((event) => (
-                <motion.div key={event.name} variants={fadeUp} className="bg-obsidian group relative overflow-hidden">
-                  <div className="relative overflow-hidden">
-                    <img
-                      src={event.image}
-                      alt={event.name}
-                      className="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-700"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/20 to-transparent" />
-                  </div>
-                  <div className="p-7">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gold/50 mb-1">{event.day}</p>
-                    <h3 className="font-display text-2xl italic text-cream mb-1">{event.name}</h3>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cream/30 mb-4">{event.time}</p>
-                    <p className="text-cream/50 text-sm leading-relaxed mb-5">{event.desc}</p>
-                    {event.booking && (
-                      <Link
-                        href="/inquire"
-                        className="inline-flex items-center gap-1.5 text-gold/60 hover:text-gold text-[10px] font-black uppercase tracking-[0.2em] transition-colors"
-                      >
-                        Reserve <ArrowRight size={10} />
-                      </Link>
-                    )}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
+              {CATEGORY_LABELS[c]}
+            </button>
+          ))}
         </div>
       </section>
 
-      {/* ═══ SIGNATURE EVENTS ═══ */}
-      <section className="bg-cream py-20 sm:py-28">
+      {/* RESULTS */}
+      <section className="bg-obsidian py-12 sm:py-16 min-h-[40vh]">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-80px' }}
-            variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
-          >
-            <motion.div variants={fadeUp}>
-              <SectionLabel variant="light">Signature Programming</SectionLabel>
-            </motion.div>
-            <motion.h2
-              variants={fadeUp}
-              className="font-display text-3xl sm:text-5xl md:text-6xl font-light italic text-obsidian tracking-tight mb-10 sm:mb-14"
-            >
-              The tables worth<br />waiting for.
-            </motion.h2>
-
-            <div className="space-y-0 divide-y divide-obsidian/10">
-              {SIGNATURE.map((event) => (
-                <motion.div
-                  key={event.name}
-                  variants={fadeUp}
-                  className="grid md:grid-cols-[180px_1fr_240px] gap-6 md:gap-10 items-start py-8 group"
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-8">
+            <p className="text-cream/40 text-sm">
+              {loading ? 'Loading…' : `${events.length} event${events.length === 1 ? '' : 's'}`}
+              {category && <span className="text-gold"> · {CATEGORY_LABELS[category]}</span>}
+              {city && <span className="text-gold"> · {city}</span>}
+            </p>
+            <div className="flex items-center gap-2">
+              {cities.length > 1 && (
+                <select
+                  value={city}
+                  onChange={(e) => setParam('city', e.target.value)}
+                  className="bg-obsidian-100 border border-gold/20 text-cream/70 text-xs py-1.5 pl-3 pr-8 focus:ring-0 focus:border-gold/50"
                 >
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gold-dark mb-1">{event.freq}</p>
-                    <h3 className="font-display text-2xl italic text-obsidian">{event.name}</h3>
-                  </div>
-                  <p className="text-obsidian/60 text-sm leading-relaxed">{event.desc}</p>
-                  <div className="flex flex-col gap-3">
-                    <p className="text-[9px] font-black uppercase tracking-[0.25em] text-obsidian/30 leading-relaxed">{event.access}</p>
-                    <Link
-                      href="/inquire"
-                      className="inline-flex items-center gap-1.5 text-gold-dark hover:text-gold text-[10px] font-black uppercase tracking-[0.2em] transition-colors group"
-                    >
-                      Express interest <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
-                    </Link>
-                  </div>
-                </motion.div>
-              ))}
+                  <option value="">All cities</option>
+                  {cities.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              )}
+              {hasFilters && (
+                <button onClick={() => router.push('/events')} className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.2em] text-cream/40 hover:text-gold">
+                  <X size={12} /> Clear
+                </button>
+              )}
             </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ═══ IMAGE BREAK ═══ */}
-      <section className="relative">
-        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
-          <img src="/Convivium2.png" alt="Convivia24 space" className="w-full h-[35vh] sm:h-[45vh] object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-obsidian/60 via-transparent to-obsidian/30" />
-        </motion.div>
-      </section>
-
-      {/* ═══ PRIVATE HIRE ═══ */}
-      <section className="bg-obsidian py-20 sm:py-28">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-80px' }}
-            variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
-          >
-            <motion.div variants={fadeUp}><SectionLabel>Private Hire</SectionLabel></motion.div>
-            <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start mb-12">
-              <motion.h2
-                variants={fadeUp}
-                className="font-display text-3xl sm:text-5xl md:text-6xl font-light italic text-cream tracking-tight"
-              >
-                Make the whole<br />room yours.
-              </motion.h2>
-              <motion.p variants={fadeUp} className="text-cream/60 text-base sm:text-lg leading-relaxed pt-2">
-                From intimate working dinners for ten to full restaurant buyouts for two hundred.
-                Every private event is given a dedicated event manager, a bespoke menu, and the
-                full Convivia24 service team.
-              </motion.p>
-            </div>
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {PRIVATE_SPACES.map((space) => (
-                <motion.div
-                  key={space.name}
-                  variants={fadeUp}
-                  className="bg-obsidian-50 border border-gold/10 hover:border-gold/25 p-7 transition-colors duration-300"
-                >
-                  <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gold/50 mb-2">{space.capacity}</p>
-                  <h3 className="font-display text-xl italic text-cream mb-3">{space.name}</h3>
-                  <p className="text-cream/40 text-sm leading-relaxed">{space.desc}</p>
-                </motion.div>
-              ))}
-            </div>
-
-            <motion.div variants={fadeUp} className="mt-10">
-              <Link
-                href="/inquire"
-                className="inline-flex items-center gap-2 px-7 py-3.5 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.2em] transition-colors"
-              >
-                Enquire about private hire <ArrowRight size={14} />
-              </Link>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ═══ CTA ═══ */}
-      <section className="bg-gold">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-12 sm:py-16 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
-          <div>
-            <h2 className="font-display text-2xl sm:text-4xl italic text-obsidian mb-2">Reserve your place at the table.</h2>
-            <p className="text-obsidian/60 text-sm">Dining reservations · Private events · Membership enquiries</p>
           </div>
-          <Link href="/inquire" className="inline-flex items-center gap-2 px-8 py-4 bg-obsidian hover:bg-obsidian-50 text-cream text-[11px] font-black uppercase tracking-[0.2em] transition-colors shrink-0">
-            Get in touch <ArrowRight size={14} />
-          </Link>
+
+          {loading ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {[0, 1, 2, 3, 4, 5].map((i) => <div key={i} className="aspect-[16/10] bg-obsidian-100 border border-gold/10 animate-pulse" />)}
+            </div>
+          ) : events.length === 0 ? (
+            <div className="text-center py-20 border border-gold/10">
+              <p className="font-display text-2xl italic text-cream mb-2">No events match that.</p>
+              <p className="text-cream/40 text-sm mb-6">Try a different vibe or clear your filters.</p>
+              <button onClick={() => router.push('/events')} className="px-6 py-3 bg-gold text-obsidian text-[11px] font-black uppercase tracking-[0.2em]">Show all events</button>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {events.map((e, i) => <EventCard key={e.slug} event={e} index={i} />)}
+            </div>
+          )}
         </div>
       </section>
     </>
+  );
+}
+
+export default function DiscoverPage() {
+  return (
+    <Suspense fallback={<div className="bg-obsidian min-h-screen" />}>
+      <DiscoverInner />
+    </Suspense>
   );
 }

@@ -2,12 +2,11 @@ import Link from 'next/link';
 import WaitlistForm from './WaitlistForm';
 
 const footerLinks = [
-  { label: 'Home',          href: '/' },
-  { label: 'Menu',          href: '/menu' },
-  { label: 'Events',        href: '/events' },
-  { label: 'The Spaces',    href: '/spaces' },
-  { label: 'The Convivium', href: '/convivium' },
-  { label: 'Reserve',       href: '/reserve' },
+  { label: 'Discover',     href: '/events' },
+  { label: 'AI Concierge', href: '/concierge' },
+  { label: 'My Tickets',   href: '/tickets' },
+  { label: 'Sell Tickets', href: '/create' },
+  { label: 'Organizers',   href: '/admin' },
 ];
 
 export default function Footer() {
@@ -22,16 +21,16 @@ export default function Footer() {
             </Link>
             <div className="flex items-center gap-2 mb-2">
               <span className="w-1 h-1 bg-gold rounded-full animate-pulse" />
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-cream/40">Come to the Table</p>
+              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-cream/40">Events · Tickets · AI</p>
             </div>
             <p className="text-xs text-cream/40 max-w-xs leading-relaxed">
-              Restaurant · Bar · Lounge. Open from brunch through late night.
-              Lagos · Abuja · London.
+              The AI-powered events and ticketing platform for parties, concerts and culture.
+              QR + barcode entry. Lagos · Abuja · London.
             </p>
           </div>
 
           <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:gap-12">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-10 gap-y-3">
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-x-10 gap-y-3">
               {footerLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -44,7 +43,7 @@ export default function Footer() {
             </div>
 
             <div className="w-full sm:min-w-[280px] sm:max-w-[360px]">
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gold/50 mb-3">Join the Convivium Waitlist</p>
+              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gold/50 mb-3">Get early access to drops</p>
               <WaitlistForm variant="footer" />
             </div>
           </div>
@@ -55,8 +54,8 @@ export default function Footer() {
             <span>&copy; 2026 Convivia24</span>
             <span className="text-cream/20">Lagos &middot; Abuja &middot; London</span>
           </div>
-          <Link href="/reserve" className="text-gold/60 hover:text-gold font-semibold transition-colors uppercase tracking-wider text-[10px]">
-            Reserve a Table &rarr;
+          <Link href="/events" className="text-gold/60 hover:text-gold font-semibold transition-colors uppercase tracking-wider text-[10px]">
+            Find Events &rarr;
           </Link>
         </div>
       </div>
