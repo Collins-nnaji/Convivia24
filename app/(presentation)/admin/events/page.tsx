@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Trash2, Star, Eye, EyeOff, Users, ExternalLink } from 'lucide-react';
+import { Plus, Trash2, Star, Eye, EyeOff, Users, ExternalLink, Pencil } from 'lucide-react';
 import { useAdmin } from '../layout';
 
 interface EventRow {
@@ -77,7 +77,7 @@ export default function EventsAdmin() {
               <div className="flex flex-wrap items-center gap-4 p-4">
                 <div className="flex-1 min-w-[180px]">
                   <div className="flex items-center gap-2">
-                    <Link href={`/events/${e.slug}`} className="font-display text-lg italic text-obsidian hover:text-[#a07c28] transition-colors">{e.title}</Link>
+                    <Link href={`/admin/events/${e.id}`} className="font-display text-lg italic text-obsidian hover:text-[#a07c28] transition-colors">{e.title}</Link>
                     {e.is_featured && <Star size={13} className="text-[#a07c28] fill-[#c9a84c]" />}
                     <span className={`text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 ${e.status === 'published' ? 'text-emerald-600' : 'text-obsidian/40'}`}>{e.status}</span>
                   </div>
@@ -88,6 +88,7 @@ export default function EventsAdmin() {
                   <p className="text-[9px] uppercase tracking-wider text-obsidian/30">sold</p>
                 </div>
                 <div className="flex items-center gap-1">
+                  <Link title="Edit" href={`/admin/events/${e.id}`} className="p-2 text-obsidian/40 hover:text-[#a07c28]"><Pencil size={15} /></Link>
                   <button title="Attendees" onClick={() => viewAttendees(e.id)} className="p-2 text-obsidian/40 hover:text-[#a07c28]"><Users size={15} /></button>
                   <button title={e.is_featured ? 'Unfeature' : 'Feature'} onClick={() => patch(e.id, { is_featured: !e.is_featured })} className="p-2 text-obsidian/40 hover:text-[#a07c28]"><Star size={15} className={e.is_featured ? 'fill-[#c9a84c] text-[#a07c28]' : ''} /></button>
                   <button title={e.status === 'published' ? 'Unpublish' : 'Publish'} onClick={() => patch(e.id, { status: e.status === 'published' ? 'draft' : 'published' })} className="p-2 text-obsidian/40 hover:text-[#a07c28]">{e.status === 'published' ? <Eye size={15} /> : <EyeOff size={15} />}</button>

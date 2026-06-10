@@ -70,6 +70,10 @@ schema of the same database.
 **What requires sign-in:** buying tickets (checkout), creating events (`/create`), and the
 organizer console (`/admin`, admin role via `CONVIVIA_ADMIN_EMAILS`). Browsing stays open.
 
+**Organizer console** includes a modern event editor at `/admin/events/[id]`: live preview,
+cover-image upload, status/feature controls, and inline ticket-tier management
+(`POST /api/events/[id]/tickets`, `PATCH`/`DELETE /api/ticket-types/[id]`).
+
 **Neon Auth dashboard setup (once):**
 1. Enable the **Google** social provider.
 2. Set the project's app URL / trusted origin to your deployed domain (`NEXT_PUBLIC_APP_URL`)
