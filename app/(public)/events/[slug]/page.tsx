@@ -78,12 +78,12 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
     }
   }
 
-  if (loading) return <div className="bg-obsidian min-h-screen flex items-center justify-center"><p className="text-cream/30 text-sm uppercase tracking-[0.3em]">Loading…</p></div>;
+  if (loading) return <div className="bg-paper min-h-screen flex items-center justify-center"><p className="text-obsidian/30 text-sm uppercase tracking-[0.3em]">Loading…</p></div>;
   if (notFound || !event) return (
-    <div className="bg-obsidian min-h-[70vh] flex items-center justify-center text-center px-6">
+    <div className="bg-paper min-h-[70vh] flex items-center justify-center text-center px-6">
       <div>
-        <p className="font-display text-3xl italic text-cream mb-3">Event not found.</p>
-        <Link href="/events" className="text-gold text-[11px] font-black uppercase tracking-[0.2em]">&larr; Back to discover</Link>
+        <p className="font-display text-3xl italic text-obsidian mb-3">Event not found.</p>
+        <Link href="/events" className="text-gold-dark text-[11px] font-black uppercase tracking-[0.2em]">&larr; Back to discover</Link>
       </div>
     </div>
   );
@@ -95,23 +95,23 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
   return (
     <>
       {/* HERO */}
-      <section className="relative bg-obsidian -mt-16 pt-16">
+      <section className="relative bg-paper -mt-16 pt-16">
         <div className="relative h-[42vh] sm:h-[52vh]">
           <img src={cover} alt={event.title} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/40 to-obsidian/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-paper via-paper/30 to-transparent" />
         </div>
         <div className="relative max-w-6xl mx-auto px-5 sm:px-8 -mt-28 sm:-mt-32 pb-4 z-10">
-          <Link href="/events" className="inline-flex items-center gap-1.5 text-cream/50 hover:text-gold text-[10px] font-black uppercase tracking-[0.2em] mb-5">
+          <Link href="/events" className="inline-flex items-center gap-1.5 text-obsidian/60 hover:text-gold-dark text-[10px] font-black uppercase tracking-[0.2em] mb-5">
             <ArrowLeft size={12} /> Discover
           </Link>
-          <span className="block text-[10px] font-black uppercase tracking-[0.3em] text-gold mb-3">{CATEGORY_LABELS[event.category] ?? event.category}</span>
-          <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-light italic tracking-tight text-cream leading-[0.92] mb-3 max-w-3xl">{event.title}</h1>
-          {event.tagline && <p className="text-cream/60 text-lg max-w-2xl">{event.tagline}</p>}
+          <span className="block text-[10px] font-black uppercase tracking-[0.3em] text-gold-dark mb-3">{CATEGORY_LABELS[event.category] ?? event.category}</span>
+          <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-light italic tracking-tight text-obsidian leading-[0.92] mb-3 max-w-3xl">{event.title}</h1>
+          {event.tagline && <p className="text-obsidian/60 text-lg max-w-2xl">{event.tagline}</p>}
         </div>
       </section>
 
       {/* BODY */}
-      <section className="bg-obsidian py-12 sm:py-16">
+      <section className="bg-paper py-12 sm:py-16">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 grid lg:grid-cols-[1fr_400px] gap-10 lg:gap-14 items-start">
 
           {/* LEFT — details */}
@@ -123,24 +123,24 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                 { icon: MapPin, label: 'Location', value: `${event.venue ? event.venue + ', ' : ''}${event.city}, ${event.country}` },
                 { icon: Users, label: 'Good to know', value: [event.age_restriction, event.capacity ? `Capacity ${event.capacity}` : null].filter(Boolean).join(' · ') || 'All welcome' },
               ].map((d) => (
-                <div key={d.label} className="border border-gold/10 p-5">
-                  <d.icon size={16} className="text-gold/60 mb-3" />
-                  <p className="text-[9px] font-black uppercase tracking-[0.25em] text-cream/30 mb-1">{d.label}</p>
-                  <p className="text-cream/80 text-sm">{d.value}</p>
+                <div key={d.label} className="bg-white border border-obsidian/10 p-5">
+                  <d.icon size={16} className="text-gold-dark mb-3" />
+                  <p className="text-[9px] font-black uppercase tracking-[0.25em] text-obsidian/40 mb-1">{d.label}</p>
+                  <p className="text-obsidian/80 text-sm">{d.value}</p>
                 </div>
               ))}
             </div>
 
-            <h2 className="font-display text-2xl sm:text-3xl italic text-cream mb-4">About this event</h2>
-            <p className="text-cream/60 leading-relaxed whitespace-pre-line mb-8">{event.description}</p>
+            <h2 className="font-display text-2xl sm:text-3xl italic text-obsidian mb-4">About this event</h2>
+            <p className="text-obsidian/65 leading-relaxed whitespace-pre-line mb-8">{event.description}</p>
 
             {event.lineup && event.lineup.length > 0 && (
               <div className="mb-8">
-                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-gold/60 mb-4">Lineup</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-gold-dark mb-4">Lineup</p>
                 <div className="flex flex-wrap gap-2.5">
                   {event.lineup.map((act) => (
-                    <span key={act} className="inline-flex items-center gap-1.5 border border-gold/20 px-3.5 py-2 text-cream/80 text-sm">
-                      <Music size={12} className="text-gold/60" /> {act}
+                    <span key={act} className="inline-flex items-center gap-1.5 bg-white border border-obsidian/15 px-3.5 py-2 text-obsidian/80 text-sm">
+                      <Music size={12} className="text-gold-dark" /> {act}
                     </span>
                   ))}
                 </div>
@@ -148,9 +148,9 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
             )}
 
             {event.organizer_name && (
-              <div className="border-t border-gold/10 pt-6">
-                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-cream/30 mb-1">Presented by</p>
-                <p className="font-display text-xl italic text-cream">{event.organizer_name}</p>
+              <div className="border-t border-obsidian/10 pt-6">
+                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-obsidian/40 mb-1">Presented by</p>
+                <p className="font-display text-xl italic text-obsidian">{event.organizer_name}</p>
               </div>
             )}
           </div>
@@ -160,63 +160,63 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-obsidian-100 border border-gold/20"
+              className="bg-white border border-obsidian/15 shadow-xl shadow-obsidian/5"
             >
-              <div className="px-6 py-5 border-b border-gold/10 flex items-center gap-2">
-                <Ticket size={16} className="text-gold" />
-                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cream">Get Tickets</p>
+              <div className="px-6 py-5 border-b border-obsidian/10 flex items-center gap-2">
+                <Ticket size={16} className="text-gold-dark" />
+                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-obsidian">Get Tickets</p>
               </div>
 
               <div className="p-4 space-y-3">
-                {types.length === 0 && <p className="text-cream/40 text-sm p-4 text-center">No tickets on sale yet.</p>}
+                {types.length === 0 && <p className="text-obsidian/40 text-sm p-4 text-center">No tickets on sale yet.</p>}
                 {types.map((t) => {
                   const remaining = t.quantity - t.sold;
                   const soldOut = remaining <= 0;
                   return (
-                    <div key={t.id} className={`border p-4 transition-colors ${qty[t.id] ? 'border-gold/40 bg-gold/5' : 'border-gold/10'}`}>
+                    <div key={t.id} className={`border p-4 transition-colors ${qty[t.id] ? 'border-gold bg-gold/5' : 'border-obsidian/10'}`}>
                       <div className="flex items-start justify-between gap-3 mb-1">
                         <div>
-                          <p className="font-display text-lg italic text-cream leading-tight">{t.name}</p>
-                          <p className="text-gold text-sm font-semibold">{priceLabel(t.price, t.currency)}</p>
+                          <p className="font-display text-lg italic text-obsidian leading-tight">{t.name}</p>
+                          <p className="text-gold-dark text-sm font-semibold">{priceLabel(t.price, t.currency)}</p>
                         </div>
                         {soldOut ? (
-                          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-red-400/80 mt-1">Sold out</span>
+                          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-red-500 mt-1">Sold out</span>
                         ) : (
                           <div className="flex items-center gap-2.5 shrink-0">
-                            <button type="button" onClick={() => step(t, -1)} disabled={!qty[t.id]} className="w-7 h-7 flex items-center justify-center border border-gold/30 text-cream disabled:opacity-30 hover:border-gold transition-colors"><Minus size={13} /></button>
-                            <span className="w-5 text-center text-cream text-sm tabular-nums">{qty[t.id] || 0}</span>
-                            <button type="button" onClick={() => step(t, 1)} className="w-7 h-7 flex items-center justify-center border border-gold/30 text-cream hover:border-gold transition-colors"><Plus size={13} /></button>
+                            <button type="button" onClick={() => step(t, -1)} disabled={!qty[t.id]} className="w-7 h-7 flex items-center justify-center border border-obsidian/20 text-obsidian disabled:opacity-30 hover:border-gold transition-colors"><Minus size={13} /></button>
+                            <span className="w-5 text-center text-obsidian text-sm tabular-nums">{qty[t.id] || 0}</span>
+                            <button type="button" onClick={() => step(t, 1)} className="w-7 h-7 flex items-center justify-center border border-obsidian/20 text-obsidian hover:border-gold transition-colors"><Plus size={13} /></button>
                           </div>
                         )}
                       </div>
-                      {t.description && <p className="text-cream/40 text-xs mt-1.5">{t.description}</p>}
+                      {t.description && <p className="text-obsidian/45 text-xs mt-1.5">{t.description}</p>}
                       {t.perks && t.perks.length > 0 && (
                         <ul className="mt-2 space-y-1">
                           {t.perks.map((p) => (
-                            <li key={p} className="flex items-center gap-1.5 text-cream/50 text-xs"><span className="w-1 h-1 rounded-full bg-gold/60" /> {p}</li>
+                            <li key={p} className="flex items-center gap-1.5 text-obsidian/55 text-xs"><span className="w-1 h-1 rounded-full bg-gold" /> {p}</li>
                           ))}
                         </ul>
                       )}
-                      {!soldOut && remaining <= 20 && <p className="text-gold/60 text-[10px] mt-2 uppercase tracking-wider">Only {remaining} left</p>}
+                      {!soldOut && remaining <= 20 && <p className="text-gold-dark text-[10px] mt-2 uppercase tracking-wider">Only {remaining} left</p>}
                     </div>
                   );
                 })}
               </div>
 
               {totalCount > 0 && (
-                <form onSubmit={checkout} className="p-4 border-t border-gold/10 space-y-3">
+                <form onSubmit={checkout} className="p-4 border-t border-obsidian/10 space-y-3">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-cream/50 text-sm">{totalCount} ticket{totalCount > 1 ? 's' : ''}</span>
-                    <span className="font-display text-2xl italic text-gold">{free ? 'Free' : formatMoney(total, event.currency)}</span>
+                    <span className="text-obsidian/55 text-sm">{totalCount} ticket{totalCount > 1 ? 's' : ''}</span>
+                    <span className="font-display text-2xl italic text-gold-dark">{free ? 'Free' : formatMoney(total, event.currency)}</span>
                   </div>
-                  <input required value={buyer.name} onChange={(e) => setBuyer({ ...buyer, name: e.target.value })} placeholder="Full name" className="w-full bg-transparent border-b border-gold/20 focus:border-gold text-cream text-sm py-2.5 px-0 placeholder-cream/30 outline-none focus:ring-0" />
-                  <input required type="email" value={buyer.email} onChange={(e) => setBuyer({ ...buyer, email: e.target.value })} placeholder="Email for your tickets" className="w-full bg-transparent border-b border-gold/20 focus:border-gold text-cream text-sm py-2.5 px-0 placeholder-cream/30 outline-none focus:ring-0" />
-                  <input value={buyer.phone} onChange={(e) => setBuyer({ ...buyer, phone: e.target.value })} placeholder="Phone (optional)" className="w-full bg-transparent border-b border-gold/20 focus:border-gold text-cream text-sm py-2.5 px-0 placeholder-cream/30 outline-none focus:ring-0" />
-                  {error && <p className="text-red-400/90 text-xs">{error}</p>}
+                  <input required value={buyer.name} onChange={(e) => setBuyer({ ...buyer, name: e.target.value })} placeholder="Full name" className="w-full bg-transparent border-b border-obsidian/20 focus:border-gold text-obsidian text-sm py-2.5 px-0 placeholder-obsidian/35 outline-none focus:ring-0" />
+                  <input required type="email" value={buyer.email} onChange={(e) => setBuyer({ ...buyer, email: e.target.value })} placeholder="Email for your tickets" className="w-full bg-transparent border-b border-obsidian/20 focus:border-gold text-obsidian text-sm py-2.5 px-0 placeholder-obsidian/35 outline-none focus:ring-0" />
+                  <input value={buyer.phone} onChange={(e) => setBuyer({ ...buyer, phone: e.target.value })} placeholder="Phone (optional)" className="w-full bg-transparent border-b border-obsidian/20 focus:border-gold text-obsidian text-sm py-2.5 px-0 placeholder-obsidian/35 outline-none focus:ring-0" />
+                  {error && <p className="text-red-500 text-xs">{error}</p>}
                   <button type="submit" disabled={submitting} className="w-full bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.2em] py-3.5 transition-colors disabled:opacity-60">
                     {submitting ? 'Issuing tickets…' : free ? 'Get free tickets' : 'Confirm & get tickets'}
                   </button>
-                  <p className="flex items-center justify-center gap-1.5 text-cream/30 text-[10px] uppercase tracking-wider"><ShieldCheck size={11} className="text-gold/50" /> Secure QR + barcode entry</p>
+                  <p className="flex items-center justify-center gap-1.5 text-obsidian/40 text-[10px] uppercase tracking-wider"><ShieldCheck size={11} className="text-gold-dark" /> Secure QR + barcode entry</p>
                 </form>
               )}
             </motion.div>

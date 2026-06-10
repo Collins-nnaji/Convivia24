@@ -100,10 +100,10 @@ export default function ScanPage() {
   return (
     <div className="max-w-md mx-auto">
       <div className="flex items-center gap-2 mb-1">
-        <ScanLine className="text-[#c9a84c]" size={22} />
-        <h1 className="text-2xl font-light italic text-[#f5f0e8]">Door Scanner</h1>
+        <ScanLine className="text-[#a07c28]" size={22} />
+        <h1 className="text-2xl font-light italic text-obsidian">Door Scanner</h1>
       </div>
-      <p className="text-[#f5f0e8]/40 text-sm mb-6">Scan a guest&apos;s QR or type their code to check them in.</p>
+      <p className="text-obsidian/40 text-sm mb-6">Scan a guest&apos;s QR or type their code to check them in.</p>
 
       {/* Result banner */}
       {result && S && (
@@ -131,7 +131,7 @@ export default function ScanPage() {
               <div className="absolute inset-x-8 top-1/2 h-px bg-[#c9a84c] animate-pulse" />
             </>
           ) : (
-            <div className="text-center text-[#f5f0e8]/30 px-6">
+            <div className="text-center text-obsidian/30 px-6">
               <Camera size={36} className="mx-auto mb-2" />
               <p className="text-sm">Camera off</p>
             </div>
@@ -144,17 +144,17 @@ export default function ScanPage() {
           {scanning ? <><CameraOff size={14} /> Stop camera</> : <><Camera size={14} /> Start camera scan</>}
         </button>
       </div>
-      {camError && <p className="text-amber-400/90 text-xs mb-5">{camError}</p>}
+      {camError && <p className="text-amber-600/90 text-xs mb-5">{camError}</p>}
 
       {/* Manual */}
       <form onSubmit={(e) => { e.preventDefault(); submit(manual); setManual(''); }}>
-        <label className="text-[9px] font-black uppercase tracking-[0.25em] text-[#c9a84c]/60 block mb-2">Manual check-in</label>
+        <label className="text-[9px] font-black uppercase tracking-[0.25em] text-[#a07c28]/60 block mb-2">Manual check-in</label>
         <div className="flex gap-2">
           <input
             value={manual}
             onChange={(e) => setManual(e.target.value)}
             placeholder="CV24-XXXX-XXXX"
-            className="flex-1 bg-transparent border border-[#c9a84c]/20 focus:border-[#c9a84c] text-[#f5f0e8] text-sm py-2.5 px-3 font-mono tracking-wider placeholder-[#f5f0e8]/20 outline-none focus:ring-0 uppercase"
+            className="flex-1 bg-transparent border border-[#c9a84c]/20 focus:border-[#c9a84c] text-obsidian text-sm py-2.5 px-3 font-mono tracking-wider placeholder-obsidian/20 outline-none focus:ring-0 uppercase"
           />
           <button type="submit" disabled={busy} className="px-5 bg-[#c9a84c] text-[#0a0a0a] text-[11px] font-black uppercase tracking-[0.15em] hover:bg-[#d4b464] transition-colors disabled:opacity-60">
             {busy ? '…' : 'Check in'}

@@ -45,14 +45,14 @@ export default function ConciergePage() {
   }
 
   return (
-    <section className="bg-obsidian min-h-screen">
+    <section className="bg-paper min-h-screen">
       <div className="max-w-3xl mx-auto px-5 sm:px-8 py-10 sm:py-14 flex flex-col min-h-screen">
         <div className="mb-6">
           <SectionLabel>AI Concierge</SectionLabel>
-          <h1 className="font-display text-3xl sm:text-5xl font-light italic text-cream tracking-tight flex items-center gap-3">
-            <Sparkles className="text-gold" size={32} /> What are you in the mood for?
+          <h1 className="font-display text-3xl sm:text-5xl font-light italic text-obsidian tracking-tight flex items-center gap-3">
+            <Sparkles className="text-gold-dark" size={32} /> What are you in the mood for?
           </h1>
-          <p className="text-cream/50 text-sm mt-3">Tell me the vibe, the city, the night — I&apos;ll pull the events that fit.</p>
+          <p className="text-obsidian/55 text-sm mt-3">Tell me the vibe, the city, the night — I&apos;ll pull the events that fit.</p>
         </div>
 
         {/* Conversation */}
@@ -60,7 +60,7 @@ export default function ConciergePage() {
           {messages.length === 0 && (
             <div className="grid sm:grid-cols-2 gap-3">
               {SUGGESTIONS.map((s) => (
-                <button key={s} onClick={() => ask(s)} className="text-left border border-gold/15 hover:border-gold/40 hover:bg-gold/5 p-4 text-cream/70 text-sm transition-colors">
+                <button key={s} onClick={() => ask(s)} className="text-left bg-white border border-obsidian/12 hover:border-gold/50 hover:bg-gold/5 p-4 text-obsidian/70 text-sm transition-colors">
                   &ldquo;{s}&rdquo;
                 </button>
               ))}
@@ -74,18 +74,18 @@ export default function ConciergePage() {
               ) : (
                 <div className="max-w-[90%]">
                   <div className="flex items-start gap-2.5">
-                    <Sparkles size={16} className="text-gold mt-1 shrink-0" />
-                    <p className="text-cream/80 text-sm leading-relaxed">{m.text}</p>
+                    <Sparkles size={16} className="text-gold-dark mt-1 shrink-0" />
+                    <p className="text-obsidian/80 text-sm leading-relaxed">{m.text}</p>
                   </div>
                   {m.picks && m.picks.length > 0 && (
                     <div className="mt-4 space-y-2.5 pl-7">
                       {m.picks.map((p) => (
-                        <Link key={p.slug} href={`/events/${p.slug}`} className="group flex items-center justify-between gap-3 border border-gold/15 hover:border-gold/40 hover:bg-gold/5 p-4 transition-colors">
+                        <Link key={p.slug} href={`/events/${p.slug}`} className="group flex items-center justify-between gap-3 bg-white border border-obsidian/12 hover:border-gold/50 hover:bg-gold/5 p-4 transition-colors">
                           <div>
-                            <p className="font-display text-lg italic text-cream group-hover:text-gold transition-colors">{p.title}</p>
-                            <p className="text-cream/45 text-xs mt-0.5">{p.why}</p>
+                            <p className="font-display text-lg italic text-obsidian group-hover:text-gold-dark transition-colors">{p.title}</p>
+                            <p className="text-obsidian/50 text-xs mt-0.5">{p.why}</p>
                           </div>
-                          <ArrowRight size={16} className="text-gold/60 shrink-0 group-hover:translate-x-1 transition-transform" />
+                          <ArrowRight size={16} className="text-gold-dark shrink-0 group-hover:translate-x-1 transition-transform" />
                         </Link>
                       ))}
                     </div>
@@ -96,20 +96,20 @@ export default function ConciergePage() {
           ))}
 
           {loading && (
-            <div className="flex items-center gap-2.5 text-cream/40 text-sm">
-              <Sparkles size={16} className="text-gold animate-pulse" /> Searching the lineup…
+            <div className="flex items-center gap-2.5 text-obsidian/40 text-sm">
+              <Sparkles size={16} className="text-gold-dark animate-pulse" /> Searching the lineup…
             </div>
           )}
           <div ref={endRef} />
         </div>
 
         {/* Input */}
-        <form onSubmit={(e) => { e.preventDefault(); ask(input); }} className="sticky bottom-4 flex items-center gap-2 bg-obsidian-100 border border-gold/25 focus-within:border-gold/50 p-2 pl-4">
+        <form onSubmit={(e) => { e.preventDefault(); ask(input); }} className="sticky bottom-4 flex items-center gap-2 bg-white border border-obsidian/15 shadow-lg focus-within:border-gold p-2 pl-4">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Describe your perfect night…"
-            className="flex-1 bg-transparent border-0 focus:ring-0 text-cream text-sm placeholder-cream/30 outline-none p-0"
+            className="flex-1 bg-transparent border-0 focus:ring-0 text-obsidian text-sm placeholder-obsidian/35 outline-none p-0"
           />
           <button type="submit" disabled={loading || !input.trim()} className="w-9 h-9 flex items-center justify-center bg-gold hover:bg-gold-light text-obsidian transition-colors disabled:opacity-40">
             <ArrowUp size={18} />

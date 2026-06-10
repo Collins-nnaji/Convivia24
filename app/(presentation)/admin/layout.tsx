@@ -23,10 +23,10 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
     <>
       {open && <div className="fixed inset-0 bg-black/60 z-30 lg:hidden" onClick={onClose} />}
-      <aside className={`fixed top-0 left-0 h-full w-56 bg-[#0a0a0a] border-r border-[#c9a84c]/15 z-40 flex flex-col transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+      <aside className={`fixed top-0 left-0 h-full w-56 bg-white border-r border-[#c9a84c]/15 z-40 flex flex-col transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
         <div className="px-5 py-6 border-b border-[#c9a84c]/10">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c9a84c]/50 mb-1">Organizer</p>
-          <p className="text-lg font-light italic text-[#f5f0e8] tracking-tight">Convivia24</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#a07c28]/50 mb-1">Organizer</p>
+          <p className="text-lg font-light italic text-obsidian tracking-tight">Convivia24</p>
         </div>
         <nav className="flex-1 py-4 overflow-y-auto">
           {NAV.map(({ href, label, icon: Icon }) => {
@@ -36,7 +36,7 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
                 key={href}
                 href={href}
                 onClick={onClose}
-                className={`flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${active ? 'text-[#c9a84c] bg-[#c9a84c]/5' : 'text-[#f5f0e8]/40 hover:text-[#f5f0e8]/80'}`}
+                className={`flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${active ? 'text-[#a07c28] bg-[#c9a84c]/5' : 'text-obsidian/40 hover:text-obsidian/80'}`}
               >
                 <Icon size={15} />
                 {label}
@@ -45,7 +45,7 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
           })}
         </nav>
         <div className="px-5 py-4 border-t border-[#c9a84c]/10">
-          <Link href="/" className="flex items-center gap-2 text-[#f5f0e8]/30 hover:text-[#f5f0e8]/60 text-xs transition-colors">
+          <Link href="/" className="flex items-center gap-2 text-obsidian/30 hover:text-obsidian/60 text-xs transition-colors">
             <LogOut size={13} /> Back to site
           </Link>
         </div>
@@ -67,11 +67,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (!secret) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-white flex items-center justify-center px-4">
         <div className="w-full max-w-sm border border-[#c9a84c]/20 p-10">
           <div className="h-px bg-[#c9a84c] mb-8" />
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c9a84c]/50 mb-1">Convivia24</p>
-          <h1 className="text-2xl font-light italic text-[#f5f0e8] mb-8">Admin access</h1>
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#a07c28]/50 mb-1">Convivia24</p>
+          <h1 className="text-2xl font-light italic text-obsidian mb-8">Admin access</h1>
           <input
             type="password"
             placeholder="Enter admin password"
@@ -83,9 +83,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 setSecret(input);
               }
             }}
-            className={`w-full bg-transparent border-b ${error ? 'border-red-500' : 'border-[#c9a84c]/20'} focus:border-[#c9a84c] text-[#f5f0e8] text-sm py-3 px-0 outline-none placeholder-[#f5f0e8]/20 mb-4`}
+            className={`w-full bg-transparent border-b ${error ? 'border-red-500' : 'border-[#c9a84c]/20'} focus:border-[#c9a84c] text-obsidian text-sm py-3 px-0 outline-none placeholder-obsidian/20 mb-4`}
           />
-          {error && <p className="text-red-400 text-xs mb-4">Incorrect password.</p>}
+          {error && <p className="text-red-500 text-xs mb-4">Incorrect password.</p>}
           <button
             onClick={() => { sessionStorage.setItem('cv24-admin-secret', input); setSecret(input); }}
             className="w-full bg-[#c9a84c] text-[#0a0a0a] text-[11px] font-black uppercase tracking-[0.2em] py-3 hover:bg-[#d4b464] transition-colors"
@@ -99,14 +99,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <Ctx.Provider value={{ secret }}>
-      <div className="min-h-screen bg-[#0f0f0f] text-[#f5f0e8]">
+      <div className="min-h-screen bg-[#faf7f1] text-obsidian">
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <div className="lg:pl-56">
-          <header className="sticky top-0 z-20 bg-[#0a0a0a]/90 backdrop-blur border-b border-[#c9a84c]/10 px-5 sm:px-8 py-4 flex items-center gap-4">
-            <button className="lg:hidden text-[#f5f0e8]/50 hover:text-[#f5f0e8]" onClick={() => setSidebarOpen(true)}>
+          <header className="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-[#c9a84c]/10 px-5 sm:px-8 py-4 flex items-center gap-4">
+            <button className="lg:hidden text-obsidian/50 hover:text-obsidian" onClick={() => setSidebarOpen(true)}>
               <Menu size={20} />
             </button>
-            <p className="text-xs text-[#f5f0e8]/30 uppercase tracking-widest">Management Console</p>
+            <p className="text-xs text-obsidian/30 uppercase tracking-widest">Management Console</p>
           </header>
           <main className="p-5 sm:p-8">{children}</main>
         </div>

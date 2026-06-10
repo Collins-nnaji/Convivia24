@@ -51,12 +51,12 @@ export default function WaitlistForm({ variant = 'footer' }: { variant?: Variant
   }
 
   const inputClass =
-    'bg-transparent border-0 border-b border-gold/20 focus:border-gold focus:ring-0 text-cream text-sm py-2.5 px-0 placeholder-cream/20 transition-colors';
-  const labelClass = 'text-[9px] font-black uppercase tracking-[0.3em] text-gold/60 block mb-1.5';
+    'bg-transparent border-0 border-b border-obsidian/20 focus:border-gold focus:ring-0 text-obsidian text-sm py-2.5 px-0 placeholder-obsidian/30 transition-colors';
+  const labelClass = 'text-[9px] font-black uppercase tracking-[0.3em] text-gold-dark block mb-1.5';
 
   if (success) {
     return (
-      <p className="text-cream/70 text-sm">
+      <p className="text-obsidian/70 text-sm">
         You&apos;re on the list. We&apos;ll be in touch.
       </p>
     );
@@ -96,12 +96,12 @@ export default function WaitlistForm({ variant = 'footer' }: { variant?: Variant
           <button
             type="submit"
             disabled={loading}
-            className="shrink-0 px-5 py-2.5 border border-gold/40 text-gold text-[10px] font-black uppercase tracking-[0.2em] hover:bg-gold/10 transition-colors disabled:opacity-60"
+            className="shrink-0 px-5 py-2.5 bg-gold hover:bg-gold-light text-obsidian text-[10px] font-black uppercase tracking-[0.2em] transition-colors disabled:opacity-60"
           >
             {loading ? 'Joining...' : 'Join Waitlist'}
           </button>
         </form>
-        {error && <p className="text-red-400/90 text-xs mt-2">{error}</p>}
+        {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
       </div>
     );
   }
@@ -125,7 +125,7 @@ export default function WaitlistForm({ variant = 'footer' }: { variant?: Variant
       </div>
       <div>
         <label htmlFor="waitlist-conv-company" className={labelClass}>
-          Company <span className="text-cream/30">(optional)</span>
+          Company <span className="text-obsidian/40">(optional)</span>
         </label>
         <input
           id="waitlist-conv-company"
@@ -136,11 +136,11 @@ export default function WaitlistForm({ variant = 'footer' }: { variant?: Variant
           className={`w-full ${inputClass}`}
         />
       </div>
-      {error && <p className="text-red-400/90 text-xs">{error}</p>}
+      {error && <p className="text-red-500 text-xs">{error}</p>}
       <button
         type="submit"
         disabled={loading}
-        className="w-full border border-gold/40 text-gold text-[10px] font-black uppercase tracking-[0.2em] py-3 hover:bg-gold/10 transition-colors disabled:opacity-60"
+        className="w-full bg-gold hover:bg-gold-light text-obsidian text-[10px] font-black uppercase tracking-[0.2em] py-3 transition-colors disabled:opacity-60"
       >
         {loading ? 'Joining...' : 'Join the Waitlist'}
       </button>

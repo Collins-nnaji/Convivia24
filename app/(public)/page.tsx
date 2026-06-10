@@ -50,11 +50,11 @@ export default function HomePage() {
   return (
     <>
       {/* ═══ HERO ═══ */}
-      <section className="relative min-h-[88vh] sm:min-h-[96vh] bg-obsidian flex items-center overflow-hidden -mt-16 pt-16">
+      <section className="relative min-h-[82vh] sm:min-h-[90vh] bg-paper flex items-center overflow-hidden -mt-16 pt-16">
         <div className="absolute inset-0">
           <img src="/Homepage.png" alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-obsidian/95 via-obsidian/65 to-obsidian/25" />
-          <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-transparent to-obsidian/30" />
+          <div className="absolute inset-0 bg-gradient-to-r from-paper via-paper/85 to-paper/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-paper via-transparent to-paper/40" />
         </div>
 
         <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-8 py-20 sm:py-28 w-full">
@@ -66,17 +66,17 @@ export default function HomePage() {
 
               <motion.h1
                 variants={fadeUp}
-                className="font-display text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-light italic tracking-tight text-cream leading-[0.9] mb-6 sm:mb-8"
+                className="font-display text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-light italic tracking-tight text-obsidian leading-[0.9] mb-6 sm:mb-8"
               >
                 Find your<br />next night.
               </motion.h1>
 
               <motion.div variants={fadeUp} className="flex items-center gap-2 mb-4 sm:mb-6">
                 <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gold">Parties · Concerts · Festivals · Lagos · Abuja · London</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gold-dark">Parties · Concerts · Festivals · Lagos · Abuja · London</span>
               </motion.div>
 
-              <motion.p variants={fadeUp} className="text-base sm:text-lg text-cream/70 max-w-lg leading-relaxed mb-8 sm:mb-10">
+              <motion.p variants={fadeUp} className="text-base sm:text-lg text-obsidian/65 max-w-lg leading-relaxed mb-8 sm:mb-10">
                 Convivia24 is where the culture buys tickets. Discover the events worth leaving the house for,
                 book in seconds, and walk in with a tap. Smarter than Fatsoma — powered by AI.
               </motion.p>
@@ -90,7 +90,7 @@ export default function HomePage() {
                 </Link>
                 <Link
                   href="/concierge"
-                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 border border-cream/30 text-cream text-[11px] font-black uppercase tracking-[0.2em] hover:border-gold/60 hover:bg-cream/5 transition-colors backdrop-blur-sm"
+                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 border border-obsidian/25 text-obsidian text-[11px] font-black uppercase tracking-[0.2em] hover:border-gold hover:bg-white transition-colors"
                 >
                   <Sparkles size={13} /> Ask the AI Concierge
                 </Link>
@@ -101,35 +101,35 @@ export default function HomePage() {
       </section>
 
       {/* ═══ TICKER ═══ */}
-      <div className="bg-obsidian border-y border-gold/10 overflow-hidden py-4">
+      <div className="bg-gold overflow-hidden py-4">
         <motion.div className="flex whitespace-nowrap w-max" animate={{ x: ['0%', '-50%'] }} transition={{ duration: 28, repeat: Infinity, ease: 'linear' }}>
           {[...TICKER, ...TICKER].map((item, i) => (
-            <span key={i} className="mx-8 text-[11px] font-black uppercase tracking-[0.3em] text-cream/20 flex items-center gap-8">
+            <span key={i} className="mx-8 text-[11px] font-black uppercase tracking-[0.3em] text-obsidian/70 flex items-center gap-8">
               {item}
-              <span className="w-1 h-1 rounded-full bg-gold/30 inline-block" />
+              <span className="w-1 h-1 rounded-full bg-obsidian/40 inline-block" />
             </span>
           ))}
         </motion.div>
       </div>
 
       {/* ═══ FEATURED ═══ */}
-      <section className="bg-obsidian py-20 sm:py-28">
+      <section className="bg-paper py-20 sm:py-28">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10">
             <div>
               <SectionLabel>Featured This Season</SectionLabel>
-              <h2 className="font-display text-3xl sm:text-5xl md:text-6xl font-light italic text-cream tracking-tight">
+              <h2 className="font-display text-3xl sm:text-5xl md:text-6xl font-light italic text-obsidian tracking-tight">
                 The ones selling fast.
               </h2>
             </div>
-            <Link href="/events" className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-gold/70 hover:text-gold transition-colors group self-start">
+            <Link href="/events" className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-gold-dark hover:text-gold transition-colors group self-start">
               See all events <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
 
           {loading ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {[0, 1, 2].map((i) => <div key={i} className="aspect-[16/10] bg-obsidian-100 border border-gold/10 animate-pulse" />)}
+              {[0, 1, 2].map((i) => <div key={i} className="aspect-[16/10] bg-white border border-obsidian/10 animate-pulse" />)}
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -148,7 +148,7 @@ export default function HomePage() {
               <Link
                 key={c}
                 href={`/events?category=${c}`}
-                className="px-5 py-3 border border-obsidian/15 hover:border-obsidian hover:bg-obsidian hover:text-cream text-obsidian text-[11px] font-black uppercase tracking-[0.2em] transition-colors"
+                className="px-5 py-3 bg-white border border-obsidian/15 hover:border-gold hover:bg-gold hover:text-obsidian text-obsidian text-[11px] font-black uppercase tracking-[0.2em] transition-colors"
               >
                 {CATEGORY_LABELS[c]}
               </Link>
@@ -158,35 +158,35 @@ export default function HomePage() {
       </section>
 
       {/* ═══ HOW IT WORKS ═══ */}
-      <section className="bg-obsidian py-20 sm:py-28">
+      <section className="bg-paper py-20 sm:py-28">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <SectionLabel>For Guests</SectionLabel>
-          <h2 className="font-display text-3xl sm:text-5xl md:text-6xl font-light italic text-cream tracking-tight mb-12">
+          <h2 className="font-display text-3xl sm:text-5xl md:text-6xl font-light italic text-obsidian tracking-tight mb-12">
             From scroll to door<br />in under a minute.
           </h2>
-          <div className="grid md:grid-cols-3 gap-px bg-gold/10">
+          <div className="grid md:grid-cols-3 gap-5">
             {STEPS.map((s, i) => (
-              <div key={s.title} className="bg-obsidian p-8 sm:p-10">
+              <div key={s.title} className="bg-white border border-obsidian/10 p-8 sm:p-10">
                 <div className="flex items-center gap-3 mb-5">
-                  <span className="font-display text-5xl italic text-gold/20">{String(i + 1).padStart(2, '0')}</span>
-                  <s.icon className="text-gold" size={22} />
+                  <span className="font-display text-5xl italic text-gold/30">{String(i + 1).padStart(2, '0')}</span>
+                  <s.icon className="text-gold-dark" size={22} />
                 </div>
-                <h3 className="font-display text-2xl italic text-cream mb-3">{s.title}</h3>
-                <p className="text-cream/50 text-sm leading-relaxed">{s.desc}</p>
+                <h3 className="font-display text-2xl italic text-obsidian mb-3">{s.title}</h3>
+                <p className="text-obsidian/55 text-sm leading-relaxed">{s.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══ IMAGE BREAK ═══ */}
-      <section className="relative bg-obsidian">
+      {/* ═══ IMAGE BREAK / CONCIERGE ═══ */}
+      <section className="relative">
         <img src="/Convivium2.png" alt="" className="w-full h-[34vh] sm:h-[44vh] object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/30 to-obsidian/50" />
+        <div className="absolute inset-0 bg-gradient-to-t from-obsidian/70 via-obsidian/30 to-obsidian/40" />
         <div className="absolute inset-0 flex items-center justify-center text-center px-6">
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gold mb-3">AI Concierge</p>
-            <h2 className="font-display text-3xl sm:text-5xl md:text-6xl italic text-cream mb-5">&ldquo;Find me something tonight.&rdquo;</h2>
+            <h2 className="font-display text-3xl sm:text-5xl md:text-6xl italic text-white mb-5 drop-shadow">&ldquo;Find me something tonight.&rdquo;</h2>
             <Link href="/concierge" className="inline-flex items-center gap-2 px-7 py-3.5 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.2em] transition-colors">
               <Sparkles size={14} /> Ask the Concierge
             </Link>
@@ -211,7 +211,7 @@ export default function HomePage() {
           </div>
           <div className="grid md:grid-cols-3 gap-5">
             {ORGANIZER.map((o) => (
-              <div key={o.title} className="border border-obsidian/10 hover:border-obsidian/30 p-7 transition-colors bg-white/40">
+              <div key={o.title} className="bg-white border border-obsidian/10 hover:border-gold/40 p-7 transition-colors">
                 <o.icon className="text-gold-dark mb-4" size={24} />
                 <h3 className="font-display text-xl italic text-obsidian mb-2">{o.title}</h3>
                 <p className="text-obsidian/55 text-sm leading-relaxed">{o.desc}</p>

@@ -60,9 +60,9 @@ export default function MediaAdmin() {
   return (
     <div>
       <div className="mb-8">
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c9a84c]/50 mb-1">Management</p>
-        <h1 className="text-3xl font-light italic text-[#f5f0e8] mb-2">Media Library</h1>
-        <p className="text-xs text-[#f5f0e8]/30">Images are stored in Azure Blob Storage and served via CDN.</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#a07c28]/50 mb-1">Management</p>
+        <h1 className="text-3xl font-light italic text-obsidian mb-2">Media Library</h1>
+        <p className="text-xs text-obsidian/30">Images are stored in Azure Blob Storage and served via CDN.</p>
       </div>
 
       {/* Upload zone */}
@@ -74,16 +74,16 @@ export default function MediaAdmin() {
           onClick={() => inputRef.current?.click()}
           className={`border-2 border-dashed p-12 text-center cursor-pointer transition-colors ${dragOver ? 'border-[#c9a84c] bg-[#c9a84c]/5' : 'border-[#c9a84c]/20 hover:border-[#c9a84c]/40'}`}
         >
-          <Upload size={24} className="text-[#c9a84c]/40 mx-auto mb-3" />
-          <p className="text-sm text-[#f5f0e8]/50">{uploading ? 'Uploading…' : 'Drop an image here or click to browse'}</p>
-          <p className="text-xs text-[#f5f0e8]/20 mt-1">JPEG, PNG, WebP, AVIF · max 10MB</p>
+          <Upload size={24} className="text-[#a07c28]/40 mx-auto mb-3" />
+          <p className="text-sm text-obsidian/50">{uploading ? 'Uploading…' : 'Drop an image here or click to browse'}</p>
+          <p className="text-xs text-obsidian/20 mt-1">JPEG, PNG, WebP, AVIF · max 10MB</p>
           <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={e => e.target.files?.[0] && uploadFile(e.target.files[0])} />
         </div>
         <div className="mt-3 flex items-center gap-3">
           <input value={context} onChange={e => setContext(e.target.value)} placeholder="Context tag (e.g. menu, events, spaces)"
-            className="flex-1 bg-transparent border-b border-[#c9a84c]/20 focus:border-[#c9a84c] text-[#f5f0e8] text-sm py-2 px-0 outline-none placeholder-[#f5f0e8]/20" />
+            className="flex-1 bg-transparent border-b border-[#c9a84c]/20 focus:border-[#c9a84c] text-obsidian text-sm py-2 px-0 outline-none placeholder-obsidian/20" />
         </div>
-        {msg && <p className="text-emerald-400 text-sm mt-3 bg-emerald-400/10 px-3 py-2 break-all">{msg}</p>}
+        {msg && <p className="text-emerald-600 text-sm mt-3 bg-emerald-400/10 px-3 py-2 break-all">{msg}</p>}
       </div>
 
       {/* Uploads grid */}
@@ -93,13 +93,13 @@ export default function MediaAdmin() {
         </div>
       ) : uploads.length === 0 ? (
         <div className="border border-[#c9a84c]/10 p-10 text-center">
-          <p className="text-[#f5f0e8]/30 text-sm">No uploads yet.</p>
+          <p className="text-obsidian/30 text-sm">No uploads yet.</p>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {uploads.map(u => (
             <div key={u.id} className="border border-[#c9a84c]/10 overflow-hidden group">
-              <div className="relative aspect-video bg-[#0a0a0a]">
+              <div className="relative aspect-video bg-white">
                 <img src={u.url} alt={u.filename} className="w-full h-full object-cover" loading="lazy" />
                 <div className="absolute inset-0 bg-obsidian/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                   <button onClick={() => copyUrl(u.url)} className="flex items-center gap-1.5 bg-[#c9a84c] text-[#0a0a0a] text-[9px] font-black uppercase tracking-widest px-3 py-1.5">
@@ -108,10 +108,10 @@ export default function MediaAdmin() {
                 </div>
               </div>
               <div className="p-3">
-                <p className="text-xs text-[#f5f0e8]/70 truncate">{u.filename}</p>
+                <p className="text-xs text-obsidian/70 truncate">{u.filename}</p>
                 <div className="flex items-center justify-between mt-1">
-                  <p className="text-[10px] text-[#f5f0e8]/30">{formatBytes(u.size_bytes)}</p>
-                  {u.context && <p className="text-[9px] uppercase tracking-widest text-[#c9a84c]/40">{u.context}</p>}
+                  <p className="text-[10px] text-obsidian/30">{formatBytes(u.size_bytes)}</p>
+                  {u.context && <p className="text-[9px] uppercase tracking-widest text-[#a07c28]/40">{u.context}</p>}
                 </div>
               </div>
             </div>

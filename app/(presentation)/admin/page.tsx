@@ -38,46 +38,46 @@ export default function AdminDashboard() {
     <div className="max-w-5xl">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-light italic text-[#f5f0e8]">Dashboard</h1>
-          <p className="text-[#f5f0e8]/40 text-sm mt-1">Your events, tickets and check-ins at a glance.</p>
+          <h1 className="text-2xl font-light italic text-obsidian">Dashboard</h1>
+          <p className="text-obsidian/40 text-sm mt-1">Your events, tickets and check-ins at a glance.</p>
         </div>
         <div className="flex gap-2">
           <Link href="/create" className="inline-flex items-center gap-1.5 bg-[#c9a84c] text-[#0a0a0a] text-[11px] font-black uppercase tracking-[0.15em] px-4 py-2.5 hover:bg-[#d4b464] transition-colors"><Plus size={14} /> New event</Link>
-          <Link href="/admin/scan" className="inline-flex items-center gap-1.5 border border-[#c9a84c]/30 text-[#c9a84c] text-[11px] font-black uppercase tracking-[0.15em] px-4 py-2.5 hover:bg-[#c9a84c]/10 transition-colors"><ScanLine size={14} /> Scan</Link>
+          <Link href="/admin/scan" className="inline-flex items-center gap-1.5 border border-[#c9a84c]/30 text-[#a07c28] text-[11px] font-black uppercase tracking-[0.15em] px-4 py-2.5 hover:bg-[#c9a84c]/10 transition-colors"><ScanLine size={14} /> Scan</Link>
         </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
         {cards.map((c) => (
           <div key={c.label} className="border border-[#c9a84c]/15 p-5">
-            <c.icon size={18} className="text-[#c9a84c]/70 mb-3" />
-            <p className="text-3xl font-light text-[#f5f0e8]">{c.value}</p>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#f5f0e8]/40 mt-1">{c.label}</p>
-            <p className="text-[#f5f0e8]/30 text-xs mt-0.5">{c.sub}</p>
+            <c.icon size={18} className="text-[#a07c28]/70 mb-3" />
+            <p className="text-3xl font-light text-obsidian">{c.value}</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 mt-1">{c.label}</p>
+            <p className="text-obsidian/30 text-xs mt-0.5">{c.sub}</p>
           </div>
         ))}
       </div>
 
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#f5f0e8]/60">Selling now</h2>
-        <Link href="/admin/events" className="inline-flex items-center gap-1 text-[#c9a84c]/70 hover:text-[#c9a84c] text-[10px] font-black uppercase tracking-[0.2em]">All events <ArrowRight size={12} /></Link>
+        <h2 className="text-sm font-black uppercase tracking-[0.2em] text-obsidian/60">Selling now</h2>
+        <Link href="/admin/events" className="inline-flex items-center gap-1 text-[#a07c28]/70 hover:text-[#a07c28] text-[10px] font-black uppercase tracking-[0.2em]">All events <ArrowRight size={12} /></Link>
       </div>
 
       <div className="border border-[#c9a84c]/15 divide-y divide-[#c9a84c]/10">
         {loading ? (
-          <p className="p-5 text-[#f5f0e8]/30 text-sm">Loading…</p>
+          <p className="p-5 text-obsidian/30 text-sm">Loading…</p>
         ) : !stats?.byEvent?.length ? (
-          <p className="p-5 text-[#f5f0e8]/30 text-sm">No published events yet. <Link href="/create" className="text-[#c9a84c]">Create one →</Link></p>
+          <p className="p-5 text-obsidian/30 text-sm">No published events yet. <Link href="/create" className="text-[#a07c28]">Create one →</Link></p>
         ) : (
           stats.byEvent.map((e) => (
             <div key={e.slug} className="flex items-center justify-between gap-4 p-4">
               <div className="min-w-0">
-                <Link href={`/events/${e.slug}`} className="font-display text-lg italic text-[#f5f0e8] hover:text-[#c9a84c] transition-colors truncate block">{e.title}</Link>
-                <p className="text-[#f5f0e8]/30 text-xs">{new Date(e.starts_at).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
+                <Link href={`/events/${e.slug}`} className="font-display text-lg italic text-obsidian hover:text-[#a07c28] transition-colors truncate block">{e.title}</Link>
+                <p className="text-obsidian/30 text-xs">{new Date(e.starts_at).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
               </div>
               <div className="flex items-center gap-6 shrink-0 text-right">
-                <div><p className="text-[#f5f0e8] text-lg">{e.sold}</p><p className="text-[9px] uppercase tracking-wider text-[#f5f0e8]/30">sold</p></div>
-                <div><p className="text-[#c9a84c] text-lg">{e.checked_in}</p><p className="text-[9px] uppercase tracking-wider text-[#f5f0e8]/30">in</p></div>
+                <div><p className="text-obsidian text-lg">{e.sold}</p><p className="text-[9px] uppercase tracking-wider text-obsidian/30">sold</p></div>
+                <div><p className="text-[#a07c28] text-lg">{e.checked_in}</p><p className="text-[9px] uppercase tracking-wider text-obsidian/30">in</p></div>
               </div>
             </div>
           ))

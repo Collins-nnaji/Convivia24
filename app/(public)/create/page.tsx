@@ -97,15 +97,15 @@ export default function CreateEventPage() {
     }
   }
 
-  const inputCls = 'w-full bg-transparent border-b border-gold/20 focus:border-gold text-cream text-sm py-2.5 px-0 placeholder-cream/25 outline-none focus:ring-0';
-  const labelCls = 'text-[9px] font-black uppercase tracking-[0.25em] text-gold/60 block mb-1.5';
+  const inputCls = 'w-full bg-white border-b border-obsidian/20 focus:border-gold text-obsidian text-sm py-2.5 px-3 placeholder-obsidian/30 outline-none focus:ring-0';
+  const labelCls = 'text-[9px] font-black uppercase tracking-[0.25em] text-gold-dark block mb-1.5';
 
   return (
-    <section className="bg-obsidian min-h-screen py-12 sm:py-16">
+    <section className="bg-paper min-h-screen py-12 sm:py-16">
       <div className="max-w-3xl mx-auto px-5 sm:px-8">
         <SectionLabel>Sell Tickets</SectionLabel>
-        <h1 className="font-display text-4xl sm:text-6xl font-light italic text-cream tracking-tight mb-3">List your event.</h1>
-        <p className="text-cream/50 mb-10 leading-relaxed">Give it a title, let the AI co-pilot draft the rest, then publish. Your tickets go live instantly with QR + barcode entry.</p>
+        <h1 className="font-display text-4xl sm:text-6xl font-light italic text-obsidian tracking-tight mb-3">List your event.</h1>
+        <p className="text-obsidian/55 mb-10 leading-relaxed">Give it a title, let the AI co-pilot draft the rest, then publish. Your tickets go live instantly with QR + barcode entry.</p>
 
         <form onSubmit={submit} className="space-y-10">
           {/* BASICS */}
@@ -117,8 +117,8 @@ export default function CreateEventPage() {
             <div className="grid sm:grid-cols-2 gap-5">
               <div>
                 <label className={labelCls}>Category</label>
-                <select value={form.category} onChange={(e) => set('category', e.target.value)} className={`${inputCls} bg-obsidian`}>
-                  {CATEGORIES.map((c) => <option key={c} value={c} className="bg-obsidian">{CATEGORY_LABELS[c]}</option>)}
+                <select value={form.category} onChange={(e) => set('category', e.target.value)} className={`${inputCls} bg-white`}>
+                  {CATEGORIES.map((c) => <option key={c} value={c} className="bg-white">{CATEGORY_LABELS[c]}</option>)}
                 </select>
               </div>
               <div>
@@ -129,17 +129,17 @@ export default function CreateEventPage() {
           </div>
 
           {/* AI BUILDER */}
-          <div className="border border-gold/25 bg-gold/[0.03] p-5 sm:p-6">
+          <div className="border border-gold/25 bg-gold/5 p-5 sm:p-6">
             <div className="flex items-center gap-2 mb-3">
-              <Wand2 size={18} className="text-gold" />
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cream">AI Event Builder</p>
+              <Wand2 size={18} className="text-gold-dark" />
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-obsidian">AI Event Builder</p>
             </div>
-            <p className="text-cream/45 text-sm mb-4">Describe the vibe in a few words and let AI write your tagline, description, lineup and ticket tiers.</p>
+            <p className="text-obsidian/55 text-sm mb-4">Describe the vibe in a few words and let AI write your tagline, description, lineup and ticket tiers.</p>
             <input value={aiVibe} onChange={(e) => setAiVibe(e.target.value)} placeholder="e.g. rooftop Afrobeats party, dress code, 600 capacity" className={`${inputCls} mb-4`} />
             <button type="button" onClick={runAI} disabled={aiLoading} className="inline-flex items-center gap-2 px-5 py-2.5 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.2em] transition-colors disabled:opacity-60">
               <Sparkles size={14} /> {aiLoading ? 'Drafting…' : 'Generate with AI'}
             </button>
-            {aiNote && <p className="text-gold/70 text-xs mt-3">{aiNote}</p>}
+            {aiNote && <p className="text-gold-dark text-xs mt-3">{aiNote}</p>}
           </div>
 
           {/* DETAILS */}
@@ -155,12 +155,12 @@ export default function CreateEventPage() {
             <div className="grid sm:grid-cols-2 gap-5">
               <div><label className={labelCls}>Venue</label><input value={form.venue} onChange={(e) => set('venue', e.target.value)} placeholder="The Terrace" className={inputCls} /></div>
               <div><label className={labelCls}>City</label><input value={form.city} onChange={(e) => set('city', e.target.value)} className={inputCls} /></div>
-              <div><label className={labelCls}>Starts *</label><input type="datetime-local" value={form.starts_at} onChange={(e) => set('starts_at', e.target.value)} className={`${inputCls} [color-scheme:dark]`} /></div>
-              <div><label className={labelCls}>Ends</label><input type="datetime-local" value={form.ends_at} onChange={(e) => set('ends_at', e.target.value)} className={`${inputCls} [color-scheme:dark]`} /></div>
+              <div><label className={labelCls}>Starts *</label><input type="datetime-local" value={form.starts_at} onChange={(e) => set('starts_at', e.target.value)} className={inputCls} /></div>
+              <div><label className={labelCls}>Ends</label><input type="datetime-local" value={form.ends_at} onChange={(e) => set('ends_at', e.target.value)} className={inputCls} /></div>
               <div>
                 <label className={labelCls}>Currency</label>
-                <select value={form.currency} onChange={(e) => set('currency', e.target.value)} className={`${inputCls} bg-obsidian`}>
-                  {['NGN', 'GBP', 'USD', 'GHS', 'KES', 'ZAR'].map((c) => <option key={c} className="bg-obsidian">{c}</option>)}
+                <select value={form.currency} onChange={(e) => set('currency', e.target.value)} className={`${inputCls} bg-white`}>
+                  {['NGN', 'GBP', 'USD', 'GHS', 'KES', 'ZAR'].map((c) => <option key={c} className="bg-white">{c}</option>)}
                 </select>
               </div>
               <div><label className={labelCls}>Age restriction</label><input value={form.age_restriction} onChange={(e) => set('age_restriction', e.target.value)} placeholder="18+" className={inputCls} /></div>
@@ -172,18 +172,18 @@ export default function CreateEventPage() {
           {/* TICKET TIERS */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-cream">Ticket tiers</p>
-              <button type="button" onClick={() => setTiers((t) => [...t, { ...BLANK_TIER }])} className="inline-flex items-center gap-1.5 text-gold/70 hover:text-gold text-[10px] font-black uppercase tracking-[0.2em]">
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-obsidian">Ticket tiers</p>
+              <button type="button" onClick={() => setTiers((t) => [...t, { ...BLANK_TIER }])} className="inline-flex items-center gap-1.5 text-gold-dark hover:text-gold text-[10px] font-black uppercase tracking-[0.2em]">
                 <Plus size={13} /> Add tier
               </button>
             </div>
             <div className="space-y-4">
               {tiers.map((t, i) => (
-                <div key={i} className="border border-gold/15 p-4">
+                <div key={i} className="border border-obsidian/12 p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-[9px] font-black uppercase tracking-[0.25em] text-gold/50">Tier {i + 1}</span>
+                    <span className="text-[9px] font-black uppercase tracking-[0.25em] text-gold-dark">Tier {i + 1}</span>
                     {tiers.length > 1 && (
-                      <button type="button" onClick={() => setTiers((ts) => ts.filter((_, idx) => idx !== i))} className="text-cream/30 hover:text-red-400"><Trash2 size={14} /></button>
+                      <button type="button" onClick={() => setTiers((ts) => ts.filter((_, idx) => idx !== i))} className="text-obsidian/30 hover:text-red-400"><Trash2 size={14} /></button>
                     )}
                   </div>
                   <div className="grid sm:grid-cols-2 gap-4">
@@ -199,7 +199,7 @@ export default function CreateEventPage() {
             </div>
           </div>
 
-          {error && <p className="text-red-400/90 text-sm">{error}</p>}
+          {error && <p className="text-red-500 text-sm">{error}</p>}
 
           <button type="submit" disabled={submitting} className="w-full inline-flex items-center justify-center gap-2 bg-gold hover:bg-gold-light text-obsidian text-[12px] font-black uppercase tracking-[0.2em] py-4 transition-colors disabled:opacity-60">
             {submitting ? 'Publishing…' : <>Publish event <ArrowRight size={15} /></>}

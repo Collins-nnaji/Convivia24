@@ -25,12 +25,12 @@ export default function OrderPage({ params }: { params: Promise<{ reference: str
       .finally(() => setLoading(false));
   }, [reference]);
 
-  if (loading) return <div className="bg-obsidian min-h-screen flex items-center justify-center"><p className="text-cream/30 text-sm uppercase tracking-[0.3em]">Loading…</p></div>;
+  if (loading) return <div className="bg-paper min-h-screen flex items-center justify-center"><p className="text-obsidian/30 text-sm uppercase tracking-[0.3em]">Loading…</p></div>;
   if (error || !order) return (
-    <div className="bg-obsidian min-h-[70vh] flex items-center justify-center text-center px-6">
+    <div className="bg-paper min-h-[70vh] flex items-center justify-center text-center px-6">
       <div>
-        <p className="font-display text-3xl italic text-cream mb-3">Order not found.</p>
-        <Link href="/tickets" className="text-gold text-[11px] font-black uppercase tracking-[0.2em]">Look up your tickets &rarr;</Link>
+        <p className="font-display text-3xl italic text-obsidian mb-3">Order not found.</p>
+        <Link href="/tickets" className="text-gold-dark text-[11px] font-black uppercase tracking-[0.2em]">Look up your tickets &rarr;</Link>
       </div>
     </div>
   );
@@ -38,45 +38,45 @@ export default function OrderPage({ params }: { params: Promise<{ reference: str
   const start = event ? new Date(event.starts_at) : null;
 
   return (
-    <section className="bg-obsidian min-h-screen py-12 sm:py-16">
+    <section className="bg-paper min-h-screen py-12 sm:py-16">
       <div className="max-w-3xl mx-auto px-5 sm:px-8">
         {/* Confirmation header */}
         <div className="text-center mb-10">
-          <CheckCircle2 size={44} className="text-gold mx-auto mb-4" />
+          <CheckCircle2 size={44} className="text-gold-dark mx-auto mb-4" />
           <SectionLabel>Order Confirmed</SectionLabel>
-          <h1 className="font-display text-3xl sm:text-5xl italic text-cream mb-2">You&apos;re going.</h1>
-          <p className="text-cream/50 text-sm">
-            {tickets.length} ticket{tickets.length > 1 ? 's' : ''} sent to <span className="text-cream/80">{order.buyer_email}</span>
+          <h1 className="font-display text-3xl sm:text-5xl italic text-obsidian mb-2">You&apos;re going.</h1>
+          <p className="text-obsidian/55 text-sm">
+            {tickets.length} ticket{tickets.length > 1 ? 's' : ''} sent to <span className="text-obsidian/90">{order.buyer_email}</span>
           </p>
-          <p className="text-cream/30 text-[11px] uppercase tracking-[0.2em] mt-2">Ref · {order.reference}</p>
+          <p className="text-obsidian/40 text-[11px] uppercase tracking-[0.2em] mt-2">Ref · {order.reference}</p>
         </div>
 
         {/* Event banner */}
         {event && (
-          <div className="border border-gold/15 mb-8 overflow-hidden">
+          <div className="bg-white border border-obsidian/12 mb-8 overflow-hidden">
             {event.cover_image && <img src={event.cover_image} alt="" className="w-full h-32 object-cover" />}
             <div className="p-5">
-              <h2 className="font-display text-2xl italic text-cream mb-2">{event.title}</h2>
+              <h2 className="font-display text-2xl italic text-obsidian mb-2">{event.title}</h2>
               {start && (
-                <div className="flex flex-wrap gap-x-6 gap-y-1 text-cream/50 text-sm">
-                  <span className="inline-flex items-center gap-1.5"><Calendar size={13} className="text-gold/60" /> {start.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long' })} · {start.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span>
-                  <span className="inline-flex items-center gap-1.5"><MapPin size={13} className="text-gold/60" /> {event.venue ? event.venue + ', ' : ''}{event.city}</span>
+                <div className="flex flex-wrap gap-x-6 gap-y-1 text-obsidian/55 text-sm">
+                  <span className="inline-flex items-center gap-1.5"><Calendar size={13} className="text-gold-dark" /> {start.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long' })} · {start.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span>
+                  <span className="inline-flex items-center gap-1.5"><MapPin size={13} className="text-gold-dark" /> {event.venue ? event.venue + ', ' : ''}{event.city}</span>
                 </div>
               )}
             </div>
           </div>
         )}
 
-        <p className="flex items-center justify-center gap-2 text-cream/40 text-xs mb-6"><Smartphone size={13} className="text-gold/60" /> Show any ticket below at the door — screenshots work too.</p>
+        <p className="flex items-center justify-center gap-2 text-obsidian/50 text-xs mb-6"><Smartphone size={13} className="text-gold-dark" /> Show any ticket below at the door — screenshots work too.</p>
 
         {/* Tickets */}
         <div className="space-y-5">
           {tickets.map((t) => (
-            <div key={t.code} className="bg-cream text-obsidian flex flex-col sm:flex-row overflow-hidden">
+            <div key={t.code} className="bg-white border border-obsidian/12 flex flex-col sm:flex-row overflow-hidden shadow-sm">
               {/* Stub */}
               <div className="bg-obsidian text-cream p-5 sm:w-44 flex sm:flex-col justify-between items-center sm:items-start gap-2 relative">
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-[0.25em] text-gold/60 mb-1">{t.ticket_type_name || 'Admission'}</p>
+                  <p className="text-[9px] font-black uppercase tracking-[0.25em] text-gold/70 mb-1">{t.ticket_type_name || 'Admission'}</p>
                   <p className="font-display text-lg italic leading-tight">{t.attendee_name}</p>
                 </div>
                 <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${t.status === 'used' ? 'text-red-400' : 'text-gold'}`}>
@@ -101,7 +101,7 @@ export default function OrderPage({ params }: { params: Promise<{ reference: str
         </div>
 
         <div className="text-center mt-10">
-          <Link href="/events" className="text-gold/70 hover:text-gold text-[11px] font-black uppercase tracking-[0.2em]">Discover more events &rarr;</Link>
+          <Link href="/events" className="text-gold-dark hover:text-gold text-[11px] font-black uppercase tracking-[0.2em]">Discover more events &rarr;</Link>
         </div>
       </div>
     </section>

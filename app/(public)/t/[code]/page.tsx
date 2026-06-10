@@ -24,12 +24,12 @@ export default function TicketPage({ params }: { params: Promise<{ code: string 
       .finally(() => setLoading(false));
   }, [code]);
 
-  if (loading) return <div className="bg-obsidian min-h-screen flex items-center justify-center"><p className="text-cream/30 text-sm uppercase tracking-[0.3em]">Loading…</p></div>;
+  if (loading) return <div className="bg-paper min-h-screen flex items-center justify-center"><p className="text-obsidian/30 text-sm uppercase tracking-[0.3em]">Loading…</p></div>;
   if (error || !ticket) return (
-    <div className="bg-obsidian min-h-[70vh] flex items-center justify-center text-center px-6">
+    <div className="bg-paper min-h-[70vh] flex items-center justify-center text-center px-6">
       <div>
-        <p className="font-display text-3xl italic text-cream mb-3">Ticket not found.</p>
-        <Link href="/tickets" className="text-gold text-[11px] font-black uppercase tracking-[0.2em]">Look up your tickets &rarr;</Link>
+        <p className="font-display text-3xl italic text-obsidian mb-3">Ticket not found.</p>
+        <Link href="/tickets" className="text-gold-dark text-[11px] font-black uppercase tracking-[0.2em]">Look up your tickets &rarr;</Link>
       </div>
     </div>
   );
@@ -39,9 +39,9 @@ export default function TicketPage({ params }: { params: Promise<{ code: string 
   const void_ = ticket.status === 'void';
 
   return (
-    <section className="bg-obsidian min-h-screen py-10 sm:py-16 flex items-start justify-center">
+    <section className="bg-paper min-h-screen py-10 sm:py-16 flex items-start justify-center">
       <div className="w-full max-w-md px-5">
-        <div className="bg-cream text-obsidian overflow-hidden shadow-2xl">
+        <div className="bg-white text-obsidian border border-obsidian/10 overflow-hidden shadow-2xl">
           {/* top */}
           <div className="bg-obsidian text-cream p-6 text-center">
             <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gold/60 mb-3">Convivia24 · Admit One</p>
@@ -91,7 +91,7 @@ export default function TicketPage({ params }: { params: Promise<{ code: string 
           </div>
         </div>
 
-        <p className="text-center text-cream/30 text-xs mt-5">Screenshot this ticket or add it to your wallet. Brightness up at the door.</p>
+        <p className="text-center text-obsidian/40 text-xs mt-5">Screenshot this ticket or add it to your wallet. Brightness up at the door.</p>
       </div>
     </section>
   );
