@@ -8,6 +8,8 @@ const SYMBOLS: Record<string, string> = {
   GHS: 'GH₵',
   KES: 'KSh',
   ZAR: 'R',
+  CAD: 'CA$',
+  AED: 'AED ',
 };
 
 export function currencySymbol(currency = 'NGN'): string {

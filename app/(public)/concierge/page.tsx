@@ -9,9 +9,9 @@ interface Pick { slug: string; title: string; why: string }
 interface Msg { role: 'user' | 'ai'; text: string; picks?: Pick[] }
 
 const SUGGESTIONS = [
-  'Something fun in Lagos this weekend',
+  'Something fun near me this weekend',
   'A chilled night out, not too loud',
-  'Where can I see live Amapiano?',
+  'Live Amapiano or Afrobeats anywhere',
   'A classy event to take a date',
 ];
 
@@ -104,7 +104,7 @@ export default function ConciergePage() {
         </div>
 
         {/* Input */}
-        <form onSubmit={(e) => { e.preventDefault(); ask(input); }} className="sticky bottom-4 flex items-center gap-2 bg-white border border-obsidian/15 shadow-lg focus-within:border-gold p-2 pl-4">
+        <form onSubmit={(e) => { e.preventDefault(); ask(input); }} className="sticky bottom-20 md:bottom-4 flex items-center gap-2 bg-white border border-obsidian/15 shadow-lg focus-within:border-gold p-2 pl-4">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}

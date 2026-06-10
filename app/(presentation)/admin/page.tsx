@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Calendar, Ticket, CheckCircle2, Receipt, ArrowRight, Plus, ScanLine } from 'lucide-react';
+import { Calendar, Ticket, CheckCircle2, Receipt, ArrowRight, Plus, ScanLine, Database } from 'lucide-react';
 import { useAdmin } from './layout';
 import { formatMoney } from '@/lib/money';
 
@@ -17,13 +17,31 @@ export default function AdminDashboard() {
   const { secret } = useAdmin();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [seeding, setSeeding] = useState(false);
+  const [seedMsg, setSeedMsg] = useState('');
 
-  useEffect(() => {
+  function loadStats() {
     fetch('/api/stats', { headers: { 'x-admin-secret': secret } })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => setStats(d))
       .finally(() => setLoading(false));
-  }, [secret]);
+  }
+  useEffect(loadStats, [secret]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function seed() {
+    setSeeding(true);
+    setSeedMsg('');
+    try {
+      const res = await fetch('/api/admin/seed', { method: 'POST', headers: { 'x-admin-secret': secret } });
+      const d = await res.json();
+      setSeedMsg(res.ok ? `Seeded ${d.created} new events (${d.skipped} already present).` : (d.error || 'Seeding failed.'));
+      if (res.ok) loadStats();
+    } catch {
+      setSeedMsg('Seeding failed — check the connection.');
+    } finally {
+      setSeeding(false);
+    }
+  }
 
   const num = (v: number | undefined) => (loading ? '—' : (v ?? 0).toLocaleString());
 
@@ -41,11 +59,15 @@ export default function AdminDashboard() {
           <h1 className="text-2xl font-light italic text-obsidian">Dashboard</h1>
           <p className="text-obsidian/40 text-sm mt-1">Your events, tickets and check-ins at a glance.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Link href="/create" className="inline-flex items-center gap-1.5 bg-[#c9a84c] text-[#0a0a0a] text-[11px] font-black uppercase tracking-[0.15em] px-4 py-2.5 hover:bg-[#d4b464] transition-colors"><Plus size={14} /> New event</Link>
           <Link href="/admin/scan" className="inline-flex items-center gap-1.5 border border-[#c9a84c]/30 text-[#a07c28] text-[11px] font-black uppercase tracking-[0.15em] px-4 py-2.5 hover:bg-[#c9a84c]/10 transition-colors"><ScanLine size={14} /> Scan</Link>
+          <button onClick={seed} disabled={seeding} className="inline-flex items-center gap-1.5 border border-[#c9a84c]/30 text-[#a07c28] text-[11px] font-black uppercase tracking-[0.15em] px-4 py-2.5 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-60">
+            <Database size={14} /> {seeding ? 'Seeding…' : 'Seed sample events'}
+          </button>
         </div>
       </div>
+      {seedMsg && <p className="mb-6 text-[#a07c28] text-sm">{seedMsg}</p>}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
         {cards.map((c) => (

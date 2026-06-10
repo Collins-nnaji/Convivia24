@@ -10,13 +10,46 @@ function slugify(input: string): string {
     .slice(0, 60) || 'event';
 }
 
+/** Compute a [from, to] window for the `when` filter. */
+function dateWindow(when: string | null): { from: string | null; to: string | null } {
+  if (!when) return { from: null, to: null };
+  const now = new Date();
+  const endOf = (d: Date) => { const e = new Date(d); e.setHours(23, 59, 59, 999); return e; };
+  switch (when) {
+    case 'today':
+      return { from: now.toISOString(), to: endOf(now).toISOString() };
+    case 'weekend': {
+      // Friday 00:00 through Sunday 23:59 of the current week (or today if already inside).
+      const day = now.getDay(); // 0 Sun … 6 Sat
+      const fri = new Date(now);
+      fri.setDate(now.getDate() + ((5 - day + 7) % 7));
+      fri.setHours(0, 0, 0, 0);
+      const start = day === 0 || day === 6 ? now : (fri < now ? now : fri);
+      const sun = new Date(fri);
+      sun.setDate(fri.getDate() + (day === 0 ? 0 : 2));
+      return { from: start.toISOString(), to: endOf(sun).toISOString() };
+    }
+    case 'week': {
+      const to = new Date(now.getTime() + 7 * 86400000);
+      return { from: now.toISOString(), to: endOf(to).toISOString() };
+    }
+    case 'month': {
+      const to = new Date(now.getTime() + 30 * 86400000);
+      return { from: now.toISOString(), to: endOf(to).toISOString() };
+    }
+    default:
+      return { from: null, to: null };
+  }
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const q = searchParams.get('q');
     const city = searchParams.get('city');
     const category = searchParams.get('category');
-    // Drafts are only visible to an authenticated admin.
+    const { from, to } = dateWindow(searchParams.get('when'));
+    // Drafts and past events are only visible to an authenticated admin.
     const all = searchParams.get('all') && (await isAdminRequest(req)) ? '1' : '';
 
     const rows = await sql`
@@ -25,10 +58,12 @@ export async function GET(req: NextRequest) {
         (SELECT COALESCE(SUM(sold),0) FROM ticket_types t WHERE t.event_id = e.id) AS tickets_sold,
         (SELECT COALESCE(SUM(quantity),0) FROM ticket_types t WHERE t.event_id = e.id) AS tickets_total
       FROM events e
-      WHERE (${all ? 'true' : 'false'}::boolean OR e.status = 'published')
-        AND (${q ?? null}::text IS NULL OR e.title ILIKE ${'%' + (q ?? '') + '%'} OR e.description ILIKE ${'%' + (q ?? '') + '%'})
+      WHERE (${all ? 'true' : 'false'}::boolean OR (e.status = 'published' AND COALESCE(e.ends_at, e.starts_at + INTERVAL '6 hours') > NOW()))
+        AND (${q ?? null}::text IS NULL OR e.title ILIKE ${'%' + (q ?? '') + '%'} OR e.description ILIKE ${'%' + (q ?? '') + '%'} OR e.city ILIKE ${'%' + (q ?? '') + '%'} OR e.venue ILIKE ${'%' + (q ?? '') + '%'})
         AND (${city ?? null}::text IS NULL OR e.city = ${city ?? null})
         AND (${category ?? null}::text IS NULL OR e.category = ${category ?? null})
+        AND (${from}::timestamptz IS NULL OR e.starts_at >= ${from}::timestamptz OR (e.starts_at <= NOW() AND COALESCE(e.ends_at, e.starts_at + INTERVAL '6 hours') > NOW()))
+        AND (${to}::timestamptz IS NULL OR e.starts_at <= ${to}::timestamptz)
       ORDER BY e.is_featured DESC, e.starts_at ASC
     `;
     return NextResponse.json({ events: rows });

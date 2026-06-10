@@ -34,9 +34,15 @@ tickets, scan guests at the door, and track sales in real time.
 ```bash
 npm install
 # set DATABASE_URL (Neon) and optionally Azure OpenAI vars in .env.local
-npx tsx lib/db/migrate.ts   # creates the schema + seeds demo events
+npx tsx lib/db/migrate.ts   # creates the schema + seeds global sample events
 npm run dev
 ```
+
+### Sample data
+Global sample events (Lagos, London, New York, Accra, Nairobi, Toronto, Dubai, Atlanta,
+Johannesburg, Berlin, Paris, Manchester, Abuja) live in `lib/seed.ts`. They're seeded
+idempotently by the migration, or on demand from **Organizer Console → Seed sample events**
+(`POST /api/admin/seed`, admin only).
 
 ### Key environment variables
 - `DATABASE_URL` — Neon Postgres connection string (required)

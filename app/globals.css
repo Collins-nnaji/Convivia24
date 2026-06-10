@@ -25,6 +25,14 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+  /* Hide scrollbars on horizontal chip rows while keeping them scrollable */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* Selection */

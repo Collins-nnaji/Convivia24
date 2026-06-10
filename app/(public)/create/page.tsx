@@ -17,7 +17,7 @@ export default function CreateEventPage() {
   const { user, loading: authLoading } = useUser();
   const [form, setForm] = useState({
     title: '', tagline: '', description: '', category: 'party', organizer_name: '',
-    venue: '', city: 'Lagos', country: 'Nigeria', starts_at: '', ends_at: '',
+    venue: '', city: '', country: '', starts_at: '', ends_at: '',
     currency: 'NGN', capacity: '', age_restriction: '', lineup: '', cover_image: '',
   });
   const [tiers, setTiers] = useState<Tier[]>([{ ...BLANK_TIER, name: 'General', price: '10000' }]);
@@ -171,14 +171,15 @@ export default function CreateEventPage() {
               <textarea value={form.description} onChange={(e) => set('description', e.target.value)} rows={4} placeholder="Sell the night…" className={`${inputCls} resize-none`} />
             </div>
             <div className="grid sm:grid-cols-2 gap-5">
-              <div><label className={labelCls}>Venue</label><input value={form.venue} onChange={(e) => set('venue', e.target.value)} placeholder="The Terrace" className={inputCls} /></div>
-              <div><label className={labelCls}>City</label><input value={form.city} onChange={(e) => set('city', e.target.value)} className={inputCls} /></div>
+              <div><label className={labelCls}>Venue</label><input value={form.venue} onChange={(e) => set('venue', e.target.value)} placeholder="The venue name" className={inputCls} /></div>
+              <div><label className={labelCls}>City *</label><input required value={form.city} onChange={(e) => set('city', e.target.value)} placeholder="Any city in the world" className={inputCls} /></div>
+              <div><label className={labelCls}>Country</label><input value={form.country} onChange={(e) => set('country', e.target.value)} placeholder="Country" className={inputCls} /></div>
               <div><label className={labelCls}>Starts *</label><input type="datetime-local" value={form.starts_at} onChange={(e) => set('starts_at', e.target.value)} className={inputCls} /></div>
               <div><label className={labelCls}>Ends</label><input type="datetime-local" value={form.ends_at} onChange={(e) => set('ends_at', e.target.value)} className={inputCls} /></div>
               <div>
                 <label className={labelCls}>Currency</label>
                 <select value={form.currency} onChange={(e) => set('currency', e.target.value)} className={`${inputCls} bg-white`}>
-                  {['NGN', 'GBP', 'USD', 'GHS', 'KES', 'ZAR'].map((c) => <option key={c} className="bg-white">{c}</option>)}
+                  {['NGN', 'GBP', 'USD', 'EUR', 'GHS', 'KES', 'ZAR', 'CAD', 'AED'].map((c) => <option key={c} className="bg-white">{c}</option>)}
                 </select>
               </div>
               <div><label className={labelCls}>Age restriction</label><input value={form.age_restriction} onChange={(e) => set('age_restriction', e.target.value)} placeholder="18+" className={inputCls} /></div>

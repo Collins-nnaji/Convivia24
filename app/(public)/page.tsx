@@ -3,20 +3,20 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles, QrCode, ScanLine, Ticket, BarChart3, Search } from 'lucide-react';
+import { ArrowRight, Sparkles, QrCode, ScanLine, Ticket, BarChart3, Search, MapPin } from 'lucide-react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import EventCard, { type EventCardData } from '@/components/EventCard';
 import { CATEGORY_LABELS } from '@/lib/categories';
 
 const TICKER = [
-  'Discover Events', 'Buy Tickets in Seconds', 'QR + Barcode Entry', 'AI Event Concierge',
-  'Lagos · Abuja · London', 'Sell Out Your Next Event', 'Parties · Concerts · Festivals',
+  'Discover Events Worldwide', 'Buy Tickets in Seconds', 'QR + Barcode Entry', 'AI Event Concierge',
+  'Lagos · London · New York · Accra · Toronto', 'Sell Out Your Next Event', 'Parties · Concerts · Festivals',
 ];
 
 const CATEGORIES = ['nightlife', 'concert', 'festival', 'party', 'comedy', 'food', 'conference', 'arts'];
 
 const STEPS = [
-  { icon: Search, title: 'Discover', desc: 'Browse parties, concerts and festivals near you — or let the AI concierge find your night.' },
+  { icon: Search, title: 'Discover', desc: 'Browse parties, concerts and festivals anywhere in the world — or let the AI concierge find your night.' },
   { icon: Ticket, title: 'Book in seconds', desc: 'Pick your tier, drop your details, and your tickets are issued instantly. No queues.' },
   { icon: QrCode, title: 'Scan & go', desc: 'Every ticket carries a secure QR and barcode. Show your phone at the door and walk in.' },
 ];
@@ -32,32 +32,37 @@ const fadeUp = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.65, ease: 'easeOut' } },
 };
 
+interface CityMeta { city: string; country: string; count: number }
+
 export default function HomePage() {
   const [events, setEvents] = useState<EventCardData[]>([]);
+  const [cities, setCities] = useState<CityMeta[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/events')
-      .then((r) => r.json())
-      .then((d) => setEvents(d.events ?? []))
-      .catch(() => setEvents([]))
-      .finally(() => setLoading(false));
+    Promise.all([
+      fetch('/api/events').then((r) => r.json()).catch(() => ({ events: [] })),
+      fetch('/api/meta').then((r) => r.json()).catch(() => ({ cities: [] })),
+    ]).then(([ev, meta]) => {
+      setEvents(ev.events ?? []);
+      setCities((meta.cities ?? []).slice(0, 8));
+    }).finally(() => setLoading(false));
   }, []);
 
   const featured = events.filter((e) => e.is_featured).slice(0, 3);
-  const upcoming = events.slice(0, 6);
+  const comingUp = [...events].sort((a, b) => +new Date(a.starts_at) - +new Date(b.starts_at)).slice(0, 6);
 
   return (
     <>
       {/* ═══ HERO ═══ */}
-      <section className="relative min-h-[82vh] sm:min-h-[90vh] bg-paper flex items-center overflow-hidden -mt-16 pt-16">
+      <section className="relative min-h-[78vh] sm:min-h-[90vh] bg-paper flex items-center overflow-hidden -mt-16 pt-16">
         <div className="absolute inset-0">
           <img src="/Homepage.png" alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-paper via-paper/85 to-paper/20" />
           <div className="absolute inset-0 bg-gradient-to-t from-paper via-transparent to-paper/40" />
         </div>
 
-        <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-8 py-20 sm:py-28 w-full">
+        <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-28 w-full">
           <div className="max-w-2xl">
             <motion.div initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.12 } } }}>
               <motion.div variants={fadeUp}>
@@ -73,12 +78,12 @@ export default function HomePage() {
 
               <motion.div variants={fadeUp} className="flex items-center gap-2 mb-4 sm:mb-6">
                 <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gold-dark">Parties · Concerts · Festivals · Lagos · Abuja · London</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gold-dark">Parties · Concerts · Festivals · Worldwide</span>
               </motion.div>
 
               <motion.p variants={fadeUp} className="text-base sm:text-lg text-obsidian/65 max-w-lg leading-relaxed mb-8 sm:mb-10">
-                Convivia24 is where the culture buys tickets. Discover the events worth leaving the house for,
-                book in seconds, and walk in with a tap. Smarter than Fatsoma — powered by AI.
+                Convivia24 is where the culture buys tickets — in any city. Discover the events worth
+                leaving the house for, book in seconds, and walk in with a tap. Powered by AI.
               </motion.p>
 
               <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 sm:gap-4">
@@ -113,7 +118,7 @@ export default function HomePage() {
       </div>
 
       {/* ═══ FEATURED ═══ */}
-      <section className="bg-paper py-20 sm:py-28">
+      <section className="bg-paper py-16 sm:py-24">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10">
             <div>
@@ -133,14 +138,62 @@ export default function HomePage() {
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {(featured.length ? featured : upcoming.slice(0, 3)).map((e, i) => <EventCard key={e.slug} event={e} index={i} />)}
+              {(featured.length ? featured : comingUp.slice(0, 3)).map((e, i) => <EventCard key={e.slug} event={e} index={i} />)}
             </div>
           )}
         </div>
       </section>
 
+      {/* ═══ BROWSE BY CITY ═══ */}
+      {cities.length > 0 && (
+        <section className="bg-cream py-14 sm:py-20">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8">
+            <SectionLabel variant="light">Browse by City</SectionLabel>
+            <h2 className="font-display text-3xl sm:text-5xl font-light italic text-obsidian tracking-tight mb-8">
+              Wherever you are.
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {cities.map((c) => (
+                <Link
+                  key={c.city}
+                  href={`/events?city=${encodeURIComponent(c.city)}`}
+                  className="group bg-white border border-obsidian/10 hover:border-gold/50 hover:shadow-md p-5 transition-all"
+                >
+                  <MapPin size={16} className="text-gold-dark mb-3" />
+                  <p className="font-display text-xl italic text-obsidian group-hover:text-gold-dark transition-colors leading-tight">{c.city}</p>
+                  <p className="text-obsidian/40 text-xs mt-0.5">{c.country}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.15em] text-gold-dark mt-3">{c.count} event{Number(c.count) > 1 ? 's' : ''}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══ COMING UP ═══ */}
+      {comingUp.length > 3 && (
+        <section className="bg-paper py-16 sm:py-24">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10">
+              <div>
+                <SectionLabel>Coming Up</SectionLabel>
+                <h2 className="font-display text-3xl sm:text-5xl font-light italic text-obsidian tracking-tight">
+                  Next on the calendar.
+                </h2>
+              </div>
+              <Link href="/events?when=month" className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-gold-dark hover:text-gold transition-colors group self-start">
+                This month <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {comingUp.map((e, i) => <EventCard key={e.slug} event={e} index={i} />)}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ═══ CATEGORIES ═══ */}
-      <section className="bg-cream py-16 sm:py-20">
+      <section className="bg-cream py-14 sm:py-20">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <SectionLabel variant="light">Browse by Vibe</SectionLabel>
           <div className="flex flex-wrap gap-3">
@@ -158,7 +211,7 @@ export default function HomePage() {
       </section>
 
       {/* ═══ HOW IT WORKS ═══ */}
-      <section className="bg-paper py-20 sm:py-28">
+      <section className="bg-paper py-16 sm:py-24">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <SectionLabel>For Guests</SectionLabel>
           <h2 className="font-display text-3xl sm:text-5xl md:text-6xl font-light italic text-obsidian tracking-tight mb-12">
@@ -195,7 +248,7 @@ export default function HomePage() {
       </section>
 
       {/* ═══ FOR ORGANIZERS ═══ */}
-      <section className="bg-cream py-20 sm:py-28">
+      <section className="bg-cream py-16 sm:py-24">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start mb-12">
             <div>
@@ -206,7 +259,7 @@ export default function HomePage() {
             </div>
             <p className="text-obsidian/60 text-base sm:text-lg leading-relaxed lg:pt-10">
               List in minutes with an AI co-pilot that writes your copy and builds your tiers.
-              Sell tickets with zero friction, scan guests at the door, and watch the numbers move in real time.
+              Sell tickets in any city and currency, scan guests at the door, and watch the numbers move in real time.
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-5">
@@ -231,7 +284,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-12 sm:py-16 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
           <div>
             <h2 className="font-display text-2xl sm:text-4xl italic text-obsidian mb-2">Your next night out is one tap away.</h2>
-            <p className="text-obsidian/60 text-sm">Parties · Concerts · Festivals · Lagos · Abuja · London</p>
+            <p className="text-obsidian/60 text-sm">Parties · Concerts · Festivals · In every city the culture goes</p>
           </div>
           <Link href="/events" className="inline-flex items-center gap-2 px-8 py-4 bg-obsidian hover:bg-obsidian-50 text-cream text-[11px] font-black uppercase tracking-[0.2em] transition-colors shrink-0">
             Discover Events <ArrowRight size={14} />

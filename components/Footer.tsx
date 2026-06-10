@@ -25,7 +25,7 @@ export default function Footer() {
             </div>
             <p className="text-xs text-obsidian/50 max-w-xs leading-relaxed">
               The AI-powered events and ticketing platform for parties, concerts and culture.
-              QR + barcode entry. Lagos · Abuja · London.
+              QR + barcode entry, in any city.
             </p>
           </div>
 
@@ -52,7 +52,7 @@ export default function Footer() {
         <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-obsidian/40">
           <div className="flex items-center gap-6">
             <span>&copy; 2026 Convivia24</span>
-            <span className="text-obsidian/30">Lagos &middot; Abuja &middot; London</span>
+            <span className="text-obsidian/30">Everywhere the culture goes</span>
           </div>
           <Link href="/events" className="text-gold-dark hover:text-gold font-semibold transition-colors uppercase tracking-wider text-[10px]">
             Find Events &rarr;

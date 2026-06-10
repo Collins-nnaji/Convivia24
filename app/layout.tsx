@@ -18,7 +18,7 @@ const cormorant = Cormorant_Garamond({
 
 export const metadata = {
   title: 'Convivia24 | Discover Events. Buy Tickets. Go.',
-  description: 'The AI-powered events and ticketing platform for parties, concerts and culture. Discover events, buy tickets with QR + barcode entry, and sell out your next event. Lagos · Abuja · London.',
+  description: 'The AI-powered events and ticketing platform for parties, concerts and culture. Discover events anywhere in the world, buy tickets with QR + barcode entry, and sell out your next event.',
   icons: {
     icon: '/Logo2.png',
   }

@@ -163,7 +163,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
           </div>
 
           {/* RIGHT — ticket panel */}
-          <div className="lg:sticky lg:top-24">
+          <div id="tickets" className="lg:sticky lg:top-24 scroll-mt-24">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -241,6 +241,24 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
           </div>
         </div>
       </section>
+
+      {/* MOBILE — sticky ticket bar (sits above the bottom tab bar) */}
+      {types.length > 0 && (
+        <div className="lg:hidden fixed bottom-16 inset-x-0 z-30 bg-white/95 backdrop-blur border-t border-obsidian/10 px-4 py-3 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-obsidian/40">From</p>
+            <p className="font-display text-xl italic text-gold-dark leading-tight">
+              {priceLabel(Math.min(...types.map((t) => Number(t.price))), event.currency)}
+            </p>
+          </div>
+          <a
+            href="#tickets"
+            className="shrink-0 inline-flex items-center gap-2 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.2em] px-6 py-3 transition-colors"
+          >
+            <Ticket size={14} /> Get Tickets
+          </a>
+        </div>
+      )}
     </>
   );
 }
