@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db';
+import { getCurrentUser, isAdminRequest } from '@/lib/auth/session';
 
 function slugify(input: string): string {
   return input.toLowerCase().trim()
@@ -15,7 +16,8 @@ export async function GET(req: NextRequest) {
     const q = searchParams.get('q');
     const city = searchParams.get('city');
     const category = searchParams.get('category');
-    const all = searchParams.get('all'); // admin: include drafts
+    // Drafts are only visible to an authenticated admin.
+    const all = searchParams.get('all') && (await isAdminRequest(req)) ? '1' : '';
 
     const rows = await sql`
       SELECT e.*,
@@ -37,9 +39,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const secret = req.headers.get('x-admin-secret');
-  if (process.env.ADMIN_SECRET && secret !== process.env.ADMIN_SECRET) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const user = await getCurrentUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Please sign in to create an event.' }, { status: 401 });
   }
 
   try {
@@ -66,7 +68,7 @@ export async function POST(req: NextRequest) {
       INSERT INTO events (slug, title, tagline, description, category, organizer_name, venue, address, city, country,
         starts_at, ends_at, cover_image, currency, capacity, age_restriction, lineup, tags, is_featured, status, ai_generated)
       VALUES (${slug}, ${title.trim()}, ${tagline || null}, ${description.trim()}, ${category || 'party'},
-        ${organizer_name || 'Convivia Live'}, ${venue || null}, ${address || null}, ${city || 'Lagos'}, ${country || 'Nigeria'},
+        ${organizer_name || user.name || 'Convivia Live'}, ${venue || null}, ${address || null}, ${city || 'Lagos'}, ${country || 'Nigeria'},
         ${starts_at}, ${ends_at || null}, ${cover_image || null}, ${currency || 'NGN'}, ${capacity || null},
         ${age_restriction || null}, ${lineup || null}, ${tags || null}, ${is_featured || false}, ${status || 'published'}, ${ai_generated || false})
       RETURNING *

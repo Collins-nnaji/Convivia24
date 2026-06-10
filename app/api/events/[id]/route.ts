@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db';
+import { isAdminRequest } from '@/lib/auth/session';
 
-function authorized(req: NextRequest): boolean {
-  if (!process.env.ADMIN_SECRET) return true;
-  return req.headers.get('x-admin-secret') === process.env.ADMIN_SECRET;
+function authorized(req: NextRequest): Promise<boolean> {
+  return isAdminRequest(req);
 }
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -20,7 +20,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  if (!authorized(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await authorized(req))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const { id } = await params;
     const d = await req.json();
@@ -54,7 +54,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  if (!authorized(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await authorized(req))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const { id } = await params;
     await sql`DELETE FROM events WHERE id = ${id}`;

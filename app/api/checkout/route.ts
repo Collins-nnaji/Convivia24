@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { generateOrderReference, generateTicketCode } from '@/lib/tickets/codes';
+import { getCurrentUser } from '@/lib/auth/session';
 
 interface CheckoutItem { ticket_type_id: string; quantity: number; attendee_names?: string[] }
 
 export async function POST(req: NextRequest) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Please sign in to get tickets.' }, { status: 401 });
+    }
+
     const body = await req.json();
     const { slug, buyer, items } = body as {
       slug?: string;
@@ -13,13 +19,9 @@ export async function POST(req: NextRequest) {
       items?: CheckoutItem[];
     };
 
-    if (!buyer?.name?.trim() || !buyer?.email?.trim()) {
-      return NextResponse.json({ error: 'Your name and email are required.' }, { status: 400 });
-    }
-    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRe.test(buyer.email.trim())) {
-      return NextResponse.json({ error: 'Please enter a valid email address.' }, { status: 400 });
-    }
+    // Email comes from the authenticated account; name is the booking name.
+    const buyerName = (buyer?.name?.trim() || user.name || user.email);
+    const buyerEmail = user.email;
     if (!Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: 'Select at least one ticket.' }, { status: 400 });
     }
@@ -57,8 +59,8 @@ export async function POST(req: NextRequest) {
     const currency = String(event.currency || 'NGN');
 
     const orderRows = await sql`
-      INSERT INTO orders (reference, event_id, buyer_name, buyer_email, buyer_phone, subtotal, fees, total, currency, status)
-      VALUES (${reference}, ${event.id}, ${buyer.name.trim()}, ${buyer.email.trim().toLowerCase()}, ${buyer.phone?.trim() || null},
+      INSERT INTO orders (reference, event_id, user_id, buyer_name, buyer_email, buyer_phone, subtotal, fees, total, currency, status)
+      VALUES (${reference}, ${event.id}, ${user.id}, ${buyerName}, ${buyerEmail.toLowerCase()}, ${buyer?.phone?.trim() || null},
               ${subtotal}, ${0}, ${subtotal}, ${currency}, 'paid')
       RETURNING id, reference
     `;
@@ -68,7 +70,7 @@ export async function POST(req: NextRequest) {
     for (const li of lineItems) {
       for (let i = 0; i < li.quantity; i++) {
         const code = generateTicketCode();
-        const attendee = li.names[i]?.trim() || buyer.name.trim();
+        const attendee = li.names[i]?.trim() || buyerName;
         await sql`
           INSERT INTO tickets (code, order_id, event_id, ticket_type_id, ticket_type_name, attendee_name, price, currency, status)
           VALUES (${code}, ${order.id}, ${event.id}, ${li.type.id}, ${li.type.name}, ${attendee}, ${li.type.price}, ${currency}, 'valid')

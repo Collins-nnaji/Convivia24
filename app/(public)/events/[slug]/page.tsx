@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { MapPin, Calendar, Clock, Users, Minus, Plus, ArrowLeft, Ticket, ShieldCheck, Music } from 'lucide-react';
 import { CATEGORY_LABELS } from '@/lib/categories';
 import { priceLabel, formatMoney } from '@/lib/money';
+import { useUser } from '@/components/auth/AuthProvider';
 
 interface EventDetail {
   id: string; slug: string; title: string; tagline: string | null; description: string;
@@ -25,6 +26,7 @@ const FALLBACKS = ['/The Spaces2.png', '/Convivium.png', '/conv1.png', '/Convivi
 export default function EventDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const router = useRouter();
+  const { user } = useUser();
   const [event, setEvent] = useState<EventDetail | null>(null);
   const [types, setTypes] = useState<TicketType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,6 +43,11 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
   }, [slug]);
+
+  // Prefill the booker from the signed-in account.
+  useEffect(() => {
+    if (user) setBuyer((b) => ({ ...b, name: b.name || user.name || '', email: user.email }));
+  }, [user]);
 
   const total = useMemo(
     () => types.reduce((sum, t) => sum + (qty[t.id] || 0) * Number(t.price), 0),
@@ -204,20 +211,31 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
               </div>
 
               {totalCount > 0 && (
-                <form onSubmit={checkout} className="p-4 border-t border-obsidian/10 space-y-3">
-                  <div className="flex items-center justify-between mb-1">
+                <div className="p-4 border-t border-obsidian/10">
+                  <div className="flex items-center justify-between mb-3">
                     <span className="text-obsidian/55 text-sm">{totalCount} ticket{totalCount > 1 ? 's' : ''}</span>
                     <span className="font-display text-2xl italic text-gold-dark">{free ? 'Free' : formatMoney(total, event.currency)}</span>
                   </div>
-                  <input required value={buyer.name} onChange={(e) => setBuyer({ ...buyer, name: e.target.value })} placeholder="Full name" className="w-full bg-transparent border-b border-obsidian/20 focus:border-gold text-obsidian text-sm py-2.5 px-0 placeholder-obsidian/35 outline-none focus:ring-0" />
-                  <input required type="email" value={buyer.email} onChange={(e) => setBuyer({ ...buyer, email: e.target.value })} placeholder="Email for your tickets" className="w-full bg-transparent border-b border-obsidian/20 focus:border-gold text-obsidian text-sm py-2.5 px-0 placeholder-obsidian/35 outline-none focus:ring-0" />
-                  <input value={buyer.phone} onChange={(e) => setBuyer({ ...buyer, phone: e.target.value })} placeholder="Phone (optional)" className="w-full bg-transparent border-b border-obsidian/20 focus:border-gold text-obsidian text-sm py-2.5 px-0 placeholder-obsidian/35 outline-none focus:ring-0" />
-                  {error && <p className="text-red-500 text-xs">{error}</p>}
-                  <button type="submit" disabled={submitting} className="w-full bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.2em] py-3.5 transition-colors disabled:opacity-60">
-                    {submitting ? 'Issuing tickets…' : free ? 'Get free tickets' : 'Confirm & get tickets'}
-                  </button>
-                  <p className="flex items-center justify-center gap-1.5 text-obsidian/40 text-[10px] uppercase tracking-wider"><ShieldCheck size={11} className="text-gold-dark" /> Secure QR + barcode entry</p>
-                </form>
+                  {user ? (
+                    <form onSubmit={checkout} className="space-y-3">
+                      <input required value={buyer.name} onChange={(e) => setBuyer({ ...buyer, name: e.target.value })} placeholder="Name on the booking" className="w-full bg-transparent border-b border-obsidian/20 focus:border-gold text-obsidian text-sm py-2.5 px-0 placeholder-obsidian/35 outline-none focus:ring-0" />
+                      <input value={buyer.email} readOnly className="w-full bg-transparent border-b border-obsidian/15 text-obsidian/60 text-sm py-2.5 px-0 outline-none cursor-default" />
+                      <input value={buyer.phone} onChange={(e) => setBuyer({ ...buyer, phone: e.target.value })} placeholder="Phone (optional)" className="w-full bg-transparent border-b border-obsidian/20 focus:border-gold text-obsidian text-sm py-2.5 px-0 placeholder-obsidian/35 outline-none focus:ring-0" />
+                      {error && <p className="text-red-500 text-xs">{error}</p>}
+                      <button type="submit" disabled={submitting} className="w-full bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.2em] py-3.5 transition-colors disabled:opacity-60">
+                        {submitting ? 'Issuing tickets…' : free ? 'Get free tickets' : 'Confirm & get tickets'}
+                      </button>
+                      <p className="flex items-center justify-center gap-1.5 text-obsidian/40 text-[10px] uppercase tracking-wider"><ShieldCheck size={11} className="text-gold-dark" /> Secure QR + barcode entry</p>
+                    </form>
+                  ) : (
+                    <div className="space-y-2">
+                      <Link href={`/signin?next=${encodeURIComponent(`/events/${slug}`)}`} className="w-full inline-flex items-center justify-center gap-2 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.2em] py-3.5 transition-colors">
+                        Sign in to get tickets
+                      </Link>
+                      <p className="text-center text-obsidian/45 text-xs">Sign in with Google — you&apos;ll come right back to finish.</p>
+                    </div>
+                  )}
+                </div>
               )}
             </motion.div>
           </div>

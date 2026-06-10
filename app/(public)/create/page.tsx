@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sparkles, Plus, Trash2, Wand2, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { CATEGORIES, CATEGORY_LABELS } from '@/lib/categories';
+import { useUser } from '@/components/auth/AuthProvider';
 
 interface Tier { name: string; description: string; price: string; quantity: string; max_per_order: string; perks: string }
 
@@ -12,6 +14,7 @@ const BLANK_TIER: Tier = { name: '', description: '', price: '', quantity: '100'
 
 export default function CreateEventPage() {
   const router = useRouter();
+  const { user, loading: authLoading } = useUser();
   const [form, setForm] = useState({
     title: '', tagline: '', description: '', category: 'party', organizer_name: '',
     venue: '', city: 'Lagos', country: 'Nigeria', starts_at: '', ends_at: '',
@@ -99,6 +102,21 @@ export default function CreateEventPage() {
 
   const inputCls = 'w-full bg-white border-b border-obsidian/20 focus:border-gold text-obsidian text-sm py-2.5 px-3 placeholder-obsidian/30 outline-none focus:ring-0';
   const labelCls = 'text-[9px] font-black uppercase tracking-[0.25em] text-gold-dark block mb-1.5';
+
+  if (!authLoading && !user) {
+    return (
+      <section className="bg-paper min-h-screen py-16 sm:py-24">
+        <div className="max-w-md mx-auto px-5 sm:px-8 text-center">
+          <SectionLabel>Sell Tickets</SectionLabel>
+          <h1 className="font-display text-4xl sm:text-5xl font-light italic text-obsidian tracking-tight mb-3">List your event.</h1>
+          <p className="text-obsidian/55 mb-8">Sign in to create events and sell tickets on Convivia24.</p>
+          <Link href="/signin?next=/create" className="inline-flex items-center gap-2 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.2em] px-7 py-3.5 transition-colors">
+            Sign in to continue
+          </Link>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="bg-paper min-h-screen py-12 sm:py-16">

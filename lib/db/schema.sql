@@ -107,6 +107,7 @@ CREATE TABLE IF NOT EXISTS orders (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   reference       TEXT NOT NULL UNIQUE,
   event_id        UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+  user_id         TEXT,
   buyer_name      TEXT NOT NULL,
   buyer_email     TEXT NOT NULL,
   buyer_phone     TEXT,
@@ -121,6 +122,9 @@ CREATE TABLE IF NOT EXISTS orders (
 );
 CREATE INDEX IF NOT EXISTS idx_orders_event ON orders(event_id);
 CREATE INDEX IF NOT EXISTS idx_orders_email ON orders(LOWER(buyer_email));
+CREATE INDEX IF NOT EXISTS idx_orders_user  ON orders(user_id);
+-- Ensure user_id exists on databases migrated before auth was added
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS user_id TEXT;
 
 -- ═══════════════════════════════════════════════
 -- TICKETS (one scannable ticket per attendee)

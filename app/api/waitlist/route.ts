@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db';
+import { isAdminRequest } from '@/lib/auth/session';
 
 type WaitlistBody = {
   email: string;
@@ -12,8 +13,7 @@ function isValidEmail(email: string): boolean {
 }
 
 export async function GET(req: NextRequest) {
-  const secret = req.headers.get('x-admin-secret');
-  if (secret !== process.env.ADMIN_SECRET) {
+  if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   try {

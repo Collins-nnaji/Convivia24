@@ -1,5 +1,6 @@
 import './globals.css';
 import { Outfit, Cormorant_Garamond } from 'next/font/google';
+import AuthProvider from '@/components/auth/AuthProvider';
 
 const outfit = Outfit({
   subsets: ['latin'],
@@ -36,7 +37,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${outfit.variable} ${cormorant.variable} font-sans bg-paper text-obsidian antialiased`} suppressHydrationWarning>
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

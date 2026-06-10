@@ -1,10 +1,15 @@
 'use client';
 
-import { useState, useEffect, createContext, useContext } from 'react';
+import { createContext, useContext, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Calendar, Receipt, ScanLine, ImagePlus, Plus, LogOut, Menu } from 'lucide-react';
+import { LayoutDashboard, Calendar, Receipt, ScanLine, ImagePlus, Plus, LogOut, Menu, ShieldAlert } from 'lucide-react';
+import { useUser } from '@/components/auth/AuthProvider';
+import { signInWithGoogle } from '@/lib/auth/client';
 
+// Kept for backwards-compat with admin pages that read `secret`. Authorization
+// is now enforced by the Neon Auth session + admin role; same-origin fetches
+// send the session cookie automatically, so this stays empty.
 type AdminCtx = { secret: string };
 const Ctx = createContext<AdminCtx>({ secret: '' });
 export const useAdmin = () => useContext(Ctx);
@@ -22,21 +27,21 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const pathname = usePathname();
   return (
     <>
-      {open && <div className="fixed inset-0 bg-black/60 z-30 lg:hidden" onClick={onClose} />}
-      <aside className={`fixed top-0 left-0 h-full w-56 bg-white border-r border-[#c9a84c]/15 z-40 flex flex-col transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
-        <div className="px-5 py-6 border-b border-[#c9a84c]/10">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#a07c28]/50 mb-1">Organizer</p>
+      {open && <div className="fixed inset-0 bg-obsidian/40 z-30 lg:hidden" onClick={onClose} />}
+      <aside className={`fixed top-0 left-0 h-full w-56 bg-white border-r border-[#c9a84c]/20 z-40 flex flex-col transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+        <div className="px-5 py-6 border-b border-[#c9a84c]/15">
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#a07c28]/60 mb-1">Organizer</p>
           <p className="text-lg font-light italic text-obsidian tracking-tight">Convivia24</p>
         </div>
         <nav className="flex-1 py-4 overflow-y-auto">
           {NAV.map(({ href, label, icon: Icon }) => {
-            const active = pathname === href || (href !== '/admin' && pathname.startsWith(href));
+            const active = pathname === href || (href !== '/admin' && href !== '/create' && pathname.startsWith(href));
             return (
               <Link
                 key={href}
                 href={href}
                 onClick={onClose}
-                className={`flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${active ? 'text-[#a07c28] bg-[#c9a84c]/5' : 'text-obsidian/40 hover:text-obsidian/80'}`}
+                className={`flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${active ? 'text-[#a07c28] bg-[#c9a84c]/10' : 'text-obsidian/50 hover:text-obsidian'}`}
               >
                 <Icon size={15} />
                 {label}
@@ -44,8 +49,8 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
             );
           })}
         </nav>
-        <div className="px-5 py-4 border-t border-[#c9a84c]/10">
-          <Link href="/" className="flex items-center gap-2 text-obsidian/30 hover:text-obsidian/60 text-xs transition-colors">
+        <div className="px-5 py-4 border-t border-[#c9a84c]/15">
+          <Link href="/" className="flex items-center gap-2 text-obsidian/40 hover:text-obsidian/70 text-xs transition-colors">
             <LogOut size={13} /> Back to site
           </Link>
         </div>
@@ -54,63 +59,64 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   );
 }
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const [secret, setSecret] = useState('');
-  const [input, setInput] = useState('');
-  const [error, setError] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+function Gate({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useUser();
 
-  useEffect(() => {
-    const stored = sessionStorage.getItem('cv24-admin-secret') || '';
-    if (stored) setSecret(stored);
-  }, []);
+  if (loading) {
+    return <div className="min-h-screen bg-paper flex items-center justify-center"><p className="text-obsidian/30 text-sm uppercase tracking-[0.3em]">Checking access…</p></div>;
+  }
 
-  if (!secret) {
+  if (!user) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-4">
-        <div className="w-full max-w-sm border border-[#c9a84c]/20 p-10">
-          <div className="h-px bg-[#c9a84c] mb-8" />
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#a07c28]/50 mb-1">Convivia24</p>
-          <h1 className="text-2xl font-light italic text-obsidian mb-8">Admin access</h1>
-          <input
-            type="password"
-            placeholder="Enter admin password"
-            value={input}
-            onChange={e => { setInput(e.target.value); setError(false); }}
-            onKeyDown={e => {
-              if (e.key === 'Enter') {
-                sessionStorage.setItem('cv24-admin-secret', input);
-                setSecret(input);
-              }
-            }}
-            className={`w-full bg-transparent border-b ${error ? 'border-red-500' : 'border-[#c9a84c]/20'} focus:border-[#c9a84c] text-obsidian text-sm py-3 px-0 outline-none placeholder-obsidian/20 mb-4`}
-          />
-          {error && <p className="text-red-500 text-xs mb-4">Incorrect password.</p>}
-          <button
-            onClick={() => { sessionStorage.setItem('cv24-admin-secret', input); setSecret(input); }}
-            className="w-full bg-[#c9a84c] text-[#0a0a0a] text-[11px] font-black uppercase tracking-[0.2em] py-3 hover:bg-[#d4b464] transition-colors"
-          >
-            Enter
+      <div className="min-h-screen bg-paper flex items-center justify-center px-4">
+        <div className="w-full max-w-sm bg-white border border-obsidian/12 shadow-sm p-10 text-center">
+          <div className="h-px bg-gold mb-8" />
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#a07c28]/70 mb-1">Convivia24</p>
+          <h1 className="text-2xl font-light italic text-obsidian mb-3">Organizer access</h1>
+          <p className="text-obsidian/50 text-sm mb-7">Sign in with your organizer account to manage events.</p>
+          <button onClick={() => signInWithGoogle('/admin')} className="w-full inline-flex items-center justify-center gap-3 border border-obsidian/20 hover:border-gold text-obsidian text-sm font-semibold py-3 transition-colors">
+            Continue with Google
           </button>
         </div>
       </div>
     );
   }
 
-  return (
-    <Ctx.Provider value={{ secret }}>
-      <div className="min-h-screen bg-[#faf7f1] text-obsidian">
-        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <div className="lg:pl-56">
-          <header className="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-[#c9a84c]/10 px-5 sm:px-8 py-4 flex items-center gap-4">
-            <button className="lg:hidden text-obsidian/50 hover:text-obsidian" onClick={() => setSidebarOpen(true)}>
-              <Menu size={20} />
-            </button>
-            <p className="text-xs text-obsidian/30 uppercase tracking-widest">Management Console</p>
-          </header>
-          <main className="p-5 sm:p-8">{children}</main>
+  if (!user.isAdmin) {
+    return (
+      <div className="min-h-screen bg-paper flex items-center justify-center px-4">
+        <div className="w-full max-w-sm bg-white border border-obsidian/12 shadow-sm p-10 text-center">
+          <ShieldAlert size={32} className="text-amber-600 mx-auto mb-4" />
+          <h1 className="text-2xl font-light italic text-obsidian mb-2">Not authorized</h1>
+          <p className="text-obsidian/50 text-sm mb-6">Your account ({user.email}) isn&apos;t an organizer. Ask an admin to add your email to the allow-list.</p>
+          <Link href="/" className="text-[#a07c28] text-[11px] font-black uppercase tracking-[0.2em]">Back to site →</Link>
         </div>
       </div>
-    </Ctx.Provider>
+    );
+  }
+
+  return <>{children}</>;
+}
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  return (
+    <Gate>
+      <Ctx.Provider value={{ secret: '' }}>
+        <div className="min-h-screen bg-paper text-obsidian">
+          <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+          <div className="lg:pl-56">
+            <header className="sticky top-0 z-20 bg-paper/90 backdrop-blur border-b border-[#c9a84c]/15 px-5 sm:px-8 py-4 flex items-center gap-4">
+              <button className="lg:hidden text-obsidian/50 hover:text-obsidian" onClick={() => setSidebarOpen(true)}>
+                <Menu size={20} />
+              </button>
+              <p className="text-xs text-obsidian/40 uppercase tracking-widest">Organizer Console</p>
+            </header>
+            <main className="p-5 sm:p-8">{children}</main>
+          </div>
+        </div>
+      </Ctx.Provider>
+    </Gate>
   );
 }

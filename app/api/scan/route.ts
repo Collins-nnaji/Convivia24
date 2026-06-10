@@ -1,20 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { verifyTicketPayload } from '@/lib/tickets/codes';
-
-function authorized(req: NextRequest): boolean {
-  const secret = req.headers.get('x-admin-secret');
-  // If no ADMIN_SECRET is configured, allow the door scanner in demo mode.
-  if (!process.env.ADMIN_SECRET) return true;
-  return secret === process.env.ADMIN_SECRET;
-}
+import { isAdminRequest } from '@/lib/auth/session';
 
 /**
  * Validate / check in a ticket at the door.
  * body: { payload: string (QR contents or raw code), checkin?: boolean, gate?: string }
  */
 export async function POST(req: NextRequest) {
-  if (!authorized(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await isAdminRequest(req))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
     const { payload, checkin = true, gate } = await req.json();

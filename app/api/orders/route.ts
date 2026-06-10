@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db';
+import { isAdminRequest } from '@/lib/auth/session';
 
 export async function GET(req: NextRequest) {
-  if (process.env.ADMIN_SECRET && req.headers.get('x-admin-secret') !== process.env.ADMIN_SECRET) {
+  if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   try {
