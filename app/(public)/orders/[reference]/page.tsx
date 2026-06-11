@@ -2,8 +2,10 @@
 
 import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { CheckCircle2, Calendar, MapPin, Download, Smartphone } from 'lucide-react';
+import { CheckCircle2, Calendar, MapPin, Download, Smartphone, Share2 } from 'lucide-react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
+import FaceEnroll from '@/components/FaceEnroll';
+import { absoluteUrl } from '@/lib/url';
 
 interface Ticket { code: string; attendee_name: string | null; ticket_type_name: string | null; status: string }
 interface EventInfo { title: string; venue: string | null; city: string; starts_at: string; cover_image: string | null }
@@ -14,13 +16,15 @@ export default function OrderPage({ params }: { params: Promise<{ reference: str
   const [order, setOrder] = useState<Order | null>(null);
   const [event, setEvent] = useState<EventInfo | null>(null);
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [face, setFace] = useState<{ available: boolean; enrolled: boolean }>({ available: false, enrolled: false });
+  const [shared, setShared] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
     fetch(`/api/orders/${reference}`)
       .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((d) => { setOrder(d.order); setEvent(d.event); setTickets(d.tickets ?? []); })
+      .then((d) => { setOrder(d.order); setEvent(d.event); setTickets(d.tickets ?? []); setFace(d.face ?? { available: false, enrolled: false }); })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, [reference]);
@@ -49,6 +53,18 @@ export default function OrderPage({ params }: { params: Promise<{ reference: str
             {tickets.length} ticket{tickets.length > 1 ? 's' : ''} sent to <span className="text-obsidian/90">{order.buyer_email}</span>
           </p>
           <p className="text-obsidian/40 text-[11px] uppercase tracking-[0.2em] mt-2">Ref · {order.reference}</p>
+          <button
+            onClick={async () => {
+              const url = absoluteUrl(`/orders/${order.reference}`);
+              try {
+                if (navigator.share) await navigator.share({ title: 'My Convivia24 tickets', url });
+                else { await navigator.clipboard.writeText(url); setShared(true); setTimeout(() => setShared(false), 2000); }
+              } catch { /* user dismissed */ }
+            }}
+            className="inline-flex items-center gap-1.5 mt-4 text-[10px] font-black uppercase tracking-[0.2em] text-gold-dark hover:text-gold transition-colors"
+          >
+            <Share2 size={12} /> {shared ? 'Link copied' : 'Share / open on another device'}
+          </button>
         </div>
 
         {/* Event banner */}
@@ -64,6 +80,13 @@ export default function OrderPage({ params }: { params: Promise<{ reference: str
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Optional Face Check-in */}
+        {face.available && (
+          <div className="mb-6">
+            <FaceEnroll reference={order.reference} enrolled={face.enrolled} />
           </div>
         )}
 

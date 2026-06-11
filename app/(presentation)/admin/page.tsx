@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Calendar, Ticket, CheckCircle2, Receipt, ArrowRight, Plus, ScanLine, Database } from 'lucide-react';
+import { Calendar, Ticket, CheckCircle2, Receipt, ArrowRight, Plus, ScanLine, Database, Sparkles, RefreshCw } from 'lucide-react';
 import { useAdmin } from './layout';
 import { formatMoney } from '@/lib/money';
 
@@ -19,6 +19,8 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [seeding, setSeeding] = useState(false);
   const [seedMsg, setSeedMsg] = useState('');
+  const [insights, setInsights] = useState<string[] | null>(null);
+  const [insightsLoading, setInsightsLoading] = useState(true);
 
   function loadStats() {
     fetch('/api/stats', { headers: { 'x-admin-secret': secret } })
@@ -26,7 +28,14 @@ export default function AdminDashboard() {
       .then((d) => setStats(d))
       .finally(() => setLoading(false));
   }
-  useEffect(loadStats, [secret]); // eslint-disable-line react-hooks/exhaustive-deps
+  function loadInsights() {
+    setInsightsLoading(true);
+    fetch('/api/ai/insights', { headers: { 'x-admin-secret': secret } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setInsights(d?.insights ?? []))
+      .finally(() => setInsightsLoading(false));
+  }
+  useEffect(() => { loadStats(); loadInsights(); }, [secret]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function seed() {
     setSeeding(true);
@@ -78,6 +87,27 @@ export default function AdminDashboard() {
             <p className="text-obsidian/30 text-xs mt-0.5">{c.sub}</p>
           </div>
         ))}
+      </div>
+
+      {/* AI Insights */}
+      <div className="border border-[#c9a84c]/25 bg-[#c9a84c]/[0.04] p-5 mb-10">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-black uppercase tracking-[0.2em] text-obsidian/70 flex items-center gap-2"><Sparkles size={15} className="text-gold-dark" /> AI Insights</h2>
+          <button onClick={loadInsights} disabled={insightsLoading} className="text-obsidian/40 hover:text-[#a07c28] transition-colors disabled:opacity-50" title="Refresh">
+            <RefreshCw size={14} className={insightsLoading ? 'animate-spin' : ''} />
+          </button>
+        </div>
+        {insightsLoading && !insights ? (
+          <p className="text-obsidian/40 text-sm">Analysing your sales…</p>
+        ) : insights && insights.length ? (
+          <ul className="space-y-2">
+            {insights.map((t, i) => (
+              <li key={i} className="flex items-start gap-2.5 text-obsidian/75 text-sm"><span className="w-1.5 h-1.5 rounded-full bg-gold mt-1.5 shrink-0" /> {t}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-obsidian/40 text-sm">No insights yet — once events are selling, recommendations show up here.</p>
+        )}
       </div>
 
       <div className="flex items-center justify-between mb-4">

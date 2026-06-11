@@ -125,6 +125,8 @@ CREATE INDEX IF NOT EXISTS idx_orders_email ON orders(LOWER(buyer_email));
 CREATE INDEX IF NOT EXISTS idx_orders_user  ON orders(user_id);
 -- Ensure user_id exists on databases migrated before auth was added
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS user_id TEXT;
+-- Optional Face Check-in: a selfie enrolled by the buyer, verified at the door
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS face_image_url TEXT;
 
 -- ═══════════════════════════════════════════════
 -- TICKETS (one scannable ticket per attendee)

@@ -11,19 +11,28 @@ interface ChatOptions {
   temperature?: number;
   maxTokens?: number;
   json?: boolean;
+  /** Which deployment to target: the chat model (default) or the analysis model. */
+  model?: 'chat' | 'analysis';
+}
+
+function deploymentFor(model: 'chat' | 'analysis'): string {
+  if (model === 'analysis') {
+    return process.env.AZURE_OPENAI_ANALYSIS_DEPLOYMENT ||
+      process.env.AZURE_OPENAI_CHAT_DEPLOYMENT ||
+      process.env.AZURE_OPENAI_DEPLOYMENT || 'gpt-4.1';
+  }
+  return process.env.AZURE_OPENAI_CHAT_DEPLOYMENT ||
+    process.env.AZURE_OPENAI_DEPLOYMENT || 'gpt-4.1';
 }
 
 /**
  * Call Azure OpenAI chat completions. Returns the assistant message content.
  * Throws if the service is not configured or the request fails.
  */
-export async function chat({ messages, temperature = 0.7, maxTokens = 900, json = false }: ChatOptions): Promise<string> {
+export async function chat({ messages, temperature = 0.7, maxTokens = 900, json = false, model = 'chat' }: ChatOptions): Promise<string> {
   const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
   const key = process.env.AZURE_OPENAI_KEY;
-  const deployment =
-    process.env.AZURE_OPENAI_CHAT_DEPLOYMENT ||
-    process.env.AZURE_OPENAI_DEPLOYMENT ||
-    'gpt-4.1';
+  const deployment = deploymentFor(model);
   const apiVersion = process.env.AZURE_OPENAI_API_VERSION || '2025-01-01-preview';
 
   if (!endpoint || !key) throw new Error('Azure OpenAI is not configured.');

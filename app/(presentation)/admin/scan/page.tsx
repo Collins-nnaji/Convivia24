@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ScanLine, Camera, CameraOff, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
+import { ScanLine, Camera, CameraOff, CheckCircle2, XCircle, AlertTriangle, ScanFace, Loader2 } from 'lucide-react';
 import { useAdmin } from '../layout';
 
 type Result = {
@@ -26,13 +26,19 @@ export default function ScanPage() {
   const [busy, setBusy] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [camError, setCamError] = useState('');
+  const [lastPayload, setLastPayload] = useState('');
+  const [faceResult, setFaceResult] = useState<{ match: boolean; confidence?: number; attendee_name?: string; message: string } | null>(null);
+  const [faceBusy, setFaceBusy] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const faceInputRef = useRef<HTMLInputElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const lastScan = useRef<{ code: string; at: number }>({ code: '', at: 0 });
 
   async function submit(payload: string) {
     if (!payload.trim() || busy) return;
     setBusy(true);
+    setFaceResult(null);
+    setLastPayload(payload.trim());
     try {
       const res = await fetch('/api/scan', {
         method: 'POST',
@@ -46,6 +52,25 @@ export default function ScanPage() {
       setResult({ result: 'invalid', message: 'Network error — try again.' });
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function faceCheck(file: File) {
+    if (!lastPayload) return;
+    setFaceBusy(true);
+    setFaceResult(null);
+    try {
+      const fd = new FormData();
+      fd.append('payload', lastPayload);
+      fd.append('file', file);
+      const res = await fetch('/api/face/identify', { method: 'POST', headers: { 'x-admin-secret': secret }, body: fd });
+      const data = await res.json();
+      setFaceResult(data);
+      if (navigator.vibrate) navigator.vibrate(data.match ? 60 : [40, 40, 40]);
+    } catch {
+      setFaceResult({ match: false, message: 'Face check failed — try again.' });
+    } finally {
+      setFaceBusy(false);
     }
   }
 
@@ -161,6 +186,34 @@ export default function ScanPage() {
           </button>
         </div>
       </form>
+
+      {/* Face Check-in (optional) — verify the guest against their enrolled selfie */}
+      {lastPayload && (
+        <div className="mt-6 border-t border-[#c9a84c]/15 pt-5">
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-[9px] font-black uppercase tracking-[0.25em] text-[#a07c28]/60">Face verify (optional)</label>
+            <span className="font-mono text-[10px] text-obsidian/40 truncate max-w-[140px]">{lastPayload.replace(/^CV24\|/, '').split('|')[0]}</span>
+          </div>
+          {faceResult && (
+            <div className={`mb-3 p-3 text-sm flex items-center gap-2 ${faceResult.match ? 'bg-emerald-600 text-white' : 'bg-amber-600 text-white'}`}>
+              <ScanFace size={16} />
+              <span>
+                {faceResult.message}
+                {faceResult.confidence != null && ` (${Math.round(faceResult.confidence * 100)}%)`}
+                {faceResult.attendee_name ? ` · ${faceResult.attendee_name}` : ''}
+              </span>
+            </div>
+          )}
+          <button
+            onClick={() => faceInputRef.current?.click()}
+            disabled={faceBusy}
+            className="w-full flex items-center justify-center gap-2 py-2.5 border border-[#c9a84c]/30 text-[#a07c28] text-[11px] font-black uppercase tracking-[0.15em] hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-60"
+          >
+            {faceBusy ? <Loader2 size={14} className="animate-spin" /> : <ScanFace size={14} />} {faceBusy ? 'Matching…' : 'Capture guest face'}
+          </button>
+          <input ref={faceInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) faceCheck(f); }} />
+        </div>
+      )}
     </div>
   );
 }

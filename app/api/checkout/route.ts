@@ -2,11 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { generateOrderReference, generateTicketCode } from '@/lib/tickets/codes';
 import { getCurrentUser } from '@/lib/auth/session';
+import { rateLimit, clientIp } from '@/lib/redis';
 
 interface CheckoutItem { ticket_type_id: string; quantity: number; attendee_names?: string[] }
 
 export async function POST(req: NextRequest) {
   try {
+    const rl = await rateLimit(`checkout:${clientIp(req)}`, 20, 60);
+    if (!rl.ok) return NextResponse.json({ error: 'Too many checkout attempts. Please wait a moment.' }, { status: 429 });
+
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Please sign in to get tickets.' }, { status: 401 });

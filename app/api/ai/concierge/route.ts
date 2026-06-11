@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { chat, aiConfigured } from '@/lib/ai/azure';
+import { rateLimit, clientIp } from '@/lib/redis';
 
 /**
  * AI event concierge — recommends live events based on a free-text request.
@@ -9,6 +10,9 @@ import { chat, aiConfigured } from '@/lib/ai/azure';
  */
 export async function POST(req: NextRequest) {
   try {
+    const rl = await rateLimit(`concierge:${clientIp(req)}`, 15, 60);
+    if (!rl.ok) return NextResponse.json({ error: 'You are asking quickly! Give me a few seconds.' }, { status: 429 });
+
     const { query } = await req.json();
     if (!query?.trim()) return NextResponse.json({ error: 'Tell me what you are in the mood for.' }, { status: 400 });
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { isAdminRequest } from '@/lib/auth/session';
+import { rateLimit, clientIp } from '@/lib/redis';
 
 type WaitlistBody = {
   email: string;
@@ -27,6 +28,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const rl = await rateLimit(`waitlist:${clientIp(req)}`, 5, 60);
+    if (!rl.ok) return NextResponse.json({ error: 'Too many requests. Please try again shortly.' }, { status: 429 });
+
     const { email, company, name } = (await req.json()) as WaitlistBody;
 
     if (!email?.trim()) {

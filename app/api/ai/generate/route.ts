@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { chat, aiConfigured } from '@/lib/ai/azure';
+import { rateLimit, clientIp } from '@/lib/redis';
 
 /**
  * AI event-copy generator for organizers.
@@ -8,6 +9,9 @@ import { chat, aiConfigured } from '@/lib/ai/azure';
  */
 export async function POST(req: NextRequest) {
   try {
+    const rl = await rateLimit(`ai-generate:${clientIp(req)}`, 12, 60);
+    if (!rl.ok) return NextResponse.json({ error: 'Slow down a touch — try again in a few seconds.' }, { status: 429 });
+
     const { title, category, city, venue, vibe } = await req.json();
     if (!title?.trim()) return NextResponse.json({ error: 'Give your event a working title first.' }, { status: 400 });
 

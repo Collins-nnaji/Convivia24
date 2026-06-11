@@ -83,6 +83,24 @@ cover-image upload, status/feature controls, and inline ticket-tier management
 > The live OAuth round-trip can only be verified from a deployed environment that can reach
 > the Neon Auth host; it is network-blocked in CI sandboxes.
 
+## Integrations (environment-driven)
+
+Every integration **degrades gracefully** — if its env vars are absent the feature
+quietly disables and the rest of the app keeps working.
+
+| Capability | Env vars | Where it's used |
+| --- | --- | --- |
+| **Neon Auth (Google)** | `NEON_AUTH_BASE_URL`, `NEXT_PUBLIC_NEON_AUTH_BASE_URL` | `/api/auth/*` proxy, sign-in, gating |
+| **Database** | `DATABASE_URL` | everything (`lib/db`) |
+| **AI (chat + analysis)** | `AZURE_OPENAI_*`, `AZURE_OPENAI_ANALYSIS_DEPLOYMENT` | concierge, event builder, **AI Insights** (analysis model) |
+| **Face Check-in** | `AZURE_FACE_ENDPOINT`, `AZURE_FACE_KEY` | enroll selfie on order, verify at the door (`/api/face/*`) |
+| **Image storage** | `AZURE_STORAGE_*` | cover + selfie uploads (`lib/azure/blob`) |
+| **Rate limiting & cache** | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | checkout / AI / waitlist / face limits, insights cache (`lib/redis`) |
+| **Error tracking** | `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN` | `instrumentation.ts` + `instrumentation-client.ts` |
+| **Absolute URLs** | `NEXT_PUBLIC_APP_URL` | share links (`lib/url`) |
+| **Free / RSVP mode** | `CONVIVIA_EVERYTHING_FREE` | pricing helpers |
+| **Admin role** | `CONVIVIA_ADMIN_EMAILS` | organizer console access |
+
 ## Project Structure
 - `/app/(public)` — guest-facing pages (home, discover, event detail, checkout, tickets, concierge, create)
 - `/app/(presentation)/admin` — organizer console (dashboard, events, orders, scanner, media)
