@@ -8,24 +8,23 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 
   try {
-    const { status, admin_notes } = await req.json();
-    const validStatuses = ['new', 'read', 'responded', 'archived'];
-    if (status && !validStatuses.includes(status)) {
-      return NextResponse.json({ error: 'Invalid status.' }, { status: 400 });
-    }
-
+    const data = await req.json();
     const rows = await sql`
-      UPDATE inquiries
-      SET status      = COALESCE(${status || null}, status),
-          admin_notes = COALESCE(${admin_notes ?? null}, admin_notes),
-          updated_at  = NOW()
+      UPDATE convivium_members
+      SET name         = COALESCE(${data.name ?? null}, name),
+          phone        = COALESCE(${data.phone ?? null}, phone),
+          member_type  = COALESCE(${data.member_type ?? null}, member_type),
+          status       = COALESCE(${data.status ?? null}, status),
+          renewal_date = COALESCE(${data.renewal_date ?? null}, renewal_date),
+          notes        = COALESCE(${data.notes ?? null}, notes),
+          updated_at   = NOW()
       WHERE id = ${params.id}
       RETURNING *
     `;
     if (!rows.length) return NextResponse.json({ error: 'Not found.' }, { status: 404 });
     return NextResponse.json(rows[0]);
   } catch (err) {
-    console.error('[PATCH /api/inquiries/[id]]', err);
+    console.error('[PATCH /api/members/[id]]', err);
     return NextResponse.json({ error: 'Update failed.' }, { status: 500 });
   }
 }
