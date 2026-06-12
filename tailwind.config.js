@@ -25,6 +25,10 @@ module.exports = {
             dark:    '#ede5d4',
             muted:   '#d9cebb',
           },
+          paper: {
+            DEFAULT: '#faf7f1',
+            dark:    '#f1ece2',
+          },
         },
         fontFamily: {
           display: ['var(--font-cormorant)', 'Georgia', 'serif'],

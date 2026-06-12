@@ -58,6 +58,11 @@ async function migrate() {
   }
 
   console.log('Migration complete.');
+
+  // Seed global sample events (idempotent — keyed by slug).
+  const { seedEvents } = await import('../seed');
+  const result = await seedEvents(sql as unknown as Parameters<typeof seedEvents>[0]);
+  console.log(`Seed: ${result.created} events created, ${result.skipped} already present.`);
 }
 
 migrate().catch((err) => {

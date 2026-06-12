@@ -1,182 +1,125 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, X } from 'lucide-react';
+import Link from 'next/link';
+import { Plus, Trash2, Star, Eye, EyeOff, Users, ExternalLink, Pencil } from 'lucide-react';
 import { useAdmin } from '../layout';
 
-type Event = {
-  id: string;
-  name: string;
-  description: string;
-  event_type: string;
-  frequency: string | null;
-  day_of_week: string | null;
-  time_start: string | null;
-  time_end: string | null;
-  access_level: string;
-  access_note: string | null;
-  image_url: string | null;
-  booking_required: boolean;
-  is_active: boolean;
-  sort_order: number;
-};
-
-const BLANK: Partial<Event> = { name: '', description: '', event_type: 'weekly', access_level: 'public', booking_required: false, sort_order: 0 };
+interface EventRow {
+  id: string; slug: string; title: string; category: string; city: string;
+  starts_at: string; status: string; is_featured: boolean;
+  tickets_sold: number; tickets_total: number; min_price: string | null; currency: string;
+}
 
 export default function EventsAdmin() {
   const { secret } = useAdmin();
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<EventRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<'weekly' | 'signature' | 'special'>('weekly');
-  const [editing, setEditing] = useState<Partial<Event> | null>(null);
-  const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
+  const [attendeesFor, setAttendeesFor] = useState<string | null>(null);
+  const [attendees, setAttendees] = useState<Record<string, unknown>[]>([]);
 
-  function flash(m: string) { setMsg(m); setTimeout(() => setMsg(''), 3000); }
+  function flash(m: string) { setMsg(m); setTimeout(() => setMsg(''), 2500); }
 
   function load() {
-    if (!secret) return;
-    fetch('/api/events', { headers: { 'x-admin-secret': secret } })
-      .then(r => r.json())
-      .then(d => { setEvents(d.events || []); setLoading(false); });
+    fetch('/api/events?all=1', { headers: { 'x-admin-secret': secret } })
+      .then((r) => r.json())
+      .then((d) => setEvents(d.events ?? []))
+      .finally(() => setLoading(false));
   }
   useEffect(load, [secret]);
 
-  async function save() {
-    if (!editing?.name || !editing.description || !editing.event_type) return;
-    setSaving(true);
-    const isNew = !editing.id;
-    const url = isNew ? '/api/events' : `/api/events/${editing.id}`;
-    const res = await fetch(url, {
-      method: isNew ? 'POST' : 'PATCH',
+  async function patch(id: string, body: Record<string, unknown>) {
+    await fetch(`/api/events/${id}`, {
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
-      body: JSON.stringify(editing),
+      body: JSON.stringify(body),
     });
-    if (res.ok) { setEditing(null); load(); flash(isNew ? 'Event created.' : 'Event updated.'); }
-    setSaving(false);
-  }
-
-  async function deleteEvent(id: string) {
-    if (!confirm('Delete this event?')) return;
-    await fetch(`/api/events/${id}`, { method: 'DELETE', headers: { 'x-admin-secret': secret } });
     load();
-    flash('Event deleted.');
   }
 
-  const filtered = events.filter(e => e.event_type === tab);
+  async function remove(id: string, title: string) {
+    if (!confirm(`Delete "${title}"? This removes its tickets and orders.`)) return;
+    await fetch(`/api/events/${id}`, { method: 'DELETE', headers: { 'x-admin-secret': secret } });
+    flash('Event deleted.');
+    load();
+  }
+
+  async function viewAttendees(id: string) {
+    if (attendeesFor === id) { setAttendeesFor(null); return; }
+    setAttendeesFor(id);
+    setAttendees([]);
+    const r = await fetch(`/api/events/${id}/attendees`, { headers: { 'x-admin-secret': secret } });
+    const d = await r.json();
+    setAttendees(d.attendees ?? []);
+  }
 
   return (
-    <div>
-      <div className="mb-8 flex items-start justify-between gap-4 flex-wrap">
+    <div className="max-w-5xl">
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c9a84c]/50 mb-1">Management</p>
-          <h1 className="text-3xl font-light italic text-[#f5f0e8]">Events</h1>
+          <h1 className="text-2xl font-light italic text-obsidian">Events</h1>
+          <p className="text-obsidian/40 text-sm mt-1">Publish, feature, and track every event.</p>
         </div>
-        <div className="flex items-center gap-3">
-          {msg && <p className="text-emerald-400 text-sm bg-emerald-400/10 px-3 py-1.5">{msg}</p>}
-          <button onClick={() => setEditing({ ...BLANK, event_type: tab })}
-            className="flex items-center gap-2 bg-[#c9a84c] text-[#0a0a0a] text-[10px] font-black uppercase tracking-widest px-4 py-2.5 hover:bg-[#d4b464] transition-colors">
-            <Plus size={12} /> Add event
-          </button>
-        </div>
+        <Link href="/create" className="inline-flex items-center gap-1.5 bg-[#c9a84c] text-[#0a0a0a] text-[11px] font-black uppercase tracking-[0.15em] px-4 py-2.5 hover:bg-[#d4b464] transition-colors"><Plus size={14} /> New event</Link>
       </div>
 
-      <div className="flex gap-2 mb-8">
-        {(['weekly', 'signature', 'special'] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)}
-            className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-colors ${tab === t ? 'bg-[#c9a84c] text-[#0a0a0a]' : 'border border-[#c9a84c]/20 text-[#f5f0e8]/40 hover:text-[#f5f0e8]/70'}`}>
-            {t}
-          </button>
-        ))}
+      {msg && <p className="mb-4 text-[#a07c28] text-sm">{msg}</p>}
+
+      <div className="border border-[#c9a84c]/15 divide-y divide-[#c9a84c]/10">
+        {loading ? (
+          <p className="p-5 text-obsidian/30 text-sm">Loading…</p>
+        ) : events.length === 0 ? (
+          <p className="p-5 text-obsidian/30 text-sm">No events yet. <Link href="/create" className="text-[#a07c28]">Create one →</Link></p>
+        ) : (
+          events.map((e) => (
+            <div key={e.id}>
+              <div className="flex flex-wrap items-center gap-4 p-4">
+                <div className="flex-1 min-w-[180px]">
+                  <div className="flex items-center gap-2">
+                    <Link href={`/admin/events/${e.id}`} className="font-display text-lg italic text-obsidian hover:text-[#a07c28] transition-colors">{e.title}</Link>
+                    {e.is_featured && <Star size={13} className="text-[#a07c28] fill-[#c9a84c]" />}
+                    <span className={`text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 ${e.status === 'published' ? 'text-emerald-600' : 'text-obsidian/40'}`}>{e.status}</span>
+                  </div>
+                  <p className="text-obsidian/30 text-xs mt-0.5">{e.category} · {e.city} · {new Date(e.starts_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-obsidian text-sm">{e.tickets_sold ?? 0} / {e.tickets_total ?? 0}</p>
+                  <p className="text-[9px] uppercase tracking-wider text-obsidian/30">sold</p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Link title="Edit" href={`/admin/events/${e.id}`} className="p-2 text-obsidian/40 hover:text-[#a07c28]"><Pencil size={15} /></Link>
+                  <button title="Attendees" onClick={() => viewAttendees(e.id)} className="p-2 text-obsidian/40 hover:text-[#a07c28]"><Users size={15} /></button>
+                  <button title={e.is_featured ? 'Unfeature' : 'Feature'} onClick={() => patch(e.id, { is_featured: !e.is_featured })} className="p-2 text-obsidian/40 hover:text-[#a07c28]"><Star size={15} className={e.is_featured ? 'fill-[#c9a84c] text-[#a07c28]' : ''} /></button>
+                  <button title={e.status === 'published' ? 'Unpublish' : 'Publish'} onClick={() => patch(e.id, { status: e.status === 'published' ? 'draft' : 'published' })} className="p-2 text-obsidian/40 hover:text-[#a07c28]">{e.status === 'published' ? <Eye size={15} /> : <EyeOff size={15} />}</button>
+                  <Link title="Open" href={`/events/${e.slug}`} className="p-2 text-obsidian/40 hover:text-[#a07c28]"><ExternalLink size={15} /></Link>
+                  <button title="Delete" onClick={() => remove(e.id, e.title)} className="p-2 text-obsidian/40 hover:text-red-500"><Trash2 size={15} /></button>
+                </div>
+              </div>
+
+              {attendeesFor === e.id && (
+                <div className="bg-white border-t border-[#c9a84c]/10 p-4">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#a07c28]/60 mb-3">Attendees ({attendees.length})</p>
+                  {attendees.length === 0 ? (
+                    <p className="text-obsidian/30 text-sm">No tickets issued yet.</p>
+                  ) : (
+                    <div className="space-y-1.5 max-h-72 overflow-y-auto">
+                      {attendees.map((a, i) => (
+                        <div key={i} className="flex items-center justify-between gap-3 text-sm">
+                          <span className="text-obsidian/80">{String(a.attendee_name)}</span>
+                          <span className="text-obsidian/30 text-xs">{String(a.ticket_type_name ?? '')}</span>
+                          <span className="font-mono text-xs text-obsidian/40">{String(a.code)}</span>
+                          <span className={`text-[9px] font-black uppercase tracking-wider ${a.status === 'used' ? 'text-emerald-600' : 'text-[#a07c28]/60'}`}>{a.status === 'used' ? 'in' : 'valid'}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))
+        )}
       </div>
-
-      {loading ? (
-        <div className="space-y-3">{[1, 2, 3].map(i => <div key={i} className="border border-[#c9a84c]/10 p-6 animate-pulse h-20" />)}</div>
-      ) : filtered.length === 0 ? (
-        <div className="border border-[#c9a84c]/10 p-10 text-center">
-          <p className="text-[#f5f0e8]/30 text-sm">No {tab} events yet.</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {filtered.map(ev => (
-            <div key={ev.id} className={`border p-5 flex items-start justify-between gap-4 ${ev.is_active ? 'border-[#c9a84c]/10' : 'border-[#c9a84c]/5 opacity-40'}`}>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-baseline gap-3 mb-1">
-                  <p className="text-sm italic text-[#f5f0e8]">{ev.name}</p>
-                  {ev.frequency && <span className="text-[9px] uppercase tracking-widest text-[#c9a84c]/50">{ev.frequency}</span>}
-                  {ev.day_of_week && <span className="text-[9px] text-[#f5f0e8]/30">{ev.day_of_week}</span>}
-                  {ev.time_start && <span className="text-[9px] text-[#f5f0e8]/30">{ev.time_start}{ev.time_end ? ` – ${ev.time_end}` : ''}</span>}
-                </div>
-                <p className="text-xs text-[#f5f0e8]/30 truncate">{ev.description}</p>
-                <p className="text-[9px] uppercase tracking-widest text-[#f5f0e8]/20 mt-1">{ev.access_level}{ev.access_note ? ` · ${ev.access_note}` : ''}</p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <button onClick={() => setEditing({ ...ev })} className="text-[#f5f0e8]/30 hover:text-[#c9a84c] transition-colors"><Pencil size={14} /></button>
-                <button onClick={() => deleteEvent(ev.id)} className="text-[#f5f0e8]/30 hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {editing !== null && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 overflow-y-auto" onClick={() => setEditing(null)}>
-          <div className="bg-[#0a0a0a] border border-[#c9a84c]/25 p-8 w-full max-w-lg my-8" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl italic text-[#f5f0e8]">{editing.id ? 'Edit event' : 'New event'}</h2>
-              <button onClick={() => setEditing(null)} className="text-[#f5f0e8]/30 hover:text-[#f5f0e8]"><X size={18} /></button>
-            </div>
-            <div className="space-y-4">
-              {([
-                ['Name *', 'name', 'text'],
-                ['Day / Frequency', 'day_of_week', 'text'],
-                ['Start time', 'time_start', 'text'],
-                ['End time', 'time_end', 'text'],
-                ['Access note', 'access_note', 'text'],
-                ['Image URL', 'image_url', 'text'],
-              ] as [string, keyof Event, string][]).map(([lbl, key, type]) => (
-                <div key={key}>
-                  <label className="text-[9px] font-black uppercase tracking-widest text-[#c9a84c]/50 block mb-1">{lbl}</label>
-                  <input type={type} value={(editing[key] as string) || ''} onChange={e => setEditing(p => ({ ...p!, [key]: e.target.value }))}
-                    className="w-full bg-transparent border-b border-[#c9a84c]/20 focus:border-[#c9a84c] text-[#f5f0e8] text-sm py-2 px-0 outline-none" />
-                </div>
-              ))}
-              <div>
-                <label className="text-[9px] font-black uppercase tracking-widest text-[#c9a84c]/50 block mb-1">Description *</label>
-                <textarea value={editing.description || ''} onChange={e => setEditing(p => ({ ...p!, description: e.target.value }))}
-                  rows={3} className="w-full bg-transparent border-b border-[#c9a84c]/20 focus:border-[#c9a84c] text-[#f5f0e8] text-sm py-2 px-0 outline-none resize-none" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[9px] font-black uppercase tracking-widest text-[#c9a84c]/50 block mb-1">Type</label>
-                  <select value={editing.event_type || 'weekly'} onChange={e => setEditing(p => ({ ...p!, event_type: e.target.value }))}
-                    className="w-full bg-[#0a0a0a] border-b border-[#c9a84c]/20 text-[#f5f0e8] text-sm py-2 px-0 outline-none">
-                    {['weekly', 'signature', 'special', 'private'].map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-[9px] font-black uppercase tracking-widest text-[#c9a84c]/50 block mb-1">Access</label>
-                  <select value={editing.access_level || 'public'} onChange={e => setEditing(p => ({ ...p!, access_level: e.target.value }))}
-                    className="w-full bg-[#0a0a0a] border-b border-[#c9a84c]/20 text-[#f5f0e8] text-sm py-2 px-0 outline-none">
-                    {['public', 'member', 'invitation', 'private'].map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
-              </div>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={editing.booking_required || false} onChange={e => setEditing(p => ({ ...p!, booking_required: e.target.checked }))} className="accent-[#c9a84c]" />
-                <span className="text-sm text-[#f5f0e8]/60">Booking required</span>
-              </label>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button onClick={() => setEditing(null)} className="flex-1 border border-[#c9a84c]/20 text-[#f5f0e8]/40 hover:text-[#f5f0e8]/70 text-[10px] font-black uppercase tracking-widest py-2.5 transition-colors">Cancel</button>
-              <button onClick={save} disabled={saving || !editing.name || !editing.description}
-                className="flex-1 bg-[#c9a84c] hover:bg-[#d4b464] text-[#0a0a0a] text-[10px] font-black uppercase tracking-widest py-2.5 transition-colors disabled:opacity-50">
-                {saving ? 'Saving…' : 'Save'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

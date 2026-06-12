@@ -2,104 +2,138 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Mail, CalendarCheck, Users, ArrowRight } from 'lucide-react';
+import { Calendar, Ticket, CheckCircle2, Receipt, ArrowRight, Plus, ScanLine, Database, Sparkles, RefreshCw } from 'lucide-react';
 import { useAdmin } from './layout';
+import { formatMoney } from '@/lib/money';
 
-type Stats = {
-  inquiries: { new: number; total: number };
-  reservations: { pending: number; today: number };
-  members: { active: number; total: number };
-  waitlist: number;
-};
+interface Stats {
+  events: { total: number; published: number };
+  tickets: { total: number; checked_in: number };
+  orders: { total: number; revenue: number };
+  byEvent: { title: string; slug: string; starts_at: string; sold: number; checked_in: number }[];
+}
 
 export default function AdminDashboard() {
   const { secret } = useAdmin();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [seeding, setSeeding] = useState(false);
+  const [seedMsg, setSeedMsg] = useState('');
+  const [insights, setInsights] = useState<string[] | null>(null);
+  const [insightsLoading, setInsightsLoading] = useState(true);
 
-  useEffect(() => {
-    if (!secret) return;
-    Promise.all([
-      fetch('/api/inquiries', { headers: { 'x-admin-secret': secret } }).then(r => r.ok ? r.json() : null),
-      fetch('/api/reservations', { headers: { 'x-admin-secret': secret } }).then(r => r.ok ? r.json() : null),
-      fetch('/api/members', { headers: { 'x-admin-secret': secret } }).then(r => r.ok ? r.json() : null),
-      fetch('/api/waitlist', { headers: { 'x-admin-secret': secret } }).then(r => r.ok ? r.json() : null),
-    ]).then(([inq, res, mem, wl]) => {
-      const today = new Date().toISOString().slice(0, 10);
-      setStats({
-        inquiries: {
-          new: inq?.inquiries?.filter((i: { status: string }) => i.status === 'new').length ?? 0,
-          total: inq?.inquiries?.length ?? 0,
-        },
-        reservations: {
-          pending: res?.reservations?.filter((r: { status: string }) => r.status === 'pending').length ?? 0,
-          today: res?.reservations?.filter((r: { reservation_date: string }) => r.reservation_date === today).length ?? 0,
-        },
-        members: {
-          active: mem?.members?.filter((m: { status: string }) => m.status === 'active').length ?? 0,
-          total: mem?.members?.length ?? 0,
-        },
-        waitlist: wl?.waitlist?.length ?? 0,
-      });
-    }).finally(() => setLoading(false));
-  }, [secret]);
+  function loadStats() {
+    fetch('/api/stats', { headers: { 'x-admin-secret': secret } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setStats(d))
+      .finally(() => setLoading(false));
+  }
+  function loadInsights() {
+    setInsightsLoading(true);
+    fetch('/api/ai/insights', { headers: { 'x-admin-secret': secret } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setInsights(d?.insights ?? []))
+      .finally(() => setInsightsLoading(false));
+  }
+  useEffect(() => { loadStats(); loadInsights(); }, [secret]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function seed() {
+    setSeeding(true);
+    setSeedMsg('');
+    try {
+      const res = await fetch('/api/admin/seed', { method: 'POST', headers: { 'x-admin-secret': secret } });
+      const d = await res.json();
+      setSeedMsg(res.ok ? `Seeded ${d.created} new events (${d.skipped} already present).` : (d.error || 'Seeding failed.'));
+      if (res.ok) loadStats();
+    } catch {
+      setSeedMsg('Seeding failed — check the connection.');
+    } finally {
+      setSeeding(false);
+    }
+  }
+
+  const num = (v: number | undefined) => (loading ? '—' : (v ?? 0).toLocaleString());
 
   const cards = [
-    { href: '/admin/inquiries', icon: Mail, label: 'Inquiries', value: stats?.inquiries.new ?? '—', sub: `${stats?.inquiries.total ?? 0} total`, badge: (stats?.inquiries.new ?? 0) > 0 ? 'New' : null },
-    { href: '/admin/reservations', icon: CalendarCheck, label: 'Reservations', value: stats?.reservations.pending ?? '—', sub: `${stats?.reservations.today ?? 0} today`, badge: null },
-    { href: '/admin/members', icon: Users, label: 'Members', value: stats?.members.active ?? '—', sub: `${stats?.waitlist ?? 0} on waitlist`, badge: null },
+    { icon: Calendar, label: 'Live events', value: num(stats?.events.published), sub: `${stats?.events.total ?? 0} total` },
+    { icon: Ticket, label: 'Tickets sold', value: num(stats?.tickets.total), sub: `${stats?.tickets.checked_in ?? 0} checked in` },
+    { icon: Receipt, label: 'Orders', value: num(stats?.orders.total), sub: 'paid' },
+    { icon: CheckCircle2, label: 'Revenue', value: loading ? '—' : formatMoney(stats?.orders.revenue ?? 0, 'NGN'), sub: 'gross (mixed ccy)' },
   ];
 
   return (
-    <div>
-      <div className="mb-10">
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c9a84c]/50 mb-1">Welcome back</p>
-        <h1 className="text-3xl font-light italic text-[#f5f0e8]">Dashboard</h1>
+    <div className="max-w-5xl">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl font-light italic text-obsidian">Dashboard</h1>
+          <p className="text-obsidian/40 text-sm mt-1">Your events, tickets and check-ins at a glance.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/create" className="inline-flex items-center gap-1.5 bg-[#c9a84c] text-[#0a0a0a] text-[11px] font-black uppercase tracking-[0.15em] px-4 py-2.5 hover:bg-[#d4b464] transition-colors"><Plus size={14} /> New event</Link>
+          <Link href="/admin/scan" className="inline-flex items-center gap-1.5 border border-[#c9a84c]/30 text-[#a07c28] text-[11px] font-black uppercase tracking-[0.15em] px-4 py-2.5 hover:bg-[#c9a84c]/10 transition-colors"><ScanLine size={14} /> Scan</Link>
+          <button onClick={seed} disabled={seeding} className="inline-flex items-center gap-1.5 border border-[#c9a84c]/30 text-[#a07c28] text-[11px] font-black uppercase tracking-[0.15em] px-4 py-2.5 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-60">
+            <Database size={14} /> {seeding ? 'Seeding…' : 'Seed sample events'}
+          </button>
+        </div>
+      </div>
+      {seedMsg && <p className="mb-6 text-[#a07c28] text-sm">{seedMsg}</p>}
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
+        {cards.map((c) => (
+          <div key={c.label} className="border border-[#c9a84c]/15 p-5">
+            <c.icon size={18} className="text-[#a07c28]/70 mb-3" />
+            <p className="text-3xl font-light text-obsidian">{c.value}</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 mt-1">{c.label}</p>
+            <p className="text-obsidian/30 text-xs mt-0.5">{c.sub}</p>
+          </div>
+        ))}
       </div>
 
-      {loading ? (
-        <div className="grid sm:grid-cols-3 gap-4">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="border border-[#c9a84c]/10 p-6 animate-pulse">
-              <div className="h-3 w-20 bg-[#c9a84c]/10 rounded mb-4" />
-              <div className="h-8 w-12 bg-[#c9a84c]/10 rounded mb-2" />
-              <div className="h-3 w-16 bg-[#c9a84c]/5 rounded" />
-            </div>
-          ))}
+      {/* AI Insights */}
+      <div className="border border-[#c9a84c]/25 bg-[#c9a84c]/[0.04] p-5 mb-10">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-black uppercase tracking-[0.2em] text-obsidian/70 flex items-center gap-2"><Sparkles size={15} className="text-gold-dark" /> AI Insights</h2>
+          <button onClick={loadInsights} disabled={insightsLoading} className="text-obsidian/40 hover:text-[#a07c28] transition-colors disabled:opacity-50" title="Refresh">
+            <RefreshCw size={14} className={insightsLoading ? 'animate-spin' : ''} />
+          </button>
         </div>
-      ) : (
-        <div className="grid sm:grid-cols-3 gap-4 mb-10">
-          {cards.map(({ href, icon: Icon, label, value, sub, badge }) => (
-            <Link key={href} href={href} className="border border-[#c9a84c]/10 hover:border-[#c9a84c]/30 p-6 group transition-colors block">
-              <div className="flex items-start justify-between mb-4">
-                <Icon size={16} className="text-[#c9a84c]/50 group-hover:text-[#c9a84c] transition-colors" />
-                {badge && <span className="text-[9px] font-black uppercase tracking-widest text-[#c9a84c] bg-[#c9a84c]/10 px-2 py-0.5">{badge}</span>}
-              </div>
-              <p className="text-3xl font-light text-[#f5f0e8] mb-1">{value}</p>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-[#f5f0e8]/30">{label}</p>
-              <p className="text-xs text-[#f5f0e8]/20 mt-1">{sub}</p>
-            </Link>
-          ))}
-        </div>
-      )}
+        {insightsLoading && !insights ? (
+          <p className="text-obsidian/40 text-sm">Analysing your sales…</p>
+        ) : insights && insights.length ? (
+          <ul className="space-y-2">
+            {insights.map((t, i) => (
+              <li key={i} className="flex items-start gap-2.5 text-obsidian/75 text-sm"><span className="w-1.5 h-1.5 rounded-full bg-gold mt-1.5 shrink-0" /> {t}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-obsidian/40 text-sm">No insights yet — once events are selling, recommendations show up here.</p>
+        )}
+      </div>
 
-      <div className="grid sm:grid-cols-2 gap-4">
-        {[
-          { href: '/admin/inquiries', label: 'View all inquiries', desc: 'Review and respond to messages' },
-          { href: '/admin/reservations', label: "Today's reservations", desc: 'Manage bookings and confirmations' },
-          { href: '/admin/menu', label: 'Update the menu', desc: 'Edit dishes, drinks and prices' },
-          { href: '/admin/events', label: 'Manage events', desc: 'Add or edit programming and events' },
-          { href: '/admin/members', label: 'Convivium members', desc: 'Manage membership and waitlist' },
-          { href: '/admin/media', label: 'Media library', desc: 'Upload images to Azure Blob Storage' },
-        ].map(({ href, label, desc }) => (
-          <Link key={href} href={href} className="flex items-center justify-between gap-4 border border-[#c9a84c]/10 hover:border-[#c9a84c]/25 p-5 group transition-colors">
-            <div>
-              <p className="text-sm text-[#f5f0e8]/80 group-hover:text-[#f5f0e8] transition-colors">{label}</p>
-              <p className="text-xs text-[#f5f0e8]/30 mt-0.5">{desc}</p>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-sm font-black uppercase tracking-[0.2em] text-obsidian/60">Selling now</h2>
+        <Link href="/admin/events" className="inline-flex items-center gap-1 text-[#a07c28]/70 hover:text-[#a07c28] text-[10px] font-black uppercase tracking-[0.2em]">All events <ArrowRight size={12} /></Link>
+      </div>
+
+      <div className="border border-[#c9a84c]/15 divide-y divide-[#c9a84c]/10">
+        {loading ? (
+          <p className="p-5 text-obsidian/30 text-sm">Loading…</p>
+        ) : !stats?.byEvent?.length ? (
+          <p className="p-5 text-obsidian/30 text-sm">No published events yet. <Link href="/create" className="text-[#a07c28]">Create one →</Link></p>
+        ) : (
+          stats.byEvent.map((e) => (
+            <div key={e.slug} className="flex items-center justify-between gap-4 p-4">
+              <div className="min-w-0">
+                <Link href={`/events/${e.slug}`} className="font-display text-lg italic text-obsidian hover:text-[#a07c28] transition-colors truncate block">{e.title}</Link>
+                <p className="text-obsidian/30 text-xs">{new Date(e.starts_at).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
+              </div>
+              <div className="flex items-center gap-6 shrink-0 text-right">
+                <div><p className="text-obsidian text-lg">{e.sold}</p><p className="text-[9px] uppercase tracking-wider text-obsidian/30">sold</p></div>
+                <div><p className="text-[#a07c28] text-lg">{e.checked_in}</p><p className="text-[9px] uppercase tracking-wider text-obsidian/30">in</p></div>
+              </div>
             </div>
-            <ArrowRight size={14} className="text-[#c9a84c]/30 group-hover:text-[#c9a84c] group-hover:translate-x-0.5 transition-all shrink-0" />
-          </Link>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
