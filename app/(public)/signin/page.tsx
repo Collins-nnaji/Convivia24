@@ -3,15 +3,15 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ShieldCheck, Ticket, CalendarPlus, ScanLine } from 'lucide-react';
+import { ShieldCheck, CalendarHeart, Wind, MessageCircle } from 'lucide-react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { signInWithGoogle } from '@/lib/auth/client';
 import { useUser } from '@/components/auth/AuthProvider';
 
 const PERKS = [
-  { icon: Ticket, text: 'All your tickets in one place — QR + barcode, ready at the door.' },
-  { icon: CalendarPlus, text: 'Create and sell your own events in minutes.' },
-  { icon: ScanLine, text: 'Organizers get a live dashboard and door scanner.' },
+  { icon: CalendarHeart, text: 'My 24 — your whole day as one calm, scrollable ribbon.' },
+  { icon: Wind, text: 'Rest buffers auto-inserted between back-to-back plans.' },
+  { icon: MessageCircle, text: 'A Companion that remembers what matters to you.' },
 ];
 
 function SignInInner() {
@@ -43,7 +43,7 @@ function SignInInner() {
       <div className="max-w-md mx-auto px-5 sm:px-8">
         <SectionLabel>Welcome</SectionLabel>
         <h1 className="font-display text-4xl sm:text-5xl font-light italic text-obsidian tracking-tight mb-3">Sign in to Convivia24.</h1>
-        <p className="text-obsidian/55 mb-8 leading-relaxed">One account for buying tickets, your wallet, and selling your own events.</p>
+        <p className="text-obsidian/55 mb-8 leading-relaxed">One account for My 24 and your Companion — synced everywhere you sign in.</p>
 
         <div className="bg-white border border-obsidian/12 shadow-sm p-6 sm:p-8">
           {!authConfigured && (

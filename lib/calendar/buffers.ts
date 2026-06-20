@@ -7,14 +7,19 @@ export interface CalendarInvitee {
   status: 'invited' | 'accepted' | 'declined';
 }
 
+export type CalendarItemKind = 'task' | 'event' | 'gathering';
+
 export interface CalendarItem {
   id: string;
   title: string;
   starts_at: string;
   ends_at: string;
   priority: 'low' | 'normal' | 'high';
+  kind: CalendarItemKind;
+  location: string | null;
+  notes: string | null;
   is_rest_block: boolean;
-  source: 'manual' | 'ai_buffer' | 'ai_destress' | 'ticket';
+  source: 'manual' | 'ai_buffer' | 'ai_destress';
   status: 'active' | 'done' | 'dismissed';
   invitees?: CalendarInvitee[];
 }
@@ -50,6 +55,9 @@ export function insertRestBuffers(items: CalendarItem[]): CalendarItem[] {
         starts_at: restStart.toISOString(),
         ends_at: restEnd.toISOString(),
         priority: 'normal',
+        kind: 'task',
+        location: null,
+        notes: null,
         is_rest_block: true,
         source: 'ai_buffer',
         status: 'active',

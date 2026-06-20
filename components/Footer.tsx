@@ -1,12 +1,8 @@
 import Link from 'next/link';
-import WaitlistForm from './WaitlistForm';
 
 const footerLinks = [
-  { label: 'Discover',     href: '/events' },
-  { label: 'AI Concierge', href: '/concierge' },
-  { label: 'My Tickets',   href: '/tickets' },
-  { label: 'Sell Tickets', href: '/create' },
-  { label: 'Organizers',   href: '/admin' },
+  { label: 'My 24',     href: '/my24' },
+  { label: 'Companion', href: '/companion' },
 ];
 
 export default function Footer() {
@@ -21,41 +17,30 @@ export default function Footer() {
             </Link>
             <div className="flex items-center gap-2 mb-2">
               <span className="w-1 h-1 bg-gold rounded-full animate-pulse" />
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-obsidian/40">Events · Tickets · AI</p>
+              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-obsidian/40">The Mindful Calendar</p>
             </div>
             <p className="text-xs text-obsidian/50 max-w-xs leading-relaxed">
-              The AI-powered events and ticketing platform for parties, concerts and culture.
-              QR + barcode entry, in any city.
+              Lower your stress. Optimize your hours. Love your day.
             </p>
           </div>
 
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:gap-12">
-            <div className="grid grid-cols-2 sm:grid-cols-2 gap-x-10 gap-y-3">
-              {footerLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="whitespace-nowrap text-sm text-obsidian/50 hover:text-obsidian transition-colors"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-
-            <div className="w-full sm:min-w-[280px] sm:max-w-[360px]">
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gold-dark mb-3">Get early access to drops</p>
-              <WaitlistForm variant="footer" />
-            </div>
+          <div className="flex flex-col gap-3">
+            {footerLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="whitespace-nowrap text-sm text-obsidian/50 hover:text-obsidian transition-colors"
+              >
+                {link.label}
+              </Link>
+            ))}
           </div>
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-obsidian/40">
-          <div className="flex items-center gap-6">
-            <span>&copy; 2026 Convivia24</span>
-            <span className="text-obsidian/30">Everywhere the culture goes</span>
-          </div>
-          <Link href="/events" className="text-gold-dark hover:text-gold font-semibold transition-colors uppercase tracking-wider text-[10px]">
-            Find Events &rarr;
+          <span>&copy; 2026 Convivia24</span>
+          <Link href="/my24" className="text-gold-dark hover:text-gold font-semibold transition-colors uppercase tracking-wider text-[10px]">
+            Open My 24 &rarr;
           </Link>
         </div>
       </div>

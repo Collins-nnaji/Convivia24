@@ -66,7 +66,7 @@ export default function MyDayRibbon({
                       </p>
                     )}
                   </div>
-                  {!item.is_rest_block && item.source !== 'ticket' && (
+                  {!item.is_rest_block && (
                     <button
                       onClick={() => onComplete(item.id)}
                       aria-label="Mark done"

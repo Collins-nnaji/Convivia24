@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import sql from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth/session';
-import { insertRestBuffers, type CalendarItem } from '@/lib/calendar/buffers';
+import { insertRestBuffers } from '@/lib/calendar/buffers';
+import * as repo from '@/lib/calendar/repo';
 
 /**
  * GET /api/calendar?date=YYYY-MM-DD
- * Returns the signed-in user's day: manual personal_tasks + ticketed events
- * they're attending that day, merged into one timeline with AI rest buffers
- * auto-inserted between back-to-back items.
+ * Returns the signed-in user's day: their personal_tasks merged into one
+ * timeline with AI rest buffers auto-inserted between back-to-back items.
  */
 export async function GET(req: NextRequest) {
   const user = await getCurrentUser();
@@ -21,56 +20,7 @@ export async function GET(req: NextRequest) {
   const dayEnd = new Date(day); dayEnd.setHours(23, 59, 59, 999);
 
   try {
-    const tasks = await sql`
-      SELECT id, title, starts_at, ends_at, priority, is_rest_block, source, status
-      FROM personal_tasks
-      WHERE user_id = ${user.id} AND starts_at >= ${dayStart.toISOString()} AND starts_at <= ${dayEnd.toISOString()}
-    `;
-
-    const taskIds = tasks.map((t) => String(t.id));
-    const invitees = taskIds.length
-      ? await sql`SELECT id, task_id, name, email, status FROM personal_task_invitees WHERE task_id = ANY(${taskIds})`
-      : [];
-    const inviteesByTask = new Map<string, { id: string; name: string; email: string | null; status: string }[]>();
-    for (const inv of invitees) {
-      const key = String(inv.task_id);
-      if (!inviteesByTask.has(key)) inviteesByTask.set(key, []);
-      inviteesByTask.get(key)!.push({ id: String(inv.id), name: String(inv.name), email: (inv.email as string) ?? null, status: String(inv.status) });
-    }
-
-    const tickets = await sql`
-      SELECT e.id, e.title, e.starts_at, e.ends_at, e.venue, e.city
-      FROM orders o
-      JOIN events e ON e.id = o.event_id
-      WHERE (o.user_id = ${user.id} OR LOWER(o.buyer_email) = ${user.email.toLowerCase()})
-        AND o.status = 'paid'
-        AND e.starts_at >= ${dayStart.toISOString()} AND e.starts_at <= ${dayEnd.toISOString()}
-    `;
-
-    const items: CalendarItem[] = [
-      ...tasks.map((t) => ({
-        id: String(t.id),
-        title: String(t.title),
-        starts_at: new Date(t.starts_at as string).toISOString(),
-        ends_at: new Date(t.ends_at as string).toISOString(),
-        priority: t.priority as CalendarItem['priority'],
-        is_rest_block: !!t.is_rest_block,
-        source: t.source as CalendarItem['source'],
-        status: t.status as CalendarItem['status'],
-        invitees: (inviteesByTask.get(String(t.id)) ?? []) as CalendarItem['invitees'],
-      })),
-      ...tickets.map((e) => ({
-        id: String(e.id),
-        title: String(e.title),
-        starts_at: new Date(e.starts_at as string).toISOString(),
-        ends_at: new Date((e.ends_at as string) ?? e.starts_at as string).toISOString(),
-        priority: 'normal' as const,
-        is_rest_block: false,
-        source: 'ticket' as const,
-        status: 'active' as const,
-      })),
-    ];
-
+    const items = await repo.listRange(user.id, dayStart.toISOString(), dayEnd.toISOString());
     return NextResponse.json({ items: insertRestBuffers(items) });
   } catch (err) {
     console.error('[GET /api/calendar]', err);
@@ -78,33 +28,28 @@ export async function GET(req: NextRequest) {
   }
 }
 
-/** POST /api/calendar — create a manual task. body: { title, starts_at, ends_at, priority? } */
+/** POST /api/calendar — create a personal calendar item. body: { title, starts_at, ends_at, priority?, kind?, location?, notes?, invitees? } */
 export async function POST(req: NextRequest) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
 
   try {
-    const { title, starts_at, ends_at, priority, invitees } = await req.json();
-    if (!title?.trim() || !starts_at || !ends_at) {
+    const body = await req.json();
+    const { title, starts_at, ends_at, priority, kind, location, notes, invitees } = body as Record<string, unknown>;
+    if (!(title as string)?.trim() || !starts_at || !ends_at) {
       return NextResponse.json({ error: 'Title, start and end time are required.' }, { status: 400 });
     }
 
-    const [task] = await sql`
-      INSERT INTO personal_tasks (user_id, title, starts_at, ends_at, priority, source)
-      VALUES (${user.id}, ${title.trim()}, ${starts_at}, ${ends_at}, ${priority || 'normal'}, 'manual')
-      RETURNING id, title, starts_at, ends_at, priority, is_rest_block, source, status
-    `;
-
-    const guestList = (Array.isArray(invitees) ? invitees : [])
-      .filter((p: { name?: string }) => p?.name?.trim())
-      .slice(0, 20);
-
-    for (const guest of guestList as { name: string; email?: string }[]) {
-      await sql`
-        INSERT INTO personal_task_invitees (task_id, name, email)
-        VALUES (${task.id}, ${guest.name.trim()}, ${guest.email?.trim() || null})
-      `;
-    }
+    const task = await repo.createItem(user.id, {
+      title: title as string,
+      starts_at: starts_at as string,
+      ends_at: ends_at as string,
+      priority: priority as string | undefined,
+      kind: kind as string | undefined,
+      location: location as string | null | undefined,
+      notes: notes as string | null | undefined,
+      invitees: invitees as { name: string; email?: string }[] | undefined,
+    });
 
     return NextResponse.json({ task });
   } catch (err) {

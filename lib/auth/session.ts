@@ -5,13 +5,7 @@ export interface AuthUser {
   email: string;
   name: string | null;
   image: string | null;
-  isAdmin: boolean;
 }
-
-const ADMIN_EMAILS = (process.env.CONVIVIA_ADMIN_EMAILS || '')
-  .split(',')
-  .map((s) => s.trim().toLowerCase())
-  .filter(Boolean);
 
 function authBase(): string | null {
   const base = process.env.NEON_AUTH_BASE_URL;
@@ -44,37 +38,13 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     const u = data?.user;
     if (!u?.id || !u?.email) return null;
 
-    const email = String(u.email);
     return {
       id: String(u.id),
-      email,
+      email: String(u.email),
       name: u.name ?? null,
       image: u.image ?? u.avatar_url ?? null,
-      isAdmin: ADMIN_EMAILS.includes(email.toLowerCase()),
     };
   } catch {
     return null;
   }
-}
-
-/** True if the request carries the legacy admin secret (back-compat / break-glass). */
-function hasAdminSecret(req: { headers: { get(name: string): string | null } }): boolean {
-  const secret = req.headers.get('x-admin-secret');
-  return !!process.env.ADMIN_SECRET && secret === process.env.ADMIN_SECRET;
-}
-
-/** For API routes: returns the user if signed in, else null. */
-export async function requireUser(): Promise<AuthUser | null> {
-  return getCurrentUser();
-}
-
-/**
- * For API routes: authorize an admin. Accepts a valid admin session OR the
- * legacy x-admin-secret header (so the console keeps working before Neon Auth
- * is configured, and for automated/break-glass access).
- */
-export async function isAdminRequest(req: { headers: { get(name: string): string | null } }): Promise<boolean> {
-  if (hasAdminSecret(req)) return true;
-  const user = await getCurrentUser();
-  return !!user?.isAdmin;
 }

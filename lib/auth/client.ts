@@ -7,7 +7,6 @@ export interface SessionUser {
   email: string;
   name: string | null;
   image: string | null;
-  isAdmin: boolean;
 }
 
 /** Fetch the current user (or null) from our server-validated endpoint. */

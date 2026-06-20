@@ -1,8 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import sql from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth/session';
+import * as repo from '@/lib/calendar/repo';
 
-/** PATCH /api/calendar/[id] — update a personal task (e.g. mark done, reschedule). */
+/** GET /api/calendar/[id] — fetch a single calendar item (event detail view). */
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const user = await getCurrentUser();
+  if (!user) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
+
+  const { id } = await params;
+  try {
+    const task = await repo.getItem(user.id, id);
+    if (!task) return NextResponse.json({ error: 'Not found.' }, { status: 404 });
+    return NextResponse.json({ task });
+  } catch (err) {
+    console.error('[GET /api/calendar/[id]]', err);
+    return NextResponse.json({ error: 'Could not load that item.' }, { status: 500 });
+  }
+}
+
+/** PATCH /api/calendar/[id] — update a personal task (e.g. mark done, reschedule, edit details). */
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
@@ -10,19 +26,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const { id } = await params;
   try {
     const body = await req.json();
-    const { title, starts_at, ends_at, priority, status } = body as Record<string, unknown>;
+    const { title, starts_at, ends_at, priority, kind, location, notes, status } = body as Record<string, unknown>;
 
-    const [task] = await sql`
-      UPDATE personal_tasks SET
-        title      = COALESCE(${(title as string) ?? null}, title),
-        starts_at  = COALESCE(${(starts_at as string) ?? null}, starts_at),
-        ends_at    = COALESCE(${(ends_at as string) ?? null}, ends_at),
-        priority   = COALESCE(${(priority as string) ?? null}, priority),
-        status     = COALESCE(${(status as string) ?? null}, status),
-        updated_at = NOW()
-      WHERE id = ${id} AND user_id = ${user.id}
-      RETURNING id, title, starts_at, ends_at, priority, is_rest_block, source, status
-    `;
+    const task = await repo.updateItem(user.id, id, {
+      title: title as string | undefined,
+      starts_at: starts_at as string | undefined,
+      ends_at: ends_at as string | undefined,
+      priority: priority as string | undefined,
+      kind: kind as string | undefined,
+      location: location as string | null | undefined,
+      notes: notes as string | null | undefined,
+      status: status as string | undefined,
+    });
     if (!task) return NextResponse.json({ error: 'Not found.' }, { status: 404 });
     return NextResponse.json({ task });
   } catch (err) {
@@ -38,7 +53,8 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
 
   const { id } = await params;
   try {
-    await sql`DELETE FROM personal_tasks WHERE id = ${id} AND user_id = ${user.id}`;
+    const ok = await repo.deleteItem(user.id, id);
+    if (!ok) return NextResponse.json({ error: 'Not found.' }, { status: 404 });
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error('[DELETE /api/calendar/[id]]', err);

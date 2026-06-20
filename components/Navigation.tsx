@@ -4,14 +4,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Menu, X, Sparkles, User, LogOut, Ticket, LayoutDashboard } from 'lucide-react';
+import { Menu, X, User, LogOut } from 'lucide-react';
 import { useUser } from '@/components/auth/AuthProvider';
 
 const LINKS = [
-  { label: 'My 24',        href: '/my24' },
-  { label: 'Companion',    href: '/companion' },
-  { label: 'Discover',     href: '/events' },
-  { label: 'My Tickets',   href: '/tickets' },
+  { label: 'My 24',     href: '/my24' },
+  { label: 'Companion', href: '/companion' },
 ];
 
 function initials(name: string | null, email: string) {
@@ -85,11 +83,11 @@ export default function Navigation() {
 
             {/* Account */}
             {!loading && !user && (
-              <Link href={`/signin?next=${encodeURIComponent(pathname)}`} className="ml-2 px-4 py-2 text-[13px] font-medium text-obsidian/60 hover:text-obsidian transition-colors">
-                Sign in
+              <Link href={`/signin?next=${encodeURIComponent(pathname)}`} className="ml-2 inline-flex items-center gap-1.5 px-5 py-2 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.15em] transition-colors duration-150">
+                <User size={13} /> Sign in
               </Link>
             )}
-            {user ? (
+            {user && (
               <div className="relative ml-2" ref={menuRef}>
                 <button onClick={() => setMenu((m) => !m)} className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-full hover:bg-obsidian/5 transition-colors">
                   {user.image ? (
@@ -108,23 +106,11 @@ export default function Navigation() {
                         <p className="text-sm font-medium text-obsidian truncate">{user.name || 'Your account'}</p>
                         <p className="text-xs text-obsidian/45 truncate">{user.email}</p>
                       </div>
-                      <Link href="/tickets" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-obsidian/70 hover:text-obsidian hover:bg-paper transition-colors"><Ticket size={14} className="text-gold-dark" /> My Tickets</Link>
-                      <Link href="/create" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-obsidian/70 hover:text-obsidian hover:bg-paper transition-colors"><Sparkles size={14} className="text-gold-dark" /> Sell Tickets</Link>
-                      {user.isAdmin && (
-                        <Link href="/admin" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-obsidian/70 hover:text-obsidian hover:bg-paper transition-colors"><LayoutDashboard size={14} className="text-gold-dark" /> Organizer Console</Link>
-                      )}
-                      <button onClick={() => signOut()} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-obsidian/70 hover:text-obsidian hover:bg-paper transition-colors border-t border-obsidian/8 mt-1"><LogOut size={14} className="text-gold-dark" /> Sign out</button>
+                      <button onClick={() => signOut()} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-obsidian/70 hover:text-obsidian hover:bg-paper transition-colors"><LogOut size={14} className="text-gold-dark" /> Sign out</button>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
-            ) : (
-              <Link
-                href="/events"
-                className="ml-1 inline-flex items-center gap-1.5 px-5 py-2 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.15em] transition-colors duration-150"
-              >
-                <Sparkles size={13} /> Find Events
-              </Link>
             )}
           </nav>
 
@@ -178,9 +164,6 @@ export default function Navigation() {
                     </Link>
                   );
                 })}
-                {user?.isAdmin && (
-                  <Link href="/admin" className="flex items-center justify-between py-3.5 text-[15px] font-medium text-obsidian/70 hover:text-obsidian">Organizer Console <span className="text-gold/50 text-lg leading-none">&rsaquo;</span></Link>
-                )}
                 <div className="pt-4 pb-2">
                   {user ? (
                     <button onClick={() => signOut()} className="w-full flex items-center justify-center gap-2 py-3.5 border border-obsidian/20 text-obsidian text-[12px] font-black uppercase tracking-[0.15em] hover:border-gold transition-colors">
