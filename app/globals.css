@@ -46,3 +46,8 @@ body {
 ::-webkit-scrollbar-track { background: #0a0a0a; }
 ::-webkit-scrollbar-thumb { background: #c9a84c; }
 ::-webkit-scrollbar-thumb:hover { background: #e2c97e; }
+
+/* My 24 — calm vertical canvas, background drifts like the sky as you scroll */
+.zen-ribbon-bg {
+  background: linear-gradient(180deg, #FDFBF7 0%, #FBF6EC 35%, #F6EEDD 70%, #F1E6CC 100%);
+}

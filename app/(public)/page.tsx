@@ -66,38 +66,39 @@ export default function HomePage() {
           <div className="max-w-2xl">
             <motion.div initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.12 } } }}>
               <motion.div variants={fadeUp}>
-                <SectionLabel>The AI Events &amp; Ticketing Platform</SectionLabel>
+                <SectionLabel>The Mindful Calendar</SectionLabel>
               </motion.div>
 
               <motion.h1
                 variants={fadeUp}
                 className="font-display text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-light italic tracking-tight text-obsidian leading-[0.9] mb-6 sm:mb-8"
               >
-                Find your<br />next night.
+                Take back<br />your 24.
               </motion.h1>
 
               <motion.div variants={fadeUp} className="flex items-center gap-2 mb-4 sm:mb-6">
                 <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gold-dark">Parties · Concerts · Festivals · Worldwide</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gold-dark">Lower your stress · Optimize your hours · Love your day</span>
               </motion.div>
 
               <motion.p variants={fadeUp} className="text-base sm:text-lg text-obsidian/65 max-w-lg leading-relaxed mb-8 sm:mb-10">
-                Convivia24 is where the culture buys tickets — in any city. Discover the events worth
-                leaving the house for, book in seconds, and walk in with a tap. Powered by AI.
+                You don&rsquo;t need more time in a day; you need a better 24 hours. Convivia24 is the
+                calendar that protects your peace of mind — auto-buffering your back-to-back days and
+                helping you destress with one tap.
               </motion.p>
 
               <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <Link
-                  href="/events"
+                  href="/my24"
                   className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.2em] transition-colors"
                 >
-                  Discover Events <ArrowRight size={14} />
+                  Open My 24 <ArrowRight size={14} />
                 </Link>
                 <Link
-                  href="/concierge"
+                  href="/events"
                   className="inline-flex items-center justify-center gap-2 px-7 py-3.5 border border-obsidian/25 text-obsidian text-[11px] font-black uppercase tracking-[0.2em] hover:border-gold hover:bg-white transition-colors"
                 >
-                  <Sparkles size={13} /> Ask the AI Concierge
+                  <Sparkles size={13} /> Discover Events
                 </Link>
               </motion.div>
             </motion.div>

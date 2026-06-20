@@ -1,0 +1,53 @@
+// Pure scheduling logic for the "My 24" calendar — no AI call needed.
+
+export interface CalendarItem {
+  id: string;
+  title: string;
+  starts_at: string;
+  ends_at: string;
+  priority: 'low' | 'normal' | 'high';
+  is_rest_block: boolean;
+  source: 'manual' | 'ai_buffer' | 'ai_destress' | 'ticket';
+  status: 'active' | 'done' | 'dismissed';
+}
+
+const REST_BLOCK_MINUTES = 15;
+const BACK_TO_BACK_THRESHOLD_MINUTES = 10;
+
+/**
+ * Scans a day's items (already sorted or not) and inserts a 15-minute "Rest"
+ * block wherever two items are back-to-back (gap below the threshold).
+ * Does not mutate input; returns a new merged, time-sorted array.
+ */
+export function insertRestBuffers(items: CalendarItem[]): CalendarItem[] {
+  const sorted = [...items]
+    .filter((i) => i.status === 'active')
+    .sort((a, b) => +new Date(a.starts_at) - +new Date(b.starts_at));
+
+  const result: CalendarItem[] = [];
+
+  for (let i = 0; i < sorted.length; i++) {
+    result.push(sorted[i]);
+    const current = sorted[i];
+    const next = sorted[i + 1];
+    if (!next) continue;
+
+    const gapMinutes = (+new Date(next.starts_at) - +new Date(current.ends_at)) / 60000;
+    if (gapMinutes >= 0 && gapMinutes < BACK_TO_BACK_THRESHOLD_MINUTES) {
+      const restStart = new Date(current.ends_at);
+      const restEnd = new Date(restStart.getTime() + REST_BLOCK_MINUTES * 60000);
+      result.push({
+        id: `rest-${current.id}-${next.id}`,
+        title: 'Rest',
+        starts_at: restStart.toISOString(),
+        ends_at: restEnd.toISOString(),
+        priority: 'normal',
+        is_rest_block: true,
+        source: 'ai_buffer',
+        status: 'active',
+      });
+    }
+  }
+
+  return result;
+}

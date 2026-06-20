@@ -8,10 +8,10 @@ import { Menu, X, Sparkles, User, LogOut, Ticket, LayoutDashboard } from 'lucide
 import { useUser } from '@/components/auth/AuthProvider';
 
 const LINKS = [
+  { label: 'My 24',        href: '/my24' },
   { label: 'Discover',     href: '/events' },
   { label: 'AI Concierge', href: '/concierge' },
   { label: 'My Tickets',   href: '/tickets' },
-  { label: 'Sell Tickets', href: '/create' },
 ];
 
 function initials(name: string | null, email: string) {
@@ -56,7 +56,7 @@ export default function Navigation() {
             <img src="/convivia24.png" alt="Convivia24" className="h-7 w-auto" style={{ filter: 'brightness(0)' }} />
             <span className="hidden sm:flex items-center gap-1.5">
               <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
-              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-obsidian/40">Events · Tickets · AI</span>
+              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-obsidian/40">Take Back Your 24</span>
             </span>
           </Link>
 

@@ -185,6 +185,28 @@ CREATE TABLE IF NOT EXISTS waitlist (
 CREATE UNIQUE INDEX IF NOT EXISTS idx_waitlist_email ON waitlist(LOWER(email));
 
 -- ═══════════════════════════════════════════════
+-- PERSONAL TASKS ("My 24" calendar — manual items + AI rest buffers)
+-- ═══════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS personal_tasks (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id       TEXT NOT NULL,
+  title         TEXT NOT NULL,
+  starts_at     TIMESTAMPTZ NOT NULL,
+  ends_at       TIMESTAMPTZ NOT NULL,
+  priority      TEXT NOT NULL DEFAULT 'normal'
+                  CHECK (priority IN ('low','normal','high')),
+  is_rest_block BOOLEAN NOT NULL DEFAULT false,
+  source        TEXT NOT NULL DEFAULT 'manual'
+                  CHECK (source IN ('manual','ai_buffer','ai_destress')),
+  status        TEXT NOT NULL DEFAULT 'active'
+                  CHECK (status IN ('active','done','dismissed')),
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_personal_tasks_user  ON personal_tasks(user_id);
+CREATE INDEX IF NOT EXISTS idx_personal_tasks_starts ON personal_tasks(starts_at);
+
+-- ═══════════════════════════════════════════════
 -- IMAGE UPLOADS
 -- ═══════════════════════════════════════════════
 CREATE TABLE IF NOT EXISTS uploads (

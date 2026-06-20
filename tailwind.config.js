@@ -22,9 +22,11 @@ module.exports = {
           },
           cream: {
             DEFAULT: '#f5f0e8',
+            base:    '#FDFBF7',
             dark:    '#ede5d4',
             muted:   '#d9cebb',
           },
+          champagne: '#C5A043',
           paper: {
             DEFAULT: '#faf7f1',
             dark:    '#f1ece2',
@@ -37,6 +39,7 @@ module.exports = {
         animation: {
           blob: "blob 7s infinite",
           'spin-slow': 'spin 12s linear infinite',
+          'dissolve': 'dissolve 0.6s ease-out forwards',
         },
         keyframes: {
           blob: {
@@ -52,6 +55,11 @@ module.exports = {
             "100%": {
               transform: "translate(0px, 0px) scale(1)",
             },
+          },
+          dissolve: {
+            '0%':   { opacity: 1, transform: 'scale(1)', filter: 'blur(0px)' },
+            '60%':  { opacity: 0.5, transform: 'scale(1.02)', filter: 'blur(2px)' },
+            '100%': { opacity: 0, transform: 'scale(0.98)', filter: 'blur(4px)' },
           },
         },
       },
