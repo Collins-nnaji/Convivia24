@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { fetchMe, signOut as doSignOut, type SessionUser } from '@/lib/auth/client';
+import { authClient, signOut as doSignOut, type SessionUser } from '@/lib/auth/client';
 
 interface AuthCtx {
   user: SessionUser | null;
@@ -22,26 +22,31 @@ const Ctx = createContext<AuthCtx>({
 export const useUser = () => useContext(Ctx);
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<SessionUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data, isPending, refetch } = authClient.useSession();
   const [authConfigured, setAuthConfigured] = useState(true);
 
-  const refresh = useCallback(async () => {
-    const { user, authConfigured } = await fetchMe();
-    setUser(user);
-    setAuthConfigured(authConfigured);
-    setLoading(false);
+  useEffect(() => {
+    fetch('/api/auth/me', { cache: 'no-store' })
+      .then((res) => (res.ok ? res.json() : { authConfigured: false }))
+      .then((body) => setAuthConfigured(Boolean(body?.authConfigured)))
+      .catch(() => setAuthConfigured(false));
   }, []);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  const user: SessionUser | null = data?.user
+    ? { id: data.user.id, email: data.user.email, name: data.user.name ?? null, image: data.user.image ?? null }
+    : null;
+
+  const refresh = useCallback(async () => {
+    await refetch();
+  }, [refetch]);
 
   const signOut = useCallback(async () => {
     await doSignOut();
-    setUser(null);
-  }, []);
+    await refetch();
+  }, [refetch]);
 
   return (
-    <Ctx.Provider value={{ user, loading, authConfigured, refresh, signOut }}>
+    <Ctx.Provider value={{ user, loading: isPending, authConfigured, refresh, signOut }}>
       {children}
     </Ctx.Provider>
   );
