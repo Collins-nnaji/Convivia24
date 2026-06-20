@@ -27,12 +27,19 @@ export async function signInWithGoogle(callbackURL = '/'): Promise<void> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ provider: 'google', callbackURL, errorCallbackURL: '/signin?error=1' }),
   });
-  const data = await res.json().catch(() => null);
+  const text = await res.text();
+  let data: any = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    // Upstream returned a non-JSON body (HTML error page, empty response, etc).
+  }
   if (data?.url) {
     window.location.href = data.url;
-  } else {
-    throw new Error(data?.error?.message || data?.message || 'Could not start Google sign-in.');
+    return;
   }
+  const detail = data?.error?.message || data?.message || text.slice(0, 300);
+  throw new Error(detail ? `Could not start Google sign-in (HTTP ${res.status}): ${detail}` : `Could not start Google sign-in (HTTP ${res.status}).`);
 }
 
 /** Sign the current user out and clear the session cookie. */
