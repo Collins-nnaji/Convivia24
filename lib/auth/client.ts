@@ -22,10 +22,16 @@ export async function fetchMe(): Promise<{ user: SessionUser | null; authConfigu
 
 /** Start a Google sign-in. Redirects the browser to Google then back to `callbackURL`. */
 export async function signInWithGoogle(callbackURL = '/'): Promise<void> {
+  // Neon Auth runs on a separate host from this app, so callback URLs must be
+  // absolute — a relative path resolves against the auth server's own origin,
+  // not ours, and gets rejected by its host validation.
+  const origin = window.location.origin;
+  const absoluteCallback = new URL(callbackURL, origin).toString();
+  const absoluteErrorCallback = new URL('/signin?error=1', origin).toString();
   const res = await fetch(`${BASE}/sign-in/social`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ provider: 'google', callbackURL, errorCallbackURL: '/signin?error=1' }),
+    body: JSON.stringify({ provider: 'google', callbackURL: absoluteCallback, errorCallbackURL: absoluteErrorCallback }),
   });
   const text = await res.text();
   let data: any = null;
