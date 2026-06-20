@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import Link from 'next/link';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, UserPlus } from 'lucide-react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import MyDayRibbon from '@/components/calendar/MyDayRibbon';
 import DestressButton from '@/components/calendar/DestressButton';
@@ -23,6 +23,9 @@ export default function My24Page() {
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
   const [priority, setPriority] = useState<'low' | 'normal' | 'high'>('normal');
+  const [guests, setGuests] = useState<{ name: string; email: string }[]>([]);
+  const [guestName, setGuestName] = useState('');
+  const [guestEmail, setGuestEmail] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -46,15 +49,21 @@ export default function My24Page() {
     }, 550);
   }
 
+  function addGuest() {
+    if (!guestName.trim()) return;
+    setGuests((g) => [...g, { name: guestName.trim(), email: guestEmail.trim() }]);
+    setGuestName(''); setGuestEmail('');
+  }
+
   async function addTask(e: FormEvent) {
     e.preventDefault();
     if (!title.trim() || !start || !end) return;
     await fetch('/api/calendar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, starts_at: new Date(start).toISOString(), ends_at: new Date(end).toISOString(), priority }),
+      body: JSON.stringify({ title, starts_at: new Date(start).toISOString(), ends_at: new Date(end).toISOString(), priority, invitees: guests }),
     });
-    setTitle(''); setStart(''); setEnd(''); setPriority('normal');
+    setTitle(''); setStart(''); setEnd(''); setPriority('normal'); setGuests([]); setGuestName(''); setGuestEmail('');
     setAdding(false);
     load();
   }
@@ -121,10 +130,29 @@ export default function My24Page() {
                 <option value="normal">Normal</option>
                 <option value="high">High priority</option>
               </select>
-              <button type="submit" className="ml-auto px-5 py-2.5 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.15em] transition-colors">
-                Add
-              </button>
             </div>
+
+            <div className="pt-2 border-t border-obsidian/10">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gold-dark mb-2 flex items-center gap-1.5"><UserPlus size={12} /> Invite people (optional)</p>
+              {guests.length > 0 && (
+                <ul className="flex flex-wrap gap-2 mb-2">
+                  {guests.map((g, i) => (
+                    <li key={i} className="px-2.5 py-1 bg-cream text-obsidian/70 text-xs border border-obsidian/10">{g.name}</li>
+                  ))}
+                </ul>
+              )}
+              <div className="grid grid-cols-[1fr_1fr_auto] gap-2">
+                <input value={guestName} onChange={(e) => setGuestName(e.target.value)} placeholder="Name" className="px-3 py-2 border border-obsidian/15 bg-white text-sm focus:border-gold outline-none" />
+                <input value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} placeholder="Email (optional)" className="px-3 py-2 border border-obsidian/15 bg-white text-sm focus:border-gold outline-none" />
+                <button type="button" onClick={addGuest} className="px-3 py-2 border border-obsidian/15 hover:border-gold text-obsidian/60 hover:text-obsidian transition-colors">
+                  <Plus size={14} />
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" className="w-full py-2.5 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.15em] transition-colors">
+              Add to my day
+            </button>
           </form>
         )}
 

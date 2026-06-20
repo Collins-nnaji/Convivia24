@@ -9,8 +9,8 @@ import { useUser } from '@/components/auth/AuthProvider';
 
 const LINKS = [
   { label: 'My 24',        href: '/my24' },
+  { label: 'Companion',    href: '/companion' },
   { label: 'Discover',     href: '/events' },
-  { label: 'AI Concierge', href: '/concierge' },
   { label: 'My Tickets',   href: '/tickets' },
 ];
 

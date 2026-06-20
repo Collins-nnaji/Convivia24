@@ -27,6 +27,17 @@ export async function GET(req: NextRequest) {
       WHERE user_id = ${user.id} AND starts_at >= ${dayStart.toISOString()} AND starts_at <= ${dayEnd.toISOString()}
     `;
 
+    const taskIds = tasks.map((t) => String(t.id));
+    const invitees = taskIds.length
+      ? await sql`SELECT id, task_id, name, email, status FROM personal_task_invitees WHERE task_id = ANY(${taskIds})`
+      : [];
+    const inviteesByTask = new Map<string, { id: string; name: string; email: string | null; status: string }[]>();
+    for (const inv of invitees) {
+      const key = String(inv.task_id);
+      if (!inviteesByTask.has(key)) inviteesByTask.set(key, []);
+      inviteesByTask.get(key)!.push({ id: String(inv.id), name: String(inv.name), email: (inv.email as string) ?? null, status: String(inv.status) });
+    }
+
     const tickets = await sql`
       SELECT e.id, e.title, e.starts_at, e.ends_at, e.venue, e.city
       FROM orders o
@@ -46,6 +57,7 @@ export async function GET(req: NextRequest) {
         is_rest_block: !!t.is_rest_block,
         source: t.source as CalendarItem['source'],
         status: t.status as CalendarItem['status'],
+        invitees: (inviteesByTask.get(String(t.id)) ?? []) as CalendarItem['invitees'],
       })),
       ...tickets.map((e) => ({
         id: String(e.id),
@@ -72,7 +84,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
 
   try {
-    const { title, starts_at, ends_at, priority } = await req.json();
+    const { title, starts_at, ends_at, priority, invitees } = await req.json();
     if (!title?.trim() || !starts_at || !ends_at) {
       return NextResponse.json({ error: 'Title, start and end time are required.' }, { status: 400 });
     }
@@ -82,6 +94,18 @@ export async function POST(req: NextRequest) {
       VALUES (${user.id}, ${title.trim()}, ${starts_at}, ${ends_at}, ${priority || 'normal'}, 'manual')
       RETURNING id, title, starts_at, ends_at, priority, is_rest_block, source, status
     `;
+
+    const guestList = (Array.isArray(invitees) ? invitees : [])
+      .filter((p: { name?: string }) => p?.name?.trim())
+      .slice(0, 20);
+
+    for (const guest of guestList as { name: string; email?: string }[]) {
+      await sql`
+        INSERT INTO personal_task_invitees (task_id, name, email)
+        VALUES (${task.id}, ${guest.name.trim()}, ${guest.email?.trim() || null})
+      `;
+    }
+
     return NextResponse.json({ task });
   } catch (err) {
     console.error('[POST /api/calendar]', err);

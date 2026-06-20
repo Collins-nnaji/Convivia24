@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, Moon } from 'lucide-react';
+import { Check, Moon, Users } from 'lucide-react';
 import type { CalendarItem } from '@/lib/calendar/buffers';
 
 function timeLabel(iso: string) {
@@ -60,6 +60,11 @@ export default function MyDayRibbon({
                     <p className={`font-display text-lg italic ${item.is_rest_block ? 'text-obsidian/60' : 'text-obsidian'}`}>
                       {item.is_rest_block ? '☁ Rest' : item.title}
                     </p>
+                    {item.invitees && item.invitees.length > 0 && (
+                      <p className="flex items-center gap-1.5 text-obsidian/45 text-xs mt-1.5">
+                        <Users size={12} className="text-gold-dark" /> {item.invitees.map((g) => g.name).join(', ')}
+                      </p>
+                    )}
                   </div>
                   {!item.is_rest_block && item.source !== 'ticket' && (
                     <button

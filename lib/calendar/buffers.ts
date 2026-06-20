@@ -1,5 +1,12 @@
 // Pure scheduling logic for the "My 24" calendar — no AI call needed.
 
+export interface CalendarInvitee {
+  id: string;
+  name: string;
+  email: string | null;
+  status: 'invited' | 'accepted' | 'declined';
+}
+
 export interface CalendarItem {
   id: string;
   title: string;
@@ -9,6 +16,7 @@ export interface CalendarItem {
   is_rest_block: boolean;
   source: 'manual' | 'ai_buffer' | 'ai_destress' | 'ticket';
   status: 'active' | 'done' | 'dismissed';
+  invitees?: CalendarInvitee[];
 }
 
 const REST_BLOCK_MINUTES = 15;
