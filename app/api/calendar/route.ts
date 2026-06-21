@@ -7,10 +7,35 @@ import * as repo from '@/lib/calendar/repo';
  * GET /api/calendar?date=YYYY-MM-DD
  * Returns the signed-in user's day: their personal_tasks merged into one
  * timeline with AI rest buffers auto-inserted between back-to-back items.
+ *
+ * GET /api/calendar?start=YYYY-MM-DD&end=YYYY-MM-DD
+ * Returns the raw (un-buffered) items across a range — used to flag days on
+ * the My 24 month grid.
  */
 export async function GET(req: NextRequest) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
+
+  const startParam = req.nextUrl.searchParams.get('start');
+  const endParam = req.nextUrl.searchParams.get('end');
+
+  if (startParam && endParam) {
+    const rangeStart = new Date(startParam);
+    const rangeEnd = new Date(endParam);
+    if (Number.isNaN(rangeStart.getTime()) || Number.isNaN(rangeEnd.getTime())) {
+      return NextResponse.json({ error: 'Invalid date range.' }, { status: 400 });
+    }
+    rangeStart.setHours(0, 0, 0, 0);
+    rangeEnd.setHours(23, 59, 59, 999);
+
+    try {
+      const items = await repo.listRange(user.id, rangeStart.toISOString(), rangeEnd.toISOString());
+      return NextResponse.json({ items });
+    } catch (err) {
+      console.error('[GET /api/calendar]', err);
+      return NextResponse.json({ error: 'Could not load your calendar.' }, { status: 500 });
+    }
+  }
 
   const dateParam = req.nextUrl.searchParams.get('date');
   const day = dateParam ? new Date(dateParam) : new Date();

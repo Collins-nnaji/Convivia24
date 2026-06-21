@@ -1,21 +1,30 @@
 'use client';
 
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { Plus, X, UserPlus } from 'lucide-react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
+import MonthCalendar from '@/components/calendar/MonthCalendar';
 import MyDayRibbon from '@/components/calendar/MyDayRibbon';
 import DestressButton from '@/components/calendar/DestressButton';
 import { useUser } from '@/components/auth/AuthProvider';
-import type { CalendarItem } from '@/lib/calendar/buffers';
+import { insertRestBuffers, type CalendarItem } from '@/lib/calendar/buffers';
+import { addDays, addMonths, isSameDay, startOfMonth, startOfWeek } from '@/lib/calendar/dates';
 
-function todayLabel() {
-  return new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+function dayLabel(d: Date) {
+  return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+}
+
+function toLocalInputValue(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 export default function My24Page() {
   const { user, loading: authLoading } = useUser();
-  const [items, setItems] = useState<CalendarItem[]>([]);
+  const [month, setMonth] = useState(() => startOfMonth(new Date()));
+  const [selectedDate, setSelectedDate] = useState(() => new Date());
+  const [monthItems, setMonthItems] = useState<CalendarItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [completingId, setCompletingId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
@@ -27,25 +36,45 @@ export default function My24Page() {
   const [guestName, setGuestName] = useState('');
   const [guestEmail, setGuestEmail] = useState('');
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (forMonth: Date) => {
     setLoading(true);
     try {
-      const res = await fetch('/api/calendar');
+      const gridStart = startOfWeek(startOfMonth(forMonth));
+      const gridEnd = addDays(gridStart, 41);
+      const res = await fetch(`/api/calendar?start=${gridStart.toISOString()}&end=${gridEnd.toISOString()}`);
       const data = await res.json();
-      setItems(data.items || []);
+      setMonthItems(data.items || []);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => { if (user) load(); }, [user, load]);
+  useEffect(() => { if (user) load(month); }, [user, month, load]);
+
+  const dayItems = useMemo(
+    () => insertRestBuffers(monthItems.filter((i) => isSameDay(new Date(i.starts_at), selectedDate))),
+    [monthItems, selectedDate],
+  );
+
+  function selectDate(d: Date) {
+    setSelectedDate(d);
+    if (d.getMonth() !== month.getMonth() || d.getFullYear() !== month.getFullYear()) {
+      setMonth(startOfMonth(d));
+    }
+  }
+
+  function goToday() {
+    const now = new Date();
+    setSelectedDate(now);
+    setMonth(startOfMonth(now));
+  }
 
   async function complete(id: string) {
     setCompletingId(id);
     setTimeout(async () => {
       await fetch(`/api/calendar/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'done' }) });
       setCompletingId(null);
-      load();
+      load(month);
     }, 550);
   }
 
@@ -53,6 +82,18 @@ export default function My24Page() {
     if (!guestName.trim()) return;
     setGuests((g) => [...g, { name: guestName.trim(), email: guestEmail.trim() }]);
     setGuestName(''); setGuestEmail('');
+  }
+
+  function openAddForm() {
+    const opening = !adding;
+    setAdding(opening);
+    if (opening && !start && !end) {
+      const base = new Date(selectedDate);
+      base.setHours(base.getHours() + 1, 0, 0, 0);
+      const later = new Date(base); later.setHours(later.getHours() + 1);
+      setStart(toLocalInputValue(base));
+      setEnd(toLocalInputValue(later));
+    }
   }
 
   async function addTask(e: FormEvent) {
@@ -65,12 +106,18 @@ export default function My24Page() {
     });
     setTitle(''); setStart(''); setEnd(''); setPriority('normal'); setGuests([]); setGuestName(''); setGuestEmail('');
     setAdding(false);
-    load();
+    load(month);
   }
 
   async function applyDestress(moves: { id: string; title: string }[]) {
+    // Destress always acts on today's tasks (server-side), regardless of which
+    // month/day is currently shown — fetch today's items fresh rather than
+    // relying on whatever range happens to be loaded for the grid.
+    const res = await fetch(`/api/calendar?date=${new Date().toISOString()}`);
+    const data = await res.json();
+    const todays: CalendarItem[] = data.items || [];
     await Promise.all(moves.map((m) => {
-      const item = items.find((i) => i.id === m.id);
+      const item = todays.find((i) => i.id === m.id);
       if (!item) return Promise.resolve();
       const newStart = new Date(item.starts_at); newStart.setDate(newStart.getDate() + 1);
       const newEnd = new Date(item.ends_at); newEnd.setDate(newEnd.getDate() + 1);
@@ -80,7 +127,7 @@ export default function My24Page() {
         body: JSON.stringify({ starts_at: newStart.toISOString(), ends_at: newEnd.toISOString() }),
       });
     }));
-    load();
+    load(month);
   }
 
   if (!authLoading && !user) {
@@ -100,14 +147,30 @@ export default function My24Page() {
     <section className="zen-ribbon-bg min-h-[90vh] -mt-16 pt-16">
       <div className="max-w-2xl mx-auto px-5 sm:px-8 py-12 sm:py-20">
         <SectionLabel>My 24</SectionLabel>
-        <div className="flex items-end justify-between gap-4 mb-10">
+        <div className="flex items-end justify-between gap-4 mb-8">
           <div>
-            <h1 className="font-display text-4xl sm:text-6xl font-light italic text-obsidian tracking-tight">{todayLabel()}</h1>
+            <h1 className="font-display text-4xl sm:text-6xl font-light italic text-obsidian tracking-tight">Your calendar.</h1>
             <p className="text-obsidian/50 text-sm mt-2">Lower your stress. Optimize your hours. Love your day.</p>
           </div>
+        </div>
+
+        <MonthCalendar
+          month={month}
+          items={monthItems}
+          selectedDate={selectedDate}
+          onSelectDate={selectDate}
+          onPrevMonth={() => setMonth((m) => addMonths(m, -1))}
+          onNextMonth={() => setMonth((m) => addMonths(m, 1))}
+          onToday={goToday}
+        />
+
+        <div className="flex items-end justify-between gap-4 mt-10 mb-6">
+          <h2 className="font-display text-2xl sm:text-3xl font-light italic text-obsidian tracking-tight">
+            {isSameDay(selectedDate, new Date()) ? 'Today' : dayLabel(selectedDate)}
+          </h2>
           <button
-            onClick={() => setAdding((v) => !v)}
-            aria-label="Add to your day"
+            onClick={openAddForm}
+            aria-label="Add to this day"
             className="shrink-0 w-11 h-11 rounded-full bg-obsidian hover:bg-obsidian-50 text-cream flex items-center justify-center transition-colors"
           >
             {adding ? <X size={18} /> : <Plus size={18} />}
@@ -151,7 +214,7 @@ export default function My24Page() {
             </div>
 
             <button type="submit" className="w-full py-2.5 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.15em] transition-colors">
-              Add to my day
+              Add to this day
             </button>
           </form>
         )}
@@ -161,7 +224,7 @@ export default function My24Page() {
             {[0, 1, 2].map((i) => <div key={i} className="h-20 bg-white/50 animate-pulse" />)}
           </div>
         ) : (
-          <MyDayRibbon items={items} completingId={completingId} onComplete={complete} />
+          <MyDayRibbon items={dayItems} completingId={completingId} onComplete={complete} />
         )}
       </div>
 
