@@ -34,9 +34,9 @@ export default function MyDayRibbon({
 
   if (items.length === 0) {
     return (
-      <div className="py-20 text-center">
-        <Moon className="mx-auto text-gold-dark/40 mb-4" size={28} />
-        <p className="font-display text-2xl italic text-obsidian/50">An open day. Enjoy it.</p>
+      <div className="py-12 text-center">
+        <Moon className="mx-auto text-obsidian/20 mb-2" size={22} />
+        <p className="text-sm text-obsidian/40">Nothing scheduled.</p>
       </div>
     );
   }

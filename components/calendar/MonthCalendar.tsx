@@ -41,9 +41,9 @@ export default function MonthCalendar({
   }
 
   return (
-    <div className="border border-obsidian/10 bg-white/70 overflow-hidden">
-      <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-4 border-b border-obsidian/10">
-        <h2 className="font-display text-xl sm:text-2xl italic text-obsidian">
+    <div className="h-full bg-white/70 overflow-hidden flex flex-col">
+      <div className="flex items-center justify-between gap-2 px-3 sm:px-4 py-2 border-b border-obsidian/10 shrink-0">
+        <h2 className="text-sm font-semibold text-obsidian">
           {month.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
         </h2>
         <div className="flex items-center gap-1.5">
@@ -102,7 +102,7 @@ export default function MonthCalendar({
                 type="button"
                 onClick={() => onSelectDate(day)}
                 aria-current={isSelected ? 'date' : undefined}
-                className={`relative min-h-[58px] sm:min-h-[88px] p-1.5 sm:p-2.5 border-b border-r border-obsidian/5 flex flex-col items-start gap-1.5 text-left transition-colors ${
+                className={`relative min-h-[48px] sm:min-h-[72px] p-1 sm:p-1.5 border-b border-r border-obsidian/5 flex flex-col items-start gap-1 text-left transition-colors ${
                   isSelected ? 'bg-gold/10 ring-1 ring-inset ring-gold/50' : 'hover:bg-cream/60'
                 }`}
               >

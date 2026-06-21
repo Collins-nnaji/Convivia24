@@ -103,3 +103,28 @@ CREATE TABLE IF NOT EXISTS companion_memory (
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_companion_memory_user_key ON companion_memory(user_id, LOWER(key));
+
+-- ═══════════════════════════════════════════════
+-- PEOPLE (the people layer — partner, friends, family for planning + invites)
+-- ═══════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS people (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id       TEXT NOT NULL,
+  name          TEXT NOT NULL,
+  relationship  TEXT,
+  email         TEXT,
+  notes         TEXT,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_people_user ON people(user_id);
+
+-- One evening reflection per day — feeds the companion's memory.
+CREATE TABLE IF NOT EXISTS daily_reflections (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id       TEXT NOT NULL,
+  reflect_date  DATE NOT NULL,
+  highlight     TEXT NOT NULL,
+  mood          TEXT,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_daily_reflections_user_date ON daily_reflections(user_id, reflect_date);
