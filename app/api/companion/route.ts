@@ -3,17 +3,26 @@ import sql from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth/session';
 import { chat, aiConfigured } from '@/lib/ai/azure';
 import { rateLimit, clientIp } from '@/lib/redis';
+import {
+  ensureSchema,
+  getConversation,
+  getMessages,
+  createConversation,
+  touchConversation,
+  titleFromMessage,
+} from '@/lib/companion/conversations';
 
-/** GET /api/companion — load recent chat history. */
-export async function GET() {
+/** GET /api/companion?conversation=ID — load a chat thread's messages. */
+export async function GET(req: NextRequest) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
 
+  const conversationId = req.nextUrl.searchParams.get('conversation');
   try {
-    const messages = await sql`
-      SELECT id, role, content, created_at FROM companion_messages
-      WHERE user_id = ${user.id} ORDER BY created_at ASC LIMIT 100
-    `;
+    if (!conversationId) return NextResponse.json({ messages: [] });
+    const conv = await getConversation(user.id, conversationId);
+    if (!conv) return NextResponse.json({ error: 'Chat not found.' }, { status: 404 });
+    const messages = await getMessages(user.id, conversationId);
     return NextResponse.json({ messages });
   } catch (err) {
     console.error('[GET /api/companion]', err);
@@ -98,14 +107,31 @@ export async function POST(req: NextRequest) {
     const rl = await rateLimit(`companion:${clientIp(req)}`, 20, 60);
     if (!rl.ok) return NextResponse.json({ error: 'Slow down a little — try again shortly.' }, { status: 429 });
 
-    const { message } = await req.json();
+    const body = await req.json();
+    const message: string = body?.message;
     if (!message?.trim()) return NextResponse.json({ error: 'Say something first.' }, { status: 400 });
 
-    await sql`INSERT INTO companion_messages (user_id, role, content) VALUES (${user.id}, 'user', ${message.trim()})`;
+    await ensureSchema();
 
+    // Resolve (or create) the conversation this message belongs to.
+    let conversationId: string | null = typeof body?.conversation_id === 'string' ? body.conversation_id : null;
+    if (conversationId) {
+      const conv = await getConversation(user.id, conversationId);
+      if (!conv) conversationId = null;
+    }
+    if (!conversationId) {
+      const conv = await createConversation(user.id, titleFromMessage(message));
+      conversationId = conv.id;
+    }
+
+    await sql`INSERT INTO companion_messages (user_id, conversation_id, role, content) VALUES (${user.id}, ${conversationId}, 'user', ${message.trim()})`;
+    await touchConversation(user.id, conversationId, titleFromMessage(message));
+
+    // Full thread (this conversation only) drives the plan — not just this message.
     const history = await sql`
       SELECT role, content FROM companion_messages
-      WHERE user_id = ${user.id} ORDER BY created_at DESC LIMIT 20
+      WHERE user_id = ${user.id} AND conversation_id = ${conversationId}
+      ORDER BY created_at DESC LIMIT 40
     `;
     const memory = await sql`
       SELECT key, value FROM companion_memory WHERE user_id = ${user.id} ORDER BY updated_at DESC LIMIT 40
@@ -113,18 +139,20 @@ export async function POST(req: NextRequest) {
 
     const memoryLines = memory.map((m) => `${m.key}: ${m.value}`).join('\n');
     const recentTurns = [...history].reverse();
+    const conversationText = recentTurns.filter((m) => m.role === 'user').map((m) => String(m.content)).join('\n');
 
     if (!aiConfigured()) {
-      const dashboard = heuristicDashboard(message.trim());
+      const dashboard = heuristicDashboard(conversationText || message.trim());
       const reply = dashboard
-        ? "Here's how I'd line that up — focus on the top few first, and I've sketched a plan you can drop into My 24."
+        ? "Here's how I'd line that up so far — focus on the top few first, and I've sketched a plan you can drop into My 24. Tell me more and I'll keep refining it."
         : "I'm listening — tell me everything you're juggling and I'll sort it into what to focus on, what can wait, and what to drop.";
-      await sql`INSERT INTO companion_messages (user_id, role, content) VALUES (${user.id}, 'assistant', ${reply})`;
-      return NextResponse.json({ reply, suggested_tasks: [], dashboard });
+      await sql`INSERT INTO companion_messages (user_id, conversation_id, role, content) VALUES (${user.id}, ${conversationId}, 'assistant', ${reply})`;
+      await touchConversation(user.id, conversationId);
+      return NextResponse.json({ reply, suggested_tasks: [], dashboard, conversation_id: conversationId });
     }
 
     const now = new Date().toISOString();
-    const system = `You are the user's personal companion inside Convivia24, a de-stressing calendar app. You remember things about them across conversations and use that to help plan a calmer, prioritised day. Be warm, brief, conversational — never clinical or corporate.
+    const system = `You are the user's personal companion inside Convivia24, a de-stressing calendar app. This is an ongoing planning conversation — a back-and-forth, not one-off replies. You remember things about them across conversations and use that to help plan a calmer, prioritised day. Be warm, brief, conversational — never clinical or corporate.
 
 What you know about this person so far:
 ${memoryLines || '(nothing yet — this may be one of your first conversations)'}
@@ -145,8 +173,9 @@ Respond ONLY with strict JSON:
   }
 }
 Only include "facts" for genuinely new, durable information about the person (preferences, people in their life, routines, goals, stressors) — not small talk.
-Build the "dashboard" whenever the user describes several plans, tasks, or what they're juggling — turn their dump into a clear, prioritised picture: 2-4 focus items, what to deprioritize, what to stop/drop, and a realistic time-blocked "schedule" for the relevant day (default to today/tomorrow based on context, always include a protected downtime block). Keep each list short and specific. If they're just chatting and there's nothing to organise, omit "dashboard" entirely (use null) and reply conversationally.
-Only include "suggested_tasks" if they explicitly asked you to schedule one or two specific things; otherwise prefer the dashboard's "schedule". Omit timing you're unsure of and ask a clarifying question in your reply instead.`;
+The "dashboard" is a LIVING plan for this whole conversation. Build it from EVERYTHING discussed so far across all earlier turns — not only the latest message — and refine the same plan each turn as you learn more (carry items forward, re-rank them, add/remove as the picture changes) rather than starting from scratch. Aim for 2-4 focus items, what to deprioritize, what to stop/drop, and a realistic time-blocked "schedule" for the relevant day (default to today/tomorrow from context, always include a protected downtime block). Keep each list short and specific.
+Be an active planner: when a detail would materially improve the plan (a deadline, how long something takes, what matters most, fixed commitments), ASK ONE short clarifying question in "reply" — and still return your best current dashboard reflecting what you know so far, so the plan visibly improves as the conversation continues. Only omit "dashboard" (use null) at the very start when nothing concrete has been shared yet, or in pure small talk.
+Only include "suggested_tasks" if they explicitly asked you to schedule one or two specific things; otherwise prefer the dashboard's "schedule".`;
 
     const raw = await chat({
       messages: [
@@ -172,7 +201,8 @@ Only include "suggested_tasks" if they explicitly asked you to schedule one or t
     }
 
     const reply = parsed.reply || "I'm here.";
-    await sql`INSERT INTO companion_messages (user_id, role, content) VALUES (${user.id}, 'assistant', ${reply})`;
+    await sql`INSERT INTO companion_messages (user_id, conversation_id, role, content) VALUES (${user.id}, ${conversationId}, 'assistant', ${reply})`;
+    await touchConversation(user.id, conversationId);
 
     for (const fact of (parsed.facts || []).slice(0, 5)) {
       if (!fact?.key || !fact?.value) continue;
@@ -205,10 +235,12 @@ Only include "suggested_tasks" if they explicitly asked you to schedule one or t
       };
     }
 
-    // Safety net: the user clearly dumped a list but the model didn't organise it.
-    if (!dashboard) dashboard = heuristicDashboard(message.trim());
+    // Safety net: only salvage a plan if the model neither organised one nor
+    // asked a clarifying question (a trailing "?") — so deliberate questions
+    // aren't overridden by a premature dashboard.
+    if (!dashboard && !reply.includes('?')) dashboard = heuristicDashboard(conversationText);
 
-    return NextResponse.json({ reply, suggested_tasks: suggestedTasks, dashboard });
+    return NextResponse.json({ reply, suggested_tasks: suggestedTasks, dashboard, conversation_id: conversationId });
   } catch (err) {
     console.error('[POST /api/companion]', err);
     return NextResponse.json({ error: 'Could not reach your companion right now.' }, { status: 500 });
