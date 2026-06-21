@@ -35,19 +35,50 @@ body {
   }
 }
 
+@layer components {
+  /* Brand gradient — black → red, echoing the logo. Used for primary
+     surfaces so red reads as an accent that resolves out of black, not a
+     heavy flat fill. */
+  .brand-gradient {
+    background-image: linear-gradient(115deg, #0a0a0a 0%, #1a0a0c 28%, #7a0f1f 62%, #c81e2e 100%);
+  }
+  .brand-gradient-soft {
+    background-image: linear-gradient(115deg, #14060a 0%, #5a0c18 55%, #b01a2a 100%);
+  }
+  /* Gradient text for headlines — black resolving into red. */
+  .brand-text {
+    background-image: linear-gradient(100deg, #0a0a0a 0%, #2a0b0f 45%, #b3122a 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  /* Primary call-to-action button. */
+  .btn-brand {
+    background-image: linear-gradient(115deg, #14080a 0%, #6e0e1c 55%, #c81e2e 100%);
+    color: #fff;
+    transition: filter 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .btn-brand:hover {
+    filter: brightness(1.08);
+    box-shadow: 0 6px 20px -8px rgba(200, 30, 46, 0.55);
+  }
+  .btn-brand:active { transform: translateY(1px); }
+  .btn-brand:disabled { opacity: 0.5; filter: none; box-shadow: none; }
+}
+
 /* Selection */
 ::selection {
-  background: #D62828;
+  background: #c81e2e;
   color: #ffffff;
 }
 
-/* Red scrollbar on a light track */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: #f5f5f5; }
-::-webkit-scrollbar-thumb { background: #D62828; }
-::-webkit-scrollbar-thumb:hover { background: #9D1C1C; }
+/* Slim scrollbar on a light track */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #e0d4d4; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #c81e2e; }
 
-/* My 24 / Companion — clean white canvas */
+/* My 24 / Companion — clean, soft white canvas with the faintest warm tint */
 .zen-ribbon-bg {
-  background: linear-gradient(180deg, #ffffff 0%, #fdfdfd 50%, #fafafa 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #fdfbfb 55%, #fbf7f7 100%);
 }

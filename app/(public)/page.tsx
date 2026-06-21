@@ -73,7 +73,7 @@ export default function HomePage() {
 
               <motion.h1
                 variants={fadeUp}
-                className="font-display text-6xl sm:text-7xl md:text-8xl lg:text-[5.5rem] font-light text-obsidian leading-[0.95] mb-6 sm:mb-7"
+                className="font-display text-6xl sm:text-7xl md:text-8xl lg:text-[5.5rem] font-light brand-text leading-[0.95] mb-6 sm:mb-7"
               >
                 Take back
                 <br />
@@ -97,7 +97,7 @@ export default function HomePage() {
               <motion.div variants={fadeUp} className="flex items-center gap-5 mb-10 sm:mb-12">
                 <Link
                   href={loading ? '#' : primaryHref}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.2em] transition-colors"
+                  className="btn-brand inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.2em]"
                 >
                   {primaryLabel} <ArrowRight size={14} />
                 </Link>

@@ -78,9 +78,9 @@ export default function CompanionDashboard({
   }
 
   return (
-    <div className="border border-obsidian/10 bg-white shadow-sm">
-      <div className="px-4 py-3 border-b border-obsidian/10 bg-obsidian text-cream">
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cream/60">Your plan</p>
+    <div className="rounded-2xl border border-obsidian/10 bg-white shadow-sm overflow-hidden">
+      <div className="px-4 py-3.5 brand-gradient text-white">
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/55">Your plan</p>
         {dashboard.summary && <p className="font-display text-lg italic mt-0.5 leading-snug">{dashboard.summary}</p>}
       </div>
 
@@ -147,7 +147,7 @@ export default function CompanionDashboard({
             <button
               onClick={addAll}
               disabled={adding}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gold hover:bg-gold-light disabled:opacity-50 text-obsidian text-xs font-black uppercase tracking-[0.15em] transition-colors"
+              className="btn-brand w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.15em]"
             >
               <CalendarPlus size={14} /> {adding ? 'Adding…' : 'Add daily plan to My 24'}
             </button>

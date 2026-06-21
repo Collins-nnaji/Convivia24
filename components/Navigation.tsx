@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Menu, X, User, LogOut } from 'lucide-react';
+import { Menu, X, User, LogOut, Sparkles } from 'lucide-react';
 import { useUser } from '@/components/auth/AuthProvider';
 
 const LINKS = [
@@ -83,7 +83,7 @@ export default function Navigation() {
 
             {/* Account */}
             {!loading && !user && (
-              <Link href={`/signin?next=${encodeURIComponent(pathname)}`} className="ml-2 inline-flex items-center gap-1.5 px-5 py-2 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.15em] transition-colors duration-150">
+              <Link href={`/signin?next=${encodeURIComponent(pathname)}`} className="btn-brand ml-2 inline-flex items-center gap-1.5 px-5 py-2 text-[11px] font-black uppercase tracking-[0.15em]">
                 <User size={13} /> Sign in
               </Link>
             )}
@@ -106,6 +106,7 @@ export default function Navigation() {
                         <p className="text-sm font-medium text-obsidian truncate">{user.name || 'Your account'}</p>
                         <p className="text-xs text-obsidian/45 truncate">{user.email}</p>
                       </div>
+                      <button onClick={() => { setMenu(false); window.dispatchEvent(new Event('convivia:edit-profile')); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-obsidian/70 hover:text-obsidian hover:bg-paper transition-colors"><Sparkles size={14} className="text-gold-dark" /> Edit profile</button>
                       <button onClick={() => signOut()} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-obsidian/70 hover:text-obsidian hover:bg-paper transition-colors"><LogOut size={14} className="text-gold-dark" /> Sign out</button>
                     </motion.div>
                   )}
@@ -164,13 +165,18 @@ export default function Navigation() {
                     </Link>
                   );
                 })}
-                <div className="pt-4 pb-2">
+                <div className="pt-4 pb-2 space-y-2">
                   {user ? (
-                    <button onClick={() => signOut()} className="w-full flex items-center justify-center gap-2 py-3.5 border border-obsidian/20 text-obsidian text-[12px] font-black uppercase tracking-[0.15em] hover:border-gold transition-colors">
-                      <LogOut size={14} /> Sign out
-                    </button>
+                    <>
+                      <button onClick={() => { setOpen(false); window.dispatchEvent(new Event('convivia:edit-profile')); }} className="w-full flex items-center justify-center gap-2 py-3.5 border border-obsidian/20 text-obsidian text-[12px] font-black uppercase tracking-[0.15em] hover:border-gold transition-colors">
+                        <Sparkles size={14} /> Edit profile
+                      </button>
+                      <button onClick={() => signOut()} className="w-full flex items-center justify-center gap-2 py-3.5 border border-obsidian/20 text-obsidian text-[12px] font-black uppercase tracking-[0.15em] hover:border-gold transition-colors">
+                        <LogOut size={14} /> Sign out
+                      </button>
+                    </>
                   ) : (
-                    <Link href={`/signin?next=${encodeURIComponent(pathname)}`} className="flex items-center justify-center gap-2 w-full text-center py-3.5 bg-gold hover:bg-gold-light text-obsidian text-[12px] font-black uppercase tracking-[0.15em] transition-colors">
+                    <Link href={`/signin?next=${encodeURIComponent(pathname)}`} className="btn-brand flex items-center justify-center gap-2 w-full text-center py-3.5 text-[12px] font-black uppercase tracking-[0.15em]">
                       <User size={14} /> Sign in
                     </Link>
                   )}

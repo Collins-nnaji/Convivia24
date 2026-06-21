@@ -34,7 +34,7 @@ export default function CompanionSidebar({
         <button
           type="button"
           onClick={onNew}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.15em] transition-colors"
+          className="btn-brand w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-[0.15em]"
         >
           <Plus size={14} /> New chat
         </button>
