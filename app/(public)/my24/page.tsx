@@ -8,7 +8,7 @@ import MonthCalendar from '@/components/calendar/MonthCalendar';
 import MyDayRibbon from '@/components/calendar/MyDayRibbon';
 import DestressButton from '@/components/calendar/DestressButton';
 import DayPlanner from '@/components/calendar/DayPlanner';
-import DiscoveryPanel from '@/components/calendar/DiscoveryPanel';
+import UpcomingPanel from '@/components/calendar/UpcomingPanel';
 import PeoplePanel from '@/components/calendar/PeoplePanel';
 import ReflectionPrompt from '@/components/calendar/ReflectionPrompt';
 import { useUser } from '@/components/auth/AuthProvider';
@@ -220,7 +220,7 @@ export default function My24Page() {
 
       <DayPlanner onAccept={acceptDayPlan} />
 
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_220px] min-h-0 border-t border-obsidian/10">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.15fr)_minmax(0,0.85fr)] min-h-0 border-t border-obsidian/10">
         <div className="border-b lg:border-b-0 lg:border-r border-obsidian/10 min-h-0">
           <MonthCalendar
             month={month}
@@ -311,7 +311,7 @@ export default function My24Page() {
         </div>
 
         <aside className="hidden xl:flex flex-col gap-0 border-l border-obsidian/10 min-h-0">
-          <DiscoveryPanel />
+          <UpcomingPanel items={monthItems} onSelectDate={selectDate} />
           <PeoplePanel />
         </aside>
       </div>

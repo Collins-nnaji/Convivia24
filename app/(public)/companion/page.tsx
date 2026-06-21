@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Send, Plus, Check } from 'lucide-react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { useUser } from '@/components/auth/AuthProvider';
+import CompanionDashboard, { type Dashboard, type ScheduleBlock } from '@/components/companion/CompanionDashboard';
 
 interface Message { id?: string; role: 'user' | 'assistant'; content: string }
 interface SuggestedTask { title: string; starts_at: string; ends_at: string; priority: 'low' | 'normal' | 'high' }
@@ -15,6 +16,7 @@ export default function CompanionPage() {
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [suggestions, setSuggestions] = useState<SuggestedTask[]>([]);
+  const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [addedTitles, setAddedTitles] = useState<Set<string>>(new Set());
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -25,7 +27,7 @@ export default function CompanionPage() {
   }, []);
 
   useEffect(() => { if (user) load(); }, [user, load]);
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, suggestions]);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, suggestions, dashboard]);
 
   async function send(e: FormEvent) {
     e.preventDefault();
@@ -33,6 +35,7 @@ export default function CompanionPage() {
     if (!text || sending) return;
     setInput('');
     setSuggestions([]);
+    setDashboard(null);
     setMessages((m) => [...m, { role: 'user', content: text }]);
     setSending(true);
     try {
@@ -44,6 +47,7 @@ export default function CompanionPage() {
       const data = await res.json();
       setMessages((m) => [...m, { role: 'assistant', content: data.reply || "I'm here." }]);
       setSuggestions(data.suggested_tasks || []);
+      setDashboard(data.dashboard || null);
     } finally {
       setSending(false);
     }
@@ -56,6 +60,14 @@ export default function CompanionPage() {
       body: JSON.stringify(t),
     });
     setAddedTitles((s) => new Set(s).add(t.title));
+  }
+
+  async function addSchedule(blocks: ScheduleBlock[]) {
+    await Promise.all(blocks.map((b) => fetch('/api/calendar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: b.title, starts_at: b.starts_at, ends_at: b.ends_at, priority: b.priority }),
+    })));
   }
 
   if (!authLoading && !user) {
@@ -73,15 +85,15 @@ export default function CompanionPage() {
 
   return (
     <section className="zen-ribbon-bg min-h-[90vh] -mt-16 pt-16 flex flex-col">
-      <div className="max-w-2xl w-full mx-auto px-5 sm:px-8 pt-12 pb-4 shrink-0">
+      <div className="max-w-3xl w-full mx-auto px-5 sm:px-8 pt-12 pb-4 shrink-0">
         <SectionLabel>Companion</SectionLabel>
         <h1 className="font-display text-3xl sm:text-5xl font-light italic text-obsidian tracking-tight">Just us.</h1>
-        <p className="text-obsidian/50 text-sm mt-2">It remembers what matters to you, and helps plan around it.</p>
+        <p className="text-obsidian/50 text-sm mt-2">Tell me everything you&rsquo;re juggling — I&rsquo;ll turn it into a clear, prioritised plan you can drop straight into My&nbsp;24.</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto max-w-2xl w-full mx-auto px-5 sm:px-8 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto max-w-3xl w-full mx-auto px-5 sm:px-8 py-4 space-y-4">
         {messages.length === 0 && (
-          <p className="text-obsidian/40 text-sm italic font-display text-lg pt-10 text-center">Tell me what&rsquo;s on your mind, or what kind of day you want tomorrow.</p>
+          <p className="text-obsidian/40 text-sm italic font-display text-lg pt-10 text-center">Dump your plans, tasks and worries here — &ldquo;Here&rsquo;s everything on my plate this week…&rdquo; — and I&rsquo;ll sort what to focus on, what can wait, and what to drop.</p>
         )}
         {messages.map((m, i) => (
           <div key={m.id ?? i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -93,6 +105,8 @@ export default function CompanionPage() {
           </div>
         ))}
         {sending && <p className="text-obsidian/40 text-xs italic">thinking…</p>}
+
+        {dashboard && <CompanionDashboard dashboard={dashboard} onAddSchedule={addSchedule} />}
 
         {suggestions.length > 0 && (
           <div className="space-y-2 pt-2">
@@ -119,7 +133,7 @@ export default function CompanionPage() {
         <div ref={bottomRef} />
       </div>
 
-      <form onSubmit={send} className="max-w-2xl w-full mx-auto px-5 sm:px-8 py-5 flex gap-3 shrink-0">
+      <form onSubmit={send} className="max-w-3xl w-full mx-auto px-5 sm:px-8 py-5 flex gap-3 shrink-0">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
