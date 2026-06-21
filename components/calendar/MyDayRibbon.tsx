@@ -1,12 +1,19 @@
 'use client';
 
+import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, Moon, Users } from 'lucide-react';
-import type { CalendarItem } from '@/lib/calendar/buffers';
+import { Check, Link2, Moon } from 'lucide-react';
+import type { CalendarInvitee, CalendarItem } from '@/lib/calendar/buffers';
 
 function timeLabel(iso: string) {
   return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 }
+
+const STATUS_DOT: Record<CalendarInvitee['status'], string> = {
+  invited: 'bg-gold',
+  accepted: 'bg-emerald-500',
+  declined: 'bg-obsidian/20',
+};
 
 export default function MyDayRibbon({
   items,
@@ -17,6 +24,14 @@ export default function MyDayRibbon({
   completingId: string | null;
   onComplete: (id: string) => void;
 }) {
+  const [copiedInviteeId, setCopiedInviteeId] = useState<string | null>(null);
+
+  async function copyInviteLink(inviteeId: string, token: string) {
+    await navigator.clipboard.writeText(`${window.location.origin}/invite/${token}`);
+    setCopiedInviteeId(inviteeId);
+    setTimeout(() => setCopiedInviteeId((id) => (id === inviteeId ? null : id)), 1500);
+  }
+
   if (items.length === 0) {
     return (
       <div className="py-20 text-center">
@@ -61,9 +76,22 @@ export default function MyDayRibbon({
                       {item.is_rest_block ? '☁ Rest' : item.title}
                     </p>
                     {item.invitees && item.invitees.length > 0 && (
-                      <p className="flex items-center gap-1.5 text-obsidian/45 text-xs mt-1.5">
-                        <Users size={12} className="text-gold-dark" /> {item.invitees.map((g) => g.name).join(', ')}
-                      </p>
+                      <ul className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
+                        {item.invitees.map((g) => (
+                          <li key={g.id} className="flex items-center gap-1 text-obsidian/45 text-xs">
+                            <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[g.status]}`} />
+                            {g.name}
+                            <button
+                              type="button"
+                              onClick={() => copyInviteLink(g.id, g.response_token)}
+                              aria-label={`Copy invite link for ${g.name}`}
+                              className="text-obsidian/25 hover:text-gold-dark transition-colors"
+                            >
+                              {copiedInviteeId === g.id ? <Check size={11} /> : <Link2 size={11} />}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
                     )}
                   </div>
                   {!item.is_rest_block && (

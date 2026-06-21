@@ -5,6 +5,7 @@ export interface CalendarInvitee {
   name: string;
   email: string | null;
   status: 'invited' | 'accepted' | 'declined';
+  response_token: string;
 }
 
 export type CalendarItemKind = 'task' | 'event' | 'gathering';

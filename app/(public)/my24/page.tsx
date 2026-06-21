@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Plus, X, UserPlus } from 'lucide-react';
+import { Plus, X, UserPlus, Rss } from 'lucide-react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import MonthCalendar from '@/components/calendar/MonthCalendar';
 import MyDayRibbon from '@/components/calendar/MyDayRibbon';
@@ -36,6 +36,9 @@ export default function My24Page() {
   const [guests, setGuests] = useState<{ name: string; email: string }[]>([]);
   const [guestName, setGuestName] = useState('');
   const [guestEmail, setGuestEmail] = useState('');
+  const [feedOpen, setFeedOpen] = useState(false);
+  const [feedUrl, setFeedUrl] = useState<string | null>(null);
+  const [feedCopied, setFeedCopied] = useState(false);
 
   const load = useCallback(async (forMonth: Date) => {
     setLoading(true);
@@ -77,6 +80,27 @@ export default function My24Page() {
       setCompletingId(null);
       load(month);
     }, 550);
+  }
+
+  async function toggleFeed() {
+    const opening = !feedOpen;
+    setFeedOpen(opening);
+    if (opening && !feedUrl) {
+      try {
+        const res = await fetch('/api/calendar/feed-token');
+        const data = await res.json();
+        setFeedUrl(data.url || null);
+      } catch {
+        setFeedUrl(null);
+      }
+    }
+  }
+
+  async function copyFeedUrl() {
+    if (!feedUrl) return;
+    await navigator.clipboard.writeText(feedUrl);
+    setFeedCopied(true);
+    setTimeout(() => setFeedCopied(false), 1500);
   }
 
   function addGuest() {
@@ -153,7 +177,37 @@ export default function My24Page() {
             <h1 className="font-display text-4xl sm:text-6xl font-light italic text-obsidian tracking-tight">Your calendar.</h1>
             <p className="text-obsidian/50 text-sm mt-2">Lower your stress. Optimize your hours. Love your day.</p>
           </div>
+          <button
+            type="button"
+            onClick={toggleFeed}
+            className="shrink-0 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.15em] text-gold-dark hover:text-obsidian transition-colors"
+          >
+            <Rss size={12} /> Subscribe
+          </button>
         </div>
+
+        {feedOpen && (
+          <div className="mb-8 p-4 border border-gold/30 bg-white/70 flex flex-col sm:flex-row sm:items-center gap-3">
+            <p className="text-obsidian/50 text-xs sm:flex-1">
+              Add this link in Google, Apple, or Outlook calendar to see My 24 alongside your other events.
+            </p>
+            <div className="flex items-center gap-2">
+              <input
+                readOnly
+                value={feedUrl ?? 'Loading…'}
+                onFocus={(e) => e.target.select()}
+                className="px-3 py-2 border border-obsidian/15 bg-cream/40 text-xs text-obsidian/70 w-full sm:w-64"
+              />
+              <button
+                type="button"
+                onClick={copyFeedUrl}
+                className="shrink-0 px-3 py-2 border border-obsidian/15 hover:border-gold text-obsidian/60 hover:text-obsidian text-[10px] font-black uppercase tracking-[0.15em] transition-colors"
+              >
+                {feedCopied ? 'Copied' : 'Copy'}
+              </button>
+            </div>
+          </div>
+        )}
 
         <MonthCalendar
           month={month}

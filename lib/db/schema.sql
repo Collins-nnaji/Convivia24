@@ -67,6 +67,20 @@ CREATE TABLE IF NOT EXISTS personal_task_invitees (
 );
 CREATE INDEX IF NOT EXISTS idx_task_invitees_task ON personal_task_invitees(task_id);
 
+-- Secure per-invitee response token — backs the public accept/decline link
+-- shared with people who aren't necessarily Convivia24 users.
+ALTER TABLE personal_task_invitees ADD COLUMN IF NOT EXISTS response_token UUID NOT NULL DEFAULT gen_random_uuid();
+CREATE UNIQUE INDEX IF NOT EXISTS idx_task_invitees_response_token ON personal_task_invitees(response_token);
+
+-- One secret per-user token, used to build a read-only ICS feed URL so My 24
+-- can be subscribed to from Google/Apple/Outlook calendar apps.
+CREATE TABLE IF NOT EXISTS calendar_feed_tokens (
+  user_id     TEXT PRIMARY KEY,
+  token       UUID NOT NULL DEFAULT gen_random_uuid(),
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_calendar_feed_tokens_token ON calendar_feed_tokens(token);
+
 -- ═══════════════════════════════════════════════
 -- COMPANION (the learning AI chatbot — chat history + remembered facts)
 -- ═══════════════════════════════════════════════
