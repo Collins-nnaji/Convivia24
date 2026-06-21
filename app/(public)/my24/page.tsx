@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Plus, X, UserPlus } from 'lucide-react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import MonthCalendar from '@/components/calendar/MonthCalendar';
@@ -9,7 +10,7 @@ import MyDayRibbon from '@/components/calendar/MyDayRibbon';
 import DestressButton from '@/components/calendar/DestressButton';
 import { useUser } from '@/components/auth/AuthProvider';
 import { insertRestBuffers, type CalendarItem } from '@/lib/calendar/buffers';
-import { addDays, addMonths, isSameDay, startOfMonth, startOfWeek } from '@/lib/calendar/dates';
+import { addDays, addMonths, dateKey, isSameDay, startOfMonth, startOfWeek } from '@/lib/calendar/dates';
 
 function dayLabel(d: Date) {
   return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -219,13 +220,23 @@ export default function My24Page() {
           </form>
         )}
 
-        {loading ? (
-          <div className="space-y-4">
-            {[0, 1, 2].map((i) => <div key={i} className="h-20 bg-white/50 animate-pulse" />)}
-          </div>
-        ) : (
-          <MyDayRibbon items={dayItems} completingId={completingId} onComplete={complete} />
-        )}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={dateKey(selectedDate)}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+          >
+            {loading ? (
+              <div className="space-y-4">
+                {[0, 1, 2].map((i) => <div key={i} className="h-20 bg-white/50 animate-pulse" />)}
+              </div>
+            ) : (
+              <MyDayRibbon items={dayItems} completingId={completingId} onComplete={complete} />
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       <DestressButton onAccept={applyDestress} />
