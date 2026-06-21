@@ -84,6 +84,17 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_calendar_feed_tokens_token ON calendar_fee
 -- ═══════════════════════════════════════════════
 -- COMPANION (the learning AI chatbot — chat history + remembered facts)
 -- ═══════════════════════════════════════════════
+
+-- A single chat thread. Users can run several in parallel ("New chat").
+CREATE TABLE IF NOT EXISTS companion_conversations (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id       TEXT NOT NULL,
+  title         TEXT,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_companion_conversations_user ON companion_conversations(user_id, updated_at DESC);
+
 CREATE TABLE IF NOT EXISTS companion_messages (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id       TEXT NOT NULL,
@@ -92,6 +103,10 @@ CREATE TABLE IF NOT EXISTS companion_messages (
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_companion_messages_user ON companion_messages(user_id, created_at);
+
+-- Each message belongs to a conversation (nullable for rows created before threads existed).
+ALTER TABLE companion_messages ADD COLUMN IF NOT EXISTS conversation_id UUID;
+CREATE INDEX IF NOT EXISTS idx_companion_messages_conversation ON companion_messages(conversation_id, created_at);
 
 -- One row per remembered fact about a user (preferences, habits, people, goals)
 CREATE TABLE IF NOT EXISTS companion_memory (
