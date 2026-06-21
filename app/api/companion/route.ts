@@ -32,6 +32,59 @@ interface Dashboard {
   schedule?: ScheduleBlock[];
 }
 
+const HIGH_HINTS = /\b(urgent|asap|today|deadline|due|important|must|critical|priority|finish|submit|pay|call|reply|email back)\b/i;
+const LOW_HINTS = /\b(maybe|someday|eventually|later|optional|whenever|at some point|nice to have|if i have time)\b/i;
+const STOP_HINTS = /\b(stop|quit|drop|cancel|avoid|stop doing|say no|too much|overwhelm|distract|procrastinat|scroll)\b/i;
+
+/** Split a free-text "brain dump" into individual task-like phrases. */
+function splitTasks(message: string): string[] {
+  return message
+    .split(/[\n;]|,\s| and | then |•|\d+[.)]\s|- /gi)
+    .map((s) => s.trim().replace(/^(i (need|have|want|should|must) to|i'?m|to)\s+/i, '').trim())
+    .filter((s) => s.length > 2 && s.length < 120)
+    .slice(0, 12);
+}
+
+/**
+ * Heuristic planner used when no AI is configured — turns a plan dump into a
+ * basic prioritised board + a time-blocked schedule for tomorrow, so the
+ * companion is genuinely useful out of the box.
+ */
+function heuristicDashboard(message: string): Dashboard | null {
+  const tasks = splitTasks(message);
+  if (tasks.length < 2) return null;
+
+  const focus: PriorityItem[] = [];
+  const deprioritize: PriorityItem[] = [];
+  const stop: PriorityItem[] = [];
+  for (const t of tasks) {
+    if (STOP_HINTS.test(t)) stop.push({ title: t });
+    else if (LOW_HINTS.test(t)) deprioritize.push({ title: t });
+    else if (HIGH_HINTS.test(t)) focus.push({ title: t, why: 'Looks time-sensitive.' });
+    else (focus.length < 3 ? focus : deprioritize).push({ title: t });
+  }
+
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(9, 0, 0, 0);
+  const schedule: ScheduleBlock[] = focus.slice(0, 4).map((item, i) => {
+    const starts = new Date(tomorrow.getTime() + i * 90 * 60000);
+    const ends = new Date(starts.getTime() + 60 * 60000);
+    return { title: item.title, starts_at: starts.toISOString(), ends_at: ends.toISOString(), priority: 'high' };
+  });
+  const downStart = new Date(tomorrow); downStart.setHours(20, 30, 0, 0);
+  const downEnd = new Date(tomorrow); downEnd.setHours(22, 0, 0, 0);
+  schedule.push({ title: 'Protected downtime', starts_at: downStart.toISOString(), ends_at: downEnd.toISOString(), priority: 'low' });
+
+  return {
+    summary: `Here's a calmer shape for what you're juggling — ${focus.length} to focus on first.`,
+    focus: focus.slice(0, 4),
+    deprioritize: deprioritize.slice(0, 4),
+    stop: stop.slice(0, 4),
+    schedule,
+  };
+}
+
 /**
  * POST /api/companion — send a message to the companion. It remembers facts
  * about the user across conversations and may suggest calendar items (the
@@ -62,9 +115,12 @@ export async function POST(req: NextRequest) {
     const recentTurns = [...history].reverse();
 
     if (!aiConfigured()) {
-      const reply = "I'm listening — once the AI is configured I'll remember more about you and help plan your day, but for now: noted.";
+      const dashboard = heuristicDashboard(message.trim());
+      const reply = dashboard
+        ? "Here's how I'd line that up — focus on the top few first, and I've sketched a plan you can drop into My 24."
+        : "I'm listening — tell me everything you're juggling and I'll sort it into what to focus on, what can wait, and what to drop.";
       await sql`INSERT INTO companion_messages (user_id, role, content) VALUES (${user.id}, 'assistant', ${reply})`;
-      return NextResponse.json({ reply, suggested_tasks: [], dashboard: null });
+      return NextResponse.json({ reply, suggested_tasks: [], dashboard });
     }
 
     const now = new Date().toISOString();
@@ -98,6 +154,7 @@ Only include "suggested_tasks" if they explicitly asked you to schedule one or t
         ...recentTurns.map((m) => ({ role: m.role as 'user' | 'assistant', content: String(m.content) })),
       ],
       temperature: 0.7,
+      maxTokens: 1600,
       json: true,
     });
 
@@ -105,7 +162,13 @@ Only include "suggested_tasks" if they explicitly asked you to schedule one or t
     try {
       parsed = JSON.parse(raw);
     } catch {
-      parsed = { reply: raw || "I'm here." };
+      // Be forgiving if the model wraps JSON in prose or code fences.
+      const match = raw.match(/\{[\s\S]*\}/);
+      try {
+        parsed = match ? JSON.parse(match[0]) : { reply: raw || "I'm here." };
+      } catch {
+        parsed = { reply: raw || "I'm here." };
+      }
     }
 
     const reply = parsed.reply || "I'm here.";
@@ -141,6 +204,9 @@ Only include "suggested_tasks" if they explicitly asked you to schedule one or t
           .map((b) => ({ title: String(b.title).slice(0, 140), starts_at: b.starts_at, ends_at: b.ends_at, priority: b.priority || 'normal' })),
       };
     }
+
+    // Safety net: the user clearly dumped a list but the model didn't organise it.
+    if (!dashboard) dashboard = heuristicDashboard(message.trim());
 
     return NextResponse.json({ reply, suggested_tasks: suggestedTasks, dashboard });
   } catch (err) {
