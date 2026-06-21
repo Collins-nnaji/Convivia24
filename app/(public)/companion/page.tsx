@@ -141,9 +141,9 @@ export default function CompanionPage() {
   }
 
   return (
-    <section className="zen-ribbon-bg min-h-[calc(100dvh-4rem)] -mt-16 pt-16 flex">
+    <section className="flex h-[calc(100dvh-4rem)] overflow-hidden bg-paper">
       {/* Histories — desktop rail */}
-      <aside className="hidden md:flex w-64 shrink-0 border-r border-obsidian/10 min-h-0">
+      <aside className="hidden md:flex w-72 shrink-0 border-r border-obsidian/10">
         <CompanionSidebar
           conversations={conversations}
           activeId={activeId}
@@ -179,8 +179,8 @@ export default function CompanionPage() {
       </AnimatePresence>
 
       {/* Main column */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <div className="shrink-0 flex items-center gap-3 px-4 sm:px-6 pt-5 pb-3 border-b border-obsidian/10">
+      <div className="flex-1 flex flex-col min-w-0 bg-paper">
+        <div className="shrink-0 flex items-center gap-3 px-4 sm:px-6 py-3 border-b border-obsidian/10 bg-white/70 backdrop-blur-sm">
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
@@ -207,9 +207,12 @@ export default function CompanionPage() {
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-3xl w-full mx-auto px-5 sm:px-8 py-5 space-y-4">
             {messages.length === 0 && !sending && (
-              <p className="text-obsidian/40 text-sm italic font-display text-lg pt-10 text-center">
-                Dump your plans, tasks and worries here — &ldquo;Here&rsquo;s everything on my plate this week…&rdquo; — and I&rsquo;ll sort what to focus on, what can wait, and what to drop, asking questions as we go.
-              </p>
+              <div className="pt-10 text-center max-w-md mx-auto">
+                <p className="font-display text-2xl italic text-obsidian leading-snug">Tell me what&rsquo;s on your plate.</p>
+                <p className="text-obsidian/45 text-sm mt-2 leading-relaxed">
+                  Dump your plans, tasks and worries — and I&rsquo;ll sort what to focus on, what can wait, and what to drop, asking questions as we go.
+                </p>
+              </div>
             )}
             {messages.map((m, i) => (
               <div key={m.id ?? i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -231,7 +234,7 @@ export default function CompanionPage() {
                 {suggestions.map((t) => {
                   const added = addedTitles.has(t.title);
                   return (
-                    <div key={t.title} className="flex items-center justify-between gap-3 p-3 border border-champagne/30 bg-champagne/5">
+                    <div key={t.title} className="flex items-center justify-between gap-3 p-3 rounded-xl border border-champagne/30 bg-champagne/5">
                       <div>
                         <p className="font-display italic text-obsidian">{t.title}</p>
                         <p className="text-[11px] text-obsidian/50">{new Date(t.starts_at).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
@@ -239,7 +242,7 @@ export default function CompanionPage() {
                       <button
                         onClick={() => addSuggestion(t)}
                         disabled={added}
-                        className="shrink-0 flex items-center gap-1.5 px-3 py-2 text-[10px] font-black uppercase tracking-[0.15em] bg-gold hover:bg-gold-light disabled:bg-obsidian/10 disabled:text-obsidian/40 text-obsidian transition-colors"
+                        className="btn-brand shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-[0.15em] disabled:bg-obsidian/10 disabled:text-obsidian/40"
                       >
                         {added ? <><Check size={12} /> Added</> : <><Plus size={12} /> Add to My 24</>}
                       </button>
@@ -252,7 +255,7 @@ export default function CompanionPage() {
           </div>
         </div>
 
-        <form onSubmit={send} className="shrink-0 border-t border-obsidian/10 bg-white/60">
+        <form onSubmit={send} className="shrink-0 border-t border-obsidian/10 bg-white mb-16 md:mb-0">
           <div className="max-w-3xl w-full mx-auto px-5 sm:px-8 py-4 flex gap-3">
             <input
               ref={inputRef}
