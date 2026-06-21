@@ -23,10 +23,12 @@ export default function UpcomingPanel({
   items,
   onSelectDate,
   onAddSeed,
+  hideHeader = false,
 }: {
   items: CalendarItem[];
   onSelectDate: (d: Date) => void;
   onAddSeed?: (day: Date, seed: DaySeed) => Promise<void> | void;
+  hideHeader?: boolean;
 }) {
   const today = new Date();
   const days = Array.from({ length: DAYS_AHEAD }, (_, i) => addDays(today, i + 1));
@@ -41,19 +43,21 @@ export default function UpcomingPanel({
 
   return (
     <div className="flex-1 min-h-0 overflow-y-auto bg-white">
-      <div className="sticky top-0 z-10 px-3 py-2.5 border-b border-obsidian/10 bg-white/95 backdrop-blur-sm">
-        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-obsidian/45 flex items-center gap-1.5">
-          <CalendarClock size={12} className="text-gold" /> Next few days
-        </p>
-        <div className="flex items-center gap-3 mt-1.5">
-          {(['high', 'normal', 'low'] as const).map((p) => (
-            <span key={p} className="flex items-center gap-1 text-[9px] uppercase tracking-wide text-obsidian/40">
-              <span className={`w-1.5 h-1.5 rounded-full ${PRIORITY_STYLE[p].dot}`} />
-              {PRIORITY_STYLE[p].label}
-            </span>
-          ))}
+      {!hideHeader && (
+        <div className="sticky top-0 z-10 px-3 py-2.5 border-b border-obsidian/10 bg-white/95 backdrop-blur-sm">
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-obsidian/45 flex items-center gap-1.5">
+            <CalendarClock size={12} className="text-gold" /> Next few days
+          </p>
+          <div className="flex items-center gap-3 mt-1.5">
+            {(['high', 'normal', 'low'] as const).map((p) => (
+              <span key={p} className="flex items-center gap-1 text-[9px] uppercase tracking-wide text-obsidian/40">
+                <span className={`w-1.5 h-1.5 rounded-full ${PRIORITY_STYLE[p].dot}`} />
+                {PRIORITY_STYLE[p].label}
+              </span>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="divide-y divide-obsidian/8">
         {days.map((day) => {
