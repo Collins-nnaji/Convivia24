@@ -12,7 +12,7 @@ export default function Footer() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3 min-w-0">
             <Link href="/" className="hover:opacity-80 transition-opacity shrink-0">
-              <img src="/convivia24.png" alt="Convivia24" className="h-5 w-auto object-contain" />
+              <img src="/convivia24.png" alt="Convivia24" className="h-5 w-auto object-contain" style={{ filter: 'brightness(0)' }} />
             </Link>
             <span className="hidden sm:block w-px h-4 bg-obsidian/10" aria-hidden />
             <p className="hidden sm:block text-[10px] text-obsidian/45 truncate">

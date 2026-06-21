@@ -51,7 +51,7 @@ export default function Navigation() {
         <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
 
           <Link href="/" className="flex items-center gap-3 shrink-0 group" aria-label="Convivia24">
-            <img src="/convivia24.png" alt="Convivia24" className="h-7 w-auto" />
+            <img src="/convivia24.png" alt="Convivia24" className="h-7 w-auto" style={{ filter: 'brightness(0)' }} />
             <span className="hidden sm:flex items-center gap-1.5">
               <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
               <span className="text-[8px] font-black uppercase tracking-[0.3em] text-obsidian/40">Take Back Your 24</span>

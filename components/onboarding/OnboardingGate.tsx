@@ -38,12 +38,19 @@ export default function OnboardingGate() {
   }, []);
 
   const complete = useCallback(async (answers: ProfileData) => {
-    await fetch('/api/profile', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ answers }),
-    });
-    setShow(false);
+    // Never let a save hiccup bubble up as a client-side exception — always
+    // close the flow gracefully.
+    try {
+      await fetch('/api/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answers }),
+      });
+    } catch {
+      /* offline / transient — the answers can be re-entered later */
+    } finally {
+      setShow(false);
+    }
   }, []);
 
   if (!user) return null;

@@ -15,27 +15,26 @@ module.exports = {
             100: '#141414',
             200: '#111111',
           },
-          // Brand accent, remapped from gold → red. Existing `gold*` class names
-          // across the app now resolve to red so the whole UI rebrands at once.
+          // Warm golden brand accent.
           gold: {
-            DEFAULT: '#C81E2E',
-            light:   '#E23B4A',
-            dark:    '#A11525',
-            muted:   '#7A1018',
+            DEFAULT: '#c9a84c',
+            light:   '#e2c97e',
+            dark:    '#a07c28',
+            muted:   '#8b6914',
           },
-          // Surfaces, remapped from cream → white.
+          // Warm cream surfaces.
           cream: {
-            DEFAULT: '#ffffff',
-            base:    '#ffffff',
-            dark:    '#f5f5f5',
-            muted:   '#e7e5e4',
+            DEFAULT: '#f5f0e8',
+            base:    '#FDFBF7',
+            dark:    '#ede5d4',
+            muted:   '#d9cebb',
           },
-          // Secondary accent (rest / soft highlights) — a muted rose-red.
-          champagne: '#C75D63',
-          // Page background, remapped from off-white → pure white.
+          // Secondary warm accent.
+          champagne: '#C5A043',
+          // Warm off-white page background.
           paper: {
-            DEFAULT: '#ffffff',
-            dark:    '#fafafa',
+            DEFAULT: '#faf7f1',
+            dark:    '#f1ece2',
           },
         },
         fontFamily: {
