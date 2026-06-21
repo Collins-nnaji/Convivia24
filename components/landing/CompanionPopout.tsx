@@ -2,31 +2,6 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
-
-function PopoutCard({ className = '' }: { className?: string }) {
-  return (
-    <div className={`relative bg-obsidian border border-gold/30 shadow-xl shadow-obsidian/25 p-5 sm:p-6 ${className}`}>
-      <span
-        className="absolute -left-2 top-10 w-3 h-3 rotate-45 bg-obsidian border-l border-b border-gold/30 hidden lg:block"
-        aria-hidden
-      />
-      <p className="text-[9px] font-black uppercase tracking-[0.25em] text-gold mb-2.5">Companion</p>
-      <p className="font-display text-xl italic text-cream leading-snug mb-3">
-        &ldquo;What kind of day do you want tomorrow?&rdquo;
-      </p>
-      <p className="text-cream/80 text-sm leading-relaxed mb-5">
-        Plans around what matters to you — one conversation at a time.
-      </p>
-      <Link
-        href="/companion"
-        className="inline-flex items-center justify-center gap-2 w-full px-4 py-3 bg-gold hover:bg-gold-light text-obsidian text-[10px] font-black uppercase tracking-[0.15em] transition-colors"
-      >
-        <Sparkles size={13} /> Talk to your Companion
-      </Link>
-    </div>
-  );
-}
 
 export default function CompanionPopout() {
   return (
@@ -34,9 +9,39 @@ export default function CompanionPopout() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.55, ease: 'easeOut', delay: 0.5 }}
-      className="w-full lg:w-[260px] lg:shrink-0 pointer-events-auto"
+      className="relative lg:absolute lg:bottom-0 lg:right-0 lg:translate-x-8 lg:translate-y-10 w-full sm:w-[340px] pointer-events-auto z-10"
     >
-      <PopoutCard />
+      <div className="rounded-2xl bg-obsidian shadow-2xl shadow-obsidian/30 p-6">
+        <div className="flex items-center justify-between mb-4">
+          <span className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.25em] text-gold">
+            <span className="w-4 h-4 rounded-full bg-gold/90" />
+            Companion
+          </span>
+          <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-white/40">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            Online
+          </span>
+        </div>
+
+        <p className="font-display text-lg italic text-cream leading-snug mb-4">
+          &ldquo;How do you want tomorrow to feel?&rdquo;
+        </p>
+
+        <div className="flex items-center gap-2">
+          <Link
+            href="/companion"
+            className="flex-1 inline-flex items-center justify-center rounded-lg px-3 py-2.5 bg-white/10 hover:bg-white/15 text-cream/90 text-[10px] font-black uppercase tracking-[0.1em] transition-colors text-center"
+          >
+            A slow one
+          </Link>
+          <Link
+            href="/companion"
+            className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 bg-gold hover:bg-gold-light text-obsidian text-[10px] font-black uppercase tracking-[0.1em] transition-colors"
+          >
+            Plan it <span aria-hidden>→</span>
+          </Link>
+        </div>
+      </div>
     </motion.div>
   );
 }
