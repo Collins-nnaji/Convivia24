@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Plus, X, UserPlus, Rss } from 'lucide-react';
+import { Plus, X, UserPlus, Rss, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
 import MonthCalendar from '@/components/calendar/MonthCalendar';
+import WeekStrip from '@/components/calendar/WeekStrip';
 import MyDayRibbon from '@/components/calendar/MyDayRibbon';
 import DestressButton from '@/components/calendar/DestressButton';
 import DayPlanner from '@/components/calendar/DayPlanner';
@@ -14,6 +15,7 @@ import ReflectionPrompt from '@/components/calendar/ReflectionPrompt';
 import { useUser } from '@/components/auth/AuthProvider';
 import { insertRestBuffers, type CalendarItem } from '@/lib/calendar/buffers';
 import { addDays, addMonths, dateKey, isSameDay, startOfMonth, startOfWeek } from '@/lib/calendar/dates';
+import { seedToTimes, type DaySeed } from '@/lib/calendar/seeds';
 
 function dayLabel(d: Date) {
   return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
@@ -42,6 +44,14 @@ export default function My24Page() {
   const [feedOpen, setFeedOpen] = useState(false);
   const [feedUrl, setFeedUrl] = useState<string | null>(null);
   const [feedCopied, setFeedCopied] = useState(false);
+  const [calendarCollapsed, setCalendarCollapsed] = useState(false);
+
+  // Default to the compact week strip on small screens for an app-like feel.
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches) {
+      setCalendarCollapsed(true);
+    }
+  }, []);
 
   const load = useCallback(async (forMonth: Date) => {
     setLoading(true);
@@ -137,6 +147,16 @@ export default function My24Page() {
     load(month);
   }
 
+  async function addSeed(day: Date, seed: DaySeed) {
+    const { starts_at, ends_at } = seedToTimes(day, seed);
+    await fetch('/api/calendar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: seed.title, starts_at, ends_at, priority: seed.priority }),
+    });
+    load(month);
+  }
+
   async function acceptDayPlan(blocks: { title: string; starts_at: string; ends_at: string; priority: 'low' | 'normal' | 'high'; notes?: string }[]) {
     await Promise.all(blocks.map((b) => fetch('/api/calendar', {
       method: 'POST',
@@ -220,32 +240,64 @@ export default function My24Page() {
 
       <DayPlanner onAccept={acceptDayPlan} />
 
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.15fr)_minmax(0,0.85fr)] min-h-0 border-t border-obsidian/10">
-        <div className="border-b lg:border-b-0 lg:border-r border-obsidian/10 min-h-0">
-          <MonthCalendar
-            month={month}
-            items={monthItems}
-            selectedDate={selectedDate}
-            onSelectDate={selectDate}
-            onPrevMonth={() => setMonth((m) => addMonths(m, -1))}
-            onNextMonth={() => setMonth((m) => addMonths(m, 1))}
-            onToday={goToday}
-          />
-        </div>
+      <div className={`flex-1 grid grid-cols-1 min-h-0 border-t border-obsidian/10 ${
+        calendarCollapsed
+          ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,0.5fr)]'
+          : 'lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.15fr)_minmax(0,0.85fr)]'
+      }`}>
+        {!calendarCollapsed && (
+          <div className="border-b lg:border-b-0 lg:border-r border-obsidian/10 min-h-0">
+            <MonthCalendar
+              month={month}
+              items={monthItems}
+              selectedDate={selectedDate}
+              onSelectDate={selectDate}
+              onPrevMonth={() => setMonth((m) => addMonths(m, -1))}
+              onNextMonth={() => setMonth((m) => addMonths(m, 1))}
+              onToday={goToday}
+            />
+          </div>
+        )}
 
         <div className="flex flex-col min-h-0 overflow-y-auto">
-          <div className="sticky top-0 z-10 flex items-center justify-between gap-2 px-3 sm:px-4 py-2 border-b border-obsidian/10 bg-cream-base/95 backdrop-blur-sm">
-            <p className="text-sm font-medium text-obsidian">
-              {isSameDay(selectedDate, new Date()) ? 'Today' : dayLabel(selectedDate)}
-            </p>
+          <div className="sticky top-0 z-10 flex items-center justify-between gap-2 px-3 sm:px-4 py-2 border-b border-obsidian/10 bg-white/95 backdrop-blur-sm">
+            <div className="flex items-center gap-2 min-w-0">
+              <button
+                onClick={() => setCalendarCollapsed((v) => !v)}
+                aria-label={calendarCollapsed ? 'Show full calendar' : 'Collapse calendar'}
+                className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-lg text-obsidian/45 hover:text-obsidian hover:bg-obsidian/[0.04] transition-colors"
+              >
+                <CalendarDays size={15} />
+                {calendarCollapsed ? <ChevronDown size={13} /> : <ChevronUp size={13} />}
+              </button>
+              <p className="text-sm font-semibold text-obsidian truncate">
+                {isSameDay(selectedDate, new Date()) ? 'Today' : dayLabel(selectedDate)}
+              </p>
+            </div>
             <button
               onClick={openAddForm}
               aria-label="Add to this day"
-              className="shrink-0 w-8 h-8 rounded-full bg-obsidian hover:bg-obsidian-50 text-cream flex items-center justify-center transition-colors"
+              className="btn-brand shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
             >
               {adding ? <X size={15} /> : <Plus size={15} />}
             </button>
           </div>
+
+          {calendarCollapsed && (
+            <div className="border-b border-obsidian/10 bg-white/60">
+              <div className="flex items-center justify-between px-3 sm:px-4 pt-2 -mb-0.5">
+                <span className="text-xs font-semibold text-obsidian">
+                  {selectedDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
+                </span>
+                <div className="flex items-center gap-0.5">
+                  <button onClick={() => selectDate(addDays(selectedDate, -7))} aria-label="Previous week" className="w-7 h-7 flex items-center justify-center rounded-full text-obsidian/40 hover:text-obsidian hover:bg-obsidian/[0.04] transition-colors"><ChevronLeft size={14} /></button>
+                  <button onClick={goToday} className="px-2.5 h-7 text-[10px] font-black uppercase tracking-[0.12em] text-gold-dark hover:text-obsidian rounded-full transition-colors">Today</button>
+                  <button onClick={() => selectDate(addDays(selectedDate, 7))} aria-label="Next week" className="w-7 h-7 flex items-center justify-center rounded-full text-obsidian/40 hover:text-obsidian hover:bg-obsidian/[0.04] transition-colors"><ChevronRight size={14} /></button>
+                </div>
+              </div>
+              <WeekStrip selectedDate={selectedDate} items={monthItems} onSelectDate={selectDate} />
+            </div>
+          )}
 
           {adding && (
             <form onSubmit={addTask} className="px-3 sm:px-4 py-3 border-b border-obsidian/10 bg-white/80 space-y-2">
@@ -283,7 +335,7 @@ export default function My24Page() {
                 </div>
               </div>
 
-              <button type="submit" className="w-full py-2 bg-gold hover:bg-gold-light text-obsidian text-xs font-semibold transition-colors">
+              <button type="submit" className="btn-brand w-full py-2.5 text-xs font-black uppercase tracking-[0.12em]">
                 Add
               </button>
             </form>
@@ -303,17 +355,28 @@ export default function My24Page() {
                     {[0, 1, 2].map((i) => <div key={i} className="h-14 bg-white/50 animate-pulse" />)}
                   </div>
                 ) : (
-                  <MyDayRibbon items={dayItems} completingId={completingId} onComplete={complete} />
+                  <MyDayRibbon
+                    items={dayItems}
+                    completingId={completingId}
+                    onComplete={complete}
+                    selectedDate={selectedDate}
+                    onAddSuggestion={(seed) => addSeed(selectedDate, seed)}
+                  />
                 )}
               </motion.div>
             </AnimatePresence>
           </div>
         </div>
 
-        <aside className="hidden xl:flex flex-col gap-0 border-l border-obsidian/10 min-h-0">
-          <UpcomingPanel items={monthItems} onSelectDate={selectDate} />
+        <aside className={`flex-col gap-0 border-l border-obsidian/10 min-h-0 ${calendarCollapsed ? 'hidden lg:flex' : 'hidden xl:flex'}`}>
+          <UpcomingPanel items={monthItems} onSelectDate={selectDate} onAddSeed={addSeed} />
           <PeoplePanel />
         </aside>
+      </div>
+
+      {/* Upcoming — always visible on mobile, app-style, below the day */}
+      <div className="lg:hidden border-t border-obsidian/10">
+        <UpcomingPanel items={monthItems} onSelectDate={selectDate} onAddSeed={addSeed} />
       </div>
 
       <DestressButton onAccept={applyDestress} />

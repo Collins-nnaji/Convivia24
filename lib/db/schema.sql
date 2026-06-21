@@ -133,6 +133,17 @@ CREATE TABLE IF NOT EXISTS people (
 );
 CREATE INDEX IF NOT EXISTS idx_people_user ON people(user_id);
 
+-- ═══════════════════════════════════════════════
+-- USER PROFILE (onboarding answers — shapes how the companion plans)
+-- ═══════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS user_profiles (
+  user_id       TEXT PRIMARY KEY,
+  data          JSONB NOT NULL DEFAULT '{}'::jsonb,
+  onboarded_at  TIMESTAMPTZ,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- One evening reflection per day — feeds the companion's memory.
 CREATE TABLE IF NOT EXISTS daily_reflections (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),

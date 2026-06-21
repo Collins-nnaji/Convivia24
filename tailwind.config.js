@@ -18,10 +18,10 @@ module.exports = {
           // Brand accent, remapped from gold → red. Existing `gold*` class names
           // across the app now resolve to red so the whole UI rebrands at once.
           gold: {
-            DEFAULT: '#D62828',
-            light:   '#E63946',
-            dark:    '#9D1C1C',
-            muted:   '#7A1515',
+            DEFAULT: '#C81E2E',
+            light:   '#E23B4A',
+            dark:    '#A11525',
+            muted:   '#7A1018',
           },
           // Surfaces, remapped from cream → white.
           cream: {

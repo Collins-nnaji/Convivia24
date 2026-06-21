@@ -132,7 +132,7 @@ export default function CompanionPage() {
       <section className="zen-ribbon-bg min-h-[70vh] flex items-center justify-center px-6 text-center">
         <div>
           <p className="font-display text-3xl italic text-obsidian mb-4">Sign in to talk to your companion.</p>
-          <Link href="/signin?next=/companion" className="inline-flex items-center gap-2 px-7 py-3.5 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.2em] transition-colors">
+          <Link href="/signin?next=/companion" className="btn-brand inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-[11px] font-black uppercase tracking-[0.2em]">
             Sign in
           </Link>
         </div>
@@ -213,8 +213,10 @@ export default function CompanionPage() {
             )}
             {messages.map((m, i) => (
               <div key={m.id ?? i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] px-4 py-3 text-sm leading-relaxed ${
-                  m.role === 'user' ? 'bg-obsidian text-cream' : 'bg-white/80 border border-gold/20 text-obsidian'
+                <div className={`max-w-[80%] px-4 py-3 text-sm leading-relaxed shadow-sm ${
+                  m.role === 'user'
+                    ? 'brand-gradient text-white rounded-2xl rounded-br-md'
+                    : 'bg-white border border-obsidian/10 text-obsidian rounded-2xl rounded-bl-md'
                 }`}>
                   {m.content}
                 </div>
@@ -257,9 +259,9 @@ export default function CompanionPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Talk to me…"
-              className="flex-1 px-4 py-3 border border-obsidian/15 bg-white text-sm focus:border-gold outline-none"
+              className="flex-1 px-4 py-3 rounded-full border border-obsidian/15 bg-white text-sm focus:border-gold outline-none transition-colors"
             />
-            <button type="submit" disabled={sending} className="px-5 py-3 bg-gold hover:bg-gold-light disabled:opacity-50 text-obsidian transition-colors">
+            <button type="submit" disabled={sending} className="btn-brand w-12 h-12 shrink-0 rounded-full flex items-center justify-center">
               <Send size={16} />
             </button>
           </div>

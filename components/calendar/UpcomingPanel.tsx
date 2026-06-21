@@ -1,34 +1,18 @@
 'use client';
 
-import { CalendarClock, Sparkles } from 'lucide-react';
+import { useState } from 'react';
+import { CalendarClock, Plus, Check } from 'lucide-react';
 import type { CalendarItem } from '@/lib/calendar/buffers';
 import { addDays, dateKey, isSameDay } from '@/lib/calendar/dates';
+import { seedsForDay, seedToTimes, type DaySeed } from '@/lib/calendar/seeds';
 
 /** How many days ahead the panel previews. */
 const DAYS_AHEAD = 5;
 
-/** Colour coding shared with the rest of My 24 — by priority. */
 const PRIORITY_STYLE: Record<CalendarItem['priority'], { dot: string; chip: string; label: string }> = {
-  high:   { dot: 'bg-gold',        chip: 'border-gold/40 bg-gold/10 text-obsidian',         label: 'Focus' },
-  normal: { dot: 'bg-champagne',   chip: 'border-champagne/40 bg-champagne/10 text-obsidian', label: 'Planned' },
-  low:    { dot: 'bg-obsidian/30', chip: 'border-obsidian/15 bg-obsidian/[0.03] text-obsidian/70', label: 'Easy' },
-};
-
-interface Seed { title: string; priority: CalendarItem['priority']; time: string }
-
-/**
- * Seeded sample activities shown as placeholders when a day has nothing real
- * planned yet — gives the panel life and shows what the days could hold.
- * Deterministic per weekday so they don't reshuffle on every render.
- */
-const SEED_BY_WEEKDAY: Record<number, Seed[]> = {
-  0: [{ title: 'Slow morning, no screens', priority: 'low', time: '09:30' }, { title: 'Call family', priority: 'normal', time: '17:00' }],
-  1: [{ title: 'Deep work block', priority: 'high', time: '09:00' }, { title: 'Evening wind-down', priority: 'low', time: '20:30' }],
-  2: [{ title: 'Workout', priority: 'normal', time: '07:30' }, { title: 'Focused execution', priority: 'high', time: '14:00' }],
-  3: [{ title: 'Team catch-up', priority: 'normal', time: '11:00' }, { title: 'Read & reflect', priority: 'low', time: '21:00' }],
-  4: [{ title: 'Wrap up the week', priority: 'high', time: '10:00' }, { title: 'Dinner with friends', priority: 'normal', time: '19:30' }],
-  5: [{ title: 'Long walk outside', priority: 'low', time: '10:00' }, { title: 'Plan the week ahead', priority: 'normal', time: '18:00' }],
-  6: [{ title: 'Lie-in & breakfast', priority: 'low', time: '10:00' }, { title: 'Something just for you', priority: 'normal', time: '15:00' }],
+  high:   { dot: 'bg-gold',        chip: 'border-gold/40 bg-gold/[0.07] text-obsidian',          label: 'Focus' },
+  normal: { dot: 'bg-champagne',   chip: 'border-champagne/40 bg-champagne/[0.08] text-obsidian', label: 'Planned' },
+  low:    { dot: 'bg-obsidian/30', chip: 'border-obsidian/12 bg-obsidian/[0.02] text-obsidian/70', label: 'Easy' },
 };
 
 function timeLabel(iso: string) {
@@ -38,12 +22,22 @@ function timeLabel(iso: string) {
 export default function UpcomingPanel({
   items,
   onSelectDate,
+  onAddSeed,
 }: {
   items: CalendarItem[];
   onSelectDate: (d: Date) => void;
+  onAddSeed?: (day: Date, seed: DaySeed) => Promise<void> | void;
 }) {
   const today = new Date();
   const days = Array.from({ length: DAYS_AHEAD }, (_, i) => addDays(today, i + 1));
+  const [addedKeys, setAddedKeys] = useState<Set<string>>(new Set());
+
+  async function addSeed(day: Date, seed: DaySeed) {
+    const key = `${dateKey(day)}-${seed.title}`;
+    if (addedKeys.has(key) || !onAddSeed) return;
+    await onAddSeed(day, seed);
+    setAddedKeys((s) => new Set(s).add(key));
+  }
 
   return (
     <div className="flex-1 min-h-0 overflow-y-auto bg-white">
@@ -66,7 +60,7 @@ export default function UpcomingPanel({
           const real = items
             .filter((i) => i.status === 'active' && !i.is_rest_block && isSameDay(new Date(i.starts_at), day))
             .sort((a, b) => +new Date(a.starts_at) - +new Date(b.starts_at));
-          const seeds = SEED_BY_WEEKDAY[day.getDay()] ?? [];
+          const seeds = seedsForDay(day);
 
           return (
             <div key={dateKey(day)} className="px-3 py-2.5">
@@ -87,7 +81,7 @@ export default function UpcomingPanel({
                 {real.map((it) => {
                   const s = PRIORITY_STYLE[it.priority];
                   return (
-                    <li key={it.id} className={`flex items-center gap-2 px-2 py-1.5 border text-xs ${s.chip}`}>
+                    <li key={it.id} className={`flex items-center gap-2 px-2 py-1.5 rounded-lg border text-xs ${s.chip}`}>
                       <span className={`shrink-0 w-1.5 h-1.5 rounded-full ${s.dot}`} />
                       <span className="font-medium truncate">{it.title}</span>
                       <span className="ml-auto shrink-0 text-[10px] text-obsidian/40">{timeLabel(it.starts_at)}</span>
@@ -95,18 +89,32 @@ export default function UpcomingPanel({
                   );
                 })}
 
-                {/* Seeded placeholders — clearly dashed/ghosted so they read as ideas, not commitments. */}
+                {/* Seeded ideas — dashed, with one-tap add. */}
                 {seeds.map((seed, i) => {
+                  const key = `${dateKey(day)}-${seed.title}`;
+                  const added = addedKeys.has(key);
                   const s = PRIORITY_STYLE[seed.priority];
                   return (
                     <li
                       key={`seed-${i}`}
-                      className="flex items-center gap-2 px-2 py-1.5 border border-dashed border-obsidian/15 bg-transparent text-xs text-obsidian/45"
+                      className="group flex items-center gap-2 px-2 py-1.5 rounded-lg border border-dashed border-obsidian/15 bg-transparent text-xs text-obsidian/45"
                     >
                       <span className={`shrink-0 w-1.5 h-1.5 rounded-full ${s.dot} opacity-50`} />
                       <span className="truncate italic">{seed.title}</span>
-                      <Sparkles size={10} className="shrink-0 text-gold/40" />
                       <span className="ml-auto shrink-0 text-[10px] text-obsidian/30">{seed.time}</span>
+                      {onAddSeed && (
+                        <button
+                          type="button"
+                          onClick={() => addSeed(day, seed)}
+                          disabled={added}
+                          aria-label={added ? 'Added' : `Add ${seed.title}`}
+                          className={`shrink-0 w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
+                            added ? 'text-gold-dark' : 'text-obsidian/25 hover:text-gold hover:bg-gold/10'
+                          }`}
+                        >
+                          {added ? <Check size={12} /> : <Plus size={12} />}
+                        </button>
+                      )}
                     </li>
                   );
                 })}
@@ -117,7 +125,7 @@ export default function UpcomingPanel({
       </div>
 
       <p className="px-3 py-3 text-[10px] text-obsidian/35 italic border-t border-obsidian/8">
-        Dashed items are suggestions to fill your days — tap a date to plan it.
+        Dashed items are gentle suggestions — tap + to add one, or tap a date to plan it.
       </p>
     </div>
   );
