@@ -8,7 +8,7 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: #faf7f1;
+  background: #ffffff;
 }
 
 /* Custom Utilities */
@@ -37,17 +37,17 @@ body {
 
 /* Selection */
 ::selection {
-  background: #c9a84c;
-  color: #0a0a0a;
+  background: #D62828;
+  color: #ffffff;
 }
 
-/* Gold scrollbar */
+/* Red scrollbar on a light track */
 ::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: #0a0a0a; }
-::-webkit-scrollbar-thumb { background: #c9a84c; }
-::-webkit-scrollbar-thumb:hover { background: #e2c97e; }
+::-webkit-scrollbar-track { background: #f5f5f5; }
+::-webkit-scrollbar-thumb { background: #D62828; }
+::-webkit-scrollbar-thumb:hover { background: #9D1C1C; }
 
-/* My 24 — calm vertical canvas, background drifts like the sky as you scroll */
+/* My 24 / Companion — clean white canvas */
 .zen-ribbon-bg {
-  background: linear-gradient(180deg, #FDFBF7 0%, #FBF6EC 35%, #F6EEDD 70%, #F1E6CC 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #fdfdfd 50%, #fafafa 100%);
 }
