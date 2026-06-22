@@ -1,10 +1,7 @@
--- Convivia24 — The Mindful Calendar
--- Schema: a single personal calendar ("My 24") + the Companion's memory.
+-- Convivia24 — Drop all old tables and create only the inquiries table
 -- Run: npx tsx lib/db/migrate.ts
 
--- ═══════════════════════════════════════════════
--- CLEAN SLATE: drop tables from earlier app concepts
--- ═══════════════════════════════════════════════
+-- Drop old sales-firm tables (reverse dependency order)
 DROP TABLE IF EXISTS client_users CASCADE;
 DROP TABLE IF EXISTS listings CASCADE;
 DROP TABLE IF EXISTS audit_leads CASCADE;
@@ -13,225 +10,57 @@ DROP TABLE IF EXISTS messages CASCADE;
 DROP TABLE IF EXISTS pipeline_deals CASCADE;
 DROP TABLE IF EXISTS clients CASCADE;
 DROP TABLE IF EXISTS app_users CASCADE;
+
+-- Drop old enquiries table from previous era
 DROP TABLE IF EXISTS enquiries CASCADE;
+
+-- Drop old misc tables
 DROP TABLE IF EXISTS bookings CASCADE;
 DROP TABLE IF EXISTS businesses CASCADE;
-DROP TABLE IF EXISTS menu_items CASCADE;
-DROP TABLE IF EXISTS menu_categories CASCADE;
-DROP TABLE IF EXISTS reservations CASCADE;
-DROP TABLE IF EXISTS convivium_members CASCADE;
-DROP TABLE IF EXISTS tickets CASCADE;
-DROP TABLE IF EXISTS ticket_types CASCADE;
-DROP TABLE IF EXISTS orders CASCADE;
-DROP TABLE IF EXISTS events CASCADE;
-DROP TABLE IF EXISTS organizers CASCADE;
-DROP TABLE IF EXISTS inquiries CASCADE;
-DROP TABLE IF EXISTS waitlist CASCADE;
-DROP TABLE IF EXISTS uploads CASCADE;
+DROP TABLE IF EXISTS cleaning_checklists CASCADE;
+DROP TABLE IF EXISTS compliance_logs CASCADE;
+DROP TABLE IF EXISTS equipment CASCADE;
+DROP TABLE IF EXISTS invoices CASCADE;
+DROP TABLE IF EXISTS notifications CASCADE;
+DROP TABLE IF EXISTS reviews CASCADE;
+DROP TABLE IF EXISTS security_incidents CASCADE;
+DROP TABLE IF EXISTS security_patrol_logs CASCADE;
+DROP TABLE IF EXISTS security_patrol_routes CASCADE;
+DROP TABLE IF EXISTS service_bundles CASCADE;
+DROP TABLE IF EXISTS services CASCADE;
+DROP TABLE IF EXISTS shift_schedules CASCADE;
+DROP TABLE IF EXISTS staff_assignments CASCADE;
+DROP TABLE IF EXISTS training_records CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS signup_invites CASCADE;
 
--- ═══════════════════════════════════════════════
--- PERSONAL TASKS ("My 24" — manual items + AI rest buffers)
--- ═══════════════════════════════════════════════
-CREATE TABLE IF NOT EXISTS personal_tasks (
+-- Create the only table we need
+CREATE TABLE IF NOT EXISTS inquiries (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id       TEXT NOT NULL,
-  title         TEXT NOT NULL,
-  starts_at     TIMESTAMPTZ NOT NULL,
-  ends_at       TIMESTAMPTZ NOT NULL,
-  priority      TEXT NOT NULL DEFAULT 'normal'
-                  CHECK (priority IN ('low','normal','high')),
-  kind          TEXT NOT NULL DEFAULT 'task'
-                  CHECK (kind IN ('task','event','gathering')),
-  location      TEXT,
-  notes         TEXT,
-  is_rest_block BOOLEAN NOT NULL DEFAULT false,
-  source        TEXT NOT NULL DEFAULT 'manual'
-                  CHECK (source IN ('manual','ai_buffer','ai_destress')),
-  status        TEXT NOT NULL DEFAULT 'active'
-                  CHECK (status IN ('active','done','dismissed')),
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_personal_tasks_user   ON personal_tasks(user_id);
-CREATE INDEX IF NOT EXISTS idx_personal_tasks_starts  ON personal_tasks(starts_at);
-
--- People invited to a personal calendar item (e.g. "dinner with friends")
-CREATE TABLE IF NOT EXISTS personal_task_invitees (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  task_id       UUID NOT NULL REFERENCES personal_tasks(id) ON DELETE CASCADE,
   name          TEXT NOT NULL,
-  email         TEXT,
-  status        TEXT NOT NULL DEFAULT 'invited'
-                  CHECK (status IN ('invited','accepted','declined')),
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_task_invitees_task ON personal_task_invitees(task_id);
-
--- Secure per-invitee response token — backs the public accept/decline link
--- shared with people who aren't necessarily Convivia24 users.
-ALTER TABLE personal_task_invitees ADD COLUMN IF NOT EXISTS response_token UUID NOT NULL DEFAULT gen_random_uuid();
-CREATE UNIQUE INDEX IF NOT EXISTS idx_task_invitees_response_token ON personal_task_invitees(response_token);
-
--- One secret per-user token, used to build a read-only ICS feed URL so My 24
--- can be subscribed to from Google/Apple/Outlook calendar apps.
-CREATE TABLE IF NOT EXISTS calendar_feed_tokens (
-  user_id     TEXT PRIMARY KEY,
-  token       UUID NOT NULL DEFAULT gen_random_uuid(),
-  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_calendar_feed_tokens_token ON calendar_feed_tokens(token);
-
--- ═══════════════════════════════════════════════
--- COMPANION (the learning AI chatbot — chat history + remembered facts)
--- ═══════════════════════════════════════════════
-
--- A single chat thread. Users can run several in parallel ("New chat").
-CREATE TABLE IF NOT EXISTS companion_conversations (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id       TEXT NOT NULL,
-  title         TEXT,
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_companion_conversations_user ON companion_conversations(user_id, updated_at DESC);
-
-CREATE TABLE IF NOT EXISTS companion_messages (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id       TEXT NOT NULL,
-  role          TEXT NOT NULL CHECK (role IN ('user','assistant')),
-  content       TEXT NOT NULL,
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_companion_messages_user ON companion_messages(user_id, created_at);
-
--- Each message belongs to a conversation (nullable for rows created before threads existed).
-ALTER TABLE companion_messages ADD COLUMN IF NOT EXISTS conversation_id UUID;
-CREATE INDEX IF NOT EXISTS idx_companion_messages_conversation ON companion_messages(conversation_id, created_at);
-
--- One row per remembered fact about a user (preferences, habits, people, goals)
-CREATE TABLE IF NOT EXISTS companion_memory (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id       TEXT NOT NULL,
-  key           TEXT NOT NULL,
-  value         TEXT NOT NULL,
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_companion_memory_user_key ON companion_memory(user_id, LOWER(key));
-
--- ═══════════════════════════════════════════════
--- PEOPLE (the people layer — partner, friends, family for planning + invites)
--- ═══════════════════════════════════════════════
-CREATE TABLE IF NOT EXISTS people (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id       TEXT NOT NULL,
-  name          TEXT NOT NULL,
-  relationship  TEXT,
-  email         TEXT,
-  notes         TEXT,
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_people_user ON people(user_id);
-
--- A phone number (for a WhatsApp check-in link) and a timestamp of the last
--- time the user checked in with them, so the People page can surface
--- whoever has gone longest without contact first.
-ALTER TABLE people ADD COLUMN IF NOT EXISTS phone TEXT;
-ALTER TABLE people ADD COLUMN IF NOT EXISTS last_contacted_at TIMESTAMPTZ;
-
--- ═══════════════════════════════════════════════
--- USER PROFILE (onboarding answers — shapes how the companion plans)
--- ═══════════════════════════════════════════════
-CREATE TABLE IF NOT EXISTS user_profiles (
-  user_id       TEXT PRIMARY KEY,
-  data          JSONB NOT NULL DEFAULT '{}'::jsonb,
-  onboarded_at  TIMESTAMPTZ,
+  email         TEXT NOT NULL,
+  company       TEXT,
+  inquiry_type  TEXT NOT NULL DEFAULT 'General Inquiry',
+  message       TEXT NOT NULL,
+  status        TEXT NOT NULL DEFAULT 'new'
+                  CHECK (status IN ('new', 'read', 'responded', 'archived')),
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Taste answers (movies/music) — gathered a question at a time from the
--- companion chat over time, used to power recommendations.
-CREATE TABLE IF NOT EXISTS user_taste (
-  user_id       TEXT PRIMARY KEY,
-  data          JSONB NOT NULL DEFAULT '{}'::jsonb,
-  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+CREATE INDEX IF NOT EXISTS idx_inquiries_email      ON inquiries(email);
+CREATE INDEX IF NOT EXISTS idx_inquiries_status     ON inquiries(status);
+CREATE INDEX IF NOT EXISTS idx_inquiries_created_at ON inquiries(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_inquiries_type       ON inquiries(inquiry_type);
+
+-- Waitlist: low-friction signup for Convivium interest
+CREATE TABLE IF NOT EXISTS waitlist (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email      TEXT NOT NULL,
+  company    TEXT,
+  name       TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- One daily check-in per day (mood + energy + an optional highlight) — feeds
--- the companion's memory and gives the recommendation engine a mood signal.
-CREATE TABLE IF NOT EXISTS daily_reflections (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id       TEXT NOT NULL,
-  reflect_date  DATE NOT NULL,
-  highlight     TEXT,
-  mood          TEXT,
-  energy        TEXT,
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_daily_reflections_user_date ON daily_reflections(user_id, reflect_date);
-
--- ═══════════════════════════════════════════════
--- DISCOVER (curated nightlife / entertainment / events feed — AI-curated
--- from the web over time, topped up with manual picks per city)
--- ═══════════════════════════════════════════════
-CREATE TABLE IF NOT EXISTS curated_events (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  city          TEXT NOT NULL,
-  title         TEXT NOT NULL,
-  venue         TEXT NOT NULL,
-  category      TEXT NOT NULL DEFAULT 'nightlife'
-                  CHECK (category IN ('nightlife','music','food_drink','culture','comedy','pop_up')),
-  vibe_tags     TEXT[] NOT NULL DEFAULT '{}',
-  summary       TEXT NOT NULL,
-  starts_at     TIMESTAMPTZ NOT NULL,
-  price_label   TEXT,
-  source_url    TEXT,
-  source        TEXT NOT NULL DEFAULT 'manual'
-                  CHECK (source IN ('manual','ai_curated')),
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_curated_events_city ON curated_events(city, starts_at);
-
--- ═══════════════════════════════════════════════
--- COMPANION SUPPORT (peer-support directory + bookable listening sessions —
--- "a better BetterHelp": self-declared supporters, scheduled calls via an
--- externally-hosted link, no clinical vetting in v1)
--- ═══════════════════════════════════════════════
-
--- A signed-in user opts in as a supporter by filling this out. No users table
--- exists anywhere in this schema, so — like personal_task_invitees.name and
--- people.name — the display name is stored directly on the row.
-CREATE TABLE IF NOT EXISTS supporter_profiles (
-  user_id       TEXT PRIMARY KEY,
-  display_name  TEXT NOT NULL,
-  bio           TEXT,
-  tags          TEXT[] NOT NULL DEFAULT '{}',
-  is_active     BOOLEAN NOT NULL DEFAULT true,
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- A seeker's request to book time with a supporter. Mirrors the
--- personal_task_invitees response-token pattern: the supporter accepts or
--- declines via a public link keyed on response_token, pasting their own
--- call link (Zoom/Meet/etc.) on accept — no in-app call infrastructure.
-CREATE TABLE IF NOT EXISTS support_sessions (
-  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  seeker_id       TEXT NOT NULL,
-  seeker_name     TEXT NOT NULL,
-  supporter_id    TEXT NOT NULL,
-  requested_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  starts_at       TIMESTAMPTZ NOT NULL,
-  duration_mins   INTEGER NOT NULL DEFAULT 30,
-  note            TEXT,
-  call_link       TEXT,
-  status          TEXT NOT NULL DEFAULT 'requested'
-                    CHECK (status IN ('requested','confirmed','declined','cancelled','completed')),
-  response_token  UUID NOT NULL DEFAULT gen_random_uuid(),
-  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_support_sessions_seeker ON support_sessions(seeker_id, starts_at);
-CREATE INDEX IF NOT EXISTS idx_support_sessions_supporter ON support_sessions(supporter_id, starts_at);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_support_sessions_token ON support_sessions(response_token);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_waitlist_email ON waitlist(LOWER(email));
+CREATE INDEX IF NOT EXISTS idx_waitlist_created_at ON waitlist(created_at DESC);

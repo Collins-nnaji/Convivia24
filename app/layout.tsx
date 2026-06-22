@@ -1,6 +1,5 @@
 import './globals.css';
 import { Outfit, Cormorant_Garamond } from 'next/font/google';
-import AuthProvider from '@/components/auth/AuthProvider';
 
 const outfit = Outfit({
   subsets: ['latin'],
@@ -17,8 +16,8 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata = {
-  title: 'Convivia24 | What’s Happening, Curated For You',
-  description: 'Convivia24 finds what’s actually happening near you — nightlife, live music, hidden bars, pop-ups — curated by AI, then helps you plan your day and bring your people along.',
+  title: 'Convivia24 | Come to the Table.',
+  description: 'A luxury hotel and members club for African business. Lagos. Abuja. London.',
   icons: {
     icon: '/Logo2.png',
   }
@@ -36,8 +35,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${outfit.variable} ${cormorant.variable} font-sans bg-paper text-obsidian antialiased`} suppressHydrationWarning>
-        <AuthProvider>{children}</AuthProvider>
+      <body className={`${outfit.variable} ${cormorant.variable} font-sans bg-obsidian text-cream antialiased`} suppressHydrationWarning>
+        {children}
       </body>
     </html>
   );
