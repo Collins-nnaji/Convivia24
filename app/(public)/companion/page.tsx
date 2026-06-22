@@ -3,12 +3,14 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Send, Plus, Check, PanelLeft, X, Sparkles, RotateCw } from 'lucide-react';
+import { Send, Plus, Check, PanelLeft, X, Sparkles, RotateCw, HeartHandshake } from 'lucide-react';
 import { useUser } from '@/components/auth/AuthProvider';
 import CompanionDashboard, { type Dashboard, type ScheduleBlock } from '@/components/companion/CompanionDashboard';
 import CompanionSidebar, { type Conversation } from '@/components/companion/CompanionSidebar';
 import TasteQuestionCard from '@/components/companion/TasteQuestionCard';
+import RiskBanner from '@/components/companion/RiskBanner';
 import type { TasteQuestion } from '@/lib/profile/tasteQuestions';
+import type { RiskLevel } from '@/lib/support/safety';
 
 interface Message { id?: string; role: 'user' | 'assistant'; content: string }
 interface SuggestedTask { title: string; starts_at: string; ends_at: string; priority: 'low' | 'normal' | 'high' }
@@ -32,6 +34,7 @@ export default function CompanionPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [nextTasteQuestion, setNextTasteQuestion] = useState<TasteQuestion | null>(null);
   const [showTasteQuestion, setShowTasteQuestion] = useState(false);
+  const [risk, setRisk] = useState<RiskLevel>('none');
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -48,6 +51,7 @@ export default function CompanionPage() {
     setSuggestions([]);
     setDashboard(null);
     setPlanError(null);
+    setRisk('none');
     const res = await fetch(`/api/companion?conversation=${id}`);
     const data = await res.json();
     setMessages(data.messages || []);
@@ -108,6 +112,7 @@ export default function CompanionPage() {
     setDashboard(null);
     setPlanError(null);
     setSuggestions([]);
+    setRisk('none');
     setSidebarOpen(false);
     setTimeout(() => inputRef.current?.focus(), 50);
   }
@@ -145,6 +150,7 @@ export default function CompanionPage() {
       const data = await res.json();
       setMessages((m) => [...m, { role: 'assistant', content: data.reply || "I'm here." }]);
       setSuggestions(data.suggested_tasks || []);
+      if (data.risk?.level === 'crisis' || data.risk?.level === 'elevated') setRisk(data.risk.level);
       if (data.conversation_id && data.conversation_id !== activeId) setActiveId(data.conversation_id);
       refreshConversations();
     } finally {
@@ -261,6 +267,9 @@ export default function CompanionPage() {
               {activeId ? (conversations.find((c) => c.id === activeId)?.title || 'Companion') : 'New chat'}
             </h1>
             <p className="hidden sm:block text-obsidian/45 text-xs mt-0.5">A running conversation — I remember the whole thread and keep refining your plan.</p>
+            <Link href="/support" className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.1em] text-obsidian/35 hover:text-gold-dark transition-colors mt-1">
+              <HeartHandshake size={11} /> Talk to a real person
+            </Link>
           </div>
           <div className="ml-auto flex items-center gap-2 shrink-0">
             <button
@@ -286,6 +295,12 @@ export default function CompanionPage() {
             </button>
           </div>
         </div>
+
+        {risk !== 'none' && (
+          <div className="shrink-0 px-4 sm:px-6 py-3 border-b border-obsidian/10">
+            <RiskBanner level={risk} />
+          </div>
+        )}
 
         {planError && (
           <div className="shrink-0 flex items-center justify-between gap-3 px-4 sm:px-6 py-2.5 bg-rose-50 border-b border-rose-200/60 text-rose-700 text-xs">

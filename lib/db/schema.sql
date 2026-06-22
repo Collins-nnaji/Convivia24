@@ -192,3 +192,46 @@ CREATE TABLE IF NOT EXISTS curated_events (
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_curated_events_city ON curated_events(city, starts_at);
+
+-- ═══════════════════════════════════════════════
+-- COMPANION SUPPORT (peer-support directory + bookable listening sessions —
+-- "a better BetterHelp": self-declared supporters, scheduled calls via an
+-- externally-hosted link, no clinical vetting in v1)
+-- ═══════════════════════════════════════════════
+
+-- A signed-in user opts in as a supporter by filling this out. No users table
+-- exists anywhere in this schema, so — like personal_task_invitees.name and
+-- people.name — the display name is stored directly on the row.
+CREATE TABLE IF NOT EXISTS supporter_profiles (
+  user_id       TEXT PRIMARY KEY,
+  display_name  TEXT NOT NULL,
+  bio           TEXT,
+  tags          TEXT[] NOT NULL DEFAULT '{}',
+  is_active     BOOLEAN NOT NULL DEFAULT true,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- A seeker's request to book time with a supporter. Mirrors the
+-- personal_task_invitees response-token pattern: the supporter accepts or
+-- declines via a public link keyed on response_token, pasting their own
+-- call link (Zoom/Meet/etc.) on accept — no in-app call infrastructure.
+CREATE TABLE IF NOT EXISTS support_sessions (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  seeker_id       TEXT NOT NULL,
+  seeker_name     TEXT NOT NULL,
+  supporter_id    TEXT NOT NULL,
+  requested_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  starts_at       TIMESTAMPTZ NOT NULL,
+  duration_mins   INTEGER NOT NULL DEFAULT 30,
+  note            TEXT,
+  call_link       TEXT,
+  status          TEXT NOT NULL DEFAULT 'requested'
+                    CHECK (status IN ('requested','confirmed','declined','cancelled','completed')),
+  response_token  UUID NOT NULL DEFAULT gen_random_uuid(),
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_support_sessions_seeker ON support_sessions(seeker_id, starts_at);
+CREATE INDEX IF NOT EXISTS idx_support_sessions_supporter ON support_sessions(supporter_id, starts_at);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_support_sessions_token ON support_sessions(response_token);

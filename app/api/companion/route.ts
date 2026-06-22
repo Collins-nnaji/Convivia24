@@ -3,6 +3,7 @@ import sql from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth/session';
 import { chat, aiConfigured } from '@/lib/ai/azure';
 import { rateLimit, clientIp } from '@/lib/redis';
+import { CRISIS_HINTS, moreSevere, type Risk, type RiskLevel } from '@/lib/support/safety';
 import {
   ensureSchema,
   getConversation,
@@ -178,11 +179,16 @@ async function handleChat(userId: string, body: { message?: string; conversation
   const memoryLines = memory.map((m) => `${m.key}: ${m.value}`).join('\n');
   const recentTurns = [...history].reverse();
 
+  // Independent of AI configuration — guarantees a crisis flag even when AI is
+  // unconfigured, the model under-calls risk, or the JSON parse below fails.
+  const tripwireLevel: RiskLevel = CRISIS_HINTS.test(message) ? 'crisis' : 'none';
+
   if (!aiConfigured()) {
     const reply = "I'm listening — tell me everything you're juggling. When you're ready, press “Generate plan” and I'll sort it into what to focus on, what can wait, and what to drop.";
     await sql`INSERT INTO companion_messages (user_id, conversation_id, role, content) VALUES (${userId}, ${conversationId}, 'assistant', ${reply})`;
     await touchConversation(userId, conversationId);
-    return NextResponse.json({ reply, suggested_tasks: [], conversation_id: conversationId });
+    const risk: Risk = { level: tripwireLevel };
+    return NextResponse.json({ reply, suggested_tasks: [], conversation_id: conversationId, risk });
   }
 
   const now = new Date().toISOString();
@@ -193,14 +199,18 @@ ${memoryLines || '(nothing yet — this may be one of your first conversations)'
 
 Current time: ${now}
 
+You are warm, supportive, and emotionally aware, but not a therapist — never diagnose, and never claim clinical expertise. If the conversation turns to how they're coping or feeling, you can be a caring presence and gently point toward the "Companion Support" page (real peer supporters + crisis resources) without being preachy about it.
+
 Respond ONLY with strict JSON:
 {
   "reply": "your conversational reply, 1-4 sentences",
   "facts": [{"key": "short_fact_label", "value": "what you learned, in their words"}],
-  "suggested_tasks": [{"title": "...", "starts_at": "ISO datetime", "ends_at": "ISO datetime", "priority": "low|normal|high"}]
+  "suggested_tasks": [{"title": "...", "starts_at": "ISO datetime", "ends_at": "ISO datetime", "priority": "low|normal|high"}],
+  "risk": {"level": "none|elevated|crisis", "reason": "short label, e.g. 'passive hopelessness' or 'explicit self-harm plan'"}
 }
 Only include "facts" for genuinely new, durable information about the person (preferences, people in their life, routines, goals, stressors) — not small talk.
-Keep this a natural, flowing conversation — ask questions, react, help them think out loud. Only include "suggested_tasks" if they explicitly asked you to schedule one or two specific things right now. Don't try to build a full day plan here; the user asks for that explicitly (a separate "Generate plan" action) when they're ready, so just focus on being a good conversational partner.`;
+Keep this a natural, flowing conversation — ask questions, react, help them think out loud. Only include "suggested_tasks" if they explicitly asked you to schedule one or two specific things right now. Don't try to build a full day plan here; the user asks for that explicitly (a separate "Generate plan" action) when they're ready, so just focus on being a good conversational partner.
+For "risk": use "crisis" ONLY for explicit suicidal/self-harm intent, a stated plan or means, or a described active emergency. Use "elevated" for passive ideation (e.g. "what's the point", persistent hopelessness) without a plan. Use "none" for everything else — most messages are "none". This is a side-channel safety signal only — it must never change the tone or content of your "reply", which should stay warm and natural either way.`;
 
   const raw = await chat({
     messages: [
@@ -212,7 +222,7 @@ Keep this a natural, flowing conversation — ask questions, react, help them th
     json: true,
   });
 
-  let parsed: { reply?: string; facts?: { key: string; value: string }[]; suggested_tasks?: SuggestedTask[] };
+  let parsed: { reply?: string; facts?: { key: string; value: string }[]; suggested_tasks?: SuggestedTask[]; risk?: Risk };
   try {
     parsed = JSON.parse(raw);
   } catch {
@@ -238,8 +248,11 @@ Keep this a natural, flowing conversation — ask questions, react, help them th
     `;
   }
 
+  const modelLevel: RiskLevel = parsed.risk?.level === 'crisis' || parsed.risk?.level === 'elevated' ? parsed.risk.level : 'none';
+  const risk: Risk = { level: moreSevere(modelLevel, tripwireLevel), reason: parsed.risk?.reason };
+
   const suggestedTasks = (parsed.suggested_tasks || []).slice(0, 5);
-  return NextResponse.json({ reply, suggested_tasks: suggestedTasks, conversation_id: conversationId });
+  return NextResponse.json({ reply, suggested_tasks: suggestedTasks, conversation_id: conversationId, risk });
 }
 
 const NOT_ENOUGH_YET = "I don't have quite enough to go on yet — tell me a bit more about what's on your plate, then try again.";
