@@ -11,6 +11,7 @@ interface Recommendations {
   tracksConfigured: boolean;
   movies: MovieRecommendation[];
   tracks: TrackRecommendation[];
+  moodContext: 'low' | null;
 }
 
 /** Movies/tracks picked from what the companion has learned about your taste so far. */
@@ -29,6 +30,9 @@ export default function RecommendationsPanel() {
   return (
     <Collapsible title="Picked for your taste" icon={<Film size={13} className="text-gold-dark" />} defaultOpen>
       <div className="space-y-5">
+        {recs.moodContext === 'low' && (
+          <p className="text-xs text-obsidian/50 italic -mt-1">Today&rsquo;s been a bit rough, so these lean easy and calming.</p>
+        )}
         {recs.movies.length > 0 && (
           <div>
             <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.15em] text-obsidian/40 mb-2.5">

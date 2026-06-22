@@ -152,13 +152,15 @@ CREATE TABLE IF NOT EXISTS user_taste (
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- One evening reflection per day — feeds the companion's memory.
+-- One daily check-in per day (mood + energy + an optional highlight) — feeds
+-- the companion's memory and gives the recommendation engine a mood signal.
 CREATE TABLE IF NOT EXISTS daily_reflections (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id       TEXT NOT NULL,
   reflect_date  DATE NOT NULL,
-  highlight     TEXT NOT NULL,
+  highlight     TEXT,
   mood          TEXT,
+  energy        TEXT,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_daily_reflections_user_date ON daily_reflections(user_id, reflect_date);
