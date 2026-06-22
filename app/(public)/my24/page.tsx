@@ -12,9 +12,13 @@ import DayPlanner from '@/components/calendar/DayPlanner';
 import UpcomingPanel from '@/components/calendar/UpcomingPanel';
 import PeoplePanel from '@/components/calendar/PeoplePanel';
 import ReflectionPrompt from '@/components/calendar/ReflectionPrompt';
+import RightNowHero from '@/components/calendar/RightNowHero';
+import DayArc from '@/components/calendar/DayArc';
+import WhatsNextList from '@/components/calendar/WhatsNextList';
 import { useUser } from '@/components/auth/AuthProvider';
 import { insertRestBuffers, type CalendarItem } from '@/lib/calendar/buffers';
 import { addDays, addMonths, dateKey, isSameDay, startOfMonth, startOfWeek } from '@/lib/calendar/dates';
+import { findCurrentItem, findNextGap, upcomingItems } from '@/lib/calendar/dayShape';
 import { seedToTimes, type DaySeed } from '@/lib/calendar/seeds';
 
 /** A short, calm one-liner describing the shape of a day. */
@@ -36,6 +40,7 @@ function toLocalInputValue(d: Date): string {
 
 export default function My24Page() {
   const { user, loading: authLoading } = useUser();
+  const [now, setNow] = useState(() => new Date());
   const [month, setMonth] = useState(() => startOfMonth(new Date()));
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [monthItems, setMonthItems] = useState<CalendarItem[]>([]);
@@ -53,6 +58,14 @@ export default function My24Page() {
   const [feedUrl, setFeedUrl] = useState<string | null>(null);
   const [feedCopied, setFeedCopied] = useState(false);
   const [calendarCollapsed, setCalendarCollapsed] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [protectingGap, setProtectingGap] = useState(false);
+
+  // Keep "now" live so the cockpit (Right now / the day arc) stays current without a reload.
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(t);
+  }, []);
 
   // Default to the compact week strip on small screens for an app-like feel.
   useEffect(() => {
@@ -81,6 +94,26 @@ export default function My24Page() {
     [monthItems, selectedDate],
   );
 
+  // The cockpit always reflects today's real timeline, independent of whichever date is selected below.
+  const todayItemsRaw = useMemo(
+    () => monthItems.filter((i) => isSameDay(new Date(i.starts_at), now)),
+    [monthItems, now],
+  );
+  const todayItemsForArc = useMemo(() => insertRestBuffers(todayItemsRaw), [todayItemsRaw]);
+  const currentItem = useMemo(() => findCurrentItem(todayItemsRaw, now), [todayItemsRaw, now]);
+  const nextFew = useMemo(() => upcomingItems(todayItemsRaw, now, 3), [todayItemsRaw, now]);
+  const whatsNext = currentItem ? nextFew : nextFew.slice(1);
+  const gap = useMemo(() => {
+    const dayEndCutoff = new Date(now);
+    dayEndCutoff.setHours(22, 0, 0, 0);
+    const raw = findNextGap(todayItemsRaw, now, dayEndCutoff, 45);
+    if (!raw) return null;
+    const startsAt = new Date(raw.starts_at);
+    const cap = new Date(startsAt.getTime() + 180 * 60000);
+    const endsAt = new Date(raw.ends_at) < cap ? new Date(raw.ends_at) : cap;
+    return { starts_at: startsAt.toISOString(), ends_at: endsAt.toISOString(), minutes: Math.round((+endsAt - +startsAt) / 60000) };
+  }, [todayItemsRaw, now]);
+
   function selectDate(d: Date) {
     setSelectedDate(d);
     if (d.getMonth() !== month.getMonth() || d.getFullYear() !== month.getFullYear()) {
@@ -101,6 +134,32 @@ export default function My24Page() {
       setCompletingId(null);
       load(month);
     }, 550);
+  }
+
+  async function deferItem(item: CalendarItem) {
+    const newStart = new Date(item.starts_at); newStart.setDate(newStart.getDate() + 1);
+    const newEnd = new Date(item.ends_at); newEnd.setDate(newEnd.getDate() + 1);
+    await fetch(`/api/calendar/${item.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ starts_at: newStart.toISOString(), ends_at: newEnd.toISOString() }),
+    });
+    load(month);
+  }
+
+  async function protectGap() {
+    if (!gap || protectingGap) return;
+    setProtectingGap(true);
+    try {
+      await fetch('/api/calendar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: 'Protected time', starts_at: gap.starts_at, ends_at: gap.ends_at, priority: 'normal' }),
+      });
+      await load(month);
+    } finally {
+      setProtectingGap(false);
+    }
   }
 
   async function toggleFeed() {
@@ -140,6 +199,19 @@ export default function My24Page() {
       setStart(toLocalInputValue(base));
       setEnd(toLocalInputValue(later));
     }
+  }
+
+  /** "Add something" from the cockpit always means today, regardless of whatever date is selected below. */
+  function addNow() {
+    const today = new Date();
+    setSelectedDate(today);
+    if (today.getMonth() !== month.getMonth() || today.getFullYear() !== month.getFullYear()) setMonth(startOfMonth(today));
+    setShowCalendar(true);
+    setAdding(true);
+    const base = new Date(today); base.setHours(base.getHours() + 1, 0, 0, 0);
+    const later = new Date(base); later.setHours(later.getHours() + 1);
+    setStart(toLocalInputValue(base));
+    setEnd(toLocalInputValue(later));
   }
 
   async function addTask(e: FormEvent) {
@@ -251,132 +323,156 @@ export default function My24Page() {
         </div>
       )}
 
-      <ReflectionPrompt />
-
-      <DayPlanner onAccept={acceptDayPlan} />
-
-      {/* Calendar — a slim week strip by default; the full month when expanded */}
-      <div className="shrink-0 border-t border-obsidian/10 bg-white/60">
-        <div className="max-w-3xl mx-auto w-full">
-          <div className="flex items-center justify-between gap-2 px-4 sm:px-6 py-2">
-            <button
-              onClick={() => setCalendarCollapsed((v) => !v)}
-              aria-label={calendarCollapsed ? 'Show full calendar' : 'Collapse calendar'}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-obsidian/70 hover:text-obsidian transition-colors"
-            >
-              <CalendarDays size={14} className="text-gold-dark" />
-              {selectedDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
-              {calendarCollapsed ? <ChevronDown size={13} /> : <ChevronUp size={13} />}
-            </button>
-            {calendarCollapsed && (
-              <div className="flex items-center gap-0.5">
-                <button onClick={() => selectDate(addDays(selectedDate, -7))} aria-label="Previous week" className="w-7 h-7 flex items-center justify-center rounded-full text-obsidian/40 hover:text-obsidian hover:bg-obsidian/[0.04] transition-colors"><ChevronLeft size={14} /></button>
-                <button onClick={goToday} className="px-2.5 h-7 text-[10px] font-black uppercase tracking-[0.12em] text-gold-dark hover:text-obsidian rounded-full transition-colors">Today</button>
-                <button onClick={() => selectDate(addDays(selectedDate, 7))} aria-label="Next week" className="w-7 h-7 flex items-center justify-center rounded-full text-obsidian/40 hover:text-obsidian hover:bg-obsidian/[0.04] transition-colors"><ChevronRight size={14} /></button>
-              </div>
-            )}
-          </div>
-          {calendarCollapsed
-            ? <WeekStrip selectedDate={selectedDate} items={monthItems} onSelectDate={selectDate} />
-            : (
-              <MonthCalendar
-                month={month}
-                items={monthItems}
-                selectedDate={selectedDate}
-                onSelectDate={selectDate}
-                onPrevMonth={() => setMonth((m) => addMonths(m, -1))}
-                onNextMonth={() => setMonth((m) => addMonths(m, 1))}
-                onToday={goToday}
-              />
-            )}
-        </div>
-      </div>
-
-      {/* Editorial canvas — the day as the centrepiece */}
+      {/* Cockpit — the bold, active heart of My 24: what's happening now, the shape of today, and what's next. */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-3xl mx-auto w-full px-5 sm:px-8">
-          <div className="pt-8 sm:pt-12 pb-5 flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <p className="text-[11px] font-black uppercase tracking-[0.28em] text-gold-dark mb-2.5">{heroEyebrow}</p>
-              <h1 className="font-display text-6xl sm:text-7xl lg:text-8xl font-light italic brand-text leading-[0.9]">{heroWeekday}</h1>
-              <p className="font-display italic text-obsidian/55 text-lg sm:text-xl mt-3">{heroDateShort} · {heroIntent}</p>
-            </div>
+          <div className="pt-6 sm:pt-9 pb-6 space-y-5">
+            <RightNowHero current={currentItem} next={nextFew[0] ?? null} now={now} onComplete={complete} onAddNow={addNow} />
+            <DayArc items={todayItemsForArc} now={now} />
+            <WhatsNextList
+              items={whatsNext}
+              gap={gap}
+              onComplete={complete}
+              onDefer={deferItem}
+              onProtectGap={protectGap}
+              protecting={protectingGap}
+            />
+          </div>
+
+          <ReflectionPrompt />
+          <DayPlanner onAccept={acceptDayPlan} />
+
+          <div className="py-3 border-t border-obsidian/10">
             <button
-              onClick={openAddForm}
-              aria-label="Add to this day"
-              className="btn-brand shrink-0 w-11 h-11 rounded-full flex items-center justify-center mt-1.5"
+              type="button"
+              onClick={() => setShowCalendar((v) => !v)}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-obsidian/10 hover:border-gold/40 bg-white/60 hover:bg-white text-obsidian/60 hover:text-obsidian text-[11px] font-black uppercase tracking-[0.15em] transition-colors"
             >
-              {adding ? <X size={18} /> : <Plus size={18} />}
+              <CalendarDays size={14} className="text-gold-dark" />
+              {showCalendar ? 'Hide calendar' : 'View calendar'}
+              {showCalendar ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
             </button>
           </div>
 
-          {adding && (
-            <form onSubmit={addTask} className="px-3 sm:px-4 py-3 border-b border-obsidian/10 bg-white/80 space-y-2">
-              <input
-                value={title} onChange={(e) => setTitle(e.target.value)} placeholder="What's on your mind?"
-                className="w-full px-2.5 py-2 border border-obsidian/10 bg-white text-sm focus:border-gold outline-none"
-              />
-              <div className="grid grid-cols-2 gap-2">
-                <input type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)} className="px-2.5 py-2 border border-obsidian/10 bg-white text-sm focus:border-gold outline-none" />
-                <input type="datetime-local" value={end} onChange={(e) => setEnd(e.target.value)} className="px-2.5 py-2 border border-obsidian/10 bg-white text-sm focus:border-gold outline-none" />
-              </div>
-              <div className="flex items-center gap-2">
-                <select value={priority} onChange={(e) => setPriority(e.target.value as typeof priority)} className="px-2.5 py-2 border border-obsidian/10 bg-white text-sm focus:border-gold outline-none">
-                  <option value="low">Low</option>
-                  <option value="normal">Normal</option>
-                  <option value="high">High</option>
-                </select>
-              </div>
-
-              <div className="pt-1 border-t border-obsidian/10">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-obsidian/40 mb-1.5 flex items-center gap-1"><UserPlus size={11} /> Invite</p>
-                {guests.length > 0 && (
-                  <ul className="flex flex-wrap gap-1.5 mb-1.5">
-                    {guests.map((g, i) => (
-                      <li key={i} className="px-2 py-0.5 bg-cream text-obsidian/70 text-xs border border-obsidian/10">{g.name}</li>
-                    ))}
-                  </ul>
-                )}
-                <div className="grid grid-cols-[1fr_1fr_auto] gap-1.5">
-                  <input value={guestName} onChange={(e) => setGuestName(e.target.value)} placeholder="Name" className="px-2.5 py-1.5 border border-obsidian/10 bg-white text-sm focus:border-gold outline-none" />
-                  <input value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} placeholder="Email" className="px-2.5 py-1.5 border border-obsidian/10 bg-white text-sm focus:border-gold outline-none" />
-                  <button type="button" onClick={addGuest} className="px-2 py-1.5 border border-obsidian/10 hover:border-gold text-obsidian/60 hover:text-obsidian transition-colors">
-                    <Plus size={14} />
+          {showCalendar && (
+            <>
+              <div className="border-t border-obsidian/10 pt-4">
+                <div className="flex items-center justify-between gap-2 pb-2">
+                  <button
+                    onClick={() => setCalendarCollapsed((v) => !v)}
+                    aria-label={calendarCollapsed ? 'Show full calendar' : 'Collapse calendar'}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-obsidian/70 hover:text-obsidian transition-colors"
+                  >
+                    {selectedDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
+                    {calendarCollapsed ? <ChevronDown size={13} /> : <ChevronUp size={13} />}
                   </button>
+                  {calendarCollapsed && (
+                    <div className="flex items-center gap-0.5">
+                      <button onClick={() => selectDate(addDays(selectedDate, -7))} aria-label="Previous week" className="w-7 h-7 flex items-center justify-center rounded-full text-obsidian/40 hover:text-obsidian hover:bg-obsidian/[0.04] transition-colors"><ChevronLeft size={14} /></button>
+                      <button onClick={goToday} className="px-2.5 h-7 text-[10px] font-black uppercase tracking-[0.12em] text-gold-dark hover:text-obsidian rounded-full transition-colors">Today</button>
+                      <button onClick={() => selectDate(addDays(selectedDate, 7))} aria-label="Next week" className="w-7 h-7 flex items-center justify-center rounded-full text-obsidian/40 hover:text-obsidian hover:bg-obsidian/[0.04] transition-colors"><ChevronRight size={14} /></button>
+                    </div>
+                  )}
                 </div>
+                {calendarCollapsed
+                  ? <WeekStrip selectedDate={selectedDate} items={monthItems} onSelectDate={selectDate} />
+                  : (
+                    <MonthCalendar
+                      month={month}
+                      items={monthItems}
+                      selectedDate={selectedDate}
+                      onSelectDate={selectDate}
+                      onPrevMonth={() => setMonth((m) => addMonths(m, -1))}
+                      onNextMonth={() => setMonth((m) => addMonths(m, 1))}
+                      onToday={goToday}
+                    />
+                  )}
               </div>
 
-              <button type="submit" className="btn-brand w-full py-2.5 text-xs font-black uppercase tracking-[0.12em]">
-                Add
-              </button>
-            </form>
-          )}
+              <div className="pt-6 pb-2 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-black uppercase tracking-[0.28em] text-gold-dark mb-2.5">{heroEyebrow}</p>
+                  <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-light italic brand-text leading-[0.9]">{heroWeekday}</h1>
+                  <p className="font-display italic text-obsidian/55 text-lg sm:text-xl mt-3">{heroDateShort} · {heroIntent}</p>
+                </div>
+                <button
+                  onClick={openAddForm}
+                  aria-label="Add to this day"
+                  className="btn-brand shrink-0 w-11 h-11 rounded-full flex items-center justify-center mt-1.5"
+                >
+                  {adding ? <X size={18} /> : <Plus size={18} />}
+                </button>
+              </div>
 
-          <div className="pb-12 min-h-[28vh]">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={dateKey(selectedDate)}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.18, ease: 'easeOut' }}
-              >
-                {loading ? (
-                  <div className="space-y-3 pt-4">
-                    {[0, 1, 2].map((i) => <div key={i} className="h-16 rounded-xl bg-white/60 animate-pulse" />)}
-                  </div>
-                ) : (
-                  <MyDayRibbon
-                    items={dayItems}
-                    completingId={completingId}
-                    onComplete={complete}
-                    selectedDate={selectedDate}
-                    onAddSuggestion={(seed) => addSeed(selectedDate, seed)}
+              {adding && (
+                <form onSubmit={addTask} className="px-3 sm:px-4 py-3 border-b border-obsidian/10 bg-white/80 space-y-2">
+                  <input
+                    value={title} onChange={(e) => setTitle(e.target.value)} placeholder="What's on your mind?"
+                    className="w-full px-2.5 py-2 border border-obsidian/10 bg-white text-sm focus:border-gold outline-none"
                   />
-                )}
-              </motion.div>
-            </AnimatePresence>
-          </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)} className="px-2.5 py-2 border border-obsidian/10 bg-white text-sm focus:border-gold outline-none" />
+                    <input type="datetime-local" value={end} onChange={(e) => setEnd(e.target.value)} className="px-2.5 py-2 border border-obsidian/10 bg-white text-sm focus:border-gold outline-none" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <select value={priority} onChange={(e) => setPriority(e.target.value as typeof priority)} className="px-2.5 py-2 border border-obsidian/10 bg-white text-sm focus:border-gold outline-none">
+                      <option value="low">Low</option>
+                      <option value="normal">Normal</option>
+                      <option value="high">High</option>
+                    </select>
+                  </div>
+
+                  <div className="pt-1 border-t border-obsidian/10">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-obsidian/40 mb-1.5 flex items-center gap-1"><UserPlus size={11} /> Invite</p>
+                    {guests.length > 0 && (
+                      <ul className="flex flex-wrap gap-1.5 mb-1.5">
+                        {guests.map((g, i) => (
+                          <li key={i} className="px-2 py-0.5 bg-cream text-obsidian/70 text-xs border border-obsidian/10">{g.name}</li>
+                        ))}
+                      </ul>
+                    )}
+                    <div className="grid grid-cols-[1fr_1fr_auto] gap-1.5">
+                      <input value={guestName} onChange={(e) => setGuestName(e.target.value)} placeholder="Name" className="px-2.5 py-1.5 border border-obsidian/10 bg-white text-sm focus:border-gold outline-none" />
+                      <input value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} placeholder="Email" className="px-2.5 py-1.5 border border-obsidian/10 bg-white text-sm focus:border-gold outline-none" />
+                      <button type="button" onClick={addGuest} className="px-2 py-1.5 border border-obsidian/10 hover:border-gold text-obsidian/60 hover:text-obsidian transition-colors">
+                        <Plus size={14} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <button type="submit" className="btn-brand w-full py-2.5 text-xs font-black uppercase tracking-[0.12em]">
+                    Add
+                  </button>
+                </form>
+              )}
+
+              <div className="pb-12 min-h-[28vh]">
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={dateKey(selectedDate)}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.18, ease: 'easeOut' }}
+                  >
+                    {loading ? (
+                      <div className="space-y-3 pt-4">
+                        {[0, 1, 2].map((i) => <div key={i} className="h-16 rounded-xl bg-white/60 animate-pulse" />)}
+                      </div>
+                    ) : (
+                      <MyDayRibbon
+                        items={dayItems}
+                        completingId={completingId}
+                        onComplete={complete}
+                        selectedDate={selectedDate}
+                        onAddSuggestion={(seed) => addSeed(selectedDate, seed)}
+                      />
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </>
+          )}
 
           <div className="border-t border-obsidian/10 pt-8 pb-16">
             <h2 className="font-display text-3xl sm:text-4xl font-light italic text-obsidian leading-tight">Next few days</h2>
