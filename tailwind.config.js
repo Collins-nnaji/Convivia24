@@ -31,6 +31,12 @@ module.exports = {
           },
           // Secondary warm accent.
           champagne: '#C5A043',
+          // Live/buzzing accent — used sparingly on Discover for energy (badges, tags, glow).
+          ember: {
+            DEFAULT: '#ff4d6d',
+            light:   '#ff8095',
+            dark:    '#d6325a',
+          },
           // Warm off-white page background.
           paper: {
             DEFAULT: '#faf7f1',

@@ -7,13 +7,12 @@ import { SectionLabel } from '@/components/ui/SectionLabel';
 import { useUser } from '@/components/auth/AuthProvider';
 import CalendarAppPreview from '@/components/landing/CalendarAppPreview';
 import CompanionPopout from '@/components/landing/CompanionPopout';
+import DiscoverTicker from '@/components/landing/DiscoverTicker';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: 'easeOut' as const } },
 };
-
-const TICKER = ['Plan your day', 'Match your mood', 'Find things to do', 'Plan it together'];
 
 const FEATURES = [
   {
@@ -26,8 +25,8 @@ const FEATURES = [
   {
     n: '02',
     icon: Star,
-    title: 'Finds things to do',
-    body: 'Events, activities, places to be — surfaced for the time you actually have and the mood you’re in.',
+    title: 'Curates what’s happening',
+    body: 'Nightlife, live music, hidden bars, pop-ups — pulled from across the web and curated by AI for your city, not just listed.',
     dark: true,
   },
   {
@@ -98,7 +97,7 @@ export default function HomePage() {
               </motion.p>
 
               <motion.p variants={fadeUp} className="text-base sm:text-lg text-obsidian/60 max-w-md mb-8 sm:mb-9 leading-relaxed">
-                Convivia24 is the companion for your whole day — it plans your events and activities, finds things that suit your mood, and brings your people along to make it happen.
+                Convivia24 finds what&rsquo;s actually happening near you tonight — nightlife, live music, hidden bars, pop-ups — curated by AI, then helps you build the rest of your day around it and bring your people along.
               </motion.p>
 
               <motion.div variants={fadeUp} className="flex items-center gap-5 mb-10 sm:mb-12">
@@ -109,10 +108,10 @@ export default function HomePage() {
                   {primaryLabel} <ArrowRight size={14} />
                 </Link>
                 <Link
-                  href="/companion"
+                  href="/discover"
                   className="text-sm text-obsidian/70 hover:text-obsidian underline underline-offset-4 transition-colors"
                 >
-                  See how it works
+                  See what&rsquo;s on tonight
                 </Link>
               </motion.div>
 
@@ -136,17 +135,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Ticker bar */}
-      <div className="border-t border-b border-obsidian/10 bg-paper-dark">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 py-4 flex items-center gap-8 overflow-x-auto">
-          {TICKER.map((label, i) => (
-            <span key={label} className="flex items-center gap-8 shrink-0">
-              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-obsidian/50">{label}</span>
-              {i < TICKER.length - 1 && <span className="text-gold-dark/60 text-sm">+</span>}
-            </span>
-          ))}
-        </div>
-      </div>
+      {/* Live ticker — what Discover is surfacing right now */}
+      <DiscoverTicker />
 
       {/* Features */}
       <section className="bg-paper-dark">

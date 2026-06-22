@@ -170,3 +170,25 @@ CREATE TABLE IF NOT EXISTS daily_reflections (
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_daily_reflections_user_date ON daily_reflections(user_id, reflect_date);
+
+-- ═══════════════════════════════════════════════
+-- DISCOVER (curated nightlife / entertainment / events feed — AI-curated
+-- from the web over time, topped up with manual picks per city)
+-- ═══════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS curated_events (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  city          TEXT NOT NULL,
+  title         TEXT NOT NULL,
+  venue         TEXT NOT NULL,
+  category      TEXT NOT NULL DEFAULT 'nightlife'
+                  CHECK (category IN ('nightlife','music','food_drink','culture','comedy','pop_up')),
+  vibe_tags     TEXT[] NOT NULL DEFAULT '{}',
+  summary       TEXT NOT NULL,
+  starts_at     TIMESTAMPTZ NOT NULL,
+  price_label   TEXT,
+  source_url    TEXT,
+  source        TEXT NOT NULL DEFAULT 'manual'
+                  CHECK (source IN ('manual','ai_curated')),
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_curated_events_city ON curated_events(city, starts_at);

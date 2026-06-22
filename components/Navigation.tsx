@@ -8,12 +8,13 @@ import { Menu, X, User, LogOut, Sparkles } from 'lucide-react';
 import { useUser } from '@/components/auth/AuthProvider';
 
 const LINKS = [
+  { label: 'Discover',  href: '/discover' },
   { label: 'My 24',     href: '/my24' },
   { label: 'Companion', href: '/companion' },
   { label: 'Insights',  href: '/insights' },
 ];
 
-const APP_SHELL_PREFIXES = ['/my24', '/companion', '/insights'];
+const APP_SHELL_PREFIXES = ['/discover', '/my24', '/companion', '/insights'];
 
 function initials(name: string | null, email: string) {
   const base = (name || email || '').trim();
