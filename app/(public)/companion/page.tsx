@@ -267,8 +267,10 @@ export default function CompanionPage() {
               {activeId ? (conversations.find((c) => c.id === activeId)?.title || 'Companion') : 'New chat'}
             </h1>
             <p className="hidden sm:block text-obsidian/45 text-xs mt-0.5">A running conversation — I remember the whole thread and keep refining your plan.</p>
-            <Link href="/support" className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.1em] text-obsidian/35 hover:text-gold-dark transition-colors mt-1">
-              <HeartHandshake size={11} /> Talk to a real person
+            <Link href="/support" className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.1em] text-obsidian/35 hover:text-gold-dark transition-colors mt-1">
+              <HeartHandshake size={11} />
+              <span className="sm:hidden">Talk to someone</span>
+              <span className="hidden sm:inline">Talk to a real person</span>
             </Link>
           </div>
           <div className="ml-auto flex items-center gap-2 shrink-0">
