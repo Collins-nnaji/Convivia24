@@ -3,6 +3,7 @@ import Link from 'next/link';
 const footerLinks = [
   { label: 'My 24', href: '/my24' },
   { label: 'Companion', href: '/companion' },
+  { label: 'Insights', href: '/insights' },
 ];
 
 export default function Footer() {

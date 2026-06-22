@@ -10,7 +10,10 @@ import { useUser } from '@/components/auth/AuthProvider';
 const LINKS = [
   { label: 'My 24',     href: '/my24' },
   { label: 'Companion', href: '/companion' },
+  { label: 'Insights',  href: '/insights' },
 ];
+
+const APP_SHELL_PREFIXES = ['/my24', '/companion', '/insights'];
 
 function initials(name: string | null, email: string) {
   const base = (name || email || '').trim();
@@ -41,9 +44,14 @@ export default function Navigation() {
     return () => document.removeEventListener('mousedown', onClick);
   }, []);
 
+  // The app-shell pages (My 24 / Companion / Insights) have their own bottom tab bar on
+  // mobile, so the top bar — and its duplicate hamburger menu of the same destinations —
+  // only needs to show there on desktop, where the tab bar doesn't render.
+  const isAppShell = APP_SHELL_PREFIXES.some((p) => pathname.startsWith(p));
+
   return (
     <>
-      <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
+      <header className={`${isAppShell ? 'hidden md:block' : ''} fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
         scrolled
           ? 'bg-paper/95 backdrop-blur-md shadow-[0_1px_0_0_rgba(201,168,76,0.25)]'
           : 'bg-paper/80 backdrop-blur-sm border-b border-obsidian/5'
@@ -65,7 +73,7 @@ export default function Navigation() {
                 <Link
                   key={href}
                   href={href}
-                  className={`relative px-4 py-2 text-[13px] font-medium tracking-wide transition-colors duration-150 ${
+                  className={`relative px-4 py-2 text-[14px] font-medium tracking-wide transition-colors duration-150 ${
                     active ? 'text-obsidian' : 'text-obsidian/50 hover:text-obsidian'
                   }`}
                 >
@@ -126,7 +134,7 @@ export default function Navigation() {
         </div>
       </header>
 
-      <div className="h-16" />
+      <div className={`h-16 ${isAppShell ? 'hidden md:block' : ''}`} />
 
       <AnimatePresence>
         {open && (

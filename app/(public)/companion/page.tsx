@@ -8,7 +8,6 @@ import { useUser } from '@/components/auth/AuthProvider';
 import CompanionDashboard, { type Dashboard, type ScheduleBlock } from '@/components/companion/CompanionDashboard';
 import CompanionSidebar, { type Conversation } from '@/components/companion/CompanionSidebar';
 import TasteQuestionCard from '@/components/companion/TasteQuestionCard';
-import RecommendationsPanel from '@/components/companion/RecommendationsPanel';
 import type { TasteQuestion } from '@/lib/profile/tasteQuestions';
 
 interface Message { id?: string; role: 'user' | 'assistant'; content: string }
@@ -33,7 +32,6 @@ export default function CompanionPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [nextTasteQuestion, setNextTasteQuestion] = useState<TasteQuestion | null>(null);
   const [showTasteQuestion, setShowTasteQuestion] = useState(false);
-  const [recsKey, setRecsKey] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -102,7 +100,6 @@ export default function CompanionPage() {
     const data = await res.json();
     setNextTasteQuestion(data?.nextQuestion ?? null);
     setShowTasteQuestion(false);
-    setRecsKey((k) => k + 1);
   }
 
   function newChat() {
@@ -211,7 +208,7 @@ export default function CompanionPage() {
   }
 
   return (
-    <section className="flex h-[calc(100dvh-4rem)] overflow-hidden bg-paper">
+    <section className="flex h-dvh md:h-[calc(100dvh-4rem)] overflow-hidden bg-paper">
       {/* Histories — desktop rail */}
       <aside className="hidden md:flex w-72 shrink-0 border-r border-obsidian/10">
         <CompanionSidebar
@@ -234,7 +231,7 @@ export default function CompanionPage() {
             />
             <motion.aside
               initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ type: 'tween', duration: 0.2 }}
-              className="fixed top-16 bottom-0 left-0 z-50 w-72 border-r border-obsidian/10 shadow-xl md:hidden"
+              className="fixed top-0 bottom-0 left-0 z-50 w-72 border-r border-obsidian/10 shadow-xl md:hidden"
             >
               <CompanionSidebar
                 conversations={conversations}
@@ -305,7 +302,6 @@ export default function CompanionPage() {
 
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-3xl w-full mx-auto px-5 sm:px-8 py-5 space-y-4">
-            <RecommendationsPanel key={recsKey} />
             {messages.length === 0 && !sending && (
               <div className="pt-10 text-center max-w-md mx-auto">
                 <p className="font-display text-2xl italic text-obsidian leading-snug">Tell me what&rsquo;s on your plate.</p>

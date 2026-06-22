@@ -269,7 +269,7 @@ export default function My24Page() {
 
   if (!authLoading && !user) {
     return (
-      <section className="min-h-[calc(100dvh-4rem)] flex items-center justify-center px-4 text-center bg-cream-base">
+      <section className="min-h-dvh md:min-h-[calc(100dvh-4rem)] flex items-center justify-center px-4 text-center bg-cream-base">
         <div>
           <p className="text-obsidian/70 text-sm mb-4">Sign in to open My 24.</p>
           <Link href="/signin?next=/my24" className="inline-flex items-center gap-2 px-5 py-2.5 bg-obsidian hover:bg-obsidian-50 text-cream text-xs font-semibold transition-colors">
@@ -288,7 +288,7 @@ export default function My24Page() {
   const heroIntent = intentForDay(dayItems);
 
   return (
-    <section className="bg-cream-base min-h-[calc(100dvh-4rem)] pb-16 md:pb-0 -mt-16 pt-16 flex flex-col">
+    <section className="bg-cream-base min-h-dvh md:min-h-[calc(100dvh-4rem)] pb-16 md:pb-0 md:-mt-16 md:pt-16 flex flex-col">
       <header className="shrink-0 flex items-center justify-between gap-3 px-3 sm:px-4 py-2 border-b border-obsidian/10 bg-white/90">
         <span className="text-sm font-semibold text-obsidian tracking-tight">My 24</span>
         <button
