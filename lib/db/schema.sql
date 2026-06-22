@@ -133,6 +133,12 @@ CREATE TABLE IF NOT EXISTS people (
 );
 CREATE INDEX IF NOT EXISTS idx_people_user ON people(user_id);
 
+-- A phone number (for a WhatsApp check-in link) and a timestamp of the last
+-- time the user checked in with them, so the People page can surface
+-- whoever has gone longest without contact first.
+ALTER TABLE people ADD COLUMN IF NOT EXISTS phone TEXT;
+ALTER TABLE people ADD COLUMN IF NOT EXISTS last_contacted_at TIMESTAMPTZ;
+
 -- ═══════════════════════════════════════════════
 -- USER PROFILE (onboarding answers — shapes how the companion plans)
 -- ═══════════════════════════════════════════════
