@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Plus, X, UserPlus, Rss, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
+import { Plus, X, UserPlus, Rss, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, CalendarDays, Sparkles, CalendarClock } from 'lucide-react';
 import MonthCalendar from '@/components/calendar/MonthCalendar';
 import WeekStrip from '@/components/calendar/WeekStrip';
 import MyDayRibbon from '@/components/calendar/MyDayRibbon';
@@ -15,6 +15,7 @@ import ReflectionPrompt from '@/components/calendar/ReflectionPrompt';
 import RightNowHero from '@/components/calendar/RightNowHero';
 import DayArc from '@/components/calendar/DayArc';
 import WhatsNextList from '@/components/calendar/WhatsNextList';
+import Collapsible from '@/components/calendar/Collapsible';
 import { useUser } from '@/components/auth/AuthProvider';
 import { insertRestBuffers, type CalendarItem } from '@/lib/calendar/buffers';
 import { addDays, addMonths, dateKey, isSameDay, startOfMonth, startOfWeek } from '@/lib/calendar/dates';
@@ -340,7 +341,10 @@ export default function My24Page() {
           </div>
 
           <ReflectionPrompt />
-          <DayPlanner onAccept={acceptDayPlan} />
+
+          <Collapsible title="Plan tomorrow" icon={<Sparkles size={13} className="text-gold-dark" />}>
+            <DayPlanner onAccept={acceptDayPlan} />
+          </Collapsible>
 
           <div className="py-3 border-t border-obsidian/10">
             <button
@@ -474,16 +478,17 @@ export default function My24Page() {
             </>
           )}
 
-          <div className="border-t border-obsidian/10 pt-8 pb-16">
-            <h2 className="font-display text-3xl sm:text-4xl font-light italic text-obsidian leading-tight">Next few days</h2>
-            <p className="text-obsidian/45 text-sm mt-1 mb-4">A glance at what&rsquo;s coming — tap + to add an idea, or a date to plan it.</p>
+          <Collapsible title="Next few days" icon={<CalendarClock size={13} className="text-gold-dark" />}>
+            <p className="text-obsidian/45 text-xs mb-3">Tap + to add an idea, or a date to plan it.</p>
             <div className="rounded-2xl border border-obsidian/10 overflow-hidden bg-white">
               <UpcomingPanel items={monthItems} onSelectDate={selectDate} onAddSeed={addSeed} hideHeader />
             </div>
             <div className="mt-4 rounded-2xl border border-obsidian/10 overflow-hidden bg-white">
               <PeoplePanel />
             </div>
-          </div>
+          </Collapsible>
+
+          <div className="pb-16" />
         </div>
       </div>
 
