@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, Clock, Smile, Star, Users } from 'lucide-react';
+import { ArrowRight, Clock, Film, Smile, Star, Users } from 'lucide-react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { useUser } from '@/components/auth/AuthProvider';
 import CalendarAppPreview from '@/components/landing/CalendarAppPreview';
@@ -36,6 +36,13 @@ const FEATURES = [
     title: 'Better, together',
     body: 'Invite the people in your orbit. Plan, vote, and lock in plans without the endless back-and-forth.',
     dark: false,
+  },
+  {
+    n: '04',
+    icon: Film,
+    title: 'Knows your taste',
+    body: 'A question here and there teaches it your movies and music — then it hands you picks worth your time, trailers included.',
+    dark: true,
   },
 ];
 
@@ -155,7 +162,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-3 gap-5">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {FEATURES.map(({ n, icon: Icon, title, body, dark }) => (
               <motion.div
                 key={n}

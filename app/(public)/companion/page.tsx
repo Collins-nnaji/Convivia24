@@ -7,9 +7,16 @@ import { Send, Plus, Check, PanelLeft, X, Sparkles, RotateCw } from 'lucide-reac
 import { useUser } from '@/components/auth/AuthProvider';
 import CompanionDashboard, { type Dashboard, type ScheduleBlock } from '@/components/companion/CompanionDashboard';
 import CompanionSidebar, { type Conversation } from '@/components/companion/CompanionSidebar';
+import TasteQuestionCard from '@/components/companion/TasteQuestionCard';
+import RecommendationsPanel from '@/components/companion/RecommendationsPanel';
+import type { TasteQuestion } from '@/lib/profile/tasteQuestions';
 
 interface Message { id?: string; role: 'user' | 'assistant'; content: string }
 interface SuggestedTask { title: string; starts_at: string; ends_at: string; priority: 'low' | 'normal' | 'high' }
+
+const TASTE_PROMPT_KEY = 'cv24_taste_prompt_at';
+const TASTE_PROMPT_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+const TASTE_PROMPT_MIN_MESSAGES = 4;
 
 export default function CompanionPage() {
   const { user, loading: authLoading } = useUser();
@@ -24,6 +31,9 @@ export default function CompanionPage() {
   const [planError, setPlanError] = useState<string | null>(null);
   const [addedTitles, setAddedTitles] = useState<Set<string>>(new Set());
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [nextTasteQuestion, setNextTasteQuestion] = useState<TasteQuestion | null>(null);
+  const [showTasteQuestion, setShowTasteQuestion] = useState(false);
+  const [recsKey, setRecsKey] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -60,7 +70,40 @@ export default function CompanionPage() {
     })();
   }, [user, refreshConversations, loadMessages]);
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, suggestions, dashboard, sending]);
+  // Learn what taste question to ask next (if any), so it can pop up later.
+  useEffect(() => {
+    if (!user) return;
+    fetch('/api/profile/taste')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => setNextTasteQuestion(data?.nextQuestion ?? null))
+      .catch(() => {});
+  }, [user]);
+
+  // Surface the next taste question every so often — once a day, and only
+  // once the conversation has some substance — so it learns about the user
+  // over time without nagging.
+  useEffect(() => {
+    if (!nextTasteQuestion || showTasteQuestion) return;
+    if (messages.length < TASTE_PROMPT_MIN_MESSAGES) return;
+    const last = Number(localStorage.getItem(TASTE_PROMPT_KEY) || 0);
+    if (Date.now() - last < TASTE_PROMPT_COOLDOWN_MS) return;
+    setShowTasteQuestion(true);
+    localStorage.setItem(TASTE_PROMPT_KEY, String(Date.now()));
+  }, [messages, nextTasteQuestion, showTasteQuestion]);
+
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, suggestions, dashboard, sending, showTasteQuestion]);
+
+  async function answerTaste(questionId: string, value: string) {
+    const res = await fetch('/api/profile/taste', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ questionId, value }),
+    });
+    const data = await res.json();
+    setNextTasteQuestion(data?.nextQuestion ?? null);
+    setShowTasteQuestion(false);
+    setRecsKey((k) => k + 1);
+  }
 
   function newChat() {
     setActiveId(null);
@@ -262,6 +305,7 @@ export default function CompanionPage() {
 
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-3xl w-full mx-auto px-5 sm:px-8 py-5 space-y-4">
+            <RecommendationsPanel key={recsKey} />
             {messages.length === 0 && !sending && (
               <div className="pt-10 text-center max-w-md mx-auto">
                 <p className="font-display text-2xl italic text-obsidian leading-snug">Tell me what&rsquo;s on your plate.</p>
@@ -282,6 +326,10 @@ export default function CompanionPage() {
               </div>
             ))}
             {sending && <p className="text-obsidian/40 text-xs italic">thinking…</p>}
+
+            {showTasteQuestion && nextTasteQuestion && (
+              <TasteQuestionCard question={nextTasteQuestion} onAnswer={answerTaste} />
+            )}
 
             {dashboard && <CompanionDashboard dashboard={dashboard} onAddSchedule={addSchedule} />}
 

@@ -144,6 +144,14 @@ CREATE TABLE IF NOT EXISTS user_profiles (
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Taste answers (movies/music) — gathered a question at a time from the
+-- companion chat over time, used to power recommendations.
+CREATE TABLE IF NOT EXISTS user_taste (
+  user_id       TEXT PRIMARY KEY,
+  data          JSONB NOT NULL DEFAULT '{}'::jsonb,
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- One evening reflection per day — feeds the companion's memory.
 CREATE TABLE IF NOT EXISTS daily_reflections (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
