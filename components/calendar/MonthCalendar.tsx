@@ -2,8 +2,9 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import type { CalendarItem } from '@/lib/calendar/buffers';
+import { dayLoadRatio, type CalendarItem } from '@/lib/calendar/buffers';
 import { dateKey, isSameDay, monthGridDays } from '@/lib/calendar/dates';
+import DayLoadRing from '@/components/calendar/DayLoadRing';
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -95,6 +96,17 @@ export default function MonthCalendar({
             const isToday = isSameDay(day, today);
             const isSelected = isSameDay(day, selectedDate);
             const dayItems = itemsByDay.get(dateKey(day)) ?? [];
+            const loadRatio = dayLoadRatio(dayItems);
+
+            const numberBadge = (
+              <span
+                className={`w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-xs sm:text-sm rounded-full transition-colors ${
+                  isToday ? 'bg-gold-dark text-cream font-bold' : !inMonth ? 'text-obsidian/25' : 'text-obsidian/70'
+                }`}
+              >
+                {day.getDate()}
+              </span>
+            );
 
             return (
               <button
@@ -106,13 +118,13 @@ export default function MonthCalendar({
                   isSelected ? 'bg-gold/10 ring-1 ring-inset ring-gold/50' : 'hover:bg-cream/60'
                 }`}
               >
-                <span
-                  className={`w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-xs sm:text-sm rounded-full transition-colors ${
-                    isToday ? 'bg-gold-dark text-cream font-bold' : !inMonth ? 'text-obsidian/25' : 'text-obsidian/70'
-                  }`}
-                >
-                  {day.getDate()}
-                </span>
+                {loadRatio > 0 ? (
+                  <DayLoadRing ratio={loadRatio} className="w-6 h-6 sm:w-7 sm:h-7">
+                    {numberBadge}
+                  </DayLoadRing>
+                ) : (
+                  numberBadge
+                )}
                 {dayItems.length > 0 && (
                   <span className="flex flex-wrap items-center gap-1">
                     {dayItems.slice(0, 4).map((it) => (

@@ -68,3 +68,18 @@ export function insertRestBuffers(items: CalendarItem[]): CalendarItem[] {
 
   return result;
 }
+
+const FULL_DAY_LOAD_HOURS = 8;
+
+/**
+ * Returns 0..1 — how "stacked" a day is, based on total scheduled time
+ * against a realistic full day (default 8h of active commitments).
+ */
+export function dayLoadRatio(items: CalendarItem[], capHours = FULL_DAY_LOAD_HOURS): number {
+  const capMinutes = capHours * 60;
+  if (capMinutes <= 0) return 0;
+  const busyMinutes = items
+    .filter((i) => !i.is_rest_block && i.status === 'active')
+    .reduce((sum, i) => sum + Math.max(0, (+new Date(i.ends_at) - +new Date(i.starts_at)) / 60000), 0);
+  return Math.max(0, Math.min(1, busyMinutes / capMinutes));
+}

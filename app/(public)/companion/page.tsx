@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Send, Plus, Check, PanelLeft, X } from 'lucide-react';
+import { Send, Plus, Check, PanelLeft, X, Sparkles, RotateCw } from 'lucide-react';
 import { useUser } from '@/components/auth/AuthProvider';
 import CompanionDashboard, { type Dashboard, type ScheduleBlock } from '@/components/companion/CompanionDashboard';
 import CompanionSidebar, { type Conversation } from '@/components/companion/CompanionSidebar';
@@ -20,6 +20,8 @@ export default function CompanionPage() {
   const [sending, setSending] = useState(false);
   const [suggestions, setSuggestions] = useState<SuggestedTask[]>([]);
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
+  const [generatingPlan, setGeneratingPlan] = useState(false);
+  const [planError, setPlanError] = useState<string | null>(null);
   const [addedTitles, setAddedTitles] = useState<Set<string>>(new Set());
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -37,6 +39,7 @@ export default function CompanionPage() {
   const loadMessages = useCallback(async (id: string) => {
     setSuggestions([]);
     setDashboard(null);
+    setPlanError(null);
     const res = await fetch(`/api/companion?conversation=${id}`);
     const data = await res.json();
     setMessages(data.messages || []);
@@ -63,6 +66,7 @@ export default function CompanionPage() {
     setActiveId(null);
     setMessages([]);
     setDashboard(null);
+    setPlanError(null);
     setSuggestions([]);
     setSidebarOpen(false);
     setTimeout(() => inputRef.current?.focus(), 50);
@@ -101,12 +105,35 @@ export default function CompanionPage() {
       const data = await res.json();
       setMessages((m) => [...m, { role: 'assistant', content: data.reply || "I'm here." }]);
       setSuggestions(data.suggested_tasks || []);
-      // Keep the living plan visible; only replace it when a new one comes back.
-      setDashboard((prev) => data.dashboard ?? prev);
       if (data.conversation_id && data.conversation_id !== activeId) setActiveId(data.conversation_id);
       refreshConversations();
     } finally {
       setSending(false);
+    }
+  }
+
+  /** Explicitly builds (or refreshes) the prioritised plan from the whole conversation so far. Never triggered automatically. */
+  async function generatePlan() {
+    if (generatingPlan || !activeId) return;
+    setGeneratingPlan(true);
+    setPlanError(null);
+    try {
+      const res = await fetch('/api/companion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'generate_plan', conversation_id: activeId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not build a plan right now.');
+      if (!data.dashboard) {
+        setPlanError(data.message || "Tell me a bit more about your day, then try again.");
+        return;
+      }
+      setDashboard(data.dashboard);
+    } catch (err) {
+      setPlanError(err instanceof Error ? err.message : 'Could not build a plan right now.');
+    } finally {
+      setGeneratingPlan(false);
     }
   }
 
@@ -195,14 +222,43 @@ export default function CompanionPage() {
             </h1>
             <p className="hidden sm:block text-obsidian/45 text-xs mt-0.5">A running conversation — I remember the whole thread and keep refining your plan.</p>
           </div>
-          <button
-            type="button"
-            onClick={newChat}
-            className="ml-auto md:hidden inline-flex items-center gap-1.5 px-3 py-1.5 border border-obsidian/15 hover:border-gold text-obsidian/70 text-[11px] font-semibold transition-colors"
-          >
-            <Plus size={13} /> New
-          </button>
+          <div className="ml-auto flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={generatePlan}
+              disabled={generatingPlan || !activeId || messages.length === 0}
+              className="btn-brand inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[10px] sm:text-[11px] font-black uppercase tracking-[0.15em] transition-opacity disabled:opacity-35 disabled:cursor-not-allowed"
+            >
+              {generatingPlan ? (
+                <><RotateCw size={13} className="animate-spin" /> Building…</>
+              ) : dashboard ? (
+                <><RotateCw size={13} /> Refresh plan</>
+              ) : (
+                <><Sparkles size={13} /> Generate plan</>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={newChat}
+              className="md:hidden inline-flex items-center gap-1.5 px-3 py-2 border border-obsidian/15 hover:border-gold text-obsidian/70 text-[11px] font-semibold transition-colors"
+            >
+              <Plus size={13} /> New
+            </button>
+          </div>
         </div>
+
+        {planError && (
+          <div className="shrink-0 flex items-center justify-between gap-3 px-4 sm:px-6 py-2.5 bg-rose-50 border-b border-rose-200/60 text-rose-700 text-xs">
+            <span>{planError}</span>
+            <button
+              type="button"
+              onClick={generatePlan}
+              className="shrink-0 font-bold uppercase tracking-wide hover:underline"
+            >
+              Retry
+            </button>
+          </div>
+        )}
 
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-3xl w-full mx-auto px-5 sm:px-8 py-5 space-y-4">
