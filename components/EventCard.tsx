@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { MapPin, Calendar } from 'lucide-react';
+import { MapPin, Calendar, ArrowUpRight } from 'lucide-react';
 import { CATEGORY_LABELS } from '@/lib/categories';
 import { priceLabel } from '@/lib/money';
 
@@ -32,8 +32,8 @@ function dateBits(iso: string) {
   return {
     day: d.toLocaleDateString('en-GB', { day: '2-digit' }),
     mon: d.toLocaleDateString('en-GB', { month: 'short' }).toUpperCase(),
-    full: d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) + ' · ' +
-          d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+    full: d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
+      + ' · ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
   };
 }
 
@@ -42,47 +42,55 @@ export default function EventCard({ event, index = 0 }: { event: EventCardData; 
   const price = event.min_price != null ? priceLabel(event.min_price, event.currency) : null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
+    <motion.article
+      initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-60px' }}
-      transition={{ duration: 0.5, delay: (index % 3) * 0.07 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.45, delay: (index % 3) * 0.08, ease: [0.22, 1, 0.36, 1] }}
     >
       <Link
         href={`/events/${event.slug}`}
-        className="group block bg-white border border-obsidian/10 hover:border-gold/50 hover:shadow-xl hover:shadow-obsidian/5 transition-all duration-300 overflow-hidden"
+        className="group block overflow-hidden rounded-2xl border border-ink/8 bg-surface-elevated shadow-soft hover:shadow-lift hover:border-copper/25 transition-all duration-300"
       >
-        <div className="relative overflow-hidden aspect-[16/10]">
-          <img src={img(event)} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-          <div className="absolute inset-0 bg-gradient-to-t from-obsidian/30 via-transparent to-transparent" />
-          <div className="absolute top-3 left-3 bg-paper/95 backdrop-blur-sm border border-gold/30 px-2.5 py-1.5 text-center leading-none shadow-sm">
-            <p className="font-display text-xl italic text-gold-dark leading-none">{d.day}</p>
-            <p className="text-[8px] font-black tracking-[0.2em] text-obsidian/60 mt-0.5">{d.mon}</p>
+        <div className="relative aspect-[16/10] overflow-hidden">
+          <img
+            src={img(event)}
+            alt=""
+            className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink/50 via-ink/10 to-transparent" />
+          <div className="absolute top-3 left-3 flex h-14 w-14 flex-col items-center justify-center rounded-xl bg-surface-elevated/95 backdrop-blur-sm shadow-soft">
+            <span className="font-display text-2xl font-medium leading-none text-copper-deep">{d.day}</span>
+            <span className="text-[8px] font-bold tracking-[0.18em] text-ink-muted mt-0.5">{d.mon}</span>
           </div>
           {event.is_featured && (
-            <span className="absolute top-3 right-3 bg-gold text-obsidian text-[8px] font-black uppercase tracking-[0.2em] px-2 py-1">Featured</span>
+            <span className="absolute top-3 right-3 rounded-full bg-copper px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.15em] text-white">
+              Featured
+            </span>
           )}
-          <span className="absolute bottom-3 left-3 text-[9px] font-black uppercase tracking-[0.25em] text-white drop-shadow">
+          <span className="absolute bottom-3 left-3 rounded-full bg-ink/50 backdrop-blur-sm px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.18em] text-pearl">
             {CATEGORY_LABELS[event.category] ?? event.category}
           </span>
         </div>
         <div className="p-5">
-          <h3 className="font-display text-xl sm:text-2xl italic text-obsidian leading-tight mb-1 group-hover:text-gold-dark transition-colors">{event.title}</h3>
-          {event.tagline && <p className="text-obsidian/45 text-sm mb-3 line-clamp-1">{event.tagline}</p>}
-          <div className="flex items-center gap-1.5 text-obsidian/55 text-xs mb-1">
-            <Calendar size={12} className="text-gold-dark shrink-0" /> {d.full}
+          <h3 className="font-display text-xl sm:text-2xl italic text-ink leading-snug group-hover:text-copper-deep transition-colors line-clamp-2">
+            {event.title}
+          </h3>
+          {event.tagline && <p className="text-ink-muted text-sm mt-1 line-clamp-1">{event.tagline}</p>}
+          <div className="mt-4 space-y-1.5 text-xs text-ink-muted">
+            <p className="flex items-center gap-2"><Calendar size={13} className="text-copper shrink-0" />{d.full}</p>
+            <p className="flex items-center gap-2"><MapPin size={13} className="text-copper shrink-0" />{event.venue ? `${event.venue}, ` : ''}{event.city}</p>
           </div>
-          <div className="flex items-center gap-1.5 text-obsidian/55 text-xs mb-4">
-            <MapPin size={12} className="text-gold-dark shrink-0" /> {event.venue ? `${event.venue}, ` : ''}{event.city}
-          </div>
-          <div className="flex items-center justify-between border-t border-obsidian/10 pt-3">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/50">
-              {price ? <>From <span className="text-gold-dark">{price}</span></> : 'Free'}
+          <div className="mt-4 flex items-center justify-between border-t border-ink/8 pt-4">
+            <span className="text-sm font-semibold text-ink">
+              {price ? <>From <span className="text-copper">{price}</span></> : 'Free entry'}
             </span>
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gold-dark group-hover:text-gold">Get Tickets &rarr;</span>
+            <span className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-[0.12em] text-copper group-hover:gap-2 transition-all">
+              Tickets <ArrowUpRight size={14} />
+            </span>
           </div>
         </div>
       </Link>
-    </motion.div>
+    </motion.article>
   );
 }

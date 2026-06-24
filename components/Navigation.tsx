@@ -4,14 +4,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Menu, X, Sparkles, User, LogOut, Ticket, LayoutDashboard } from 'lucide-react';
+import { Menu, X, Sparkles, User, LogOut, Ticket, LayoutDashboard, Compass } from 'lucide-react';
 import { useUser } from '@/components/auth/AuthProvider';
 
 const LINKS = [
-  { label: 'Discover',     href: '/events' },
-  { label: 'AI Concierge', href: '/concierge' },
-  { label: 'My Tickets',   href: '/tickets' },
-  { label: 'Sell Tickets', href: '/create' },
+  { label: 'Discover', href: '/events', icon: Compass },
+  { label: 'Concierge', href: '/concierge', icon: Sparkles },
+  { label: 'Tickets', href: '/tickets', icon: Ticket },
+  { label: 'Host', href: '/create', icon: Sparkles },
 ];
 
 function initials(name: string | null, email: string) {
@@ -30,7 +30,7 @@ export default function Navigation() {
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 8);
+    const handler = () => setScrolled(window.scrollY > 12);
     window.addEventListener('scroll', handler, { passive: true });
     return () => window.removeEventListener('scroll', handler);
   }, []);
@@ -38,25 +38,28 @@ export default function Navigation() {
   useEffect(() => { setOpen(false); setMenu(false); }, [pathname]);
 
   useEffect(() => {
-    const onClick = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenu(false); };
+    const onClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenu(false);
+    };
     document.addEventListener('mousedown', onClick);
     return () => document.removeEventListener('mousedown', onClick);
   }, []);
 
   return (
     <>
-      <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? 'bg-paper/95 backdrop-blur-md shadow-[0_1px_0_0_rgba(201,168,76,0.25)]'
-          : 'bg-paper/80 backdrop-blur-sm border-b border-obsidian/5'
-      }`}>
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
-
-          <Link href="/" className="flex items-center gap-3 shrink-0 group" aria-label="Convivia24">
-            <img src="/convivia24.png" alt="Convivia24" className="h-7 w-auto" style={{ filter: 'brightness(0)' }} />
-            <span className="hidden sm:flex items-center gap-1.5">
-              <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
-              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-obsidian/40">Events · Tickets · AI</span>
+      <header
+        className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
+          scrolled
+            ? 'bg-surface/92 backdrop-blur-xl shadow-soft border-b border-ink/5'
+            : 'bg-surface/75 backdrop-blur-md'
+        }`}
+      >
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+          <Link href="/" className="flex items-center gap-3 shrink-0 group" aria-label="Convivia24 home">
+            <img src="/convivia24.png" alt="" className="h-7 w-auto transition-opacity group-hover:opacity-80" style={{ filter: 'brightness(0)' }} />
+            <span className="hidden lg:flex flex-col">
+              <span className="font-display text-lg italic leading-none text-ink">Convivia24</span>
+              <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-ink-muted mt-0.5">Curated gatherings</span>
             </span>
           </Link>
 
@@ -67,74 +70,83 @@ export default function Navigation() {
                 <Link
                   key={href}
                   href={href}
-                  className={`relative px-4 py-2 text-[13px] font-medium tracking-wide transition-colors duration-150 ${
-                    active ? 'text-obsidian' : 'text-obsidian/50 hover:text-obsidian'
+                  className={`relative px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                    active ? 'text-ink' : 'text-ink-muted hover:text-ink hover:bg-ink/5'
                   }`}
                 >
                   {label}
                   {active && (
                     <motion.span
-                      layoutId="nav-pill"
-                      className="absolute inset-0 bg-gold/15 border border-gold/30 -z-10"
-                      transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+                      layoutId="nav-indicator"
+                      className="absolute inset-0 rounded-xl bg-copper/10 -z-10"
+                      transition={{ type: 'spring', stiffness: 420, damping: 34 }}
                     />
                   )}
                 </Link>
               );
             })}
+          </nav>
 
-            {/* Account */}
+          <div className="hidden md:flex items-center gap-2">
             {!loading && !user && (
-              <Link href={`/signin?next=${encodeURIComponent(pathname)}`} className="ml-2 px-4 py-2 text-[13px] font-medium text-obsidian/60 hover:text-obsidian transition-colors">
+              <Link href={`/signin?next=${encodeURIComponent(pathname)}`} className="btn-ghost text-sm">
                 Sign in
               </Link>
             )}
             {user ? (
-              <div className="relative ml-2" ref={menuRef}>
-                <button onClick={() => setMenu((m) => !m)} className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-full hover:bg-obsidian/5 transition-colors">
+              <div className="relative" ref={menuRef}>
+                <button
+                  type="button"
+                  onClick={() => setMenu((m) => !m)}
+                  className="flex items-center gap-2 rounded-full p-1 pr-2 hover:bg-ink/5 transition-colors"
+                >
                   {user.image ? (
-                    <img src={user.image} alt="" className="w-8 h-8 rounded-full object-cover" />
+                    <img src={user.image} alt="" className="h-9 w-9 rounded-full object-cover ring-2 ring-copper/20" />
                   ) : (
-                    <span className="w-8 h-8 rounded-full bg-gold text-obsidian text-[11px] font-black flex items-center justify-center">{initials(user.name, user.email)}</span>
+                    <span className="h-9 w-9 rounded-full bg-copper text-white text-xs font-bold flex items-center justify-center">
+                      {initials(user.name, user.email)}
+                    </span>
                   )}
                 </button>
                 <AnimatePresence>
                   {menu && (
                     <motion.div
-                      initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.15 }}
-                      className="absolute right-0 mt-2 w-56 bg-white border border-obsidian/10 shadow-xl py-1.5"
+                      initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 mt-2 w-60 rounded-2xl border border-ink/8 bg-surface-elevated shadow-lift py-2 overflow-hidden"
                     >
-                      <div className="px-4 py-2 border-b border-obsidian/8">
-                        <p className="text-sm font-medium text-obsidian truncate">{user.name || 'Your account'}</p>
-                        <p className="text-xs text-obsidian/45 truncate">{user.email}</p>
+                      <div className="px-4 py-3 border-b border-ink/8">
+                        <p className="text-sm font-semibold text-ink truncate">{user.name || 'Your account'}</p>
+                        <p className="text-xs text-ink-muted truncate">{user.email}</p>
                       </div>
-                      <Link href="/tickets" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-obsidian/70 hover:text-obsidian hover:bg-paper transition-colors"><Ticket size={14} className="text-gold-dark" /> My Tickets</Link>
-                      <Link href="/create" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-obsidian/70 hover:text-obsidian hover:bg-paper transition-colors"><Sparkles size={14} className="text-gold-dark" /> Sell Tickets</Link>
+                      <Link href="/tickets" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-ink-muted hover:bg-surface hover:text-ink"><Ticket size={16} className="text-copper" /> My tickets</Link>
+                      <Link href="/create" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-ink-muted hover:bg-surface hover:text-ink"><Sparkles size={16} className="text-copper" /> Host an event</Link>
                       {user.isAdmin && (
-                        <Link href="/admin" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-obsidian/70 hover:text-obsidian hover:bg-paper transition-colors"><LayoutDashboard size={14} className="text-gold-dark" /> Organizer Console</Link>
+                        <Link href="/admin" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-ink-muted hover:bg-surface hover:text-ink"><LayoutDashboard size={16} className="text-copper" /> Organizer console</Link>
                       )}
-                      <button onClick={() => signOut()} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-obsidian/70 hover:text-obsidian hover:bg-paper transition-colors border-t border-obsidian/8 mt-1"><LogOut size={14} className="text-gold-dark" /> Sign out</button>
+                      <button type="button" onClick={() => signOut()} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-ink-muted hover:bg-surface hover:text-ink border-t border-ink/8 mt-1">
+                        <LogOut size={16} className="text-copper" /> Sign out
+                      </button>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
             ) : (
-              <Link
-                href="/events"
-                className="ml-1 inline-flex items-center gap-1.5 px-5 py-2 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.15em] transition-colors duration-150"
-              >
-                <Sparkles size={13} /> Find Events
+              <Link href="/events" className="btn-primary text-xs !px-4 !py-2.5">
+                Find events
               </Link>
             )}
-          </nav>
+          </div>
 
           <button
             type="button"
-            onClick={() => setOpen(v => !v)}
-            className="md:hidden p-2 text-obsidian/70 hover:text-obsidian transition-colors"
+            onClick={() => setOpen((v) => !v)}
+            className="md:hidden flex h-10 w-10 items-center justify-center rounded-xl text-ink-muted hover:bg-ink/5"
             aria-label={open ? 'Close menu' : 'Open menu'}
           >
-            {open ? <X size={22} strokeWidth={2} /> : <Menu size={22} strokeWidth={2} />}
+            {open ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
       </header>
@@ -145,50 +157,60 @@ export default function Navigation() {
         {open && (
           <>
             <motion.div
-              key="backdrop"
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}
-              className="fixed inset-0 z-40 bg-obsidian/30 md:hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40 bg-ink/30 backdrop-blur-sm md:hidden"
               onClick={() => setOpen(false)}
             />
             <motion.div
-              key="drawer"
-              initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}
-              className="fixed top-16 inset-x-0 z-50 bg-paper border-b border-gold/30 shadow-lg md:hidden"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="fixed top-16 inset-x-3 z-50 rounded-2xl border border-ink/10 bg-surface-elevated shadow-lift overflow-hidden md:hidden"
             >
               {user && (
-                <div className="border-b border-obsidian/10 px-5 py-3 flex items-center gap-3">
+                <div className="border-b border-ink/8 px-5 py-4 flex items-center gap-3">
                   {user.image ? (
-                    <img src={user.image} alt="" className="w-9 h-9 rounded-full object-cover" />
+                    <img src={user.image} alt="" className="h-10 w-10 rounded-full object-cover" />
                   ) : (
-                    <span className="w-9 h-9 rounded-full bg-gold text-obsidian text-xs font-black flex items-center justify-center">{initials(user.name, user.email)}</span>
+                    <span className="h-10 w-10 rounded-full bg-copper text-white text-sm font-bold flex items-center justify-center">{initials(user.name, user.email)}</span>
                   )}
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-obsidian truncate">{user.name || 'Your account'}</p>
-                    <p className="text-xs text-obsidian/45 truncate">{user.email}</p>
+                    <p className="text-sm font-semibold truncate">{user.name || 'Your account'}</p>
+                    <p className="text-xs text-ink-muted truncate">{user.email}</p>
                   </div>
                 </div>
               )}
-              <nav className="px-5 py-3 divide-y divide-obsidian/10">
-                {LINKS.map(({ label, href }) => {
-                  const active = pathname === href;
+              <nav className="p-3">
+                {LINKS.map(({ label, href, icon: Icon }) => {
+                  const active = pathname === href || pathname.startsWith(href);
                   return (
-                    <Link key={href} href={href} className={`flex items-center justify-between py-3.5 text-[15px] font-medium transition-colors ${active ? 'text-gold-dark' : 'text-obsidian/70 hover:text-obsidian'}`}>
+                    <Link
+                      key={href}
+                      href={href}
+                      className={`flex items-center gap-3 rounded-xl px-4 py-3.5 text-[15px] font-medium transition-colors ${
+                        active ? 'bg-copper/10 text-copper-deep' : 'text-ink-muted hover:bg-surface hover:text-ink'
+                      }`}
+                    >
+                      <Icon size={18} />
                       {label}
-                      <span className="text-gold/50 text-lg leading-none">&rsaquo;</span>
                     </Link>
                   );
                 })}
                 {user?.isAdmin && (
-                  <Link href="/admin" className="flex items-center justify-between py-3.5 text-[15px] font-medium text-obsidian/70 hover:text-obsidian">Organizer Console <span className="text-gold/50 text-lg leading-none">&rsaquo;</span></Link>
+                  <Link href="/admin" className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-[15px] font-medium text-ink-muted hover:bg-surface hover:text-ink">
+                    <LayoutDashboard size={18} /> Organizer console
+                  </Link>
                 )}
-                <div className="pt-4 pb-2">
+                <div className="pt-3 mt-2 border-t border-ink/8">
                   {user ? (
-                    <button onClick={() => signOut()} className="w-full flex items-center justify-center gap-2 py-3.5 border border-obsidian/20 text-obsidian text-[12px] font-black uppercase tracking-[0.15em] hover:border-gold transition-colors">
-                      <LogOut size={14} /> Sign out
+                    <button type="button" onClick={() => signOut()} className="btn-secondary w-full">
+                      <LogOut size={16} /> Sign out
                     </button>
                   ) : (
-                    <Link href={`/signin?next=${encodeURIComponent(pathname)}`} className="flex items-center justify-center gap-2 w-full text-center py-3.5 bg-gold hover:bg-gold-light text-obsidian text-[12px] font-black uppercase tracking-[0.15em] transition-colors">
-                      <User size={14} /> Sign in
+                    <Link href={`/signin?next=${encodeURIComponent(pathname)}`} className="btn-primary w-full">
+                      <User size={16} /> Sign in
                     </Link>
                   )}
                 </div>

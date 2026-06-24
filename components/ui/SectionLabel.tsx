@@ -5,17 +5,14 @@ interface SectionLabelProps {
   variant?: 'dark' | 'light';
 }
 
-// Both variants now sit on light backgrounds. "dark" = gold accent eyebrow,
-// "light" = obsidian eyebrow. Kept the prop for backwards compatibility.
 export function SectionLabel({ children, variant = 'dark' }: SectionLabelProps) {
+  const accent = variant === 'dark' ? 'text-copper-deep border-copper/30' : 'text-ink border-ink/15';
+  const line = variant === 'dark' ? 'bg-copper' : 'bg-ink';
+
   return (
-    <div className={`inline-flex items-center gap-2.5 mb-8 ${
-      variant === 'dark'
-        ? 'text-gold-dark border-b border-gold-dark/30 pb-1'
-        : 'text-obsidian border-b border-obsidian/20 pb-1'
-    }`}>
-      <div className={`w-4 h-px ${variant === 'dark' ? 'bg-gold-dark' : 'bg-obsidian'}`} />
-      <span className="text-[9px] font-sans font-black uppercase tracking-[0.3em]">{children}</span>
+    <div className={`inline-flex items-center gap-2.5 mb-6 sm:mb-8 ${accent}`}>
+      <span className={`h-1 w-1 rounded-full ${line}`} />
+      <span className="text-[10px] font-bold uppercase tracking-[0.28em]">{children}</span>
     </div>
   );
 }

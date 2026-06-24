@@ -3,75 +3,126 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 10, 10, 10;
+  --ink: #0f0e12;
+  --ink-muted: #5c5854;
+  --surface: #f7f5f2;
+  --surface-elevated: #ffffff;
+  --copper: #c4784a;
+  --copper-bright: #e0986a;
+  --copper-deep: #8f4f2e;
+  --pearl: #faf8f5;
+  --night: #0c0a10;
+  --radius: 0.75rem;
+  --radius-lg: 1rem;
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: #faf7f1;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply font-sans text-ink antialiased;
+    background: var(--surface);
+  }
 }
 
-/* Custom Utilities */
-.animate-spin-slow {
-  animation: spin 12s linear infinite;
+@layer components {
+  .glass-card {
+    @apply backdrop-blur-xl bg-white/70 border border-white/50 shadow-soft rounded-2xl;
+  }
+
+  .glass-card-hover {
+    @apply hover:shadow-lift transition-all duration-300 ease-out;
+  }
+  .glass-card-hover:hover {
+    background-color: rgba(255, 255, 255, 0.88);
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 font-semibold text-sm transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-primary {
+    @apply btn px-5 py-2.5 rounded-xl bg-copper text-white hover:bg-copper-bright shadow-glow;
+  }
+
+  .btn-secondary {
+    @apply btn px-5 py-2.5 rounded-xl border border-ink/10 bg-surface-elevated text-ink hover:border-copper/40 hover:shadow-soft;
+  }
+
+  .btn-ghost {
+    @apply btn px-4 py-2 rounded-lg text-ink-muted hover:text-ink hover:bg-ink/5;
+  }
+
+  .input-field {
+    @apply w-full rounded-xl border border-ink/10 bg-surface-elevated px-4 py-3 text-sm text-ink placeholder:text-ink-muted/60 outline-none transition-colors focus:border-copper/50 focus:ring-2 focus:ring-copper/15;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all duration-200;
+  }
+
+  .chip-active {
+    @apply chip bg-ink text-pearl;
+  }
+
+  .chip-inactive {
+    @apply chip bg-surface-elevated border border-ink/10 text-ink-muted hover:border-copper/30 hover:text-ink;
+  }
+
+  .page-enter {
+    animation: fadeUp 0.45s ease-out forwards;
+  }
 }
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+}
+
+/* Per-event day/night theming */
+.event-theme-day {
+  --event-bg: #f7f5f2;
+  --event-fg: #0f0e12;
+  --event-accent: #c4784a;
+  background: var(--event-bg);
+  color: var(--event-fg);
+}
+.event-theme-night {
+  --event-bg: #0c0a10;
+  --event-fg: #f7f5f2;
+  --event-accent: #e0986a;
+  background: radial-gradient(ellipse 120% 80% at 50% -20%, #1e1830 0%, var(--event-bg) 55%);
+  color: var(--event-fg);
+}
+.event-theme-night .glass-card {
+  @apply bg-white/5 border-white/10 shadow-black/20;
+}
+
+::selection {
+  background: #c4784a;
+  color: #fff;
+}
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #c4784a55; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #c4784a; }
 
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* Frosted glass design system */
-  .glass-card {
-    @apply backdrop-blur-xl bg-white/60 border border-white/40 shadow-lg shadow-obsidian/5;
-  }
-  .glass-card-hover {
-    @apply hover:bg-white/75 hover:shadow-xl hover:shadow-obsidian/10 transition-all duration-300;
-  }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* Per-event day/night theming */
-.event-theme-day {
-  --event-bg: #faf7f1;
-  --event-fg: #0a0a0a;
-  --event-muted: rgba(10, 10, 10, 0.55);
-  background: var(--event-bg);
-  color: var(--event-fg);
-}
-.event-theme-night {
-  --event-bg: #0d0b12;
-  --event-fg: #f5f0e8;
-  --event-muted: rgba(245, 240, 232, 0.55);
-  background: radial-gradient(ellipse at top, #1a1028 0%, var(--event-bg) 55%);
-  color: var(--event-fg);
-}
-.event-theme-night .glass-card {
-  @apply bg-white/5 border-white/10 shadow-black/30;
-}
-.event-theme-night .glass-card-hover:hover {
-  @apply bg-white/10;
-}
-
-/* Selection */
-::selection {
-  background: #c9a84c;
-  color: #0a0a0a;
-}
-
-/* Gold scrollbar */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: #0a0a0a; }
-::-webkit-scrollbar-thumb { background: #c9a84c; }
-::-webkit-scrollbar-thumb:hover { background: #e2c97e; }
+.animate-spin-slow { animation: spin 12s linear infinite; }

@@ -2,14 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Search, Sparkles, Ticket, Plus } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Home, Compass, Sparkles, Ticket, PlusCircle } from 'lucide-react';
 
 const TABS = [
-  { href: '/',          label: 'Home',     icon: Home,    exact: true },
-  { href: '/events',    label: 'Discover', icon: Search,  exact: false },
-  { href: '/concierge', label: 'AI',       icon: Sparkles, exact: false, accent: true },
-  { href: '/tickets',   label: 'Tickets',  icon: Ticket,  exact: false },
-  { href: '/create',    label: 'Sell',     icon: Plus,    exact: false },
+  { href: '/', label: 'Home', icon: Home, exact: true },
+  { href: '/events', label: 'Discover', icon: Compass, exact: false },
+  { href: '/concierge', label: 'Concierge', icon: Sparkles, exact: false, accent: true },
+  { href: '/tickets', label: 'Tickets', icon: Ticket, exact: false },
+  { href: '/create', label: 'Host', icon: PlusCircle, exact: false },
 ];
 
 export default function MobileTabBar() {
@@ -17,26 +18,37 @@ export default function MobileTabBar() {
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-paper/95 backdrop-blur-md border-t border-obsidian/10 pb-[env(safe-area-inset-bottom)]"
+      className="fixed bottom-0 inset-x-0 z-40 md:hidden border-t border-ink/8 bg-surface-elevated/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]"
       aria-label="Primary"
     >
-      <div className="grid grid-cols-5 h-16">
+      <div className="grid grid-cols-5 h-[4.25rem]">
         {TABS.map(({ href, label, icon: Icon, exact, accent }) => {
           const active = exact ? pathname === href : pathname.startsWith(href);
           return (
             <Link
               key={href}
               href={href}
-              className="flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform"
+              className="relative flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform"
             >
               {accent ? (
-                <span className={`flex items-center justify-center w-9 h-9 -mt-3 rounded-full shadow-md transition-colors ${active ? 'bg-gold-dark text-white' : 'bg-gold text-obsidian'}`}>
-                  <Icon size={17} strokeWidth={2.4} />
-                </span>
+                <motion.span
+                  layoutId="tab-fab"
+                  className={`flex h-11 w-11 -mt-5 items-center justify-center rounded-2xl shadow-glow transition-colors ${
+                    active ? 'bg-copper text-white' : 'bg-copper-bright text-white'
+                  }`}
+                >
+                  <Icon size={20} strokeWidth={2.25} />
+                </motion.span>
               ) : (
-                <Icon size={20} strokeWidth={active ? 2.4 : 1.8} className={active ? 'text-gold-dark' : 'text-obsidian/45'} />
+                <Icon
+                  size={22}
+                  strokeWidth={active ? 2.35 : 1.75}
+                  className={active ? 'text-copper' : 'text-ink-muted/55'}
+                />
               )}
-              <span className={`text-[9px] font-black uppercase tracking-[0.12em] ${active ? 'text-gold-dark' : 'text-obsidian/40'}`}>{label}</span>
+              <span className={`text-[9px] font-bold uppercase tracking-wide ${active ? 'text-copper-deep' : 'text-ink-muted/55'}`}>
+                {label}
+              </span>
             </Link>
           );
         })}

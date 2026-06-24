@@ -1,71 +1,102 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-    content: [
-      "./app/**/*.{js,jsx,ts,tsx}",
-      "./components/**/*.{js,jsx,ts,tsx}",
-      "./src/**/*.{js,jsx,ts,tsx}",
-    ],
-    theme: {
-      extend: {
-        colors: {
-          obsidian: {
-            DEFAULT: '#0a0a0a',
-            50:  '#1a1a1a',
-            100: '#141414',
-            200: '#111111',
-          },
-          gold: {
-            DEFAULT: '#c9a84c',
-            light:   '#e2c97e',
-            dark:    '#a07c28',
-            muted:   '#8b6914',
-          },
-          cream: {
-            DEFAULT: '#f5f0e8',
-            dark:    '#ede5d4',
-            muted:   '#d9cebb',
-          },
-          velvet: {
-            DEFAULT: '#0d0b12',
-            50: '#1a1028',
-            100: '#120e1a',
-          },
-          alabaster: {
-            DEFAULT: '#f7f4ef',
-            dark: '#ede8df',
-          },
-          paper: {
-            DEFAULT: '#faf7f1',
-            dark:    '#f1ece2',
-          },
+  content: [
+    './app/**/*.{js,jsx,ts,tsx}',
+    './components/**/*.{js,jsx,ts,tsx}',
+    './src/**/*.{js,jsx,ts,tsx}',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        ink: {
+          DEFAULT: '#0f0e12',
+          soft: '#1a1822',
+          muted: '#5c5854',
         },
-        fontFamily: {
-          display: ['var(--font-cormorant)', 'Georgia', 'serif'],
-          sans:    ['var(--font-outfit)', 'sans-serif'],
+        surface: {
+          DEFAULT: '#f7f5f2',
+          elevated: '#ffffff',
+          sunken: '#efecea',
         },
-        animation: {
-          blob: "blob 7s infinite",
-          'spin-slow': 'spin 12s linear infinite',
+        copper: {
+          DEFAULT: '#c4784a',
+          bright: '#e0986a',
+          deep: '#8f4f2e',
+          muted: '#c4784a33',
         },
-        keyframes: {
-          blob: {
-            "0%": {
-              transform: "translate(0px, 0px) scale(1)",
-            },
-            "33%": {
-              transform: "translate(30px, -50px) scale(1.1)",
-            },
-            "66%": {
-              transform: "translate(-20px, 20px) scale(0.9)",
-            },
-            "100%": {
-              transform: "translate(0px, 0px) scale(1)",
-            },
-          },
+        pearl: '#faf8f5',
+        night: {
+          DEFAULT: '#0c0a10',
+          glow: '#1e1830',
+        },
+        // Legacy aliases — map to new palette
+        obsidian: {
+          DEFAULT: '#0f0e12',
+          50: '#1a1822',
+          100: '#14131a',
+          200: '#111018',
+        },
+        gold: {
+          DEFAULT: '#c4784a',
+          light: '#e0986a',
+          dark: '#8f4f2e',
+          muted: '#8f4f2e',
+        },
+        cream: {
+          DEFAULT: '#efecea',
+          dark: '#e5e1dc',
+          muted: '#d4cfc8',
+        },
+        paper: {
+          DEFAULT: '#f7f5f2',
+          dark: '#efecea',
+        },
+        velvet: {
+          DEFAULT: '#0c0a10',
+          50: '#1e1830',
+          100: '#120e1a',
+        },
+        alabaster: {
+          DEFAULT: '#faf8f5',
+          dark: '#efecea',
+        },
+      },
+      fontFamily: {
+        display: ['var(--font-fraunces)', 'Georgia', 'serif'],
+        sans: ['var(--font-jakarta)', 'system-ui', 'sans-serif'],
+      },
+      borderRadius: {
+        '2xl': '1rem',
+        '3xl': '1.25rem',
+      },
+      boxShadow: {
+        soft: '0 4px 24px -4px rgba(15, 14, 18, 0.08)',
+        lift: '0 12px 40px -8px rgba(15, 14, 18, 0.14)',
+        glow: '0 0 0 1px rgba(196, 120, 74, 0.15), 0 8px 32px -8px rgba(196, 120, 74, 0.25)',
+      },
+      animation: {
+        blob: 'blob 7s infinite',
+        'spin-slow': 'spin 12s linear infinite',
+        'fade-up': 'fadeUp 0.5s ease-out forwards',
+        shimmer: 'shimmer 2s linear infinite',
+      },
+      keyframes: {
+        blob: {
+          '0%': { transform: 'translate(0px, 0px) scale(1)' },
+          '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+          '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+          '100%': { transform: 'translate(0px, 0px) scale(1)' },
+        },
+        fadeUp: {
+          '0%': { opacity: '0', transform: 'translateY(12px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
         },
       },
     },
-    plugins: [
-      require('@tailwindcss/forms'),
-    ],
-  }
+  },
+  plugins: [require('@tailwindcss/forms')],
+};

@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { Calendar, Ticket, CheckCircle2, Receipt, ArrowRight, Plus, ScanLine, Database, Sparkles, RefreshCw } from 'lucide-react';
 import { useAdmin } from './layout';
 import { formatMoney } from '@/lib/money';
+import StatCard from '@/components/ui/StatCard';
+import Button from '@/components/ui/Button';
+import EmptyState from '@/components/ui/EmptyState';
 
 interface Stats {
   events: { total: number; published: number };
@@ -58,83 +61,99 @@ export default function AdminDashboard() {
     { icon: Calendar, label: 'Live events', value: num(stats?.events.published), sub: `${stats?.events.total ?? 0} total` },
     { icon: Ticket, label: 'Tickets sold', value: num(stats?.tickets.total), sub: `${stats?.tickets.checked_in ?? 0} checked in` },
     { icon: Receipt, label: 'Orders', value: num(stats?.orders.total), sub: 'paid' },
-    { icon: CheckCircle2, label: 'Revenue', value: loading ? '—' : formatMoney(stats?.orders.revenue ?? 0, 'NGN'), sub: 'gross (mixed ccy)' },
+    { icon: CheckCircle2, label: 'Revenue', value: loading ? '—' : formatMoney(stats?.orders.revenue ?? 0, 'NGN'), sub: 'gross' },
   ];
 
   return (
-    <div className="max-w-5xl">
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+    <div className="max-w-6xl mx-auto">
+      <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-light italic text-obsidian">Dashboard</h1>
-          <p className="text-obsidian/40 text-sm mt-1">Your events, tickets and check-ins at a glance.</p>
+          <h2 className="font-display text-3xl italic text-ink">Good to see you.</h2>
+          <p className="text-ink-muted text-sm mt-1">Events, revenue, and check-ins at a glance.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href="/create" className="inline-flex items-center gap-1.5 bg-[#c9a84c] text-[#0a0a0a] text-[11px] font-black uppercase tracking-[0.15em] px-4 py-2.5 hover:bg-[#d4b464] transition-colors"><Plus size={14} /> New event</Link>
-          <Link href="/admin/scan" className="inline-flex items-center gap-1.5 border border-[#c9a84c]/30 text-[#a07c28] text-[11px] font-black uppercase tracking-[0.15em] px-4 py-2.5 hover:bg-[#c9a84c]/10 transition-colors"><ScanLine size={14} /> Scan</Link>
-          <button onClick={seed} disabled={seeding} className="inline-flex items-center gap-1.5 border border-[#c9a84c]/30 text-[#a07c28] text-[11px] font-black uppercase tracking-[0.15em] px-4 py-2.5 hover:bg-[#c9a84c]/10 transition-colors disabled:opacity-60">
-            <Database size={14} /> {seeding ? 'Seeding…' : 'Seed sample events'}
+          <Button href="/create" size="sm"><Plus size={16} /> New event</Button>
+          <Button href="/admin/scan" variant="secondary" size="sm"><ScanLine size={16} /> Scan</Button>
+          <button type="button" onClick={seed} disabled={seeding} className="btn-secondary text-xs">
+            <Database size={14} /> {seeding ? 'Seeding…' : 'Seed samples'}
           </button>
         </div>
       </div>
-      {seedMsg && <p className="mb-6 text-[#a07c28] text-sm">{seedMsg}</p>}
+      {seedMsg && <p className="mb-6 text-copper-deep text-sm font-medium">{seedMsg}</p>}
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
-        {cards.map((c) => (
-          <div key={c.label} className="border border-[#c9a84c]/15 p-5">
-            <c.icon size={18} className="text-[#a07c28]/70 mb-3" />
-            <p className="text-3xl font-light text-obsidian">{c.value}</p>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 mt-1">{c.label}</p>
-            <p className="text-obsidian/30 text-xs mt-0.5">{c.sub}</p>
-          </div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-10">
+        {cards.map((c, i) => (
+          <StatCard key={c.label} {...c} index={i} />
         ))}
       </div>
 
-      {/* AI Insights */}
-      <div className="border border-[#c9a84c]/25 bg-[#c9a84c]/[0.04] p-5 mb-10">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-black uppercase tracking-[0.2em] text-obsidian/70 flex items-center gap-2"><Sparkles size={15} className="text-gold-dark" /> AI Insights</h2>
-          <button onClick={loadInsights} disabled={insightsLoading} className="text-obsidian/40 hover:text-[#a07c28] transition-colors disabled:opacity-50" title="Refresh">
-            <RefreshCw size={14} className={insightsLoading ? 'animate-spin' : ''} />
+      <div className="glass-card p-5 sm:p-6 mb-10">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-ink-muted flex items-center gap-2">
+            <Sparkles size={16} className="text-copper" /> AI insights
+          </h3>
+          <button type="button" onClick={loadInsights} disabled={insightsLoading} className="btn-ghost !p-2" title="Refresh">
+            <RefreshCw size={16} className={insightsLoading ? 'animate-spin' : ''} />
           </button>
         </div>
         {insightsLoading && !insights ? (
-          <p className="text-obsidian/40 text-sm">Analysing your sales…</p>
+          <p className="text-ink-muted text-sm">Analysing your sales patterns…</p>
         ) : insights && insights.length ? (
-          <ul className="space-y-2">
+          <ul className="space-y-3">
             {insights.map((t, i) => (
-              <li key={i} className="flex items-start gap-2.5 text-obsidian/75 text-sm"><span className="w-1.5 h-1.5 rounded-full bg-gold mt-1.5 shrink-0" /> {t}</li>
+              <li key={i} className="flex items-start gap-3 text-sm text-ink/80 leading-relaxed">
+                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-copper shrink-0" /> {t}
+              </li>
             ))}
           </ul>
         ) : (
-          <p className="text-obsidian/40 text-sm">No insights yet — once events are selling, recommendations show up here.</p>
+          <p className="text-ink-muted text-sm">Insights appear once events start selling.</p>
         )}
       </div>
 
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-black uppercase tracking-[0.2em] text-obsidian/60">Selling now</h2>
-        <Link href="/admin/events" className="inline-flex items-center gap-1 text-[#a07c28]/70 hover:text-[#a07c28] text-[10px] font-black uppercase tracking-[0.2em]">All events <ArrowRight size={12} /></Link>
+        <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-ink-muted">Selling now</h3>
+        <Link href="/admin/events" className="inline-flex items-center gap-1 text-xs font-bold text-copper hover:text-copper-bright transition-colors">
+          All events <ArrowRight size={14} />
+        </Link>
       </div>
 
-      <div className="border border-[#c9a84c]/15 divide-y divide-[#c9a84c]/10">
-        {loading ? (
-          <p className="p-5 text-obsidian/30 text-sm">Loading…</p>
-        ) : !stats?.byEvent?.length ? (
-          <p className="p-5 text-obsidian/30 text-sm">No published events yet. <Link href="/create" className="text-[#a07c28]">Create one →</Link></p>
-        ) : (
-          stats.byEvent.map((e) => (
-            <div key={e.slug} className="flex items-center justify-between gap-4 p-4">
+      {loading ? (
+        <div className="glass-card p-8 text-center text-ink-muted text-sm">Loading events…</div>
+      ) : !stats?.byEvent?.length ? (
+        <EmptyState
+          icon={Calendar}
+          title="No live events yet"
+          description="Create your first gathering or seed sample events to explore the console."
+          actionLabel="Create event"
+          actionHref="/create"
+        />
+      ) : (
+        <div className="glass-card divide-y divide-ink/8 overflow-hidden">
+          {stats.byEvent.map((e) => (
+            <div key={e.slug} className="flex items-center justify-between gap-4 p-4 sm:p-5 hover:bg-surface/80 transition-colors">
               <div className="min-w-0">
-                <Link href={`/events/${e.slug}`} className="font-display text-lg italic text-obsidian hover:text-[#a07c28] transition-colors truncate block">{e.title}</Link>
-                <p className="text-obsidian/30 text-xs">{new Date(e.starts_at).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
+                <Link href={`/admin/events/${e.slug}`} className="font-display text-lg italic text-ink hover:text-copper-deep transition-colors truncate block">
+                  {e.title}
+                </Link>
+                <p className="text-ink-muted text-xs mt-0.5">
+                  {new Date(e.starts_at).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}
+                </p>
               </div>
               <div className="flex items-center gap-6 shrink-0 text-right">
-                <div><p className="text-obsidian text-lg">{e.sold}</p><p className="text-[9px] uppercase tracking-wider text-obsidian/30">sold</p></div>
-                <div><p className="text-[#a07c28] text-lg">{e.checked_in}</p><p className="text-[9px] uppercase tracking-wider text-obsidian/30">in</p></div>
+                <div>
+                  <p className="text-lg font-semibold text-ink">{e.sold}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-ink-muted">sold</p>
+                </div>
+                <div>
+                  <p className="text-lg font-semibold text-copper">{e.checked_in}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-ink-muted">in</p>
+                </div>
               </div>
             </div>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
