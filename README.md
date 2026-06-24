@@ -1,24 +1,38 @@
-# Convivia24 — AI-Powered Events & Ticketing Platform
+# Convivia24 — The Experiential Event Platform
 
-Convivia24 is an events discovery and ticketing platform for parties, concerts, festivals and
-culture — think Fatsoma, but AI-powered. Guests discover events, buy tickets in seconds, and
-walk in with secure **QR + barcode** entry. Organizers list events with an AI co-pilot, sell
-tickets, scan guests at the door, and track sales in real time.
+Convivia24 is the platform for curated social gatherings — from exclusive daytime business
+salons to vibrant supper clubs and nightlife events. One hybrid platform handles approval-only
+guestlists, digital lounges, broadcast messaging, financial flow, and post-event memory walls.
 
-## Features
+## The Three Pillars
+
+### 1. Organizer Dashboard (SaaS)
+- **Approval-only guestlists** — guests apply with LinkedIn/Instagram before tickets unlock
+- **Broadcast hub** — email/SMS the full guest list with time-locked cues
+- **Financial flow** — live revenue, conversion tracking, per-event breakdown (`/admin/finance`)
+- AI event builder, door scanner, ticket tiers (existing)
+
+### 2. Guest Experience (Social Discovery)
+- **Digital lounge** — private web lobby for ticket holders (`/events/[slug]/lounge`)
+- **Intent badges** — ⚡ Seeking Co-Founders, ☕ Casual Networking, 🥂 Just Vibing
+- **Resonate** — one-tap connect with fellow attendees
+
+### 3. Shared Memory Wall
+- Collaborative post-event media grid (`/events/[slug]/memory`)
+- Emoji reactions, captions, unlocks after the event ends
+
+## Features (existing + new)
 
 ### For guests
 - **Discover** events with search, category and city filters (`/events`)
 - **AI Concierge** — describe your ideal night and get matched to live events (`/concierge`)
-- **Instant tickets** — pick a tier, check out, and get tickets immediately (free/RSVP mode)
-- **Digital tickets** with a signed QR code and Code 128 barcode (`/t/[code]`)
-- **My Tickets** lookup by order reference (`/tickets`)
+- **Guestlist applications** for approval-only events
+- **Digital tickets** with QR + barcode (`/t/[code]`)
 
 ### For organizers
-- **AI Event Builder** — drafts your tagline, description, lineup and ticket tiers from a sentence (`/create`)
-- **Organizer console** (`/admin`) — dashboard, event management, orders, and a **door scanner**
-- **Door scanner** with live camera QR scanning (where supported) + manual check-in (`/admin/scan`)
-- Tamper-evident tickets (HMAC-signed payloads), duplicate-proof check-in
+- **Organizer console** (`/admin`) — dashboard, events, guestlist, broadcast, finance, scanner
+- **Per-event theming** — Alabaster (day) or Velvet Obsidian (night) in the event editor
+- Frosted-glass UI design system
 
 ## Tech Stack
 - **Framework**: Next.js 16 (App Router)

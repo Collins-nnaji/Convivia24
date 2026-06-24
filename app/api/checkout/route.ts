@@ -35,6 +35,20 @@ export async function POST(req: NextRequest) {
     const event = eventRows[0];
     if (!event) return NextResponse.json({ error: 'Event not found.' }, { status: 404 });
 
+    if (event.guestlist_mode === 'approval') {
+      const approved = await sql`
+        SELECT 1 FROM guestlist_applications
+        WHERE event_id = ${event.id} AND user_id = ${user.id} AND status = 'approved'
+        LIMIT 1
+      `;
+      if (!approved.length) {
+        return NextResponse.json({
+          error: 'This event requires guestlist approval before purchase.',
+          code: 'GUESTLIST_REQUIRED',
+        }, { status: 403 });
+      }
+    }
+
     // Load the requested ticket types and validate availability
     const wanted = items.filter((i) => i.quantity > 0);
     if (wanted.length === 0) return NextResponse.json({ error: 'Select at least one ticket.' }, { status: 400 });

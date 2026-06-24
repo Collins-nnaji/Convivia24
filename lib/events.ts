@@ -23,6 +23,11 @@ export interface EventRow {
   tags: string[] | null;
   is_featured: boolean;
   status: string;
+  guestlist_mode?: string;
+  theme_mode?: string;
+  theme_accent?: string | null;
+  lounge_enabled?: boolean;
+  memory_wall_enabled?: boolean;
 }
 
 export interface TicketTypeRow {

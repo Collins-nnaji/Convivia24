@@ -25,6 +25,15 @@ module.exports = {
             dark:    '#ede5d4',
             muted:   '#d9cebb',
           },
+          velvet: {
+            DEFAULT: '#0d0b12',
+            50: '#1a1028',
+            100: '#120e1a',
+          },
+          alabaster: {
+            DEFAULT: '#f7f4ef',
+            dark: '#ede8df',
+          },
           paper: {
             DEFAULT: '#faf7f1',
             dark:    '#f1ece2',

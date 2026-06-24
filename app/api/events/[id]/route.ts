@@ -45,6 +45,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         tags            = COALESCE(${(d.tags ?? null) as string[] | null}::text[], tags),
         is_featured     = COALESCE(${d.is_featured ?? null}, is_featured),
         status          = COALESCE(${d.status ?? null}, status),
+        guestlist_mode  = COALESCE(${d.guestlist_mode ?? null}, guestlist_mode),
+        theme_mode      = COALESCE(${d.theme_mode ?? null}, theme_mode),
+        theme_accent    = COALESCE(${d.theme_accent ?? null}, theme_accent),
+        lounge_enabled  = COALESCE(${d.lounge_enabled ?? null}, lounge_enabled),
+        memory_wall_enabled = COALESCE(${d.memory_wall_enabled ?? null}, memory_wall_enabled),
         updated_at      = NOW()
       WHERE id = ${id}
       RETURNING *

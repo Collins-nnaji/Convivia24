@@ -19,6 +19,7 @@ interface EventForm {
   city: string; country: string; starts_at: string; ends_at: string;
   cover_image: string; currency: string; capacity: string; age_restriction: string;
   lineup: string; tags: string; is_featured: boolean; status: string;
+  guestlist_mode: string; theme_mode: string;
 }
 interface Tier {
   id: string; name: string; description: string | null; price: string; currency: string;
@@ -70,6 +71,8 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
       lineup: Array.isArray(e.lineup) ? (e.lineup as string[]).join(', ') : '',
       tags: Array.isArray(e.tags) ? (e.tags as string[]).join(', ') : '',
       is_featured: !!e.is_featured, status: String(e.status ?? 'published'),
+      guestlist_mode: String(e.guestlist_mode ?? 'open'),
+      theme_mode: String(e.theme_mode ?? 'day'),
     };
   }
 
@@ -102,6 +105,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
         lineup: form.lineup ? form.lineup.split(',').map((s) => s.trim()).filter(Boolean) : [],
         tags: form.tags ? form.tags.split(',').map((s) => s.trim()).filter(Boolean) : [],
         is_featured: form.is_featured, status: form.status,
+        guestlist_mode: form.guestlist_mode, theme_mode: form.theme_mode,
       };
       const res = await fetch(`/api/events/${form.id}`, {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
@@ -247,11 +251,33 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
             <button onClick={() => set('is_featured', !form.is_featured)} className={`w-full flex items-center justify-center gap-2 py-2.5 text-[10px] font-black uppercase tracking-[0.15em] border transition-colors ${form.is_featured ? 'bg-gold border-gold text-obsidian' : 'bg-white border-obsidian/15 text-obsidian/55 hover:border-gold/50'}`}>
               <Star size={13} className={form.is_featured ? 'fill-obsidian' : ''} /> {form.is_featured ? 'Featured' : 'Feature this event'}
             </button>
-            <div className="mt-4">
-              <label className={label}>Currency</label>
-              <select value={form.currency} onChange={(e) => set('currency', e.target.value)} className={input}>
-                {CURRENCIES.map((c) => <option key={c}>{c}</option>)}
-              </select>
+            <div className="mt-4 space-y-4">
+              <div>
+                <label className={label}>Guestlist mode</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(['open', 'approval'] as const).map((m) => (
+                    <button key={m} type="button" onClick={() => set('guestlist_mode', m)} className={`py-2 text-[10px] font-black uppercase tracking-[0.12em] border transition-colors ${form.guestlist_mode === m ? 'bg-obsidian text-cream border-obsidian' : 'bg-white border-obsidian/15 text-obsidian/55'}`}>
+                      {m === 'open' ? 'Open' : 'Approval'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className={label}>Page theme</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(['day', 'night'] as const).map((m) => (
+                    <button key={m} type="button" onClick={() => set('theme_mode', m)} className={`py-2 text-[10px] font-black uppercase tracking-[0.12em] border transition-colors ${form.theme_mode === m ? 'bg-obsidian text-cream border-obsidian' : 'bg-white border-obsidian/15 text-obsidian/55'}`}>
+                      {m === 'day' ? 'Alabaster' : 'Velvet'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className={label}>Currency</label>
+                <select value={form.currency} onChange={(e) => set('currency', e.target.value)} className={input}>
+                  {CURRENCIES.map((c) => <option key={c}>{c}</option>)}
+                </select>
+              </div>
             </div>
           </div>
 

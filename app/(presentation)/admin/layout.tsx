@@ -3,7 +3,7 @@
 import { createContext, useContext, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Calendar, Receipt, ScanLine, ImagePlus, Plus, LogOut, Menu, ShieldAlert } from 'lucide-react';
+import { LayoutDashboard, Calendar, Receipt, ScanLine, ImagePlus, Plus, LogOut, Menu, ShieldAlert, UserCheck, Megaphone, Wallet } from 'lucide-react';
 import { useUser } from '@/components/auth/AuthProvider';
 import { signInWithGoogle } from '@/lib/auth/client';
 
@@ -17,6 +17,9 @@ export const useAdmin = () => useContext(Ctx);
 const NAV = [
   { href: '/admin',         label: 'Dashboard',    icon: LayoutDashboard },
   { href: '/admin/events',  label: 'Events',       icon: Calendar },
+  { href: '/admin/guestlist', label: 'Guestlist',  icon: UserCheck },
+  { href: '/admin/broadcast', label: 'Broadcast',  icon: Megaphone },
+  { href: '/admin/finance', label: 'Finance',      icon: Wallet },
   { href: '/admin/orders',  label: 'Orders',       icon: Receipt },
   { href: '/admin/scan',    label: 'Door Scanner', icon: ScanLine },
   { href: '/create',        label: 'New Event',    icon: Plus },
@@ -32,6 +35,7 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
         <div className="px-5 py-6 border-b border-[#c9a84c]/15">
           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#a07c28]/60 mb-1">Organizer</p>
           <p className="text-lg font-light italic text-obsidian tracking-tight">Convivia24</p>
+          <p className="text-[9px] uppercase tracking-wider text-obsidian/35 mt-1">Experiential events</p>
         </div>
         <nav className="flex-1 py-4 overflow-y-auto">
           {NAV.map(({ href, label, icon: Icon }) => {

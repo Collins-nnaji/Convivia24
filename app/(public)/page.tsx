@@ -3,28 +3,34 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles, QrCode, ScanLine, Ticket, BarChart3, Search, MapPin } from 'lucide-react';
+import { ArrowRight, Sparkles, QrCode, ScanLine, Ticket, BarChart3, Search, MapPin, Users } from 'lucide-react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import EventCard, { type EventCardData } from '@/components/EventCard';
 import { CATEGORY_LABELS } from '@/lib/categories';
 
 const TICKER = [
-  'Discover Events Worldwide', 'Buy Tickets in Seconds', 'QR + Barcode Entry', 'AI Event Concierge',
-  'Lagos · London · New York · Accra · Toronto', 'Sell Out Your Next Event', 'Parties · Concerts · Festivals',
+  'Curated Social Gatherings', 'Business Salons · Supper Clubs · Nightlife', 'Approval-Only Guestlists',
+  'Digital Lounge · Intent Badges', 'Broadcast Hub · Memory Wall', 'Tickets via Convivia24',
 ];
 
-const CATEGORIES = ['nightlife', 'concert', 'festival', 'party', 'comedy', 'food', 'conference', 'arts'];
+const CATEGORIES = ['nightlife', 'conference', 'food', 'party', 'concert', 'festival', 'comedy', 'arts'];
+
+const PILLARS = [
+  { icon: Sparkles, title: 'Organizer dashboard', desc: 'Approval-only guestlists, broadcast hub, live revenue analytics, and co-host split payouts — built for salons, supper clubs, and promoters alike.' },
+  { icon: Users, title: 'Guest experience', desc: 'A private digital lounge for every event. Intent badges, attendee directory, and one-tap Resonate to connect before you walk in.' },
+  { icon: QrCode, title: 'Shared memory wall', desc: 'The morning after, a collaborative visual roll unlocks. Drop photos, react with emojis, keep the community alive for days.' },
+];
 
 const STEPS = [
-  { icon: Search, title: 'Discover', desc: 'Browse parties, concerts and festivals anywhere in the world — or let the AI concierge find your night.' },
-  { icon: Ticket, title: 'Book in seconds', desc: 'Pick your tier, drop your details, and your tickets are issued instantly. No queues.' },
-  { icon: QrCode, title: 'Scan & go', desc: 'Every ticket carries a secure QR and barcode. Show your phone at the door and walk in.' },
+  { icon: Search, title: 'Discover', desc: 'Browse curated gatherings — from daytime business salons to late-night supper clubs and parties.' },
+  { icon: Ticket, title: 'Apply or book', desc: 'Open events book instantly. Exclusive listings may require a brief application before your ticket unlocks.' },
+  { icon: QrCode, title: 'Lounge, door, memory', desc: 'Enter the digital lounge, scan at the door, and return for the post-event memory wall.' },
 ];
 
 const ORGANIZER = [
-  { icon: Sparkles, title: 'AI event builder', desc: 'Describe your event in a sentence. Our AI writes the copy, suggests a lineup and builds your ticket tiers.' },
-  { icon: ScanLine, title: 'Door scanning', desc: 'Check guests in with a tamper-proof scanner. Real-time, duplicate-proof, works on any phone.' },
-  { icon: BarChart3, title: 'Live sales & insight', desc: 'Track tickets sold, revenue and check-ins as they happen from one organizer console.' },
+  { icon: Sparkles, title: 'AI event builder', desc: 'Describe your gathering in a sentence. AI writes copy, suggests tiers, and sets day-or-night theming.' },
+  { icon: ScanLine, title: 'Guestlist & broadcast', desc: 'Approve applications, message the full list with time-locked cues, track conversion in real time.' },
+  { icon: BarChart3, title: 'Financial flow', desc: 'Live revenue, ticket conversion, check-in rates, and transparent payout timelines.' },
 ];
 
 const fadeUp = {
@@ -66,24 +72,24 @@ export default function HomePage() {
           <div className="max-w-2xl">
             <motion.div initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.12 } } }}>
               <motion.div variants={fadeUp}>
-                <SectionLabel>The AI Events &amp; Ticketing Platform</SectionLabel>
+                <SectionLabel>The Experiential Event Platform</SectionLabel>
               </motion.div>
 
               <motion.h1
                 variants={fadeUp}
                 className="font-display text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-light italic tracking-tight text-obsidian leading-[0.9] mb-6 sm:mb-8"
               >
-                Find your<br />next night.
+                Curated<br />gatherings.
               </motion.h1>
 
               <motion.div variants={fadeUp} className="flex items-center gap-2 mb-4 sm:mb-6">
                 <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gold-dark">Parties · Concerts · Festivals · Worldwide</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gold-dark">Salons · Supper Clubs · Nightlife · Worldwide</span>
               </motion.div>
 
               <motion.p variants={fadeUp} className="text-base sm:text-lg text-obsidian/65 max-w-lg leading-relaxed mb-8 sm:mb-10">
-                Convivia24 is where the culture buys tickets — in any city. Discover the events worth
-                leaving the house for, book in seconds, and walk in with a tap. Powered by AI.
+                Convivia24 handles everything from exclusive daytime business mixers to vibrant lifestyle
+                experiences by evening — with guestlists, digital lounges, and memory walls built in.
               </motion.p>
 
               <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 sm:gap-4">
@@ -210,6 +216,28 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ═══ THREE PILLARS ═══ */}
+      <section className="bg-paper py-16 sm:py-24">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8">
+          <SectionLabel>The Three Pillars</SectionLabel>
+          <h2 className="font-display text-3xl sm:text-5xl md:text-6xl font-light italic text-obsidian tracking-tight mb-12">
+            One platform.<br />Every kind of gathering.
+          </h2>
+          <div className="grid md:grid-cols-3 gap-5">
+            {PILLARS.map((p, i) => (
+              <div key={p.title} className="glass-card p-8 sm:p-10 glass-card-hover">
+                <div className="flex items-center gap-3 mb-5">
+                  <span className="font-display text-5xl italic text-gold/30">{String(i + 1).padStart(2, '0')}</span>
+                  <p.icon className="text-gold-dark" size={22} />
+                </div>
+                <h3 className="font-display text-2xl italic text-obsidian mb-3">{p.title}</h3>
+                <p className="text-obsidian/55 text-sm leading-relaxed">{p.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ═══ HOW IT WORKS ═══ */}
       <section className="bg-paper py-16 sm:py-24">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
@@ -254,12 +282,13 @@ export default function HomePage() {
             <div>
               <SectionLabel variant="light">For Organizers</SectionLabel>
               <h2 className="font-display text-3xl sm:text-5xl md:text-6xl font-light italic text-obsidian tracking-tight">
-                Sell out your<br />next event.
+                Host gatherings<br />worth remembering.
               </h2>
             </div>
             <p className="text-obsidian/60 text-base sm:text-lg leading-relaxed lg:pt-10">
-              List in minutes with an AI co-pilot that writes your copy and builds your tiers.
-              Sell tickets in any city and currency, scan guests at the door, and watch the numbers move in real time.
+              Whether you run elite networking circles, creative agencies, or supper clubs —
+              Convivia24 gives you premium host tools: approval guestlists, broadcast hub,
+              financial flow, and a guest experience that sells itself.
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-5">
@@ -283,8 +312,8 @@ export default function HomePage() {
       <section className="bg-gold">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-12 sm:py-16 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
           <div>
-            <h2 className="font-display text-2xl sm:text-4xl italic text-obsidian mb-2">Your next night out is one tap away.</h2>
-            <p className="text-obsidian/60 text-sm">Parties · Concerts · Festivals · In every city the culture goes</p>
+            <h2 className="font-display text-2xl sm:text-4xl italic text-obsidian mb-2">Your next gathering starts here.</h2>
+            <p className="text-obsidian/60 text-sm">Business salons · Supper clubs · Nightlife · In every city the culture goes</p>
           </div>
           <Link href="/events" className="inline-flex items-center gap-2 px-8 py-4 bg-obsidian hover:bg-obsidian-50 text-cream text-[11px] font-black uppercase tracking-[0.2em] transition-colors shrink-0">
             Discover Events <ArrowRight size={14} />

@@ -25,7 +25,6 @@ body {
   .text-balance {
     text-wrap: balance;
   }
-  /* Hide scrollbars on horizontal chip rows while keeping them scrollable */
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -33,6 +32,36 @@ body {
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  /* Frosted glass design system */
+  .glass-card {
+    @apply backdrop-blur-xl bg-white/60 border border-white/40 shadow-lg shadow-obsidian/5;
+  }
+  .glass-card-hover {
+    @apply hover:bg-white/75 hover:shadow-xl hover:shadow-obsidian/10 transition-all duration-300;
+  }
+}
+
+/* Per-event day/night theming */
+.event-theme-day {
+  --event-bg: #faf7f1;
+  --event-fg: #0a0a0a;
+  --event-muted: rgba(10, 10, 10, 0.55);
+  background: var(--event-bg);
+  color: var(--event-fg);
+}
+.event-theme-night {
+  --event-bg: #0d0b12;
+  --event-fg: #f5f0e8;
+  --event-muted: rgba(245, 240, 232, 0.55);
+  background: radial-gradient(ellipse at top, #1a1028 0%, var(--event-bg) 55%);
+  color: var(--event-fg);
+}
+.event-theme-night .glass-card {
+  @apply bg-white/5 border-white/10 shadow-black/30;
+}
+.event-theme-night .glass-card-hover:hover {
+  @apply bg-white/10;
 }
 
 /* Selection */
