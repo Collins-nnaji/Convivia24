@@ -1,0 +1,26 @@
+{
+	"appId": "com.convivia24.app",
+	"appName": "Convivia24",
+	"webDir": "native-fallback",
+	"server": {
+		"url": "https://app.convivia24.com",
+		"cleartext": false
+	},
+	"plugins": {
+		"SplashScreen": {
+			"launchShowDuration": 1200,
+			"backgroundColor": "#f8f6f2",
+			"androidSplashResourceName": "splash",
+			"androidScaleType": "CENTER_CROP",
+			"showSpinner": false
+		}
+	},
+	"ios": {
+		"contentInset": "automatic",
+		"scheme": "Convivia24"
+	},
+	"android": {
+		"allowMixedContent": false,
+		"captureInput": true
+	}
+}
