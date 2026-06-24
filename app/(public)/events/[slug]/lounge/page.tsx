@@ -22,7 +22,9 @@ export default function LoungePage({ params }: { params: Promise<{ slug: string 
   const [error, setError] = useState('');
   const [headline, setHeadline] = useState('');
   const [intent, setIntent] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   function load() {
     fetch(`/api/events/${slug}/lounge`)
@@ -32,23 +34,46 @@ export default function LoungePage({ params }: { params: Promise<{ slug: string 
         setData(d);
         setHeadline(d.profile?.headline ?? '');
         setIntent(d.profile?.intent_badge ?? null);
+        setAvatarUrl(d.profile?.avatar_url ?? user?.image ?? null);
       });
     fetch(`/api/events/${slug}`).then((r) => r.json()).then((d) => setEventMeta(d.event));
   }
 
   useEffect(() => { load(); }, [slug]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function saveProfile() {
+  async function saveProfile(avatar?: string | null) {
     setSaving(true);
     try {
       await fetch(`/api/events/${slug}/lounge`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ headline, intent_badge: intent }),
+        body: JSON.stringify({
+          headline,
+          intent_badge: intent,
+          avatar_url: avatar ?? avatarUrl,
+        }),
       });
       load();
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function uploadAvatar(file: File) {
+    setUploadingAvatar(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('purpose', 'lounge-avatar');
+      const res = await fetch(`/api/events/${slug}/media`, { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setAvatarUrl(data.url);
+      await saveProfile(data.url);
+    } catch {
+      /* ignore */
+    } finally {
+      setUploadingAvatar(false);
     }
   }
 
@@ -92,9 +117,18 @@ export default function LoungePage({ params }: { params: Promise<{ slug: string 
         </div>
 
         <div className="glass-card p-6 mb-10 space-y-5">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-full overflow-hidden bg-obsidian/10 flex items-center justify-center text-2xl font-display italic shrink-0">
+              {avatarUrl ? <img src={avatarUrl} alt="" className="w-full h-full object-cover" /> : (user?.name?.charAt(0) || '?')}
+            </div>
+            <label className="text-[10px] font-black uppercase tracking-[0.15em] opacity-60 cursor-pointer hover:opacity-100">
+              {uploadingAvatar ? 'Uploading…' : 'Change photo'}
+              <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAvatar(f); }} />
+            </label>
+          </div>
           <input value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="One-line headline — e.g. Product designer @ startup" className="w-full bg-transparent border-b border-current/20 py-2 text-sm outline-none placeholder:opacity-40" />
           <IntentBadgePicker value={intent} onChange={setIntent} />
-          <button type="button" onClick={saveProfile} disabled={saving} className="text-[11px] font-black uppercase tracking-[0.2em] px-5 py-2.5 bg-[var(--event-accent,#c9a84c)] text-obsidian disabled:opacity-50">
+          <button type="button" onClick={() => saveProfile()} disabled={saving} className="text-[11px] font-black uppercase tracking-[0.2em] px-5 py-2.5 bg-[var(--event-accent,#c9a84c)] text-obsidian disabled:opacity-50">
             {saving ? 'Saving…' : 'Update my lounge profile'}
           </button>
         </div>

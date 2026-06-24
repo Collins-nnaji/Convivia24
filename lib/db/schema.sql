@@ -252,6 +252,8 @@ CREATE TABLE IF NOT EXISTS broadcasts (
   scheduled_for   TIMESTAMPTZ,
   sent_at         TIMESTAMPTZ,
   recipient_count INTEGER NOT NULL DEFAULT 0,
+  attachment_url        TEXT,
+  attachment_blob_name  TEXT,
   created_by      TEXT,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -294,6 +296,7 @@ CREATE TABLE IF NOT EXISTS memory_posts (
   media_url       TEXT NOT NULL,
   media_type      TEXT NOT NULL DEFAULT 'image'
                     CHECK (media_type IN ('image', 'video')),
+  blob_name       TEXT,
   caption         TEXT,
   tagged_user_ids TEXT[],
   reactions       JSONB NOT NULL DEFAULT '{}'::jsonb,

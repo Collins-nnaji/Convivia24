@@ -32,13 +32,14 @@ export async function addMemoryPost(data: {
   authorName: string;
   mediaUrl: string;
   mediaType?: string;
+  blobName?: string;
   caption?: string;
 }): Promise<MemoryPost> {
   const rows = await sql`
-    INSERT INTO memory_posts (event_id, user_id, author_name, media_url, media_type, caption)
+    INSERT INTO memory_posts (event_id, user_id, author_name, media_url, media_type, blob_name, caption)
     VALUES (
       ${data.eventId}, ${data.userId}, ${data.authorName},
-      ${data.mediaUrl}, ${data.mediaType ?? 'image'}, ${data.caption ?? null}
+      ${data.mediaUrl}, ${data.mediaType ?? 'image'}, ${data.blobName ?? null}, ${data.caption ?? null}
     )
     RETURNING *
   `;

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Camera, Sparkles } from 'lucide-react';
+import { useCallback, useRef, useState } from 'react';
+import { Camera, Sparkles, Upload } from 'lucide-react';
 
 interface Post {
   id: string;
@@ -18,26 +18,48 @@ interface Props {
   posts: Post[];
   unlocked: boolean;
   canPost: boolean;
-  onUpload: (url: string, caption?: string) => Promise<void>;
+  eventSlug: string;
+  onUpload: (data: { media_url: string; blob_name?: string; media_type?: string; caption?: string }) => Promise<void>;
   onReact: (postId: string, emoji: string) => Promise<void>;
 }
 
-export default function MemoryWall({ posts, unlocked, canPost, onUpload, onReact }: Props) {
-  const [url, setUrl] = useState('');
+export default function MemoryWall({ posts, unlocked, canPost, eventSlug, onUpload, onReact }: Props) {
   const [caption, setCaption] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const [error, setError] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  async function handleUpload(e: React.FormEvent) {
-    e.preventDefault();
-    if (!url.trim()) return;
+  const uploadFile = useCallback(async (file: File) => {
+    setError('');
     setUploading(true);
     try {
-      await onUpload(url.trim(), caption.trim() || undefined);
-      setUrl('');
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('purpose', 'memory-wall');
+      const res = await fetch(`/api/events/${eventSlug}/media`, { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Upload failed.');
+
+      await onUpload({
+        media_url: data.url,
+        blob_name: data.blob_name,
+        media_type: data.media_type,
+        caption: caption.trim() || undefined,
+      });
       setCaption('');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Upload failed.');
     } finally {
       setUploading(false);
     }
+  }, [caption, eventSlug, onUpload]);
+
+  function onDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) uploadFile(file);
   }
 
   if (!unlocked) {
@@ -53,37 +75,55 @@ export default function MemoryWall({ posts, unlocked, canPost, onUpload, onReact
   return (
     <div className="space-y-8">
       {canPost && (
-        <form onSubmit={handleUpload} className="glass-card p-6 space-y-4">
+        <div className="glass-card p-6 space-y-4">
           <p className="text-[10px] font-black uppercase tracking-[0.25em] opacity-50 flex items-center gap-2">
             <Camera size={14} /> Add to the roll
           </p>
-          <input
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="Paste an image URL from your camera roll"
-            className="w-full bg-transparent border-b border-current/20 py-2 text-sm outline-none placeholder:opacity-40"
-          />
+
+          <div
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={onDrop}
+            onClick={() => inputRef.current?.click()}
+            className={`border-2 border-dashed rounded-sm p-10 text-center cursor-pointer transition-colors ${
+              dragOver ? 'border-[var(--event-accent,#c9a84c)] bg-white/10' : 'border-current/20 hover:border-current/40'
+            }`}
+          >
+            <Upload className="mx-auto mb-3 opacity-40" size={28} />
+            <p className="text-sm font-semibold">Drag & drop from your camera roll</p>
+            <p className="text-xs opacity-50 mt-1">Photos or short videos · up to 10MB images / 50MB video</p>
+            <input
+              ref={inputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/avif,image/gif,video/mp4,video/quicktime,video/webm"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadFile(f); e.target.value = ''; }}
+            />
+          </div>
+
           <input
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
             placeholder="Caption (optional)"
             className="w-full bg-transparent border-b border-current/20 py-2 text-sm outline-none placeholder:opacity-40"
           />
-          <button
-            type="submit"
-            disabled={uploading || !url.trim()}
-            className="text-[11px] font-black uppercase tracking-[0.2em] px-5 py-2.5 bg-[var(--event-accent,#c9a84c)] text-obsidian disabled:opacity-50"
-          >
-            {uploading ? 'Adding…' : 'Drop on the wall'}
-          </button>
-        </form>
+
+          {error && <p className="text-red-500 text-xs">{error}</p>}
+          {uploading && (
+            <p className="text-[11px] font-black uppercase tracking-[0.2em] opacity-60">Uploading to Azure…</p>
+          )}
+        </div>
       )}
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
         {posts.map((p) => (
           <div key={p.id} className="glass-card overflow-hidden group">
-            <div className="aspect-square relative">
-              <img src={p.media_url} alt="" className="w-full h-full object-cover" />
+            <div className="aspect-square relative bg-black/20">
+              {p.media_type === 'video' ? (
+                <video src={p.media_url} className="w-full h-full object-cover" controls playsInline />
+              ) : (
+                <img src={p.media_url} alt="" className="w-full h-full object-cover" />
+              )}
             </div>
             <div className="p-3">
               <p className="text-xs font-semibold truncate">{p.author_name}</p>

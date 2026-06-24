@@ -4,7 +4,7 @@ import { listMemoryPosts, addMemoryPost, reactToPost, memoryWallUnlocked } from 
 import { canAccessLounge } from '@/lib/tickets/access';
 import { getCurrentUser } from '@/lib/auth/session';
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const event = await getEventBySlug(id);
@@ -15,6 +15,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     return NextResponse.json({
       posts,
       unlocked,
+      azure_configured: !!process.env.AZURE_STORAGE_CONNECTION_STRING,
       event: { title: event.title, slug: event.slug, ends_at: event.ends_at, starts_at: event.starts_at },
     });
   } catch (err) {
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     const body = await req.json();
-    if (!body.media_url) return NextResponse.json({ error: 'Media URL required.' }, { status: 400 });
+    if (!body.media_url) return NextResponse.json({ error: 'media_url required. Upload via POST /api/events/[slug]/media first.' }, { status: 400 });
 
     const post = await addMemoryPost({
       eventId: event.id,
@@ -47,12 +48,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       authorName: user.name || user.email,
       mediaUrl: body.media_url,
       mediaType: body.media_type,
+      blobName: body.blob_name,
       caption: body.caption,
     });
     return NextResponse.json(post, { status: 201 });
   } catch (err) {
     console.error('[POST memory]', err);
-    return NextResponse.json({ error: 'Upload failed.' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to add memory.' }, { status: 500 });
   }
 }
 

@@ -43,12 +43,20 @@ guestlists, digital lounges, broadcast messaging, financial flow, and post-event
 - **AI**: Azure OpenAI (chat completions) — graceful template fallback when unconfigured
 - **Tickets**: `qrcode` (QR) + a pure-TS Code 128 barcode generator
 
+## Database migration
+
+Run this file directly in **Neon → SQL Editor** (no need for `migrate.ts` if you only need the new tables):
+
+`database/experiential-platform.sql`
+
+It adds guestlist, broadcasts, lounge, connections, memory wall tables and per-event settings. Safe to re-run.
+
 ## Getting Started
 
 ```bash
 npm install
-# set DATABASE_URL (Neon) and optionally Azure OpenAI vars in .env.local
-npx tsx lib/db/migrate.ts   # creates the schema + seeds global sample events
+# set DATABASE_URL + AZURE_STORAGE_* in .env.local (or production secrets)
+# Run the experiential migration in Neon SQL Editor: database/experiential-platform.sql
 npm run dev
 ```
 
@@ -108,7 +116,7 @@ quietly disables and the rest of the app keeps working.
 | **Database** | `DATABASE_URL` | everything (`lib/db`) |
 | **AI (chat + analysis)** | `AZURE_OPENAI_*`, `AZURE_OPENAI_ANALYSIS_DEPLOYMENT` | concierge, event builder, **AI Insights** (analysis model) |
 | **Face Check-in** | `AZURE_FACE_ENDPOINT`, `AZURE_FACE_KEY` | enroll selfie on order, verify at the door (`/api/face/*`) |
-| **Image storage** | `AZURE_STORAGE_*` | cover + selfie uploads (`lib/azure/blob`) |
+| **Image & media storage** | `AZURE_STORAGE_CONNECTION_STRING`, `AZURE_STORAGE_CONTAINER` | event covers, face enroll, **memory wall**, lounge avatars, broadcast attachments (`lib/azure/blob`, `/api/events/[id]/media`) |
 | **Rate limiting & cache** | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | checkout / AI / waitlist / face limits, insights cache (`lib/redis`) |
 | **Error tracking** | `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN` | `instrumentation.ts` + `instrumentation-client.ts` |
 | **Absolute URLs** | `NEXT_PUBLIC_APP_URL` | share links (`lib/url`) |

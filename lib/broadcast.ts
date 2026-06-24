@@ -26,6 +26,8 @@ export async function createBroadcast(data: {
   channel?: string;
   scheduledFor?: string | null;
   createdBy?: string;
+  attachmentUrl?: string | null;
+  attachmentBlobName?: string | null;
 }): Promise<Broadcast> {
   const recipientRows = await sql`
     SELECT COUNT(DISTINCT o.buyer_email) AS c FROM orders o
@@ -35,11 +37,12 @@ export async function createBroadcast(data: {
   const sendNow = !data.scheduledFor;
 
   const rows = await sql`
-    INSERT INTO broadcasts (event_id, subject, body, channel, scheduled_for, sent_at, recipient_count, created_by)
+    INSERT INTO broadcasts (event_id, subject, body, channel, scheduled_for, sent_at, recipient_count, created_by, attachment_url, attachment_blob_name)
     VALUES (
       ${data.eventId}, ${data.subject}, ${data.body},
       ${data.channel ?? 'email'}, ${data.scheduledFor ?? null},
-      ${sendNow ? new Date().toISOString() : null}, ${count}, ${data.createdBy ?? null}
+      ${sendNow ? new Date().toISOString() : null}, ${count}, ${data.createdBy ?? null},
+      ${data.attachmentUrl ?? null}, ${data.attachmentBlobName ?? null}
     )
     RETURNING *
   `;

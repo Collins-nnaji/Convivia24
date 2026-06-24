@@ -32,6 +32,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       channel: body.channel,
       scheduledFor: body.scheduled_for,
       createdBy: user?.email,
+      attachmentUrl: body.attachment_url,
+      attachmentBlobName: body.attachment_blob_name,
     });
     return NextResponse.json(broadcast, { status: 201 });
   } catch (err) {

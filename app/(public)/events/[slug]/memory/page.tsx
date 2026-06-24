@@ -37,11 +37,11 @@ export default function MemoryPage({ params }: { params: Promise<{ slug: string 
 
   useEffect(() => { load(); }, [slug]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function onUpload(url: string, caption?: string) {
+  async function onUpload(data: { media_url: string; blob_name?: string; media_type?: string; caption?: string }) {
     await fetch(`/api/events/${slug}/memory`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ media_url: url, caption }),
+      body: JSON.stringify(data),
     });
     load();
   }
@@ -72,6 +72,7 @@ export default function MemoryPage({ params }: { params: Promise<{ slug: string 
           posts={posts}
           unlocked={unlocked}
           canPost={!!user}
+          eventSlug={slug}
           onUpload={onUpload}
           onReact={onReact}
         />
