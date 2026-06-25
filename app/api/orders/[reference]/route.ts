@@ -10,12 +10,19 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ ref
     if (!order) return NextResponse.json({ error: 'Order not found.' }, { status: 404 });
 
     const eventRows = await sql`SELECT * FROM events WHERE id = ${order.event_id} LIMIT 1`;
-    const tickets = await sql`SELECT * FROM tickets WHERE order_id = ${order.id} ORDER BY created_at`;
+    const tickets = order.status === 'paid'
+      ? await sql`SELECT * FROM tickets WHERE order_id = ${order.id} ORDER BY created_at`
+      : [];
+
+    const lineItems = await sql`
+      SELECT * FROM order_line_items WHERE order_id = ${order.id} ORDER BY created_at
+    `;
 
     return NextResponse.json({
       order,
       event: eventRows[0] ?? null,
       tickets,
+      line_items: lineItems,
       face: { available: faceConfigured(), enrolled: !!order.face_image_url },
     });
   } catch (err) {

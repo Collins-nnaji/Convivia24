@@ -10,8 +10,7 @@ import { useUser } from '@/components/auth/AuthProvider';
 const LINKS = [
   { label: 'Discover', href: '/events', icon: Compass },
   { label: 'Concierge', href: '/concierge', icon: Sparkles },
-  { label: 'Tickets', href: '/tickets', icon: Ticket },
-  { label: 'Host', href: '/create', icon: Sparkles },
+  { label: 'My tickets', href: '/tickets', icon: Ticket },
 ];
 
 function initials(name: string | null, email: string) {
@@ -123,9 +122,9 @@ export default function Navigation() {
                         <p className="text-xs text-ink-muted truncate">{user.email}</p>
                       </div>
                       <Link href="/tickets" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-ink-muted hover:bg-surface hover:text-ink"><Ticket size={16} className="text-copper" /> My tickets</Link>
-                      <Link href="/create" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-ink-muted hover:bg-surface hover:text-ink"><Sparkles size={16} className="text-copper" /> Host an event</Link>
+                      <Link href="/create" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-ink-muted hover:bg-surface hover:text-ink"><Sparkles size={16} className="text-copper" /> List an event</Link>
                       {user.isAdmin && (
-                        <Link href="/admin" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-ink-muted hover:bg-surface hover:text-ink"><LayoutDashboard size={16} className="text-copper" /> Organizer console</Link>
+                        <Link href="/admin" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-ink-muted hover:bg-surface hover:text-ink"><LayoutDashboard size={16} className="text-copper" /> Event organiser tools</Link>
                       )}
                       <button type="button" onClick={() => signOut()} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-ink-muted hover:bg-surface hover:text-ink border-t border-ink/8 mt-1">
                         <LogOut size={16} className="text-copper" /> Sign out
@@ -202,9 +201,12 @@ export default function Navigation() {
                 })}
                 {user?.isAdmin && (
                   <Link href="/admin" className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-[15px] font-medium text-ink-muted hover:bg-surface hover:text-ink">
-                    <LayoutDashboard size={18} /> Organizer console
+                    <LayoutDashboard size={18} /> Event organiser tools
                   </Link>
                 )}
+                <Link href="/create" className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-[15px] font-medium text-ink-muted hover:bg-surface hover:text-ink">
+                  <Sparkles size={18} /> List an event
+                </Link>
                 <div className="pt-3 mt-2 border-t border-ink/8">
                   {user ? (
                     <button type="button" onClick={() => signOut()} className="btn-secondary w-full">

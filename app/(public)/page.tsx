@@ -23,14 +23,14 @@ const PILLARS = [
 
 const STEPS = [
   { icon: Search, title: 'Discover', desc: 'Browse curated gatherings — from daytime business salons to late-night supper clubs and parties.' },
-  { icon: Ticket, title: 'Apply or book', desc: 'Open events book instantly. Exclusive listings may require a brief application before your ticket unlocks.' },
-  { icon: QrCode, title: 'Lounge, door, memory', desc: 'Enter the digital lounge, scan at the door, and return for the post-event memory wall.' },
+  { icon: Ticket, title: 'Book tickets', desc: 'Pick your tier, sign in, and complete your booking. Some exclusive events may ask you to request access first.' },
+  { icon: QrCode, title: 'Door & beyond', desc: 'Open your ticket on your phone at the door. Return after the event for the memory wall and lounge.' },
 ];
 
 const ORGANIZER = [
-  { icon: Sparkles, title: 'AI event builder', desc: 'Describe your gathering in a sentence. AI writes copy, suggests tiers, and sets day-or-night theming.' },
-  { icon: ScanLine, title: 'Guestlist & broadcast', desc: 'Approve applications, message the full list with time-locked cues, track conversion in real time.' },
-  { icon: BarChart3, title: 'Financial flow', desc: 'Live revenue, ticket conversion, check-in rates, and transparent payout timelines.' },
+  { icon: Sparkles, title: 'List in minutes', desc: 'Publish your event, set ticket tiers, and share a booking link — built for salons, clubs, and promoters.' },
+  { icon: ScanLine, title: 'Guestlist & door', desc: 'Approve access requests, message your list, and scan tickets at the door from one place.' },
+  { icon: BarChart3, title: 'Sales overview', desc: 'Track bookings and check-ins in real time. Live payment payouts connect when you enable a provider.' },
 ];
 
 const fadeUp = {
@@ -280,15 +280,14 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start mb-12">
             <div>
-              <SectionLabel variant="light">For Organizers</SectionLabel>
+              <SectionLabel variant="light">For event organisers</SectionLabel>
               <h2 className="font-display text-3xl sm:text-5xl md:text-6xl font-light italic text-obsidian tracking-tight">
-                Host gatherings<br />worth remembering.
+                Run events<br />your guests love.
               </h2>
             </div>
             <p className="text-obsidian/60 text-base sm:text-lg leading-relaxed lg:pt-10">
-              Whether you run elite networking circles, creative agencies, or supper clubs —
-              Convivia24 gives you premium host tools: approval guestlists, broadcast hub,
-              financial flow, and a guest experience that sells itself.
+              List your gathering, sell tickets or manage approvals, and run the door from your phone.
+              Guest lounges and memory walls are included when you need more than a basic listing.
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-5">
@@ -302,7 +301,7 @@ export default function HomePage() {
           </div>
           <div className="mt-10">
             <Link href="/create" className="inline-flex items-center gap-2 px-7 py-3.5 bg-obsidian hover:bg-obsidian-50 text-cream text-[11px] font-black uppercase tracking-[0.2em] transition-colors">
-              Create an Event <ArrowRight size={14} />
+              List your event <ArrowRight size={14} />
             </Link>
           </div>
         </div>
@@ -312,8 +311,8 @@ export default function HomePage() {
       <section className="bg-gold">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-12 sm:py-16 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
           <div>
-            <h2 className="font-display text-2xl sm:text-4xl italic text-obsidian mb-2">Your next gathering starts here.</h2>
-            <p className="text-obsidian/60 text-sm">Business salons · Supper clubs · Nightlife · In every city the culture goes</p>
+            <h2 className="font-display text-2xl sm:text-4xl italic text-obsidian mb-2">Ready for your next night out?</h2>
+            <p className="text-obsidian/60 text-sm">Business salons · Supper clubs · Nightlife · Worldwide</p>
           </div>
           <Link href="/events" className="inline-flex items-center gap-2 px-8 py-4 bg-obsidian hover:bg-obsidian-50 text-cream text-[11px] font-black uppercase tracking-[0.2em] transition-colors shrink-0">
             Discover Events <ArrowRight size={14} />

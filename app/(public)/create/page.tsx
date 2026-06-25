@@ -107,9 +107,9 @@ export default function CreateEventPage() {
     return (
       <section className="bg-paper min-h-screen py-16 sm:py-24">
         <div className="max-w-md mx-auto px-5 sm:px-8 text-center">
-          <SectionLabel>Sell Tickets</SectionLabel>
+          <SectionLabel>For event organisers</SectionLabel>
           <h1 className="font-display text-4xl sm:text-5xl font-light italic text-obsidian tracking-tight mb-3">List your event.</h1>
-          <p className="text-obsidian/55 mb-8">Sign in to create events and sell tickets on Convivia24.</p>
+          <p className="text-obsidian/55 mb-8">Sign in to publish your event and set up ticket tiers.</p>
           <Link href="/signin?next=/create" className="inline-flex items-center gap-2 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.2em] px-7 py-3.5 transition-colors">
             Sign in to continue
           </Link>
@@ -121,9 +121,9 @@ export default function CreateEventPage() {
   return (
     <section className="bg-paper min-h-screen py-12 sm:py-16">
       <div className="max-w-3xl mx-auto px-5 sm:px-8">
-        <SectionLabel>Sell Tickets</SectionLabel>
+        <SectionLabel>For event organisers</SectionLabel>
         <h1 className="font-display text-4xl sm:text-6xl font-light italic text-obsidian tracking-tight mb-3">List your event.</h1>
-        <p className="text-obsidian/55 mb-10 leading-relaxed">Give it a title, let the AI co-pilot draft the rest, then publish. Your tickets go live instantly with QR + barcode entry.</p>
+        <p className="text-obsidian/55 mb-10 leading-relaxed">Add the basics, let AI draft your copy, set ticket tiers, and publish. Guests book through the same flow they use to discover events.</p>
 
         <form onSubmit={submit} className="space-y-10">
           {/* BASICS */}

@@ -3,14 +3,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Home, Compass, Sparkles, Ticket, PlusCircle } from 'lucide-react';
+import { Home, Compass, Sparkles, Ticket } from 'lucide-react';
 
 const TABS = [
   { href: '/', label: 'Home', icon: Home, exact: true },
   { href: '/events', label: 'Discover', icon: Compass, exact: false },
-  { href: '/concierge', label: 'Concierge', icon: Sparkles, exact: false, accent: true },
   { href: '/tickets', label: 'Tickets', icon: Ticket, exact: false },
-  { href: '/create', label: 'Host', icon: PlusCircle, exact: false },
+  { href: '/concierge', label: 'Concierge', icon: Sparkles, exact: false, accent: true },
 ];
 
 export default function MobileTabBar() {
@@ -21,7 +20,7 @@ export default function MobileTabBar() {
       className="fixed bottom-0 inset-x-0 z-40 md:hidden border-t border-ink/8 bg-surface-elevated/95 backdrop-blur-xl pb-safe"
       aria-label="Primary"
     >
-      <div className="grid grid-cols-5 min-h-[4.25rem]">
+      <div className="grid grid-cols-4 min-h-[4.25rem]">
         {TABS.map(({ href, label, icon: Icon, exact, accent }) => {
           const active = exact ? pathname === href : pathname.startsWith(href);
           return (
@@ -34,11 +33,11 @@ export default function MobileTabBar() {
               {accent ? (
                 <motion.span
                   layoutId="tab-fab"
-                  className={`flex h-11 w-11 -mt-5 items-center justify-center rounded-2xl shadow-glow transition-colors ${
+                  className={`flex h-10 w-10 -mt-4 items-center justify-center rounded-2xl shadow-glow transition-colors ${
                     active ? 'bg-copper text-white' : 'bg-copper-bright text-white'
                   }`}
                 >
-                  <Icon size={20} strokeWidth={2.25} />
+                  <Icon size={18} strokeWidth={2.25} />
                 </motion.span>
               ) : (
                 <Icon

@@ -36,6 +36,6 @@ export function isEverythingFree(): boolean {
 
 export function priceLabel(amount: number | string, currency = 'NGN'): string {
   const n = typeof amount === 'string' ? parseFloat(amount) : amount;
-  if (!n || n <= 0) return 'Free';
+  if (isEverythingFree() || !n || n <= 0) return 'Free';
   return formatMoney(n, currency);
 }

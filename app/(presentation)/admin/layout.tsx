@@ -166,7 +166,7 @@ function AdminTopBar({ onMenuOpen }: { onMenuOpen: () => void }) {
       }
     }
     if (pathname.startsWith('/admin/events/')) return 'Edit event';
-    return 'Organizer console';
+    return 'Event organiser tools';
   })();
 
   return (
@@ -182,7 +182,7 @@ function AdminTopBar({ onMenuOpen }: { onMenuOpen: () => void }) {
         </button>
 
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-copper-deep hidden sm:block">Organizer console</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-copper-deep hidden sm:block">Event organiser tools</p>
           <h1 className="font-display text-lg sm:text-xl italic text-ink truncate leading-tight">{pageTitle}</h1>
         </div>
 
@@ -270,8 +270,8 @@ function Gate({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen bg-surface flex items-center justify-center px-4">
         <div className="w-full max-w-md glass-card p-6 sm:p-10 text-center">
           <img src="/convivia24.png" alt="" className="h-8 w-auto mx-auto mb-4" style={{ filter: 'brightness(0)' }} aria-hidden />
-          <h1 className="font-display text-3xl italic text-ink mb-3">Organizer access</h1>
-          <p className="text-ink-muted text-sm mb-8 leading-relaxed">Sign in to manage events, guestlists, broadcasts, and door check-in.</p>
+          <h1 className="font-display text-3xl italic text-ink mb-3">Event organiser sign-in</h1>
+          <p className="text-ink-muted text-sm mb-8 leading-relaxed">Sign in to manage your events, guestlists, broadcasts, and door check-in.</p>
           <button type="button" onClick={() => signInWithGoogle('/admin')} className="btn-primary w-full">
             Continue with Google
           </button>

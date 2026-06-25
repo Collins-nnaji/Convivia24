@@ -113,6 +113,10 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || 'Checkout failed.'); return; }
+      if (data.status === 'pending' && data.payment?.checkout_url) {
+        window.location.href = data.payment.checkout_url;
+        return;
+      }
       router.push(`/orders/${data.reference}`);
     } catch {
       setError('Could not connect. Please try again.');
@@ -215,21 +219,21 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
             {approvalRequired && !approved && (
               <div className="glass-card p-5">
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--event-accent,#c9a84c)] flex items-center gap-2 mb-3">
-                  <UserCheck size={14} /> Approval required
+                  <UserCheck size={14} /> Request access
                 </p>
                 {pending ? (
-                  <p className="text-sm opacity-70">Your application is under review. You&apos;ll be notified when approved to purchase.</p>
+                  <p className="text-sm opacity-70">Your request is being reviewed. You&apos;ll be able to book tickets once the organiser approves you.</p>
                 ) : user ? (
                   <form onSubmit={applyToGuestlist} className="space-y-3">
                     <input value={appForm.linkedin} onChange={(e) => setAppForm({ ...appForm, linkedin: e.target.value })} placeholder="LinkedIn URL" className="w-full bg-transparent border-b border-current/20 py-2 text-sm outline-none" />
                     <input value={appForm.instagram} onChange={(e) => setAppForm({ ...appForm, instagram: e.target.value })} placeholder="Instagram handle or URL" className="w-full bg-transparent border-b border-current/20 py-2 text-sm outline-none" />
                     <textarea value={appForm.application_text} onChange={(e) => setAppForm({ ...appForm, application_text: e.target.value })} placeholder="Why do you want to attend?" rows={3} className="w-full bg-transparent border border-current/15 p-2 text-sm outline-none resize-none" />
                     <button type="submit" disabled={applying} className="w-full py-3 text-[11px] font-black uppercase tracking-[0.2em] bg-[var(--event-accent,#c9a84c)] text-obsidian disabled:opacity-50">
-                      {applying ? 'Submitting…' : 'Apply for guestlist'}
+                      {applying ? 'Submitting…' : 'Request access'}
                     </button>
                   </form>
                 ) : (
-                  <Link href={`/signin?next=${encodeURIComponent(`/events/${slug}`)}`} className="text-sm underline opacity-70">Sign in to apply</Link>
+                  <Link href={`/signin?next=${encodeURIComponent(`/events/${slug}`)}`} className="text-sm underline opacity-70">Sign in to request access</Link>
                 )}
               </div>
             )}
@@ -241,7 +245,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
             >
               <div className="px-6 py-5 border-b border-obsidian/10 flex items-center gap-2">
                 <Ticket size={16} className="text-gold-dark" />
-                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-obsidian">Get Tickets</p>
+                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-obsidian">Tickets</p>
               </div>
 
               <div className="p-4 space-y-3">
@@ -288,21 +292,21 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                   </div>
                   {user ? (
                     <form onSubmit={checkout} className="space-y-3">
-                      <input required value={buyer.name} onChange={(e) => setBuyer({ ...buyer, name: e.target.value })} placeholder="Name on the booking" className="w-full bg-transparent border-b border-obsidian/20 focus:border-gold text-obsidian text-sm py-2.5 px-0 placeholder-obsidian/35 outline-none focus:ring-0" />
-                      <input value={buyer.email} readOnly className="w-full bg-transparent border-b border-obsidian/15 text-obsidian/60 text-sm py-2.5 px-0 outline-none cursor-default" />
+                      <input required value={buyer.name} onChange={(e) => setBuyer({ ...buyer, name: e.target.value })} placeholder="Name on tickets" className="w-full bg-transparent border-b border-obsidian/20 focus:border-gold text-obsidian text-sm py-2.5 px-0 placeholder-obsidian/35 outline-none focus:ring-0" />
+                      <p className="text-obsidian/45 text-xs">Tickets will be saved to <span className="text-obsidian/70">{buyer.email || 'your account'}</span></p>
                       <input value={buyer.phone} onChange={(e) => setBuyer({ ...buyer, phone: e.target.value })} placeholder="Phone (optional)" className="w-full bg-transparent border-b border-obsidian/20 focus:border-gold text-obsidian text-sm py-2.5 px-0 placeholder-obsidian/35 outline-none focus:ring-0" />
                       {error && <p className="text-red-500 text-xs">{error}</p>}
                       <button type="submit" disabled={submitting} className="w-full bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.2em] py-3.5 transition-colors disabled:opacity-60">
-                        {submitting ? 'Issuing tickets…' : free ? 'Get free tickets' : 'Confirm & get tickets'}
+                        {submitting ? 'Processing…' : free ? 'Complete booking' : 'Continue to checkout'}
                       </button>
-                      <p className="flex items-center justify-center gap-1.5 text-obsidian/40 text-[10px] uppercase tracking-wider"><ShieldCheck size={11} className="text-gold-dark" /> Secure QR + barcode entry</p>
+                      <p className="flex items-center justify-center gap-1.5 text-obsidian/40 text-[10px] uppercase tracking-wider"><ShieldCheck size={11} className="text-gold-dark" /> Mobile tickets with QR entry</p>
                     </form>
                   ) : (
                     <div className="space-y-2">
                       <Link href={`/signin?next=${encodeURIComponent(`/events/${slug}`)}`} className="w-full inline-flex items-center justify-center gap-2 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.2em] py-3.5 transition-colors">
-                        Sign in to get tickets
+                        Sign in to book
                       </Link>
-                      <p className="text-center text-obsidian/45 text-xs">Sign in with Google — you&apos;ll come right back to finish.</p>
+                      <p className="text-center text-obsidian/45 text-xs">You&apos;ll return here to finish your booking.</p>
                     </div>
                   )}
                 </div>
@@ -325,7 +329,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
             href="#tickets"
             className="shrink-0 inline-flex items-center gap-2 bg-gold hover:bg-gold-light text-obsidian text-[10px] sm:text-[11px] font-black uppercase tracking-[0.18em] sm:tracking-[0.2em] px-5 sm:px-6 py-3 min-h-[2.75rem] transition-colors"
           >
-            <Ticket size={14} /> Get Tickets
+            <Ticket size={14} /> Book tickets
           </a>
         </div>
       )}

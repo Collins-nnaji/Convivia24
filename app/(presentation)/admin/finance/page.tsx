@@ -95,7 +95,7 @@ export default function FinancePage() {
         ))}
       </div>
 
-      <p className="mt-8 text-xs text-obsidian/40">Co-host split payouts and payment-provider integration coming next.</p>
+      <p className="mt-8 text-xs text-obsidian/40">Connect Paystack or Stripe via <span className="font-mono">PAYMENT_PROVIDER</span> to collect live payments. Until then, bookings are confirmed in demo mode.</p>
     </div>
   );
 }

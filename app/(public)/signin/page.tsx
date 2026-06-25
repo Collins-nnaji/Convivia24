@@ -9,9 +9,9 @@ import { signInWithGoogle } from '@/lib/auth/client';
 import { useUser } from '@/components/auth/AuthProvider';
 
 const PERKS = [
-  { icon: Ticket, text: 'All your tickets in one place — QR + barcode, ready at the door.' },
-  { icon: CalendarPlus, text: 'Create and sell your own events in minutes.' },
-  { icon: ScanLine, text: 'Organizers get a live dashboard and door scanner.' },
+  { icon: Ticket, text: 'Book tickets and keep them in one place — QR codes ready at the door.' },
+  { icon: CalendarPlus, text: 'Running an event? List it and set up ticket tiers in minutes.' },
+  { icon: ScanLine, text: 'Event organisers get guestlist tools, broadcasts, and a door scanner.' },
 ];
 
 function SignInInner() {
@@ -42,8 +42,8 @@ function SignInInner() {
     <section className="bg-paper min-h-screen py-16 sm:py-24">
       <div className="max-w-md mx-auto px-5 sm:px-8">
         <SectionLabel>Welcome</SectionLabel>
-        <h1 className="font-display text-4xl sm:text-5xl font-light italic text-obsidian tracking-tight mb-3">Sign in to Convivia24.</h1>
-        <p className="text-obsidian/55 mb-8 leading-relaxed">One account for buying tickets, your wallet, and selling your own events.</p>
+        <h1 className="font-display text-4xl sm:text-5xl font-light italic text-obsidian tracking-tight mb-3">Sign in to book tickets.</h1>
+        <p className="text-obsidian/55 mb-8 leading-relaxed">One account for discovering events, managing your tickets, and listing your own gatherings.</p>
 
         <div className="bg-white border border-obsidian/12 shadow-sm p-6 sm:p-8">
           {!authConfigured && (

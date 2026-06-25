@@ -92,6 +92,7 @@ CREATE TABLE IF NOT EXISTS ticket_types (
   sold            INTEGER NOT NULL DEFAULT 0,
   max_per_order   INTEGER NOT NULL DEFAULT 10,
   sales_end       TIMESTAMPTZ,
+  sales_start     TIMESTAMPTZ,
   perks           TEXT[],
   is_active       BOOLEAN NOT NULL DEFAULT true,
   sort_order      INTEGER NOT NULL DEFAULT 0,
@@ -115,8 +116,17 @@ CREATE TABLE IF NOT EXISTS orders (
   fees            NUMERIC(12,2) NOT NULL DEFAULT 0,
   total           NUMERIC(12,2) NOT NULL DEFAULT 0,
   currency        TEXT NOT NULL DEFAULT 'NGN',
-  status          TEXT NOT NULL DEFAULT 'paid'
-                    CHECK (status IN ('pending','paid','cancelled','refunded')),
+  status          TEXT NOT NULL DEFAULT 'pending'
+                    CHECK (status IN ('pending','paid','cancelled','refunded','failed','expired')),
+  payment_provider TEXT,
+  payment_reference TEXT,
+  payment_intent_id TEXT,
+  payment_method    TEXT,
+  paid_at           TIMESTAMPTZ,
+  expires_at        TIMESTAMPTZ,
+  idempotency_key   TEXT,
+  platform_fee      NUMERIC(12,2) NOT NULL DEFAULT 0,
+  organizer_net     NUMERIC(12,2),
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -127,6 +137,32 @@ CREATE INDEX IF NOT EXISTS idx_orders_user  ON orders(user_id);
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS user_id TEXT;
 -- Optional Face Check-in: a selfie enrolled by the buyer, verified at the door
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS face_image_url TEXT;
+
+CREATE TABLE IF NOT EXISTS order_line_items (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id        UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  ticket_type_id  UUID REFERENCES ticket_types(id) ON DELETE SET NULL,
+  ticket_type_name TEXT NOT NULL,
+  unit_price      NUMERIC(12,2) NOT NULL DEFAULT 0,
+  quantity        INTEGER NOT NULL DEFAULT 1,
+  line_total      NUMERIC(12,2) NOT NULL DEFAULT 0,
+  currency        TEXT NOT NULL DEFAULT 'NGN',
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_order_line_items_order ON order_line_items(order_id);
+
+CREATE TABLE IF NOT EXISTS payment_events (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id        UUID REFERENCES orders(id) ON DELETE SET NULL,
+  provider        TEXT NOT NULL,
+  event_type      TEXT NOT NULL,
+  provider_ref    TEXT,
+  payload         JSONB NOT NULL DEFAULT '{}',
+  processed       BOOLEAN NOT NULL DEFAULT false,
+  error_message   TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_payment_events_order ON payment_events(order_id);
 
 -- ═══════════════════════════════════════════════
 -- TICKETS (one scannable ticket per attendee)

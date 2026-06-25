@@ -39,21 +39,21 @@ export default function TicketsPage() {
     const res = await fetch(`/api/orders/${ref}`);
     setLooking(false);
     if (res.ok) router.push(`/orders/${ref}`);
-    else setError('We couldn\'t find that order. Check the reference and try again.');
+    else setError('We couldn\'t find that booking. Check the reference and try again.');
   }
 
   return (
     <section className="bg-paper min-h-screen py-12 sm:py-16">
       <div className="max-w-3xl mx-auto px-5 sm:px-8">
-        <SectionLabel>My Tickets</SectionLabel>
-        <h1 className="font-display text-4xl sm:text-6xl font-light italic text-obsidian tracking-tight mb-8">Your tickets &amp; orders.</h1>
+        <SectionLabel>My tickets</SectionLabel>
+        <h1 className="font-display text-4xl sm:text-6xl font-light italic text-obsidian tracking-tight mb-8">Your bookings.</h1>
 
         {/* Signed-out prompt */}
         {!authLoading && !user && (
           <div className="bg-white border border-obsidian/12 shadow-sm p-6 sm:p-8 mb-8 text-center">
             <Ticket size={28} className="text-gold-dark mx-auto mb-3" />
             <p className="font-display text-2xl italic text-obsidian mb-1">Sign in to see your tickets.</p>
-            <p className="text-obsidian/55 text-sm mb-5">All your orders live in one place once you sign in.</p>
+            <p className="text-obsidian/55 text-sm mb-5">All your event bookings in one place once you sign in.</p>
             <Link href="/signin?next=/tickets" className="inline-flex items-center gap-2 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.2em] px-6 py-3 transition-colors">
               Sign in <ArrowRight size={14} />
             </Link>
@@ -68,7 +68,7 @@ export default function TicketsPage() {
             ) : orders.length === 0 ? (
               <div className="bg-white border border-obsidian/12 p-8 text-center">
                 <p className="font-display text-xl italic text-obsidian mb-1">No tickets yet.</p>
-                <p className="text-obsidian/50 text-sm mb-5">When you book an event, your tickets show up here.</p>
+                <p className="text-obsidian/50 text-sm mb-5">When you book an event, your tickets appear here.</p>
                 <Link href="/events" className="inline-flex items-center gap-2 bg-gold text-obsidian text-[11px] font-black uppercase tracking-[0.2em] px-6 py-3">Discover events</Link>
               </div>
             ) : (
@@ -94,7 +94,7 @@ export default function TicketsPage() {
 
         {/* Reference lookup (works without an account) */}
         <div className="bg-white border border-obsidian/12 shadow-sm p-6 sm:p-7">
-          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gold-dark mb-3">Have an order reference?</p>
+          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gold-dark mb-3">Have a booking reference?</p>
           <form onSubmit={lookup} className="flex flex-col sm:flex-row gap-3">
             <div className="flex items-center gap-2 border-b border-obsidian/20 focus-within:border-gold flex-1">
               <Search size={16} className="text-gold-dark" />
