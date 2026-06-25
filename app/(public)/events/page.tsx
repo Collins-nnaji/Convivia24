@@ -1,21 +1,14 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Search, X, MapPin, CalendarDays } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import EventCard, { type EventCardData } from '@/components/EventCard';
-import { CATEGORIES, CATEGORY_LABELS } from '@/lib/categories';
+import DiscoverFilters, { WHEN_OPTIONS, SORT_OPTIONS } from '@/components/discover/DiscoverFilters';
+import { CATEGORY_LABELS } from '@/lib/categories';
 
 interface CityMeta { city: string; country: string; count: number }
-
-const WHEN_OPTIONS = [
-  { value: '',        label: 'Any date' },
-  { value: 'today',   label: 'Today' },
-  { value: 'weekend', label: 'This weekend' },
-  { value: 'week',    label: 'This week' },
-  { value: 'month',   label: 'This month' },
-];
 
 function DiscoverInner() {
   const params = useSearchParams();
@@ -28,8 +21,14 @@ function DiscoverInner() {
   const category = params.get('category') ?? '';
   const city = params.get('city') ?? '';
   const when = params.get('when') ?? '';
+  const sort = params.get('sort') ?? 'soonest';
+  const searchQ = params.get('q') ?? '';
 
-  // Full city list comes from /api/meta so it never shrinks when filters narrow results.
+  // Keep search input in sync when URL changes (back button, shared links).
+  useEffect(() => {
+    setQuery(searchQ);
+  }, [searchQ]);
+
   useEffect(() => {
     fetch('/api/meta')
       .then((r) => r.json())
@@ -40,39 +39,45 @@ function DiscoverInner() {
   useEffect(() => {
     setLoading(true);
     const qs = new URLSearchParams();
-    if (params.get('q')) qs.set('q', params.get('q')!);
+    if (searchQ) qs.set('q', searchQ);
     if (category) qs.set('category', category);
     if (city) qs.set('city', city);
     if (when) qs.set('when', when);
+    if (sort && sort !== 'soonest') qs.set('sort', sort);
     fetch(`/api/events?${qs.toString()}`)
       .then((r) => r.json())
       .then((d) => setEvents(d.events ?? []))
       .catch(() => setEvents([]))
       .finally(() => setLoading(false));
-  }, [params, category, city, when]);
+  }, [searchQ, category, city, when, sort]);
 
-  function setParam(key: string, value: string) {
+  const setParam = useCallback((key: string, value: string) => {
     const next = new URLSearchParams(params.toString());
-    if (value) next.set(key, value); else next.delete(key);
-    router.push(`/events?${next.toString()}`);
+    if (value) next.set(key, value);
+    else next.delete(key);
+    router.push(`/events?${next.toString()}`, { scroll: false });
+  }, [params, router]);
+
+  function clearAll() {
+    setQuery('');
+    router.push('/events', { scroll: false });
   }
 
-  const hasFilters = !!(category || city || when || params.get('q'));
+  const hasFilters = !!(category || city || when || searchQ || (sort && sort !== 'soonest'));
 
   return (
     <>
       {/* HERO */}
       <section className="relative bg-paper -mt-16 pt-16 overflow-hidden">
-        <img src="/conv1.png" alt="" className="w-full h-[30vh] sm:h-[38vh] object-cover" />
+        <img src="/conv1.png" alt="" className="w-full h-[28vh] sm:h-[34vh] object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-paper via-paper/40 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-paper/70 to-transparent" />
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-8 -mt-20 sm:-mt-28 pb-6 sm:pb-8 z-10">
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-8 -mt-16 sm:-mt-20 pb-6 sm:pb-8 z-10">
           <SectionLabel>Discover</SectionLabel>
           <h1 className="font-display text-3xl min-[400px]:text-4xl sm:text-6xl md:text-7xl font-light italic tracking-tight text-obsidian leading-[0.92] mb-5 sm:mb-6 text-balance">
             Every event,<br />everywhere.
           </h1>
 
-          {/* SEARCH */}
           <form
             onSubmit={(e) => { e.preventDefault(); setParam('q', query.trim()); }}
             className="flex flex-col min-[420px]:flex-row min-[420px]:items-center gap-2 min-[420px]:gap-3 max-w-xl bg-white border border-obsidian/15 focus-within:border-gold shadow-sm px-4 py-3"
@@ -96,84 +101,76 @@ function DiscoverInner() {
         </div>
       </section>
 
-      {/* FILTERS */}
-      <section className="bg-cream border-y border-obsidian/10 sticky top-below-nav z-20 backdrop-blur">
-        <div className="max-w-6xl mx-auto px-4 sm:px-8 py-3 space-y-2.5">
-          {/* Row 1: where + when */}
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-0.5">
-            <span className="hidden sm:inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-[0.2em] text-obsidian/35 shrink-0"><MapPin size={11} /> Where</span>
-            <select
-              value={city}
-              onChange={(e) => setParam('city', e.target.value)}
-              className="shrink-0 bg-white border border-obsidian/15 text-obsidian/75 text-xs py-2.5 pl-3 pr-8 focus:ring-0 focus:border-gold min-h-[2.75rem]"
-            >
-              <option value="">Everywhere</option>
-              {cities.map((c) => <option key={c.city} value={c.city}>{c.city}, {c.country} ({c.count})</option>)}
-            </select>
-            <span className="hidden sm:inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-[0.2em] text-obsidian/35 shrink-0 ml-2"><CalendarDays size={11} /> When</span>
-            {WHEN_OPTIONS.map((w) => (
-              <button
-                key={w.value}
-                onClick={() => setParam('when', w.value)}
-                className={`shrink-0 px-3 py-2.5 min-h-[2.75rem] text-[10px] font-black uppercase tracking-[0.15em] border transition-colors ${when === w.value ? 'bg-obsidian text-cream border-obsidian' : 'bg-white border-obsidian/15 text-obsidian/55 hover:text-obsidian hover:border-obsidian/40'}`}
-              >
-                {w.label}
-              </button>
-            ))}
-          </div>
-          {/* Row 2: categories */}
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-0.5">
-            <button
-              onClick={() => setParam('category', '')}
-              className={`shrink-0 px-3.5 py-2.5 min-h-[2.75rem] text-[10px] font-black uppercase tracking-[0.18em] border transition-colors ${!category ? 'bg-gold text-obsidian border-gold' : 'bg-white border-obsidian/15 text-obsidian/55 hover:text-obsidian hover:border-gold/50'}`}
-            >
-              All
-            </button>
-            {CATEGORIES.map((c) => (
-              <button
-                key={c}
-                onClick={() => setParam('category', c)}
-                className={`shrink-0 px-3.5 py-2.5 min-h-[2.75rem] text-[10px] font-black uppercase tracking-[0.18em] border transition-colors ${category === c ? 'bg-gold text-obsidian border-gold' : 'bg-white border-obsidian/15 text-obsidian/55 hover:text-obsidian hover:border-gold/50'}`}
-              >
-                {CATEGORY_LABELS[c]}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* RESULTS */}
-      <section className="bg-paper py-8 sm:py-14 min-h-[40vh]">
+      {/* RESULTS + FILTERS */}
+      <section className="bg-paper py-8 sm:py-12 min-h-[40vh]">
         <div className="max-w-6xl mx-auto px-4 sm:px-8">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-7">
-            <p className="text-obsidian/50 text-sm">
-              {loading ? 'Loading…' : `${events.length} event${events.length === 1 ? '' : 's'}`}
-              {city && <span className="text-gold-dark"> · {city}</span>}
-              {category && <span className="text-gold-dark"> · {CATEGORY_LABELS[category]}</span>}
-              {when && <span className="text-gold-dark"> · {WHEN_OPTIONS.find((w) => w.value === when)?.label}</span>}
-            </p>
-            {hasFilters && (
-              <button onClick={() => { setQuery(''); router.push('/events'); }} className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/50 hover:text-gold-dark">
-                <X size={12} /> Clear all
-              </button>
-            )}
-          </div>
+          <div className="lg:grid lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-8 lg:items-start">
+            {/* Mobile / tablet: filter card above results */}
+            <div className="lg:hidden mb-6">
+              <DiscoverFilters
+                variant="bar"
+                cities={cities}
+                city={city}
+                when={when}
+                category={category}
+                sort={sort}
+                onChange={setParam}
+                onClear={clearAll}
+                hasFilters={hasFilters}
+              />
+            </div>
 
-          {loading ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {[0, 1, 2, 3, 4, 5].map((i) => <div key={i} className="aspect-[16/10] bg-white border border-obsidian/10 animate-pulse" />)}
+            {/* Desktop: sticky left sidebar */}
+            <aside className="hidden lg:block lg:sticky lg:top-below-nav lg:self-start">
+              <DiscoverFilters
+                variant="sidebar"
+                cities={cities}
+                city={city}
+                when={when}
+                category={category}
+                sort={sort}
+                onChange={setParam}
+                onClear={clearAll}
+                hasFilters={hasFilters}
+              />
+            </aside>
+
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+                <p className="text-obsidian/50 text-sm">
+                  {loading ? 'Loading…' : `${events.length} event${events.length === 1 ? '' : 's'}`}
+                  {searchQ && <span className="text-gold-dark"> · &ldquo;{searchQ}&rdquo;</span>}
+                  {city && <span className="text-gold-dark"> · {city}</span>}
+                  {category && <span className="text-gold-dark"> · {CATEGORY_LABELS[category]}</span>}
+                  {when && <span className="text-gold-dark"> · {WHEN_OPTIONS.find((w) => w.value === when)?.label}</span>}
+                  {sort && sort !== 'soonest' && (
+                    <span className="text-gold-dark"> · {SORT_OPTIONS.find((s) => s.value === sort)?.label}</span>
+                  )}
+                </p>
+                {hasFilters && (
+                  <button onClick={clearAll} className="lg:hidden inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/50 hover:text-gold-dark">
+                    <X size={12} /> Clear all
+                  </button>
+                )}
+              </div>
+
+              {loading ? (
+                <div className="grid sm:grid-cols-2 xl:grid-cols-2 gap-5">
+                  {[0, 1, 2, 3, 4, 5].map((i) => <div key={i} className="aspect-[16/10] bg-white border border-obsidian/10 animate-pulse rounded-2xl" />)}
+                </div>
+              ) : events.length === 0 ? (
+                <div className="text-center py-16 sm:py-20 bg-white border border-obsidian/10 rounded-2xl">
+                  <p className="font-display text-2xl italic text-obsidian mb-2">No events match that.</p>
+                  <p className="text-obsidian/50 text-sm mb-6">Try different filters or clear them to see everything.</p>
+                  <button onClick={clearAll} className="px-6 py-3 bg-gold text-obsidian text-[11px] font-black uppercase tracking-[0.2em]">Show all events</button>
+                </div>
+              ) : (
+                <div className="grid sm:grid-cols-2 xl:grid-cols-2 gap-5">
+                  {events.map((e, i) => <EventCard key={e.slug} event={e} index={i} />)}
+                </div>
+              )}
             </div>
-          ) : events.length === 0 ? (
-            <div className="text-center py-20 bg-white border border-obsidian/10">
-              <p className="font-display text-2xl italic text-obsidian mb-2">No events match that.</p>
-              <p className="text-obsidian/50 text-sm mb-6">Try a different city, date or vibe — or clear your filters.</p>
-              <button onClick={() => { setQuery(''); router.push('/events'); }} className="px-6 py-3 bg-gold text-obsidian text-[11px] font-black uppercase tracking-[0.2em]">Show all events</button>
-            </div>
-          ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {events.map((e, i) => <EventCard key={e.slug} event={e} index={i} />)}
-            </div>
-          )}
+          </div>
         </div>
       </section>
     </>

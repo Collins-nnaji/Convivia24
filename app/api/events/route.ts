@@ -42,6 +42,27 @@ function dateWindow(when: string | null): { from: string | null; to: string | nu
   }
 }
 
+function sortEvents(rows: Record<string, unknown>[], sort: string) {
+  const list = [...rows];
+  const byDate = (a: Record<string, unknown>, b: Record<string, unknown>) =>
+    +new Date(String(a.starts_at)) - +new Date(String(b.starts_at));
+  const price = (r: Record<string, unknown>) => {
+    const n = Number(r.min_price);
+    return Number.isFinite(n) ? n : Number.MAX_SAFE_INTEGER;
+  };
+
+  switch (sort) {
+    case 'featured':
+      return list.sort((a, b) => Number(Boolean(b.is_featured)) - Number(Boolean(a.is_featured)) || byDate(a, b));
+    case 'price_asc':
+      return list.sort((a, b) => price(a) - price(b) || byDate(a, b));
+    case 'price_desc':
+      return list.sort((a, b) => price(b) - price(a) || byDate(a, b));
+    default:
+      return list.sort(byDate);
+  }
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -49,6 +70,7 @@ export async function GET(req: NextRequest) {
     const city = searchParams.get('city');
     const category = searchParams.get('category');
     const { from, to } = dateWindow(searchParams.get('when'));
+    const sort = searchParams.get('sort') || 'soonest';
     // Drafts and past events are only visible to an authenticated admin.
     const all = searchParams.get('all') && (await isAdminRequest(req)) ? '1' : '';
 
@@ -64,9 +86,8 @@ export async function GET(req: NextRequest) {
         AND (${category ?? null}::text IS NULL OR e.category = ${category ?? null})
         AND (${from}::timestamptz IS NULL OR e.starts_at >= ${from}::timestamptz OR (e.starts_at <= NOW() AND COALESCE(e.ends_at, e.starts_at + INTERVAL '6 hours') > NOW()))
         AND (${to}::timestamptz IS NULL OR e.starts_at <= ${to}::timestamptz)
-      ORDER BY e.is_featured DESC, e.starts_at ASC
     `;
-    return NextResponse.json({ events: rows });
+    return NextResponse.json({ events: sortEvents(rows, sort) });
   } catch (err) {
     console.error('[GET /api/events]', err);
     return NextResponse.json({ error: 'Failed to fetch events.' }, { status: 500 });
