@@ -55,12 +55,8 @@ export default function Navigation() {
         }`}
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-3 shrink-0 group" aria-label="Convivia24 home">
-            <img src="/convivia24.png" alt="" className="h-7 w-auto transition-opacity group-hover:opacity-80" style={{ filter: 'brightness(0)' }} />
-            <span className="hidden lg:flex flex-col">
-              <span className="font-display text-lg italic leading-none text-ink">Convivia24</span>
-              <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-ink-muted mt-0.5">Curated gatherings</span>
-            </span>
+          <Link href="/" className="flex items-center shrink-0 group" aria-label="Convivia24 home">
+            <img src="/convivia24.png" alt="" className="h-8 w-auto transition-opacity group-hover:opacity-80" style={{ filter: 'brightness(0)' }} />
           </Link>
 
           <nav className="hidden md:flex items-center gap-1">

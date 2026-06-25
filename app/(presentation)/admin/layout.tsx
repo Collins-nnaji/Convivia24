@@ -81,9 +81,9 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
         }`}
       >
         <div className="flex items-center justify-between border-b border-ink/8 px-5 py-5">
-          <Link href="/admin" onClick={onClose} className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-copper-deep">Organizer</p>
-            <p className="font-display text-xl italic text-ink leading-tight">Convivia24</p>
+          <Link href="/admin" onClick={onClose} className="min-w-0" aria-label="Convivia24 organizer console">
+            <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-copper-deep mb-2">Organizer</p>
+            <img src="/convivia24.png" alt="" className="h-7 w-auto" style={{ filter: 'brightness(0)' }} />
           </Link>
           <button type="button" onClick={onClose} className="lg:hidden p-2 text-ink-muted hover:text-ink" aria-label="Close menu">
             <X size={18} />
@@ -268,7 +268,7 @@ function Gate({ children }: { children: React.ReactNode }) {
     return (
       <div className="min-h-screen bg-surface flex items-center justify-center px-4">
         <div className="w-full max-w-md glass-card p-10 text-center">
-          <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-copper-deep mb-2">Convivia24</p>
+          <img src="/convivia24.png" alt="" className="h-8 w-auto mx-auto mb-4" style={{ filter: 'brightness(0)' }} aria-hidden />
           <h1 className="font-display text-3xl italic text-ink mb-3">Organizer access</h1>
           <p className="text-ink-muted text-sm mb-8 leading-relaxed">Sign in to manage events, guestlists, broadcasts, and door check-in.</p>
           <button type="button" onClick={() => signInWithGoogle('/admin')} className="btn-primary w-full">

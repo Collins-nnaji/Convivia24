@@ -15,8 +15,8 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-14 pb-12">
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-10 mb-10 pb-10 border-b border-ink/8">
           <div className="max-w-sm">
-            <Link href="/" className="inline-block mb-4 hover:opacity-80 transition-opacity">
-              <img src="/convivia24.png" alt="Convivia24" className="h-7 w-auto" style={{ filter: 'brightness(0)' }} />
+            <Link href="/" className="inline-block mb-4 hover:opacity-80 transition-opacity" aria-label="Convivia24 home">
+              <img src="/convivia24.png" alt="" className="h-8 w-auto" style={{ filter: 'brightness(0)' }} />
             </Link>
             <p className="font-display text-2xl italic text-ink mb-2">Curated gatherings, worldwide.</p>
             <p className="text-sm text-ink-muted leading-relaxed">
