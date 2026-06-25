@@ -5,10 +5,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, ExternalLink, Trash2, Star, Save, Plus, ImagePlus,
-  Calendar, MapPin, Ticket, Eye, EyeOff, Check, X, Loader2,
+  Calendar, MapPin, Ticket, Eye, EyeOff, Check, X, Loader2, Sparkles,
 } from 'lucide-react';
 import { CATEGORIES, CATEGORY_LABELS } from '@/lib/categories';
 import { priceLabel } from '@/lib/money';
+import { absoluteUrl } from '@/lib/url';
+import { buildFlyerEvent } from '@/lib/flyer/templates';
+import EventFlyerStudio from '@/components/event/EventFlyerStudio';
 
 const CURRENCIES = ['NGN', 'GBP', 'USD', 'EUR', 'GHS', 'KES', 'ZAR', 'CAD', 'AED'];
 const STATUSES = ['published', 'draft', 'cancelled', 'completed'] as const;
@@ -55,6 +58,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ kind: 'ok' | 'err'; msg: string } | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [flyerOpen, setFlyerOpen] = useState(false);
 
   function flash(kind: 'ok' | 'err', msg: string) { setToast({ kind, msg }); setTimeout(() => setToast(null), 3000); }
   function set<K extends keyof EventForm>(key: K, value: EventForm[K]) { setForm((f) => (f ? { ...f, [key]: value } : f)); }
@@ -167,6 +171,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
           <p className="text-obsidian/35 text-xs font-mono mt-0.5">/events/{form.slug}</p>
         </div>
         <div className="flex items-center gap-2">
+          <button onClick={() => setFlyerOpen(true)} className="inline-flex items-center gap-1.5 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.15em] px-3.5 py-2.5 transition-colors"><Sparkles size={13} /> Flyer</button>
           <Link href={`/events/${form.slug}`} target="_blank" className="inline-flex items-center gap-1.5 border border-obsidian/15 text-obsidian/70 text-[11px] font-black uppercase tracking-[0.15em] px-3.5 py-2.5 hover:border-gold transition-colors"><ExternalLink size={13} /> View</Link>
           <button onClick={remove} className="inline-flex items-center gap-1.5 border border-red-200 text-red-600 text-[11px] font-black uppercase tracking-[0.15em] px-3.5 py-2.5 hover:bg-red-50 transition-colors"><Trash2 size={13} /> Delete</button>
         </div>
@@ -315,6 +320,24 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
           </div>
         </div>
       )}
+
+      <EventFlyerStudio
+        open={flyerOpen}
+        onClose={() => setFlyerOpen(false)}
+        coverImage={form.cover_image || null}
+        event={buildFlyerEvent({
+          title: form.title,
+          tagline: form.tagline,
+          categoryLabel: CATEGORY_LABELS[form.category] ?? form.category,
+          starts_at: fromLocalInput(form.starts_at) ?? new Date().toISOString(),
+          venue: form.venue,
+          city: form.city,
+          country: form.country,
+          priceLabel: minPrice != null ? `From ${priceLabel(minPrice, form.currency)}` : null,
+          organizer: form.organizer_name,
+          url: absoluteUrl(`/events/${form.slug}`),
+        })}
+      />
     </div>
   );
 }

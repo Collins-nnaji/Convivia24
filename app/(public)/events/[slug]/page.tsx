@@ -4,12 +4,15 @@ import { use, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { MapPin, Calendar, Clock, Users, Minus, Plus, ArrowLeft, Ticket, ShieldCheck, Music, MessageCircle, Image, UserCheck } from 'lucide-react';
+import { MapPin, Calendar, Clock, Users, Minus, Plus, ArrowLeft, Ticket, ShieldCheck, Music, MessageCircle, Image, UserCheck, Share2 } from 'lucide-react';
 import { CATEGORY_LABELS } from '@/lib/categories';
 import { priceLabel, formatMoney } from '@/lib/money';
 import { useUser } from '@/components/auth/AuthProvider';
 import EventThemeShell from '@/components/event/EventThemeShell';
 import EventIntegrationBar from '@/components/integrations/EventIntegrationBar';
+import EventFlyerStudio from '@/components/event/EventFlyerStudio';
+import { buildFlyerEvent } from '@/lib/flyer/templates';
+import { absoluteUrl } from '@/lib/url';
 
 interface EventDetail {
   id: string; slug: string; title: string; tagline: string | null; description: string;
@@ -42,6 +45,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
   const [guestlistApp, setGuestlistApp] = useState<{ status: string } | null>(null);
   const [applying, setApplying] = useState(false);
   const [appForm, setAppForm] = useState({ linkedin: '', instagram: '', application_text: '' });
+  const [flyerOpen, setFlyerOpen] = useState(false);
 
   useEffect(() => {
     fetch(`/api/events/${slug}`)
@@ -156,6 +160,9 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
           <h1 className="font-display text-3xl min-[400px]:text-4xl sm:text-6xl md:text-7xl font-light italic tracking-tight leading-[0.92] mb-3 max-w-3xl text-balance">{event.title}</h1>
           {event.tagline && <p className="opacity-60 text-base sm:text-lg max-w-2xl">{event.tagline}</p>}
           <div className="flex flex-wrap gap-3 mt-5">
+            <button onClick={() => setFlyerOpen(true)} className="inline-flex items-center gap-1.5 glass-card px-4 py-2 text-[10px] font-black uppercase tracking-[0.15em]">
+              <Share2 size={12} /> Share flyer
+            </button>
             {event.lounge_enabled !== false && (
               <Link href={`/events/${slug}/lounge`} className="inline-flex items-center gap-1.5 glass-card px-4 py-2 text-[10px] font-black uppercase tracking-[0.15em]">
                 <MessageCircle size={12} /> Digital lounge
@@ -347,6 +354,26 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
           </a>
         </div>
       )}
+
+      <EventFlyerStudio
+        open={flyerOpen}
+        onClose={() => setFlyerOpen(false)}
+        coverImage={event.cover_image || cover}
+        event={buildFlyerEvent({
+          title: event.title,
+          tagline: event.tagline,
+          categoryLabel: CATEGORY_LABELS[event.category] ?? event.category,
+          starts_at: event.starts_at,
+          venue: event.venue,
+          city: event.city,
+          country: event.country,
+          priceLabel: types.length
+            ? `From ${priceLabel(Math.min(...types.map((t) => Number(t.price))), event.currency)}`
+            : null,
+          organizer: event.organizer_name,
+          url: absoluteUrl(`/events/${slug}`),
+        })}
+      />
     </EventThemeShell>
   );
 }
