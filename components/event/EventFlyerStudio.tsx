@@ -114,28 +114,31 @@ export default function EventFlyerStudio({ event, coverImage, open, onClose }: E
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-stretch sm:items-center justify-center bg-ink/70 backdrop-blur-sm p-0 sm:p-6" onClick={onClose}>
       <div
-        className="relative bg-surface w-full sm:max-w-5xl sm:rounded-2xl shadow-lift overflow-hidden flex flex-col max-h-screen sm:max-h-[92vh]"
+        className="relative bg-surface w-full sm:max-w-5xl sm:rounded-2xl shadow-lift overflow-hidden flex flex-col h-[100dvh] sm:h-auto sm:max-h-[92vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 sm:px-7 py-4 border-b border-ink/8 shrink-0">
-          <div className="flex items-center gap-2.5">
-            <Sparkles size={18} className="text-copper" />
-            <div>
+        <div className="flex items-center justify-between gap-3 px-4 sm:px-7 py-3.5 sm:py-4 border-b border-ink/8 shrink-0 pt-safe sm:pt-3.5">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Sparkles size={18} className="text-copper shrink-0" />
+            <div className="min-w-0">
               <h2 className="font-display text-lg sm:text-xl italic text-ink leading-none">Flyer studio</h2>
-              <p className="text-ink-muted text-[11px] mt-1">Make a shareable graphic for this event</p>
+              <p className="text-ink-muted text-[11px] mt-1 truncate">Make a shareable graphic for this event</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 -mr-2 text-ink-muted hover:text-ink transition-colors"><X size={20} /></button>
+          <button onClick={onClose} aria-label="Close" className="touch-target -mr-2 flex items-center justify-center text-ink-muted hover:text-ink transition-colors"><X size={22} /></button>
         </div>
 
-        <div className="grid lg:grid-cols-[1fr_320px] gap-0 overflow-y-auto">
+        <div className="grid lg:grid-cols-[1fr_320px] gap-0 overflow-y-auto overscroll-contain flex-1 min-h-0">
           {/* Preview */}
-          <div className="bg-surface-sunken/60 flex items-center justify-center p-5 sm:p-8 min-h-[40vh]">
-            <div className="relative max-w-full" style={{ width: format === 'wide' ? '100%' : format === 'story' ? '270px' : '380px' }}>
+          <div className="bg-surface-sunken/60 flex items-center justify-center p-4 sm:p-8 min-h-0 lg:min-h-[40vh]">
+            <div
+              className="relative w-full mx-auto"
+              style={{ maxWidth: format === 'wide' ? '100%' : format === 'story' ? '240px' : '360px' }}
+            >
               <canvas
                 ref={canvasRef}
-                className="w-full h-auto rounded-lg shadow-lift bg-ink/5"
+                className="w-full h-auto max-h-[38vh] sm:max-h-[64vh] object-contain mx-auto rounded-lg shadow-lift bg-ink/5"
                 style={{ aspectRatio: format === 'square' ? '1/1' : format === 'story' ? '9/16' : '1200/628' }}
               />
               {rendering && (
@@ -147,7 +150,7 @@ export default function EventFlyerStudio({ event, coverImage, open, onClose }: E
           </div>
 
           {/* Controls */}
-          <div className="p-5 sm:p-6 space-y-5 lg:border-l border-ink/8">
+          <div className="p-4 sm:p-6 space-y-5 lg:border-l border-ink/8">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-copper-deep mb-2.5">Style</p>
               <div className="grid grid-cols-2 gap-2">
@@ -189,10 +192,10 @@ export default function EventFlyerStudio({ event, coverImage, open, onClose }: E
 
             {/* Actions */}
             <div className="space-y-2 pt-1">
-              <button onClick={download} className="w-full inline-flex items-center justify-center gap-2 bg-ink text-pearl text-[11px] font-bold uppercase tracking-[0.15em] py-3 rounded-xl hover:bg-ink-soft transition-colors">
+              <button onClick={download} className="touch-target w-full inline-flex items-center justify-center gap-2 bg-ink text-pearl text-[11px] font-bold uppercase tracking-[0.15em] py-3 rounded-xl hover:bg-ink-soft transition-colors">
                 {downloaded ? <><Check size={15} /> Saved</> : <><Download size={15} /> Download PNG</>}
               </button>
-              <button onClick={nativeShare} className="w-full inline-flex items-center justify-center gap-2 bg-copper text-pearl text-[11px] font-bold uppercase tracking-[0.15em] py-3 rounded-xl hover:bg-copper-bright transition-colors">
+              <button onClick={nativeShare} className="touch-target w-full inline-flex items-center justify-center gap-2 bg-copper text-pearl text-[11px] font-bold uppercase tracking-[0.15em] py-3 rounded-xl hover:bg-copper-bright transition-colors">
                 <Share2 size={15} /> Share…
               </button>
             </div>
@@ -207,7 +210,7 @@ export default function EventFlyerStudio({ event, coverImage, open, onClose }: E
                     href={s.href(event)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-center px-2 py-2.5 rounded-xl border border-ink/10 text-[11px] font-semibold text-ink hover:border-copper/50 hover:text-copper-deep transition-colors"
+                    className="flex items-center justify-center text-center px-2 min-h-[2.75rem] rounded-xl border border-ink/10 text-[11px] font-semibold text-ink hover:border-copper/50 hover:text-copper-deep transition-colors"
                   >
                     {s.label}
                   </a>
@@ -217,13 +220,16 @@ export default function EventFlyerStudio({ event, coverImage, open, onClose }: E
             </div>
 
             <div className="flex gap-2">
-              <button onClick={() => copy('caption')} className="flex-1 inline-flex items-center justify-center gap-1.5 border border-ink/10 text-ink-muted text-[10px] font-bold uppercase tracking-[0.12em] py-2.5 rounded-xl hover:border-copper/40 hover:text-copper-deep transition-colors">
+              <button onClick={() => copy('caption')} className="flex-1 min-h-[2.75rem] inline-flex items-center justify-center gap-1.5 border border-ink/10 text-ink-muted text-[10px] font-bold uppercase tracking-[0.12em] py-2.5 rounded-xl hover:border-copper/40 hover:text-copper-deep transition-colors">
                 {copied === 'caption' ? <><Check size={13} /> Copied</> : <><Copy size={13} /> Caption</>}
               </button>
-              <button onClick={() => copy('link')} className="flex-1 inline-flex items-center justify-center gap-1.5 border border-ink/10 text-ink-muted text-[10px] font-bold uppercase tracking-[0.12em] py-2.5 rounded-xl hover:border-copper/40 hover:text-copper-deep transition-colors">
+              <button onClick={() => copy('link')} className="flex-1 min-h-[2.75rem] inline-flex items-center justify-center gap-1.5 border border-ink/10 text-ink-muted text-[10px] font-bold uppercase tracking-[0.12em] py-2.5 rounded-xl hover:border-copper/40 hover:text-copper-deep transition-colors">
                 {copied === 'link' ? <><Check size={13} /> Copied</> : <><Copy size={13} /> Link</>}
               </button>
             </div>
+
+            {/* Clears the iOS home indicator / bottom chrome on mobile */}
+            <div className="pb-safe lg:hidden" />
           </div>
         </div>
       </div>

@@ -170,7 +170,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
           <h1 className="text-2xl sm:text-3xl font-light italic text-obsidian truncate">{form.title || 'Untitled event'}</h1>
           <p className="text-obsidian/35 text-xs font-mono mt-0.5">/events/{form.slug}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button onClick={() => setFlyerOpen(true)} className="inline-flex items-center gap-1.5 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.15em] px-3.5 py-2.5 transition-colors"><Sparkles size={13} /> Flyer</button>
           <Link href={`/events/${form.slug}`} target="_blank" className="inline-flex items-center gap-1.5 border border-obsidian/15 text-obsidian/70 text-[11px] font-black uppercase tracking-[0.15em] px-3.5 py-2.5 hover:border-gold transition-colors"><ExternalLink size={13} /> View</Link>
           <button onClick={remove} className="inline-flex items-center gap-1.5 border border-red-200 text-red-600 text-[11px] font-black uppercase tracking-[0.15em] px-3.5 py-2.5 hover:bg-red-50 transition-colors"><Trash2 size={13} /> Delete</button>
