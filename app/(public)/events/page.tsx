@@ -66,44 +66,46 @@ function DiscoverInner() {
         <img src="/conv1.png" alt="" className="w-full h-[30vh] sm:h-[38vh] object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-paper via-paper/40 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-paper/70 to-transparent" />
-        <div className="relative max-w-6xl mx-auto px-5 sm:px-8 -mt-24 sm:-mt-28 pb-8 z-10">
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-8 -mt-20 sm:-mt-28 pb-6 sm:pb-8 z-10">
           <SectionLabel>Discover</SectionLabel>
-          <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-light italic tracking-tight text-obsidian leading-[0.9] mb-6">
+          <h1 className="font-display text-3xl min-[400px]:text-4xl sm:text-6xl md:text-7xl font-light italic tracking-tight text-obsidian leading-[0.92] mb-5 sm:mb-6 text-balance">
             Every event,<br />everywhere.
           </h1>
 
           {/* SEARCH */}
           <form
             onSubmit={(e) => { e.preventDefault(); setParam('q', query.trim()); }}
-            className="flex items-center gap-3 max-w-xl bg-white border border-obsidian/15 focus-within:border-gold shadow-sm px-4 py-3"
+            className="flex flex-col min-[420px]:flex-row min-[420px]:items-center gap-2 min-[420px]:gap-3 max-w-xl bg-white border border-obsidian/15 focus-within:border-gold shadow-sm px-4 py-3"
           >
-            <Search size={18} className="text-gold-dark shrink-0" />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search events, venues, cities…"
-              className="flex-1 min-w-0 bg-transparent border-0 focus:ring-0 text-obsidian text-sm placeholder-obsidian/35 outline-none p-0"
-            />
-            {query && (
-              <button type="button" onClick={() => { setQuery(''); setParam('q', ''); }} className="text-obsidian/30 hover:text-obsidian shrink-0" aria-label="Clear search">
-                <X size={15} />
-              </button>
-            )}
-            <button type="submit" className="text-[10px] font-black uppercase tracking-[0.2em] text-gold-dark hover:text-gold shrink-0">Search</button>
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <Search size={18} className="text-gold-dark shrink-0" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search events, venues, cities…"
+                className="flex-1 min-w-0 bg-transparent border-0 focus:ring-0 text-obsidian text-base sm:text-sm placeholder-obsidian/35 outline-none p-0"
+              />
+              {query && (
+                <button type="button" onClick={() => { setQuery(''); setParam('q', ''); }} className="touch-target flex items-center justify-center text-obsidian/30 hover:text-obsidian shrink-0" aria-label="Clear search">
+                  <X size={15} />
+                </button>
+              )}
+            </div>
+            <button type="submit" className="min-[420px]:shrink-0 w-full min-[420px]:w-auto text-center text-[10px] font-black uppercase tracking-[0.2em] text-gold-dark hover:text-gold py-2 min-[420px]:py-0 border-t min-[420px]:border-t-0 border-obsidian/10 min-[420px]:border-0 pt-2 min-[420px]:pt-0">Search</button>
           </form>
         </div>
       </section>
 
       {/* FILTERS */}
-      <section className="bg-cream border-y border-obsidian/10 sticky top-16 z-20 backdrop-blur">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-3 space-y-2.5">
+      <section className="bg-cream border-y border-obsidian/10 sticky top-below-nav z-20 backdrop-blur">
+        <div className="max-w-6xl mx-auto px-4 sm:px-8 py-3 space-y-2.5">
           {/* Row 1: where + when */}
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-0.5">
             <span className="hidden sm:inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-[0.2em] text-obsidian/35 shrink-0"><MapPin size={11} /> Where</span>
             <select
               value={city}
               onChange={(e) => setParam('city', e.target.value)}
-              className="shrink-0 bg-white border border-obsidian/15 text-obsidian/75 text-xs py-1.5 pl-3 pr-8 focus:ring-0 focus:border-gold"
+              className="shrink-0 bg-white border border-obsidian/15 text-obsidian/75 text-xs py-2.5 pl-3 pr-8 focus:ring-0 focus:border-gold min-h-[2.75rem]"
             >
               <option value="">Everywhere</option>
               {cities.map((c) => <option key={c.city} value={c.city}>{c.city}, {c.country} ({c.count})</option>)}
@@ -113,17 +115,17 @@ function DiscoverInner() {
               <button
                 key={w.value}
                 onClick={() => setParam('when', w.value)}
-                className={`shrink-0 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.15em] border transition-colors ${when === w.value ? 'bg-obsidian text-cream border-obsidian' : 'bg-white border-obsidian/15 text-obsidian/55 hover:text-obsidian hover:border-obsidian/40'}`}
+                className={`shrink-0 px-3 py-2.5 min-h-[2.75rem] text-[10px] font-black uppercase tracking-[0.15em] border transition-colors ${when === w.value ? 'bg-obsidian text-cream border-obsidian' : 'bg-white border-obsidian/15 text-obsidian/55 hover:text-obsidian hover:border-obsidian/40'}`}
               >
                 {w.label}
               </button>
             ))}
           </div>
           {/* Row 2: categories */}
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-0.5">
             <button
               onClick={() => setParam('category', '')}
-              className={`shrink-0 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] border transition-colors ${!category ? 'bg-gold text-obsidian border-gold' : 'bg-white border-obsidian/15 text-obsidian/55 hover:text-obsidian hover:border-gold/50'}`}
+              className={`shrink-0 px-3.5 py-2.5 min-h-[2.75rem] text-[10px] font-black uppercase tracking-[0.18em] border transition-colors ${!category ? 'bg-gold text-obsidian border-gold' : 'bg-white border-obsidian/15 text-obsidian/55 hover:text-obsidian hover:border-gold/50'}`}
             >
               All
             </button>
@@ -131,7 +133,7 @@ function DiscoverInner() {
               <button
                 key={c}
                 onClick={() => setParam('category', c)}
-                className={`shrink-0 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] border transition-colors ${category === c ? 'bg-gold text-obsidian border-gold' : 'bg-white border-obsidian/15 text-obsidian/55 hover:text-obsidian hover:border-gold/50'}`}
+                className={`shrink-0 px-3.5 py-2.5 min-h-[2.75rem] text-[10px] font-black uppercase tracking-[0.18em] border transition-colors ${category === c ? 'bg-gold text-obsidian border-gold' : 'bg-white border-obsidian/15 text-obsidian/55 hover:text-obsidian hover:border-gold/50'}`}
               >
                 {CATEGORY_LABELS[c]}
               </button>
@@ -141,8 +143,8 @@ function DiscoverInner() {
       </section>
 
       {/* RESULTS */}
-      <section className="bg-paper py-10 sm:py-14 min-h-[40vh]">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8">
+      <section className="bg-paper py-8 sm:py-14 min-h-[40vh]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-8">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-7">
             <p className="text-obsidian/50 text-sm">
               {loading ? 'Loading…' : `${events.length} event${events.length === 1 ? '' : 's'}`}

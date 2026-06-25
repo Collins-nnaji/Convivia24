@@ -72,8 +72,8 @@ export default function EventCard({ event, index = 0 }: { event: EventCardData; 
             {CATEGORY_LABELS[event.category] ?? event.category}
           </span>
         </div>
-        <div className="p-5">
-          <h3 className="font-display text-xl sm:text-2xl italic text-ink leading-snug group-hover:text-copper-deep transition-colors line-clamp-2">
+        <div className="p-4 sm:p-5">
+          <h3 className="font-display text-lg sm:text-2xl italic text-ink leading-snug group-hover:text-copper-deep transition-colors line-clamp-2">
             {event.title}
           </h3>
           {event.tagline && <p className="text-ink-muted text-sm mt-1 line-clamp-1">{event.tagline}</p>}

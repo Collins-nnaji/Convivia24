@@ -61,14 +61,14 @@ export default function HomePage() {
   return (
     <>
       {/* ═══ HERO ═══ */}
-      <section className="relative min-h-[78vh] sm:min-h-[90vh] bg-paper flex items-center overflow-hidden -mt-16 pt-16">
+      <section className="relative min-h-[72vh] sm:min-h-[90vh] bg-paper flex items-center overflow-hidden -mt-16 pt-16">
         <div className="absolute inset-0">
           <img src="/Homepage.png" alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-paper via-paper/85 to-paper/20" />
           <div className="absolute inset-0 bg-gradient-to-t from-paper via-transparent to-paper/40" />
         </div>
 
-        <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-28 w-full">
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-8 py-12 sm:py-28 w-full">
           <div className="max-w-2xl">
             <motion.div initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.12 } } }}>
               <motion.div variants={fadeUp}>
@@ -77,31 +77,31 @@ export default function HomePage() {
 
               <motion.h1
                 variants={fadeUp}
-                className="font-display text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-light italic tracking-tight text-obsidian leading-[0.9] mb-6 sm:mb-8"
+                className="font-display text-4xl min-[400px]:text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-light italic tracking-tight text-obsidian leading-[0.92] mb-5 sm:mb-8 text-balance"
               >
                 Curated<br />gatherings.
               </motion.h1>
 
               <motion.div variants={fadeUp} className="flex items-center gap-2 mb-4 sm:mb-6">
-                <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gold-dark">Salons · Supper Clubs · Nightlife · Worldwide</span>
+                <span className="w-1 h-1 rounded-full bg-gold animate-pulse shrink-0" />
+                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.22em] sm:tracking-[0.3em] text-gold-dark">Salons · Supper Clubs · Nightlife · Worldwide</span>
               </motion.div>
 
-              <motion.p variants={fadeUp} className="text-base sm:text-lg text-obsidian/65 max-w-lg leading-relaxed mb-8 sm:mb-10">
+              <motion.p variants={fadeUp} className="text-sm sm:text-lg text-obsidian/65 max-w-lg leading-relaxed mb-7 sm:mb-10">
                 Convivia24 handles everything from exclusive daytime business mixers to vibrant lifestyle
                 experiences by evening — with guestlists, digital lounges, and memory walls built in.
               </motion.p>
 
-              <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <motion.div variants={fadeUp} className="flex flex-col min-[420px]:flex-row gap-3 sm:gap-4">
                 <Link
                   href="/events"
-                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.2em] transition-colors"
+                  className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3.5 bg-gold hover:bg-gold-light text-obsidian text-[10px] sm:text-[11px] font-black uppercase tracking-[0.18em] sm:tracking-[0.2em] transition-colors"
                 >
                   Discover Events <ArrowRight size={14} />
                 </Link>
                 <Link
                   href="/concierge"
-                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 border border-obsidian/25 text-obsidian text-[11px] font-black uppercase tracking-[0.2em] hover:border-gold hover:bg-white transition-colors"
+                  className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3.5 border border-obsidian/25 text-obsidian text-[10px] sm:text-[11px] font-black uppercase tracking-[0.18em] sm:tracking-[0.2em] hover:border-gold hover:bg-white transition-colors"
                 >
                   <Sparkles size={13} /> Ask the AI Concierge
                 </Link>
@@ -112,10 +112,10 @@ export default function HomePage() {
       </section>
 
       {/* ═══ TICKER ═══ */}
-      <div className="bg-gold overflow-hidden py-4">
+      <div className="bg-gold overflow-hidden py-3 sm:py-4">
         <motion.div className="flex whitespace-nowrap w-max" animate={{ x: ['0%', '-50%'] }} transition={{ duration: 28, repeat: Infinity, ease: 'linear' }}>
           {[...TICKER, ...TICKER].map((item, i) => (
-            <span key={i} className="mx-8 text-[11px] font-black uppercase tracking-[0.3em] text-obsidian/70 flex items-center gap-8">
+            <span key={i} className="mx-5 sm:mx-8 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.22em] sm:tracking-[0.3em] text-obsidian/70 flex items-center gap-5 sm:gap-8">
               {item}
               <span className="w-1 h-1 rounded-full bg-obsidian/40 inline-block" />
             </span>

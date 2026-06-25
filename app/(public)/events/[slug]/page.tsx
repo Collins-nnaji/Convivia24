@@ -143,13 +143,13 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
           <img src={cover} alt={event.title} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-[var(--event-bg,#faf7f1)] via-transparent to-transparent" />
         </div>
-        <div className="relative max-w-6xl mx-auto px-5 sm:px-8 -mt-28 sm:-mt-32 pb-4 z-10">
-          <Link href="/events" className="inline-flex items-center gap-1.5 opacity-60 hover:opacity-100 text-[10px] font-black uppercase tracking-[0.2em] mb-5">
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-8 -mt-24 sm:-mt-32 pb-4 z-10">
+          <Link href="/events" className="inline-flex items-center gap-1.5 opacity-60 hover:opacity-100 text-[10px] font-black uppercase tracking-[0.2em] mb-4 sm:mb-5 touch-target">
             <ArrowLeft size={12} /> Discover
           </Link>
-          <span className="block text-[10px] font-black uppercase tracking-[0.3em] text-[var(--event-accent,#c9a84c)] mb-3">{CATEGORY_LABELS[event.category] ?? event.category}</span>
-          <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-light italic tracking-tight leading-[0.92] mb-3 max-w-3xl">{event.title}</h1>
-          {event.tagline && <p className="opacity-60 text-lg max-w-2xl">{event.tagline}</p>}
+          <span className="block text-[10px] font-black uppercase tracking-[0.3em] text-[var(--event-accent,#c9a84c)] mb-2 sm:mb-3">{CATEGORY_LABELS[event.category] ?? event.category}</span>
+          <h1 className="font-display text-3xl min-[400px]:text-4xl sm:text-6xl md:text-7xl font-light italic tracking-tight leading-[0.92] mb-3 max-w-3xl text-balance">{event.title}</h1>
+          {event.tagline && <p className="opacity-60 text-base sm:text-lg max-w-2xl">{event.tagline}</p>}
           <div className="flex flex-wrap gap-3 mt-5">
             {event.lounge_enabled !== false && (
               <Link href={`/events/${slug}/lounge`} className="inline-flex items-center gap-1.5 glass-card px-4 py-2 text-[10px] font-black uppercase tracking-[0.15em]">
@@ -166,8 +166,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
       </section>
 
       {/* BODY */}
-      <section className="py-12 sm:py-16">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 grid lg:grid-cols-[1fr_400px] gap-10 lg:gap-14 items-start">
+      <section className="py-10 sm:py-16 pb-28 lg:pb-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-8 grid lg:grid-cols-[1fr_400px] gap-8 sm:gap-10 lg:gap-14 items-start">
 
           {/* LEFT — details */}
           <div>
@@ -314,16 +314,16 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
 
       {/* MOBILE — sticky ticket bar (sits above the bottom tab bar) */}
       {types.length > 0 && (
-        <div className="lg:hidden fixed bottom-16 inset-x-0 z-30 bg-white/95 backdrop-blur border-t border-obsidian/10 px-4 py-3 flex items-center justify-between gap-3">
+        <div className="lg:hidden fixed bottom-tab-bar inset-x-0 z-30 bg-white/95 backdrop-blur border-t border-obsidian/10 px-4 py-3 flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="text-[9px] font-black uppercase tracking-[0.2em] text-obsidian/40">From</p>
-            <p className="font-display text-xl italic text-gold-dark leading-tight">
+            <p className="font-display text-lg sm:text-xl italic text-gold-dark leading-tight truncate">
               {priceLabel(Math.min(...types.map((t) => Number(t.price))), event.currency)}
             </p>
           </div>
           <a
             href="#tickets"
-            className="shrink-0 inline-flex items-center gap-2 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.2em] px-6 py-3 transition-colors"
+            className="shrink-0 inline-flex items-center gap-2 bg-gold hover:bg-gold-light text-obsidian text-[10px] sm:text-[11px] font-black uppercase tracking-[0.18em] sm:tracking-[0.2em] px-5 sm:px-6 py-3 min-h-[2.75rem] transition-colors"
           >
             <Ticket size={14} /> Get Tickets
           </a>

@@ -48,15 +48,20 @@ export default function Navigation() {
   return (
     <>
       <header
-        className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
+        className={`fixed top-0 inset-x-0 z-50 pt-safe transition-all duration-300 ${
           scrolled
             ? 'bg-surface/92 backdrop-blur-xl shadow-soft border-b border-ink/5'
             : 'bg-surface/75 backdrop-blur-md'
         }`}
       >
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center shrink-0 group" aria-label="Convivia24 home">
-            <img src="/convivia24.png" alt="" className="h-8 w-auto transition-opacity group-hover:opacity-80" style={{ filter: 'brightness(0)' }} />
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
+          <Link href="/" className="flex items-center shrink-0 min-w-0 group touch-target" aria-label="Convivia24 home">
+            <img
+              src="/convivia24.png"
+              alt=""
+              className="h-7 sm:h-8 w-auto max-w-[9.5rem] object-contain object-left transition-opacity group-hover:opacity-80"
+              style={{ filter: 'brightness(0)' }}
+            />
           </Link>
 
           <nav className="hidden md:flex items-center gap-1">
@@ -139,15 +144,16 @@ export default function Navigation() {
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            className="md:hidden flex h-10 w-10 items-center justify-center rounded-xl text-ink-muted hover:bg-ink/5"
+            className="md:hidden touch-target flex items-center justify-center rounded-xl text-ink-muted hover:bg-ink/5 active:bg-ink/10"
             aria-label={open ? 'Close menu' : 'Open menu'}
+            aria-expanded={open}
           >
             {open ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
       </header>
 
-      <div className="h-16" />
+      <div className="h-14 sm:h-16 pt-safe" aria-hidden />
 
       <AnimatePresence>
         {open && (
@@ -163,7 +169,7 @@ export default function Navigation() {
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              className="fixed top-16 inset-x-3 z-50 rounded-2xl border border-ink/10 bg-surface-elevated shadow-lift overflow-hidden md:hidden"
+              className="fixed top-below-nav inset-x-3 z-50 max-h-[min(32rem,calc(100dvh-5rem-env(safe-area-inset-top)-env(safe-area-inset-bottom)))] overflow-y-auto overscroll-contain rounded-2xl border border-ink/10 bg-surface-elevated shadow-lift md:hidden"
             >
               {user && (
                 <div className="border-b border-ink/8 px-5 py-4 flex items-center gap-3">

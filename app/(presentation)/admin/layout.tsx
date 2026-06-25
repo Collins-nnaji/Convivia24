@@ -170,12 +170,12 @@ function AdminTopBar({ onMenuOpen }: { onMenuOpen: () => void }) {
   })();
 
   return (
-    <header className="sticky top-0 z-30 border-b border-ink/8 bg-surface/90 backdrop-blur-xl">
-      <div className="flex h-14 sm:h-16 items-center gap-3 px-4 sm:px-6">
+    <header className="sticky top-0 z-30 border-b border-ink/8 bg-surface/90 backdrop-blur-xl pt-safe">
+      <div className="flex h-14 sm:h-16 items-center gap-2 sm:gap-3 px-3 sm:px-6">
         <button
           type="button"
           onClick={onMenuOpen}
-          className="lg:hidden flex h-10 w-10 items-center justify-center rounded-xl text-ink-muted hover:bg-ink/5 hover:text-ink"
+          className="lg:hidden touch-target flex items-center justify-center rounded-xl text-ink-muted hover:bg-ink/5 hover:text-ink"
           aria-label="Open menu"
         >
           <Menu size={20} />
@@ -221,17 +221,18 @@ function AdminMobileBar() {
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-40 border-t border-ink/10 bg-surface-elevated/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)] lg:hidden"
+      className="fixed bottom-0 inset-x-0 z-40 border-t border-ink/10 bg-surface-elevated/95 backdrop-blur-xl pb-safe lg:hidden"
       aria-label="Organizer navigation"
     >
-      <div className="grid grid-cols-5 h-16">
+      <div className="grid grid-cols-5 min-h-16">
         {MOBILE_TABS.map(({ href, label, icon: Icon, exact }) => {
           const active = isActive(pathname, href, exact);
           return (
             <Link
               key={href}
               href={href}
-              className="flex flex-col items-center justify-center gap-0.5 active:scale-95 transition-transform"
+              aria-current={active ? 'page' : undefined}
+              className="flex flex-col items-center justify-center gap-0.5 px-1 py-2 min-h-16 active:scale-95 transition-transform touch-manipulation"
             >
               <Icon size={20} strokeWidth={active ? 2.4 : 1.75} className={active ? 'text-copper' : 'text-ink-muted/60'} />
               <span className={`text-[9px] font-bold uppercase tracking-wide ${active ? 'text-copper-deep' : 'text-ink-muted/60'}`}>{label}</span>
@@ -240,7 +241,7 @@ function AdminMobileBar() {
         })}
         <Link
           href="/"
-          className="flex flex-col items-center justify-center gap-0.5 active:scale-95 transition-transform text-ink-muted/60 hover:text-copper"
+          className="flex flex-col items-center justify-center gap-0.5 px-1 py-2 min-h-16 active:scale-95 transition-transform touch-manipulation text-ink-muted/60 hover:text-copper"
         >
           <ExternalLink size={20} strokeWidth={1.75} />
           <span className="text-[9px] font-bold uppercase tracking-wide">Exit</span>
@@ -267,7 +268,7 @@ function Gate({ children }: { children: React.ReactNode }) {
   if (!user) {
     return (
       <div className="min-h-screen bg-surface flex items-center justify-center px-4">
-        <div className="w-full max-w-md glass-card p-10 text-center">
+        <div className="w-full max-w-md glass-card p-6 sm:p-10 text-center">
           <img src="/convivia24.png" alt="" className="h-8 w-auto mx-auto mb-4" style={{ filter: 'brightness(0)' }} aria-hidden />
           <h1 className="font-display text-3xl italic text-ink mb-3">Organizer access</h1>
           <p className="text-ink-muted text-sm mb-8 leading-relaxed">Sign in to manage events, guestlists, broadcasts, and door check-in.</p>
@@ -285,7 +286,7 @@ function Gate({ children }: { children: React.ReactNode }) {
   if (!user.isAdmin) {
     return (
       <div className="min-h-screen bg-surface flex items-center justify-center px-4">
-        <div className="w-full max-w-md glass-card p-10 text-center">
+        <div className="w-full max-w-md glass-card p-6 sm:p-10 text-center">
           <ShieldAlert size={36} className="text-amber-600 mx-auto mb-4" />
           <h1 className="font-display text-2xl italic text-ink mb-2">Not authorized</h1>
           <p className="text-ink-muted text-sm mb-6 leading-relaxed">
@@ -310,7 +311,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
           <div className="lg:pl-[17.5rem] flex flex-col min-h-screen">
             <AdminTopBar onMenuOpen={() => setSidebarOpen(true)} />
-            <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8">
+            <main className="flex-1 p-3 sm:p-6 lg:p-8 pb-tab-bar lg:pb-8">
               <PageTransition>{children}</PageTransition>
             </main>
           </div>

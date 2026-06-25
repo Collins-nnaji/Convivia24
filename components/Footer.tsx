@@ -12,13 +12,13 @@ const footerLinks = [
 export default function Footer() {
   return (
     <footer className="border-t border-ink/8 bg-surface-sunken">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-14 pb-12">
-        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-10 mb-10 pb-10 border-b border-ink/8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-8 sm:pb-12">
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8 sm:gap-10 mb-8 sm:mb-10 pb-8 sm:pb-10 border-b border-ink/8">
           <div className="max-w-sm">
-            <Link href="/" className="inline-block mb-4 hover:opacity-80 transition-opacity" aria-label="Convivia24 home">
-              <img src="/convivia24.png" alt="" className="h-8 w-auto" style={{ filter: 'brightness(0)' }} />
+            <Link href="/" className="inline-block mb-4 hover:opacity-80 transition-opacity touch-target" aria-label="Convivia24 home">
+              <img src="/convivia24.png" alt="" className="h-7 sm:h-8 w-auto max-w-[9.5rem] object-contain" style={{ filter: 'brightness(0)' }} />
             </Link>
-            <p className="font-display text-2xl italic text-ink mb-2">Curated gatherings, worldwide.</p>
+            <p className="font-display text-xl sm:text-2xl italic text-ink mb-2 text-balance">Curated gatherings, worldwide.</p>
             <p className="text-sm text-ink-muted leading-relaxed">
               From business salons to supper clubs and nightlife — guestlists, lounges, and memory walls built in.
             </p>

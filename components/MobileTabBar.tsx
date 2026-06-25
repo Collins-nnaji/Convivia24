@@ -18,17 +18,18 @@ export default function MobileTabBar() {
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-40 md:hidden border-t border-ink/8 bg-surface-elevated/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]"
+      className="fixed bottom-0 inset-x-0 z-40 md:hidden border-t border-ink/8 bg-surface-elevated/95 backdrop-blur-xl pb-safe"
       aria-label="Primary"
     >
-      <div className="grid grid-cols-5 h-[4.25rem]">
+      <div className="grid grid-cols-5 min-h-[4.25rem]">
         {TABS.map(({ href, label, icon: Icon, exact, accent }) => {
           const active = exact ? pathname === href : pathname.startsWith(href);
           return (
             <Link
               key={href}
               href={href}
-              className="relative flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform"
+              aria-current={active ? 'page' : undefined}
+              className="relative flex flex-col items-center justify-center gap-0.5 px-1 py-2 min-h-[4.25rem] active:scale-95 transition-transform touch-manipulation"
             >
               {accent ? (
                 <motion.span
@@ -46,7 +47,7 @@ export default function MobileTabBar() {
                   className={active ? 'text-copper' : 'text-ink-muted/55'}
                 />
               )}
-              <span className={`text-[9px] font-bold uppercase tracking-wide ${active ? 'text-copper-deep' : 'text-ink-muted/55'}`}>
+              <span className={`text-[8px] sm:text-[9px] font-bold uppercase tracking-wide leading-none text-center ${active ? 'text-copper-deep' : 'text-ink-muted/55'}`}>
                 {label}
               </span>
             </Link>

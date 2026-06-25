@@ -7,7 +7,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
   return (
     <>
       <Navigation />
-      <div className="relative z-0 pb-[4.5rem] md:pb-0 min-h-screen">
+      <div className="relative z-0 min-h-[100dvh] overflow-x-clip pb-tab-bar md:pb-0">
         <PageTransition>{children}</PageTransition>
         <Footer />
       </div>
