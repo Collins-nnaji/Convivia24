@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Calendar, Receipt, ScanLine, ImagePlus, Plus, Menu, ShieldAlert,
-  UserCheck, Megaphone, Wallet, Home, Compass, Ticket, LogOut, ExternalLink, X, Plug,
+  UserCheck, Megaphone, Wallet, Home, Compass, Ticket, LogOut, ExternalLink, X, Plug, Store,
 } from 'lucide-react';
 import { useUser } from '@/components/auth/AuthProvider';
 import { signInWithGoogle } from '@/lib/auth/client';
@@ -35,6 +35,12 @@ const NAV_GROUPS = [
     items: [
       { href: '/admin/guestlist', label: 'Guestlist', icon: UserCheck },
       { href: '/admin/broadcast', label: 'Broadcast', icon: Megaphone },
+    ],
+  },
+  {
+    label: 'Marketplace',
+    items: [
+      { href: '/admin/vendors', label: 'Vendors', icon: Store },
     ],
   },
   {

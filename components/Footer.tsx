@@ -10,6 +10,7 @@ const consumerLinks = [
 
 const organiserLinks = [
   { label: 'List an event', href: '/create' },
+  { label: 'List your services', href: '/vendors/apply' },
   { label: 'Integrations', href: '/admin/integrations' },
   { label: 'Event organiser tools', href: '/admin' },
 ];
