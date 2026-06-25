@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { MapPin, Calendar, ArrowUpRight } from 'lucide-react';
 import { CATEGORY_LABELS } from '@/lib/categories';
 import { priceLabel } from '@/lib/money';
+import { tween } from '@/lib/motion/presets';
 
 export interface EventCardData {
   slug: string;
@@ -40,40 +41,45 @@ function dateBits(iso: string) {
 export default function EventCard({ event, index = 0 }: { event: EventCardData; index?: number }) {
   const d = dateBits(event.starts_at);
   const price = event.min_price != null ? priceLabel(event.min_price, event.currency) : null;
+  const reduce = useReducedMotion();
 
   return (
     <motion.article
-      initial={{ opacity: 0, y: 20 }}
+      initial={reduce ? false : { opacity: 0, y: 22 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-40px' }}
-      transition={{ duration: 0.45, delay: (index % 3) * 0.08, ease: [0.22, 1, 0.36, 1] }}
+      transition={tween(0.48, (index % 3) * 0.07)}
+      whileHover={reduce ? undefined : { y: -6 }}
     >
       <Link
         href={`/events/${event.slug}`}
-        className="group block overflow-hidden rounded-2xl border border-ink/8 bg-surface-elevated shadow-soft hover:shadow-lift hover:border-copper/25 transition-all duration-300"
+        className="group block overflow-hidden rounded-2xl border border-ink/8 bg-surface-elevated shadow-soft hover:shadow-lift hover:border-copper/30 transition-[box-shadow,border-color] duration-300"
       >
         <div className="relative aspect-[16/10] overflow-hidden">
           <img
             src={img(event)}
             alt=""
-            className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-ink/50 via-ink/10 to-transparent" />
-          <div className="absolute top-3 left-3 flex h-14 w-14 flex-col items-center justify-center rounded-xl bg-surface-elevated/95 backdrop-blur-sm shadow-soft">
+          <div className="absolute inset-0 bg-gradient-to-t from-ink/55 via-ink/10 to-transparent transition-opacity duration-300 group-hover:from-ink/65" />
+          <motion.div
+            className="absolute top-3 left-3 flex h-14 w-14 flex-col items-center justify-center rounded-xl bg-surface-elevated/95 backdrop-blur-sm shadow-soft"
+            whileHover={reduce ? undefined : { scale: 1.05 }}
+          >
             <span className="font-display text-2xl font-medium leading-none text-copper-deep">{d.day}</span>
             <span className="text-[8px] font-bold tracking-[0.18em] text-ink-muted mt-0.5">{d.mon}</span>
-          </div>
+          </motion.div>
           {event.is_featured && (
-            <span className="absolute top-3 right-3 rounded-full bg-copper px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.15em] text-white">
+            <span className="absolute top-3 right-3 rounded-full bg-copper px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.15em] text-white shadow-glow animate-pulse">
               Featured
             </span>
           )}
-          <span className="absolute bottom-3 left-3 rounded-full bg-ink/50 backdrop-blur-sm px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.18em] text-pearl">
+          <span className="absolute bottom-3 left-3 rounded-full bg-ink/55 backdrop-blur-sm px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.18em] text-pearl">
             {CATEGORY_LABELS[event.category] ?? event.category}
           </span>
         </div>
         <div className="p-4 sm:p-5">
-          <h3 className="font-display text-lg sm:text-2xl italic text-ink leading-snug group-hover:text-copper-deep transition-colors line-clamp-2">
+          <h3 className="font-display text-lg sm:text-2xl italic text-ink leading-snug group-hover:text-copper-deep transition-colors duration-200 line-clamp-2">
             {event.title}
           </h3>
           {event.tagline && <p className="text-ink-muted text-sm mt-1 line-clamp-1">{event.tagline}</p>}
@@ -85,8 +91,8 @@ export default function EventCard({ event, index = 0 }: { event: EventCardData; 
             <span className="text-sm font-semibold text-ink">
               {price ? <>From <span className="text-copper">{price}</span></> : 'Free entry'}
             </span>
-            <span className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-[0.12em] text-copper group-hover:gap-2 transition-all">
-              Tickets <ArrowUpRight size={14} />
+            <span className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-[0.12em] text-copper group-hover:gap-2 transition-all duration-200">
+              Tickets <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </span>
           </div>
         </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import {
   Calendar, Mail, MessageCircle, MapPin, CreditCard, Smartphone,
   CheckCircle2, Clock, Sparkles, Plug,
@@ -35,7 +36,11 @@ export default function IntegrationCard({ integration, status, onConnect }: Inte
   const badge = STATUS_STYLES[resolvedStatus];
 
   return (
-    <article className="glass-card p-5 sm:p-6 flex flex-col h-full hover:shadow-lift transition-shadow">
+    <motion.article
+      whileHover={{ y: -4 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+      className="glass-card p-5 sm:p-6 flex flex-col h-full hover:shadow-lift transition-shadow duration-300 h-full"
+    >
       <div className="flex items-start justify-between gap-3 mb-4">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-copper/10 text-copper">
           <Icon size={22} />
@@ -73,7 +78,7 @@ export default function IntegrationCard({ integration, status, onConnect }: Inte
           {integration.connectLabel || 'Connect'}
         </button>
       )}
-    </article>
+    </motion.article>
   );
 }
 

@@ -26,9 +26,20 @@
 
   body {
     @apply font-sans text-ink antialiased;
-    background: var(--surface);
+    background:
+      radial-gradient(ellipse 120% 80% at 50% -30%, rgba(196, 120, 74, 0.07), transparent 55%),
+      var(--surface);
     overflow-x: clip;
     min-height: 100dvh;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
@@ -38,22 +49,36 @@
   }
 
   .glass-card-hover {
-    @apply hover:shadow-lift transition-all duration-300 ease-out;
+    @apply transition-all duration-300 ease-out;
   }
   .glass-card-hover:hover {
-    background-color: rgba(255, 255, 255, 0.88);
+    @apply shadow-lift -translate-y-0.5;
+    background-color: rgba(255, 255, 255, 0.92);
+  }
+
+  .card-lift {
+    @apply transition-all duration-300 ease-out;
+  }
+  .card-lift:hover {
+    @apply shadow-lift -translate-y-1 border-copper/25;
   }
 
   .btn {
-    @apply inline-flex items-center justify-center gap-2 font-semibold text-sm transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
+    @apply inline-flex items-center justify-center gap-2 font-semibold text-sm transition-all duration-200 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none;
   }
 
   .btn-primary {
-    @apply btn px-5 py-2.5 rounded-xl bg-copper text-white hover:bg-copper-bright shadow-glow;
+    @apply btn px-5 py-2.5 rounded-xl bg-copper text-white shadow-glow;
+  }
+  .btn-primary:hover:not(:disabled) {
+    @apply bg-copper-bright shadow-lift -translate-y-px;
   }
 
   .btn-secondary {
-    @apply btn px-5 py-2.5 rounded-xl border border-ink/10 bg-surface-elevated text-ink hover:border-copper/40 hover:shadow-soft;
+    @apply btn px-5 py-2.5 rounded-xl border border-ink/10 bg-surface-elevated text-ink;
+  }
+  .btn-secondary:hover:not(:disabled) {
+    @apply border-copper/40 shadow-soft -translate-y-px;
   }
 
   .btn-ghost {
@@ -73,7 +98,28 @@
   }
 
   .chip-inactive {
-    @apply chip bg-surface-elevated border border-ink/10 text-ink-muted hover:border-copper/30 hover:text-ink;
+    @apply chip bg-surface-elevated border border-ink/10 text-ink-muted hover:border-copper/30 hover:text-ink hover:-translate-y-px hover:shadow-soft;
+  }
+
+  .skeleton-shimmer {
+    @apply bg-surface-sunken relative overflow-hidden;
+  }
+  .skeleton-shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+    animation: shimmer 1.6s ease-in-out infinite;
+  }
+
+  .link-arrow {
+    @apply inline-flex items-center gap-2 transition-colors;
+  }
+  .link-arrow svg {
+    @apply transition-transform duration-200;
+  }
+  .link-arrow:hover svg {
+    @apply translate-x-1;
   }
 
   .page-enter {
@@ -142,5 +188,14 @@
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
 
 .animate-spin-slow { animation: spin 12s linear infinite; }
+.animate-float { animation: float 4s ease-in-out infinite; }

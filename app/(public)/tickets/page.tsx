@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { Ticket, ArrowRight, Calendar, MapPin, Search } from 'lucide-react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { useUser } from '@/components/auth/AuthProvider';
@@ -78,8 +79,14 @@ export default function TicketsPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                {orders.map((o) => (
-                  <Link key={o.reference} href={`/orders/${o.reference}`} className="group flex items-center gap-4 bg-white border border-obsidian/12 hover:border-gold/40 hover:shadow-md transition-all p-3">
+                {orders.map((o, i) => (
+                  <motion.div
+                    key={o.reference}
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                  <Link href={`/orders/${o.reference}`} className="group flex items-center gap-4 bg-white border border-obsidian/12 hover:border-gold/40 hover:shadow-lift hover:-translate-y-0.5 transition-all duration-300 p-3 rounded-xl">
                     <img src={o.cover_image || '/Convivium.png'} alt="" className="w-20 h-20 object-cover shrink-0" />
                     <div className="flex-1 min-w-0">
                       <h3 className="font-display text-xl italic text-obsidian group-hover:text-gold-dark transition-colors truncate">{o.event_title}</h3>
@@ -91,6 +98,7 @@ export default function TicketsPage() {
                     </div>
                     <ArrowRight size={18} className="text-gold-dark shrink-0 group-hover:translate-x-1 transition-transform" />
                   </Link>
+                  </motion.div>
                 ))}
               </div>
             )}

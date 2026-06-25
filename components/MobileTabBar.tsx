@@ -36,15 +36,25 @@ export default function MobileTabBar() {
                   className={`flex h-10 w-10 -mt-4 items-center justify-center rounded-2xl shadow-glow transition-colors ${
                     active ? 'bg-copper text-white' : 'bg-copper-bright text-white'
                   }`}
+                  whileTap={{ scale: 0.94 }}
                 >
                   <Icon size={18} strokeWidth={2.25} />
                 </motion.span>
               ) : (
-                <Icon
-                  size={22}
-                  strokeWidth={active ? 2.35 : 1.75}
-                  className={active ? 'text-copper' : 'text-ink-muted/55'}
-                />
+                <>
+                  {active && (
+                    <motion.span
+                      layoutId="mobile-tab-indicator"
+                      className="absolute top-1 left-1/2 -translate-x-1/2 h-0.5 w-5 rounded-full bg-copper"
+                      transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                    />
+                  )}
+                  <Icon
+                    size={22}
+                    strokeWidth={active ? 2.35 : 1.75}
+                    className={active ? 'text-copper' : 'text-ink-muted/55'}
+                  />
+                </>
               )}
               <span className={`text-[8px] sm:text-[9px] font-bold uppercase tracking-wide leading-none text-center ${active ? 'text-copper-deep' : 'text-ink-muted/55'}`}>
                 {label}

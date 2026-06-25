@@ -74,11 +74,16 @@ module.exports = {
         lift: '0 12px 40px -8px rgba(15, 14, 18, 0.14)',
         glow: '0 0 0 1px rgba(196, 120, 74, 0.15), 0 8px 32px -8px rgba(196, 120, 74, 0.25)',
       },
+      transitionTimingFunction: {
+        out: 'cubic-bezier(0.22, 1, 0.36, 1)',
+        spring: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+      },
       animation: {
         blob: 'blob 7s infinite',
         'spin-slow': 'spin 12s linear infinite',
         'fade-up': 'fadeUp 0.5s ease-out forwards',
-        shimmer: 'shimmer 2s linear infinite',
+        shimmer: 'shimmer 1.6s ease-in-out infinite',
+        float: 'float 4s ease-in-out infinite',
       },
       keyframes: {
         blob: {
@@ -92,8 +97,12 @@ module.exports = {
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
         shimmer: {
-          '0%': { backgroundPosition: '-200% 0' },
-          '100%': { backgroundPosition: '200% 0' },
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-6px)' },
         },
       },
     },

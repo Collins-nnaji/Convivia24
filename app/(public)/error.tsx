@@ -1,13 +1,25 @@
 'use client';
 
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 export default function PublicError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
     <section className="min-h-[70vh] bg-surface flex items-center justify-center px-6">
-      <div className="glass-card p-8 text-center max-w-md">
-        <AlertTriangle className="mx-auto mb-4 text-amber-600" size={34} />
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        className="glass-card p-8 text-center max-w-md w-full"
+      >
+        <motion.div
+          initial={{ scale: 0.8 }}
+          animate={{ scale: 1 }}
+          transition={{ type: 'spring', stiffness: 380, damping: 22 }}
+        >
+          <AlertTriangle className="mx-auto mb-4 text-amber-600" size={34} />
+        </motion.div>
         <p className="font-display text-3xl italic text-ink mb-2">Something slipped.</p>
         <p className="text-sm text-ink-muted leading-relaxed mb-6">
           The app could not load this view. Try again, or return to discovery.
@@ -25,7 +37,7 @@ export default function PublicError({ error, reset }: { error: Error & { digest?
             Discover events
           </Link>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

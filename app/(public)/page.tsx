@@ -6,7 +6,10 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles, QrCode, ScanLine, Ticket, BarChart3, Search, MapPin, Users } from 'lucide-react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import EventCard, { type EventCardData } from '@/components/EventCard';
+import SkeletonCard from '@/components/ui/SkeletonCard';
+import FadeInView, { StaggerGrid, StaggerItem } from '@/components/motion/FadeInView';
 import { CATEGORY_LABELS } from '@/lib/categories';
+import { fadeUp as fadeUpPreset, tween } from '@/lib/motion/presets';
 
 const TICKER = [
   'Curated Social Gatherings', 'Business Salons · Supper Clubs · Nightlife', 'Approval-Only Guestlists',
@@ -33,9 +36,9 @@ const ORGANIZER = [
   { icon: BarChart3, title: 'Sales overview', desc: 'Track bookings and check-ins in real time. Live payment payouts connect when you enable a provider.' },
 ];
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 28 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.65, ease: 'easeOut' } },
+const heroFadeUp = {
+  hidden: fadeUpPreset.hidden,
+  visible: { ...fadeUpPreset.visible, transition: tween(0.65) },
 };
 
 interface CityMeta { city: string; country: string; count: number }
@@ -62,8 +65,15 @@ export default function HomePage() {
     <>
       {/* ═══ HERO ═══ */}
       <section className="relative min-h-[72vh] sm:min-h-[90vh] bg-paper flex items-center overflow-hidden -mt-16 pt-16">
-        <div className="absolute inset-0">
-          <img src="/Homepage.png" alt="" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 overflow-hidden">
+          <motion.img
+            src="/Homepage.png"
+            alt=""
+            className="w-full h-full object-cover"
+            initial={{ scale: 1.08 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+          />
           <div className="absolute inset-0 bg-gradient-to-r from-paper via-paper/85 to-paper/20" />
           <div className="absolute inset-0 bg-gradient-to-t from-paper via-transparent to-paper/40" />
         </div>
@@ -71,38 +81,32 @@ export default function HomePage() {
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-8 py-12 sm:py-28 w-full">
           <div className="max-w-2xl">
             <motion.div initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.12 } } }}>
-              <motion.div variants={fadeUp}>
+              <motion.div variants={heroFadeUp}>
                 <SectionLabel>The Experiential Event Platform</SectionLabel>
               </motion.div>
 
               <motion.h1
-                variants={fadeUp}
+                variants={heroFadeUp}
                 className="font-display text-4xl min-[400px]:text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-light italic tracking-tight text-obsidian leading-[0.92] mb-5 sm:mb-8 text-balance"
               >
                 Curated<br />gatherings.
               </motion.h1>
 
-              <motion.div variants={fadeUp} className="flex items-center gap-2 mb-4 sm:mb-6">
+              <motion.div variants={heroFadeUp} className="flex items-center gap-2 mb-4 sm:mb-6">
                 <span className="w-1 h-1 rounded-full bg-gold animate-pulse shrink-0" />
                 <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.22em] sm:tracking-[0.3em] text-gold-dark">Salons · Supper Clubs · Nightlife · Worldwide</span>
               </motion.div>
 
-              <motion.p variants={fadeUp} className="text-sm sm:text-lg text-obsidian/65 max-w-lg leading-relaxed mb-7 sm:mb-10">
+              <motion.p variants={heroFadeUp} className="text-sm sm:text-lg text-obsidian/65 max-w-lg leading-relaxed mb-7 sm:mb-10">
                 Convivia24 handles everything from exclusive daytime business mixers to vibrant lifestyle
                 experiences by evening — with guestlists, digital lounges, and memory walls built in.
               </motion.p>
 
-              <motion.div variants={fadeUp} className="flex flex-col min-[420px]:flex-row gap-3 sm:gap-4">
-                <Link
-                  href="/events"
-                  className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3.5 bg-gold hover:bg-gold-light text-obsidian text-[10px] sm:text-[11px] font-black uppercase tracking-[0.18em] sm:tracking-[0.2em] transition-colors"
-                >
+              <motion.div variants={heroFadeUp} className="flex flex-col min-[420px]:flex-row gap-3 sm:gap-4">
+                <Link href="/events" className="btn-primary text-[10px] sm:text-[11px] font-black uppercase tracking-[0.18em] sm:tracking-[0.2em] !px-6 sm:!px-7 !py-3.5">
                   Discover Events <ArrowRight size={14} />
                 </Link>
-                <Link
-                  href="/concierge"
-                  className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3.5 border border-obsidian/25 text-obsidian text-[10px] sm:text-[11px] font-black uppercase tracking-[0.18em] sm:tracking-[0.2em] hover:border-gold hover:bg-white transition-colors"
-                >
+                <Link href="/concierge" className="btn-secondary text-[10px] sm:text-[11px] font-black uppercase tracking-[0.18em] sm:tracking-[0.2em] !px-6 sm:!px-7 !py-3.5">
                   <Sparkles size={13} /> Ask the AI Concierge
                 </Link>
               </motion.div>
@@ -133,14 +137,14 @@ export default function HomePage() {
                 The ones selling fast.
               </h2>
             </div>
-            <Link href="/events" className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-gold-dark hover:text-gold transition-colors group self-start">
-              See all events <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+            <Link href="/events" className="link-arrow text-[11px] font-black uppercase tracking-[0.2em] text-gold-dark hover:text-gold self-start">
+              See all events <ArrowRight size={13} />
             </Link>
           </div>
 
           {loading ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {[0, 1, 2].map((i) => <div key={i} className="aspect-[16/10] bg-white border border-obsidian/10 animate-pulse" />)}
+              {[0, 1, 2].map((i) => <SkeletonCard key={i} />)}
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -158,20 +162,21 @@ export default function HomePage() {
             <h2 className="font-display text-3xl sm:text-5xl font-light italic text-obsidian tracking-tight mb-8">
               Wherever you are.
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            <StaggerGrid className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {cities.map((c) => (
-                <Link
-                  key={c.city}
-                  href={`/events?city=${encodeURIComponent(c.city)}`}
-                  className="group bg-white border border-obsidian/10 hover:border-gold/50 hover:shadow-md p-5 transition-all"
-                >
+                <StaggerItem key={c.city}>
+                  <Link
+                    href={`/events?city=${encodeURIComponent(c.city)}`}
+                    className="group block bg-white border border-obsidian/10 hover:border-gold/50 hover:shadow-lift hover:-translate-y-1 p-5 transition-all duration-300 rounded-xl"
+                  >
                   <MapPin size={16} className="text-gold-dark mb-3" />
                   <p className="font-display text-xl italic text-obsidian group-hover:text-gold-dark transition-colors leading-tight">{c.city}</p>
                   <p className="text-obsidian/40 text-xs mt-0.5">{c.country}</p>
                   <p className="text-[10px] font-black uppercase tracking-[0.15em] text-gold-dark mt-3">{c.count} event{Number(c.count) > 1 ? 's' : ''}</p>
-                </Link>
+                  </Link>
+                </StaggerItem>
               ))}
-            </div>
+            </StaggerGrid>
           </div>
         </section>
       )}
@@ -223,18 +228,20 @@ export default function HomePage() {
           <h2 className="font-display text-3xl sm:text-5xl md:text-6xl font-light italic text-obsidian tracking-tight mb-12">
             One platform.<br />Every kind of gathering.
           </h2>
-          <div className="grid md:grid-cols-3 gap-5">
+          <StaggerGrid className="grid md:grid-cols-3 gap-5">
             {PILLARS.map((p, i) => (
-              <div key={p.title} className="glass-card p-8 sm:p-10 glass-card-hover">
+              <StaggerItem key={p.title}>
+                <div className="glass-card p-8 sm:p-10 glass-card-hover h-full">
                 <div className="flex items-center gap-3 mb-5">
                   <span className="font-display text-5xl italic text-gold/30">{String(i + 1).padStart(2, '0')}</span>
                   <p.icon className="text-gold-dark" size={22} />
                 </div>
                 <h3 className="font-display text-2xl italic text-obsidian mb-3">{p.title}</h3>
                 <p className="text-obsidian/55 text-sm leading-relaxed">{p.desc}</p>
-              </div>
+                </div>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerGrid>
         </div>
       </section>
 
@@ -245,33 +252,43 @@ export default function HomePage() {
           <h2 className="font-display text-3xl sm:text-5xl md:text-6xl font-light italic text-obsidian tracking-tight mb-12">
             From scroll to door<br />in under a minute.
           </h2>
-          <div className="grid md:grid-cols-3 gap-5">
+          <StaggerGrid className="grid md:grid-cols-3 gap-5">
             {STEPS.map((s, i) => (
-              <div key={s.title} className="bg-white border border-obsidian/10 p-8 sm:p-10">
+              <StaggerItem key={s.title}>
+                <div className="bg-white border border-obsidian/10 p-8 sm:p-10 card-lift h-full rounded-2xl">
                 <div className="flex items-center gap-3 mb-5">
                   <span className="font-display text-5xl italic text-gold/30">{String(i + 1).padStart(2, '0')}</span>
                   <s.icon className="text-gold-dark" size={22} />
                 </div>
                 <h3 className="font-display text-2xl italic text-obsidian mb-3">{s.title}</h3>
                 <p className="text-obsidian/55 text-sm leading-relaxed">{s.desc}</p>
-              </div>
+                </div>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerGrid>
         </div>
       </section>
 
       {/* ═══ IMAGE BREAK / CONCIERGE ═══ */}
-      <section className="relative">
-        <img src="/Convivium2.png" alt="" className="w-full h-[34vh] sm:h-[44vh] object-cover" />
+      <section className="relative overflow-hidden">
+        <motion.img
+          src="/Convivium2.png"
+          alt=""
+          className="w-full h-[34vh] sm:h-[44vh] object-cover"
+          initial={{ scale: 1.05 }}
+          whileInView={{ scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-obsidian/70 via-obsidian/30 to-obsidian/40" />
         <div className="absolute inset-0 flex items-center justify-center text-center px-6">
-          <div>
+          <FadeInView>
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gold mb-3">AI Concierge</p>
             <h2 className="font-display text-3xl sm:text-5xl md:text-6xl italic text-white mb-5 drop-shadow">&ldquo;Find me something tonight.&rdquo;</h2>
-            <Link href="/concierge" className="inline-flex items-center gap-2 px-7 py-3.5 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.2em] transition-colors">
+            <Link href="/concierge" className="btn-primary !bg-gold !text-obsidian hover:!bg-gold-light text-[11px] font-black uppercase tracking-[0.2em] !px-7 !py-3.5">
               <Sparkles size={14} /> Ask the Concierge
             </Link>
-          </div>
+          </FadeInView>
         </div>
       </section>
 
