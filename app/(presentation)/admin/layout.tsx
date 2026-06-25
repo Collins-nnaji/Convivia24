@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Calendar, Receipt, ScanLine, ImagePlus, Plus, Menu, ShieldAlert,
-  UserCheck, Megaphone, Wallet, Home, Compass, Ticket, LogOut, ExternalLink, X,
+  UserCheck, Megaphone, Wallet, Home, Compass, Ticket, LogOut, ExternalLink, X, Plug,
 } from 'lucide-react';
 import { useUser } from '@/components/auth/AuthProvider';
 import { signInWithGoogle } from '@/lib/auth/client';
@@ -43,6 +43,7 @@ const NAV_GROUPS = [
       { href: '/admin/finance', label: 'Finance', icon: Wallet },
       { href: '/admin/orders', label: 'Orders', icon: Receipt },
       { href: '/admin/scan', label: 'Door scanner', icon: ScanLine },
+      { href: '/admin/integrations', label: 'Integrations', icon: Plug },
     ],
   },
 ];

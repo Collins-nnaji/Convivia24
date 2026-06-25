@@ -46,7 +46,12 @@ export default function TicketsPage() {
     <section className="bg-paper min-h-screen py-12 sm:py-16">
       <div className="max-w-3xl mx-auto px-5 sm:px-8">
         <SectionLabel>My tickets</SectionLabel>
-        <h1 className="font-display text-4xl sm:text-6xl font-light italic text-obsidian tracking-tight mb-8">Your bookings.</h1>
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+          <h1 className="font-display text-4xl sm:text-6xl font-light italic text-obsidian tracking-tight">Your bookings.</h1>
+          <Link href="/calendar" className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-gold-dark hover:text-gold shrink-0">
+            <Calendar size={14} /> Calendar view
+          </Link>
+        </div>
 
         {/* Signed-out prompt */}
         {!authLoading && !user && (

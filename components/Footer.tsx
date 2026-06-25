@@ -3,12 +3,14 @@ import WaitlistForm from './WaitlistForm';
 
 const consumerLinks = [
   { label: 'Discover events', href: '/events' },
+  { label: 'My calendar', href: '/calendar' },
   { label: 'AI Concierge', href: '/concierge' },
   { label: 'My tickets', href: '/tickets' },
 ];
 
 const organiserLinks = [
   { label: 'List an event', href: '/create' },
+  { label: 'Integrations', href: '/admin/integrations' },
   { label: 'Event organiser tools', href: '/admin' },
 ];
 

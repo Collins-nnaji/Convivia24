@@ -9,6 +9,7 @@ import { CATEGORY_LABELS } from '@/lib/categories';
 import { priceLabel, formatMoney } from '@/lib/money';
 import { useUser } from '@/components/auth/AuthProvider';
 import EventThemeShell from '@/components/event/EventThemeShell';
+import EventIntegrationBar from '@/components/integrations/EventIntegrationBar';
 
 interface EventDetail {
   id: string; slug: string; title: string; tagline: string | null; description: string;
@@ -188,6 +189,19 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                   <p className="opacity-80 text-sm">{d.value}</p>
                 </div>
               ))}
+            </div>
+
+            <div className="mb-8">
+              <EventIntegrationBar
+                title={event.title}
+                slug={slug}
+                starts_at={event.starts_at}
+                ends_at={event.ends_at}
+                venue={event.venue}
+                city={event.city}
+                address={event.address}
+                description={event.description}
+              />
             </div>
 
             <h2 className="font-display text-2xl sm:text-3xl italic mb-4">About this event</h2>
