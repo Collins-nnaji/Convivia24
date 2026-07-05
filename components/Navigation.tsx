@@ -7,10 +7,9 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 
 const LINKS = [
-  { label: 'Stays',         href: '/stays' },
-  { label: 'Wellness',      href: '/wellness' },
-  { label: 'Dining',        href: '/menu' },
-  { label: 'Events',        href: '/events' },
+  { label: 'Stays',         href: '/stays#stays' },
+  { label: 'Wellness',      href: '/stays#wellness' },
+  { label: 'Dining',        href: '/stays#dining' },
   { label: 'The Convivium', href: '/convivium' },
 ];
 
@@ -18,6 +17,7 @@ export default function Navigation() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [hash, setHash] = useState('');
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 8);
@@ -25,7 +25,21 @@ export default function Navigation() {
     return () => window.removeEventListener('scroll', handler);
   }, []);
 
+  useEffect(() => {
+    const sync = () => setHash(window.location.hash);
+    sync();
+    window.addEventListener('hashchange', sync);
+    return () => window.removeEventListener('hashchange', sync);
+  }, [pathname]);
+
   useEffect(() => { setOpen(false); }, [pathname]);
+
+  // Active when the link's path matches; for hash links, the hash must match too.
+  const isActive = (href: string) => {
+    const [path, frag] = href.split('#');
+    if (pathname !== path) return false;
+    return frag ? hash === `#${frag}` : true;
+  };
 
   return (
     <>
@@ -51,7 +65,7 @@ export default function Navigation() {
 
           <nav className="hidden md:flex items-center gap-1">
             {LINKS.map(({ label, href }) => {
-              const active = pathname === href;
+              const active = isActive(href);
               return (
                 <Link
                   key={href}
@@ -121,7 +135,7 @@ export default function Navigation() {
               </div>
               <nav className="px-5 py-3 divide-y divide-gold/10">
                 {LINKS.map(({ label, href }) => {
-                  const active = pathname === href;
+                  const active = isActive(href);
                   return (
                     <Link
                       key={href}

@@ -17,12 +17,12 @@ const TICKER_ITEMS = [
 ];
 
 const SPACES = [
-  { num: '01', name: 'The Suites', desc: 'Waterfront rooms and suites with private balconies, deep soaking tubs, and a view worth waking up to.', image: '/The Spaces.png', href: '/stays' },
-  { num: '02', name: 'Garden Villas', desc: 'Standalone villas with a walled garden and heated plunge pool. Total privacy, for a couple or a family.', image: '/Convivium3.png', href: '/stays' },
-  { num: '03', name: 'The Spa', desc: 'Treatment suites, a thermal circuit, and a relaxation deck. The signature Convivia Ritual runs half a day.', image: '/The Spaces2.png', href: '/wellness' },
-  { num: '04', name: 'The Terrace', desc: 'Open-air, farm-to-table dining on the upper floor. Water views. Walk in for drinks; reserve for dinner.', image: '/The Spaces3.png', href: '/menu' },
-  { num: '05', name: 'Private Dining', desc: 'Three rooms, 10 to 40 covers. Celebrations, retreats, and long-table dinners under the trees.', image: '/dealrooms.png', href: '/events' },
-  { num: '06', name: 'The Lounge', desc: 'Candlelit bar and listening room. The 24 cocktail changes daily. Live sets, Thursday to Saturday.', image: '/Convivium.png', href: '/menu' },
+  { num: '01', name: 'The Suites', desc: 'Waterfront rooms and suites with private balconies, deep soaking tubs, and a view worth waking up to.', image: '/The Spaces2.png', href: '/stays#stays' },
+  { num: '02', name: 'Garden Villas', desc: 'Standalone villas with a walled garden and heated plunge pool. Total privacy, for a couple or a family.', image: '/Homepage2.png', href: '/stays#stays' },
+  { num: '03', name: 'The Spa', desc: 'Treatment suites, a thermal circuit, and a relaxation deck. The signature Convivia Ritual runs half a day.', image: '/The Spaces3.png', href: '/stays#wellness' },
+  { num: '04', name: 'The Terrace', desc: 'Open-air, farm-to-table dining on the upper floor. Water views. Walk in for drinks; reserve for dinner.', image: '/The Spaces.png', href: '/stays#dining' },
+  { num: '05', name: 'The Lounge', desc: 'Candlelit bar and listening room. The 24 cocktail changes daily. Live sets, Thursday to Saturday.', image: '/conv1.png', href: '/stays#dining' },
+  { num: '06', name: 'Private Dining', desc: 'Intimate rooms for long-table dinners and celebrations, from ten guests to forty, under the trees.', image: '/Convivium.png', href: '/stays#dining' },
 ];
 
 const PILLARS = [
@@ -136,7 +136,7 @@ export default function HomePage() {
                   Book a Stay <ArrowRight size={14} />
                 </Link>
                 <Link
-                  href="/wellness"
+                  href="/stays#wellness"
                   className="inline-flex items-center justify-center gap-2 px-7 py-3.5 border border-cream/30 text-cream text-[11px] font-black uppercase tracking-[0.2em] hover:border-cream/60 hover:bg-cream/5 transition-colors backdrop-blur-sm"
                 >
                   Explore Wellness
@@ -230,7 +230,7 @@ export default function HomePage() {
               </motion.h2>
               <motion.div variants={fadeUp}>
                 <Link
-                  href="/menu"
+                  href="/stays#dining"
                   className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-gold/70 hover:text-gold transition-colors group"
                 >
                   Full menu <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
@@ -279,7 +279,7 @@ export default function HomePage() {
 
             <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
               <motion.div variants={fadeUp} className="relative order-2 lg:order-1">
-                <img src="/Convivium3.png" alt="The spa at Convivia24" className="w-full aspect-[4/5] object-cover" />
+                <img src="/The Spaces3.png" alt="The spa at Convivia24" className="w-full aspect-[4/5] object-cover" />
                 <div className="absolute top-0 left-0 w-full h-1 bg-gold" />
               </motion.div>
 
@@ -307,7 +307,7 @@ export default function HomePage() {
                   ))}
                 </motion.div>
                 <motion.div variants={fadeUp}>
-                  <Link href="/wellness" className="inline-flex items-center gap-2 px-7 py-3.5 bg-obsidian hover:bg-obsidian-50 text-cream text-[11px] font-black uppercase tracking-[0.2em] transition-colors">
+                  <Link href="/stays#wellness" className="inline-flex items-center gap-2 px-7 py-3.5 bg-obsidian hover:bg-obsidian-50 text-cream text-[11px] font-black uppercase tracking-[0.2em] transition-colors">
                     The Spa &amp; Rituals <ArrowRight size={14} />
                   </Link>
                 </motion.div>
@@ -388,8 +388,8 @@ export default function HomePage() {
                 <p className="text-cream/60 text-base sm:text-lg leading-relaxed">
                   Convivia24 is not just a restaurant. It is a calendar. A season. A reason to be in the room.
                 </p>
-                <Link href="/events" className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-gold/70 hover:text-gold transition-colors group self-start">
-                  All events <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+                <Link href="/stays#dining" className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-gold/70 hover:text-gold transition-colors group self-start">
+                  Explore dining <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
                 </Link>
               </motion.div>
             </div>

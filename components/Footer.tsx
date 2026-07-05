@@ -2,10 +2,9 @@ import Link from 'next/link';
 import WaitlistForm from './WaitlistForm';
 
 const footerLinks = [
-  { label: 'Stays',         href: '/stays' },
-  { label: 'Wellness',      href: '/wellness' },
-  { label: 'Dining',        href: '/menu' },
-  { label: 'Events',        href: '/events' },
+  { label: 'Stays',         href: '/stays#stays' },
+  { label: 'Wellness',      href: '/stays#wellness' },
+  { label: 'Dining',        href: '/stays#dining' },
   { label: 'The Convivium', href: '/convivium' },
   { label: 'Book a Stay',   href: '/inquire' },
 ];

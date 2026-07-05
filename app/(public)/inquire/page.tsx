@@ -119,8 +119,8 @@ export default function InquirePage() {
                 <p className="text-cream/50 text-sm mb-8">
                   Your inquiry has been received. We respond to every message within 24 hours.
                 </p>
-                <Link href="/menu" className="inline-flex items-center gap-2 text-gold/60 hover:text-gold text-[10px] font-black uppercase tracking-[0.2em] transition-colors">
-                  View the Menu <ArrowRight size={11} />
+                <Link href="/stays" className="inline-flex items-center gap-2 text-gold/60 hover:text-gold text-[10px] font-black uppercase tracking-[0.2em] transition-colors">
+                  Explore the Resort <ArrowRight size={11} />
                 </Link>
               </div>
             ) : (
