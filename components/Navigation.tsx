@@ -10,7 +10,7 @@ const LINKS = [
   { label: 'Stays',         href: '/stays#stays' },
   { label: 'Wellness',      href: '/stays#wellness' },
   { label: 'Dining',        href: '/stays#dining' },
-  { label: 'The Convivium', href: '/convivium' },
+  { label: 'The Convivium', href: '/stays#convivium' },
 ];
 
 export default function Navigation() {
