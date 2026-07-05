@@ -1,14 +1,14 @@
 import Navigation from '@/components/Navigation';
-import MobileTabBar from '@/components/MobileTabBar';
-import OnboardingGate from '@/components/onboarding/OnboardingGate';
+import Footer from '@/components/Footer';
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Navigation />
-      <main className="relative z-0">{children}</main>
-      <MobileTabBar />
-      <OnboardingGate />
+      <div className="relative z-0">
+        {children}
+      </div>
+      <Footer />
     </>
   );
 }
