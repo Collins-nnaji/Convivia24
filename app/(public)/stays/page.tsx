@@ -3,9 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, BedDouble, Flower2, UtensilsCrossed, Crown } from 'lucide-react';
+import { ArrowRight, BedDouble, Flower2, UtensilsCrossed } from 'lucide-react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
-import ConviviumCard from '@/components/ConviviumCard';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -16,7 +15,6 @@ const TABS = [
   { id: 'stays', label: 'Stays', icon: BedDouble },
   { id: 'wellness', label: 'Wellness', icon: Flower2 },
   { id: 'dining', label: 'Dining', icon: UtensilsCrossed },
-  { id: 'convivium', label: 'The Convivium', icon: Crown },
 ] as const;
 
 type TabId = (typeof TABS)[number]['id'];
@@ -127,8 +125,6 @@ export default function StaysPage() {
       ? { img: '/The Spaces3.png', label: 'The Wellness', title: 'Leave lighter\nthan you arrived.', copy: 'A full-service spa, a thermal circuit, and a daily rhythm of movement — designed as one continuous ritual. Residents enjoy the circuit at no charge.' }
       : tab === 'dining'
       ? { img: '/Convivium3.png', label: 'The Table & Lounge', title: 'Farm to table.\nDusk till late.', copy: 'A restaurant built around the resort garden by day, and a candlelit lounge with a daily-changing cocktail by night. Guests dine on the terrace; the lounge opens to all from four.' }
-      : tab === 'convivium'
-      ? { img: '', label: 'Membership', title: 'The Convivium.', copy: 'Annual membership for guests who want Convivia24 as a permanent home — a guaranteed suite, a standing table, and the spa on call. Not a loyalty card. A permanent seat.' }
       : { img: '/The Spaces.png', label: 'The Resort', title: 'Stay. Restore.\nGather.', copy: 'Rooms, villas, a spa, and a table — one resort, three things done properly. Every stay includes breakfast and full use of the wellness circuit.' };
 
   return (
@@ -187,7 +183,6 @@ export default function StaysPage() {
       {tab === 'stays' && <StaysSection />}
       {tab === 'wellness' && <WellnessSection />}
       {tab === 'dining' && <DiningSection />}
-      {tab === 'convivium' && <ConviviumSection />}
 
       {/* CTA */}
       <section className="bg-gold">
@@ -431,156 +426,3 @@ function DiningSection() {
   );
 }
 
-/* ═══════════════ THE CONVIVIUM (MEMBERSHIP) ═══════════════ */
-const TIERS = [
-  {
-    name: 'The Resident',
-    price: '₦1.2M',
-    period: 'per year',
-    tagline: 'For the regular.',
-    featured: false,
-    perks: [
-      'Priority reservations, even when full',
-      'Full wellness circuit access, always',
-      'Member rate on all treatments & rooms',
-      'The monthly Convivia Dinner',
-    ],
-  },
-  {
-    name: 'The Founding Member',
-    price: '₦2.8M',
-    period: 'per year',
-    tagline: 'The permanent seat.',
-    featured: true,
-    perks: [
-      'Everything in The Resident, plus —',
-      'A guaranteed suite on no notice',
-      'Two complimentary nights each quarter',
-      'A standing table & dedicated concierge',
-      "The Chef's Table, before the public",
-      'Priority late-night entry to The Lounge',
-    ],
-  },
-  {
-    name: 'The Patron',
-    price: 'By invitation',
-    period: '',
-    tagline: 'For the house.',
-    featured: false,
-    perks: [
-      'Everything in Founding Member, plus —',
-      'Private hire priority across all sites',
-      'A named table & annual founder’s dinner',
-      'First access in every new city we open',
-    ],
-  },
-];
-
-function ConviviumSection() {
-  return (
-    <>
-      {/* Membership card + intro */}
-      <section id="convivium" className="bg-obsidian py-20 sm:py-28 scroll-mt-32 overflow-hidden">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-80px' }}
-            variants={{ visible: { transition: { staggerChildren: 0.12 } } }}
-            className="grid lg:grid-cols-2 gap-14 lg:gap-20 items-center"
-          >
-            <motion.div variants={fadeUp} className="order-2 lg:order-1">
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gold/60 mb-6">Member Access Card</p>
-              <ConviviumCard tier="FOUNDING MEMBER" name="A. ADEYEMI" />
-              <p className="text-cream/40 text-xs mt-6 max-w-[360px]">
-                One card. Every table, every treatment, every city. Recognised at the door in Lagos, Abuja, and London.
-              </p>
-            </motion.div>
-
-            <motion.div variants={fadeUp} className="order-1 lg:order-2">
-              <div className="max-w-md">
-                <p className="font-display text-3xl md:text-4xl italic text-cream leading-snug mb-3">
-                  Convivium <span className="text-cream/30">(n.)</span>
-                </p>
-                <p className="text-cream/55 text-base leading-relaxed mb-3">
-                  Latin. A feast, a gathering of companions. From <em>con-</em> (together) + <em>vivere</em> (to live).
-                </p>
-                <p className="text-cream/55 text-base leading-relaxed mb-8">
-                  Membership turns Convivia24 from a place you visit into a place you belong. A guaranteed home, a standing table, and the spa on call &mdash; all year, across every city.
-                </p>
-                <div className="flex flex-wrap gap-x-10 gap-y-4">
-                  <div>
-                    <p className="font-display text-3xl italic text-gold">3</p>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cream/40">Cities</p>
-                  </div>
-                  <div>
-                    <p className="font-display text-3xl italic text-gold">24/7</p>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cream/40">Concierge</p>
-                  </div>
-                  <div>
-                    <p className="font-display text-3xl italic text-gold">By application</p>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cream/40">Membership</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Tiers */}
-      <section className="bg-cream py-20 sm:py-28">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }} variants={{ visible: { transition: { staggerChildren: 0.1 } } }}>
-            <motion.div variants={fadeUp}><SectionLabel variant="light">Membership Tiers</SectionLabel></motion.div>
-            <motion.h2 variants={fadeUp} className="font-display text-3xl sm:text-5xl md:text-6xl font-light italic text-obsidian tracking-tight mb-12">
-              Choose your<br />seat at the table.
-            </motion.h2>
-            <div className="grid md:grid-cols-3 gap-5 items-start">
-              {TIERS.map((t) => (
-                <motion.div
-                  key={t.name}
-                  variants={fadeUp}
-                  className={`relative flex flex-col rounded-2xl p-8 ${
-                    t.featured ? 'bg-obsidian text-cream shadow-[0_30px_60px_-24px_rgba(10,10,10,0.6)]' : 'bg-white text-obsidian border border-obsidian/10'
-                  }`}
-                >
-                  {t.featured && (
-                    <span className="absolute -top-3 left-8 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold text-obsidian text-[9px] font-black uppercase tracking-[0.2em]">
-                      Most chosen
-                    </span>
-                  )}
-                  <p className={`text-[10px] font-black uppercase tracking-[0.3em] mb-1 ${t.featured ? 'text-gold/70' : 'text-gold-dark/70'}`}>{t.tagline}</p>
-                  <h3 className="font-display text-2xl sm:text-3xl italic mb-4">{t.name}</h3>
-                  <div className={`flex items-baseline gap-1.5 mb-6 pb-6 border-b ${t.featured ? 'border-white/10' : 'border-obsidian/10'}`}>
-                    <span className="font-display text-4xl italic">{t.price}</span>
-                    {t.period && <span className={`text-xs ${t.featured ? 'text-cream/40' : 'text-obsidian/40'}`}>{t.period}</span>}
-                  </div>
-                  <ul className="space-y-3 mb-8 flex-1">
-                    {t.perks.map((p) => (
-                      <li key={p} className={`flex items-start gap-2.5 text-sm leading-relaxed ${t.featured ? 'text-cream/75' : 'text-obsidian/65'}`}>
-                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-gold shrink-0" />
-                        {p}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link
-                    href="/inquire"
-                    className={`inline-flex items-center justify-center gap-2 px-6 py-3.5 text-[11px] font-black uppercase tracking-[0.2em] transition-colors ${
-                      t.featured ? 'bg-gold hover:bg-gold-light text-obsidian' : 'bg-obsidian hover:bg-obsidian-50 text-cream'
-                    }`}
-                  >
-                    Apply <ArrowRight size={13} />
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
-            <motion.p variants={fadeUp} className="mt-8 text-xs text-obsidian/40 max-w-md leading-relaxed">
-              All memberships are by application. Annual rates are indicative; a member of the team will confirm on enquiry.
-            </motion.p>
-          </motion.div>
-        </div>
-      </section>
-    </>
-  );
-}

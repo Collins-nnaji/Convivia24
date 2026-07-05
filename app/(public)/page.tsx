@@ -452,7 +452,7 @@ export default function HomePage() {
               ))}
             </motion.div>
             <motion.div variants={fadeUp}>
-              <Link href="/stays#convivium" className="inline-flex items-center gap-2 px-7 py-3.5 bg-obsidian hover:bg-obsidian-50 text-cream text-[11px] font-black uppercase tracking-[0.2em] transition-colors">
+              <Link href="/convivium" className="inline-flex items-center gap-2 px-7 py-3.5 bg-obsidian hover:bg-obsidian-50 text-cream text-[11px] font-black uppercase tracking-[0.2em] transition-colors">
                 The Convivium <ArrowRight size={14} />
               </Link>
             </motion.div>

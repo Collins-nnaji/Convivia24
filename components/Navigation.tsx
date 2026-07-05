@@ -7,10 +7,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 
 const LINKS = [
-  { label: 'Stays',         href: '/stays#stays' },
-  { label: 'Wellness',      href: '/stays#wellness' },
-  { label: 'Dining',        href: '/stays#dining' },
-  { label: 'The Convivium', href: '/stays#convivium' },
+  { label: 'The Resort',    href: '/stays' },
+  { label: 'The Convivium', href: '/convivium' },
 ];
 
 export default function Navigation() {
