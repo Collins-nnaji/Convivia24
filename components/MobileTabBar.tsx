@@ -2,11 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CalendarHeart, MessageCircle } from 'lucide-react';
+import { BedDouble, Flower2, UtensilsCrossed, Sparkles } from 'lucide-react';
 
 const TABS = [
-  { href: '/my24',      label: 'My 24',     icon: CalendarHeart, exact: false },
-  { href: '/companion', label: 'Companion', icon: MessageCircle, exact: false },
+  { href: '/stays',    label: 'Stays',    icon: BedDouble,       exact: false },
+  { href: '/wellness', label: 'Wellness', icon: Flower2,         exact: false },
+  { href: '/dining',   label: 'Dining',   icon: UtensilsCrossed, exact: false },
+  { href: '/events',   label: 'Events',   icon: Sparkles,        exact: false },
 ];
 
 export default function MobileTabBar() {
@@ -17,7 +19,7 @@ export default function MobileTabBar() {
       className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-paper/95 backdrop-blur-md border-t border-obsidian/10 pb-[env(safe-area-inset-bottom)]"
       aria-label="Primary"
     >
-      <div className="grid grid-cols-2 h-16">
+      <div className="grid grid-cols-4 h-16">
         {TABS.map(({ href, label, icon: Icon, exact }) => {
           const active = exact ? pathname === href : pathname.startsWith(href);
           return (

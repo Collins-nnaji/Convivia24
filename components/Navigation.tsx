@@ -4,12 +4,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Menu, X, User, LogOut, Sparkles } from 'lucide-react';
+import { Menu, X, LogOut, Sparkles } from 'lucide-react';
 import { useUser } from '@/components/auth/AuthProvider';
 
 const LINKS = [
-  { label: 'My 24',     href: '/my24' },
-  { label: 'Companion', href: '/companion' },
+  { label: 'Stays',    href: '/stays' },
+  { label: 'Wellness', href: '/wellness' },
+  { label: 'Dining',   href: '/dining' },
+  { label: 'Events',   href: '/events' },
 ];
 
 function initials(name: string | null, email: string) {
@@ -21,7 +23,7 @@ function initials(name: string | null, email: string) {
 
 export default function Navigation() {
   const pathname = usePathname();
-  const { user, loading, signOut } = useUser();
+  const { user, signOut } = useUser();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [menu, setMenu] = useState(false);
@@ -54,7 +56,7 @@ export default function Navigation() {
             <img src="/convivia24.png" alt="Convivia24" className="h-7 w-auto" style={{ filter: 'brightness(0)' }} />
             <span className="hidden sm:flex items-center gap-1.5">
               <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
-              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-obsidian/40">Take Back Your 24</span>
+              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-obsidian/40">Resort &middot; Spa &middot; Lounge</span>
             </span>
           </Link>
 
@@ -81,12 +83,10 @@ export default function Navigation() {
               );
             })}
 
-            {/* Account */}
-            {!loading && !user && (
-              <Link href={`/signin?next=${encodeURIComponent(pathname)}`} className="btn-brand ml-2 inline-flex items-center gap-1.5 px-5 py-2 text-[11px] font-black uppercase tracking-[0.15em]">
-                <User size={13} /> Sign in
-              </Link>
-            )}
+            {/* Reserve CTA */}
+            <Link href="/inquire" className="btn-brand ml-2 inline-flex items-center gap-1.5 px-5 py-2 rounded-lg text-[11px] font-black uppercase tracking-[0.15em]">
+              Book a stay
+            </Link>
             {user && (
               <div className="relative ml-2" ref={menuRef}>
                 <button onClick={() => setMenu((m) => !m)} className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-full hover:bg-obsidian/5 transition-colors">
@@ -176,8 +176,8 @@ export default function Navigation() {
                       </button>
                     </>
                   ) : (
-                    <Link href={`/signin?next=${encodeURIComponent(pathname)}`} className="btn-brand flex items-center justify-center gap-2 w-full text-center py-3.5 text-[12px] font-black uppercase tracking-[0.15em]">
-                      <User size={14} /> Sign in
+                    <Link href="/inquire" className="btn-brand flex items-center justify-center gap-2 w-full text-center py-3.5 text-[12px] font-black uppercase tracking-[0.15em]">
+                      Book a stay
                     </Link>
                   )}
                 </div>

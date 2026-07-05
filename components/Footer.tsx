@@ -1,8 +1,11 @@
 import Link from 'next/link';
 
 const footerLinks = [
-  { label: 'My 24', href: '/my24' },
-  { label: 'Companion', href: '/companion' },
+  { label: 'Stays', href: '/stays' },
+  { label: 'Wellness', href: '/wellness' },
+  { label: 'Dining', href: '/dining' },
+  { label: 'Events', href: '/events' },
+  { label: 'Book', href: '/inquire' },
 ];
 
 export default function Footer() {
@@ -16,7 +19,7 @@ export default function Footer() {
             </Link>
             <span className="hidden sm:block w-px h-4 bg-obsidian/10" aria-hidden />
             <p className="hidden sm:block text-[10px] text-obsidian/45 truncate">
-              Lower your stress. Optimize your hours. Love your day.
+              A resort, spa &amp; lounge. Stay. Restore. Gather.
             </p>
           </div>
 

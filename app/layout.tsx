@@ -17,8 +17,8 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata = {
-  title: 'Convivia24 | The Mindful Calendar',
-  description: 'Lower your stress. Optimize your hours. Love your day. Convivia24 is the calendar that auto-buffers your back-to-back days and helps you destress with one tap.',
+  title: 'Convivia24 | Resort, Spa & Lounge',
+  description: 'A resort, spa and lounge in one — waterfront suites, a full wellness circuit, farm-to-table dining, and spaces made for gathering. Stay. Restore. Gather.',
   icons: {
     icon: '/Logo2.png',
   }
