@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Flame, Leaf, Users } from 'lucide-react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
+import SmartImage from '@/components/ui/SmartImage';
 import { PriceBand } from '@/components/meetup/VenueCard';
 import { VENUES, getVenue, formatNaira } from '@/lib/dining/venues';
 import { estimatePerHead } from '@/lib/split/compute';
@@ -29,9 +30,16 @@ export default async function VenuePage({ params }: { params: Promise<{ slug: st
   return (
     <div className="bg-obsidian">
       {/* ═══ HEADER ═══ */}
-      <section className="relative min-h-[52vh] flex items-end overflow-hidden -mt-16 pt-16">
+      <section className="relative min-h-[46svh] sm:min-h-[52vh] flex items-end overflow-hidden md:-mt-16 md:pt-16">
         <div className="absolute inset-0">
-          <img src={venue.image} alt="" className="w-full h-full object-cover" />
+          <SmartImage
+            src={venue.image}
+            alt=""
+            priority
+            sizes="100vw"
+            wrapperClassName="w-full h-full"
+            className="w-full h-full object-cover"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/70 to-obsidian/30" />
         </div>
 

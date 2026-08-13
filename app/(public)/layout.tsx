@@ -1,14 +1,5 @@
-import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
+import AppShell from '@/components/shell/AppShell';
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <>
-      <Navigation />
-      <div className="relative z-0">
-        {children}
-      </div>
-      <Footer />
-    </>
-  );
+  return <AppShell>{children}</AppShell>;
 }

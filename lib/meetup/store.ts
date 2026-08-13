@@ -11,6 +11,7 @@
 
 import { useSyncExternalStore } from 'react';
 import type { Attendee, OrderLine } from '@/lib/split/compute';
+import type { DecodedMeetup } from '@/lib/meetup/share';
 
 export interface Meetup {
   id: string;
@@ -25,9 +26,12 @@ export interface Meetup {
   lines: OrderLine[];
   tipPct: number;
   createdAt: string;
+  /** Which attendee is holding this phone. Drives the "your share" figure. */
+  youId?: string;
 }
 
 const KEY = 'convivia24.meetups.v2';
+const PROFILE_KEY = 'convivia24.profile.v1';
 
 export function newId(prefix: string): string {
   return `${prefix}_${Math.random().toString(36).slice(2, 9)}`;
@@ -172,6 +176,117 @@ export function removeLine(meetupId: string, lineId: string) {
 
 export function setTip(meetupId: string, tipPct: number) {
   updateMeetup(meetupId, (m) => ({ ...m, tipPct }));
+}
+
+/** Marks which attendee is holding this phone. */
+export function setYou(meetupId: string, attendeeId: string | undefined) {
+  updateMeetup(meetupId, (m) => ({ ...m, youId: attendeeId }));
+}
+
+/* ── importing a shared meetup ───────────────────────────────────────── */
+
+/**
+ * Turns a decoded link into a local meetup. Ids are minted fresh on this
+ * device — two people opening the same link get their own copy, which is the
+ * honest model until meetups are server-backed.
+ */
+export function importMeetup(decoded: DecodedMeetup): Meetup {
+  const attendees: Attendee[] = decoded.attendees.map((a) => ({
+    id: newId('p'),
+    name: a.name,
+    budget: a.budget,
+  }));
+
+  const meetup: Meetup = {
+    id: newId('mt'),
+    title: decoded.title,
+    venueSlug: decoded.venueSlug,
+    date: decoded.date,
+    time: decoded.time,
+    note: decoded.note,
+    tipPct: decoded.tipPct,
+    attendees,
+    createdAt: new Date().toISOString(),
+    lines: decoded.lines
+      .map((l) => ({
+        id: newId('ln'),
+        itemId: l.itemId,
+        qty: l.qty,
+        payerIds: l.payerIndexes.map((i) => attendees[i].id),
+      }))
+      .filter((l) => l.payerIds.length > 0),
+  };
+
+  write([meetup, ...snapshot()]);
+  return meetup;
+}
+
+/* ── device profile ──────────────────────────────────────────────────── */
+
+export interface Profile {
+  /** What to call this person when a new meetup is created. */
+  name: string;
+  /** Their usual spend, pre-filled as a budget. */
+  defaultBudget?: number;
+  onboarded: boolean;
+}
+
+const DEFAULT_PROFILE: Profile = { name: '', onboarded: false };
+
+let profileCache: Profile | null = null;
+const profileListeners = new Set<() => void>();
+
+function readProfile(): Profile {
+  if (typeof window === 'undefined') return DEFAULT_PROFILE;
+  try {
+    const raw = window.localStorage.getItem(PROFILE_KEY);
+    return raw ? { ...DEFAULT_PROFILE, ...(JSON.parse(raw) as Profile) } : DEFAULT_PROFILE;
+  } catch {
+    return DEFAULT_PROFILE;
+  }
+}
+
+function profileSnapshot(): Profile {
+  if (profileCache === null) profileCache = readProfile();
+  return profileCache;
+}
+
+export function saveProfile(patch: Partial<Profile>) {
+  const next = { ...profileSnapshot(), ...patch };
+  try {
+    window.localStorage.setItem(PROFILE_KEY, JSON.stringify(next));
+  } catch {
+    /* nothing to do — the session still works */
+  }
+  profileCache = next;
+  profileListeners.forEach((l) => l());
+}
+
+export function useProfile(): Profile {
+  return useSyncExternalStore(
+    (l) => {
+      profileListeners.add(l);
+      return () => profileListeners.delete(l);
+    },
+    profileSnapshot,
+    () => DEFAULT_PROFILE,
+  );
+}
+
+/**
+ * Everyone this device has eaten with, most recent first — so adding the usual
+ * suspects to a new meetup is two taps rather than typing four names.
+ */
+export function useContacts(): Array<{ name: string; budget?: number }> {
+  const meetups = useMeetups();
+  const seen = new Map<string, { name: string; budget?: number }>();
+  for (const m of meetups) {
+    for (const a of m.attendees) {
+      const key = a.name.trim().toLowerCase();
+      if (key && !seen.has(key)) seen.set(key, { name: a.name.trim(), budget: a.budget });
+    }
+  }
+  return [...seen.values()];
 }
 
 /* ── first-run seed ──────────────────────────────────────────────────── */

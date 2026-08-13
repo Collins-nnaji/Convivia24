@@ -19,14 +19,30 @@ const cormorant = Cormorant_Garamond({
 export const metadata = {
   title: 'Convivia24 | Gather. Order. Split.',
   description: 'Plan a meal out with friends and see the split before you go. Real menus with real prices, shared plates divided properly, and everyone’s share worked out as the order grows. No money changes hands here.',
+  applicationName: 'Convivia24',
+  appleWebApp: {
+    capable: true,
+    title: 'Convivia24',
+    statusBarStyle: 'black-translucent' as const,
+  },
+  formatDetection: { telephone: false },
   icons: {
-    icon: '/Logo2.png',
-  }
+    icon: [{ url: '/icon-192.png', sizes: '192x192', type: 'image/png' }],
+    apple: '/apple-icon.png',
+  },
 };
 
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
+  // The app draws into the notch and the home-indicator area itself.
+  viewportFit: 'cover' as const,
+  // Locked out of zoom-on-input-focus without disabling pinch zoom entirely.
+  maximumScale: 5,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#0a0a0a' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a0a0a' },
+  ],
 };
 
 export default function RootLayout({

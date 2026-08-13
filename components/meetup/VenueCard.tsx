@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import SmartImage from '@/components/ui/SmartImage';
 import { estimatePerHead } from '@/lib/split/compute';
 import { formatNaira, type Venue } from '@/lib/dining/venues';
 
@@ -21,9 +22,11 @@ export default function VenueCard({ venue, href }: { venue: Venue; href?: string
       className="group flex flex-col bg-obsidian border border-gold/10 hover:border-gold/40 transition-colors duration-300 overflow-hidden"
     >
       <div className="relative aspect-[4/3] overflow-hidden">
-        <img
+        <SmartImage
           src={venue.image}
           alt={venue.name}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"
+          wrapperClassName="w-full h-full"
           className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-[1.03] transition-all duration-700"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/20 to-transparent" />

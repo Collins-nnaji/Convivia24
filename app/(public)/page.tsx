@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight, Users, UtensilsCrossed, Receipt } from 'lucide-react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
+import SmartImage from '@/components/ui/SmartImage';
 import VenueCard from '@/components/meetup/VenueCard';
 import SplitTable from '@/components/meetup/SplitTable';
 import { VENUES, getVenue, formatNaira } from '@/lib/dining/venues';
@@ -89,11 +90,20 @@ export default function HomePage() {
   return (
     <>
       {/* ═══ HERO ═══ */}
-      <section className="relative min-h-[90vh] sm:min-h-[100vh] bg-obsidian flex items-center overflow-hidden -mt-16 pt-16">
+      <section className="relative min-h-[88svh] sm:min-h-[100vh] bg-obsidian flex items-center overflow-hidden md:-mt-16 md:pt-16">
         <div className="absolute inset-0">
-          <img src="/Homepage.png" alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-obsidian/90 via-obsidian/55 to-obsidian/15" />
-          <div className="absolute inset-0 bg-gradient-to-t from-obsidian/70 via-transparent to-obsidian/30" />
+          <SmartImage
+            src="/Homepage.png"
+            alt=""
+            priority
+            sizes="100vw"
+            wrapperClassName="w-full h-full"
+            className="w-full h-full object-cover"
+          />
+          {/* Phone copy runs the full width, so it needs the scrim underneath it
+              rather than beside it; desktop keeps the left-to-right wash. */}
+          <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/75 to-obsidian/35 md:bg-gradient-to-r md:from-obsidian/90 md:via-obsidian/55 md:to-obsidian/15" />
+          <div className="absolute inset-0 hidden md:block bg-gradient-to-t from-obsidian/70 via-transparent to-obsidian/30" />
         </div>
 
         <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-8 py-20 sm:py-32 w-full">
@@ -304,7 +314,13 @@ export default function HomePage() {
       {/* ═══ IMAGE BREAK ═══ */}
       <section className="relative bg-obsidian">
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
-          <img src="/Convivium2.png" alt="" className="w-full h-[40vh] sm:h-[50vh] object-cover" />
+          <SmartImage
+            src="/Convivium2.png"
+            alt=""
+            sizes="100vw"
+            wrapperClassName="w-full h-[32vh] sm:h-[50vh]"
+            className="w-full h-full object-cover"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-cream via-transparent to-obsidian/40" />
         </motion.div>
       </section>

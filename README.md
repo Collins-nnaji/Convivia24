@@ -15,13 +15,42 @@ surprise at the end of the night.
 
 - **Places** (`/places`) — every venue and its full menu, searchable by dish, area or price
   band, with a typical all-in spend per head.
-- **Meetups** (`/meetups`) — the plans you have going, each showing the running bill and
-  what an even split would come to.
-- **Building an order** (`/meetups/[id]`) — the menu and the split side by side. Pick who
-  you are ordering for (one person, a few, or the whole table), tap anything on the menu,
-  and every share updates live.
+- **Meetups** (`/meetups`) — the plans you have going, each showing your own share (or the
+  whole bill before you say which person is you).
+- **Building an order** (`/meetups/[id]`) — menu, order and split as three panes on a phone,
+  side by side on a desktop. Pick who you are ordering for (one person, a few, or the whole
+  table), tap anything on the menu, and every share updates live.
 - **Budgets** — anyone can say up front what they are willing to spend. Go past it and
   Convivia24 flags it while there is still time to change the order.
+- **Sharing** (`/meetups/join`) — the whole plan packs into the URL fragment, so a meetup
+  travels as a ~250-character link through the OS share sheet or the clipboard. The person
+  opening it previews the table, the order and every share, picks which one is them, and
+  keeps their own copy.
+
+## Built for the phone
+
+The site behaves like an app on a phone and like a website on a desktop, from one route
+table in `components/shell/routes.ts`:
+
+- A **bottom tab bar** for the places you return to (Home, Places, Meetups, New), and
+  focused full-screen flows — creating, joining, ordering — that swap it for a back arrow.
+- A **contextual app bar** per route: transparent over a hero, solid once you scroll.
+- **Bottom sheets** (`components/ui/Sheet.tsx`) with a grab handle and drag-to-dismiss,
+  which become centred dialogs above `sm`.
+- Safe-area insets, no tap highlight, 16px inputs (iOS zooms anything smaller on focus),
+  `overscroll-behavior` containment, and a full `prefers-reduced-motion` path.
+- **Installable**: `app/manifest.ts` ships a standalone-display PWA that opens on
+  `/meetups`, plus a first-run onboarding sheet that pre-fills your name and usual budget
+  into every meetup you create.
+
+## Images
+
+The source photography is 8–10MB per PNG and `next.config.js` disables Next's optimiser
+for Netlify, so `scripts/build-images.mjs` pre-builds WebP renditions at 640/1280/1920 into
+`public/img/` (whole set under 3MB) and writes `lib/images.ts` with a 20px inline blur
+placeholder per asset. `components/ui/SmartImage.tsx` serves them with a `srcset`, a blur-up
+and a fade. A phone now pulls about **500KB** for the landing page instead of tens of
+megabytes. Re-run with `npm run images` after adding a PNG to `public/`.
 
 ## How the maths works
 
@@ -37,7 +66,9 @@ surprise at the end of the night.
 Venues and menus live in `lib/dining/venues.ts`. Meetups are stored in `localStorage`
 (`lib/meetup/store.ts`) — there is no account or server round-trip yet, so swapping the
 four `read`/`write` calls in that module for API routes is all that stands between this and
-shared, multi-device meetups.
+live, multi-device meetups. Until then `lib/meetup/share.ts` carries a plan between phones
+in the URL itself: two people opening the same link each get their own copy, which is the
+honest model for a client-only app.
 
 ## Archived: the Resort, Spa & Lounge site
 
@@ -105,7 +136,11 @@ meetups are local to the device until sharing lands.
 - `/lib/dining/venues.ts` — venues, menus, prices, service and VAT rates
 - `/lib/split/compute.ts` — the bill maths (pure, no I/O)
 - `/lib/meetup/store.ts` — meetup persistence and React binding
-- `/components/meetup` — `MenuPicker`, `OrderList`, `SplitTable`, `VenueCard`, `PersonChip`
+- `/lib/meetup/share.ts` — packing a meetup into a link, and the OS share sheet
+- `/lib/images.ts` + `/scripts/build-images.mjs` — generated responsive image manifest
+- `/components/shell` — `AppShell`, `MobileHeader`, `routes.ts`, `OnboardingSheet`
+- `/components/meetup` — `MenuPicker`, `OrderList`, `SplitTable`, `YourShare`, `PeopleSheet`
+- `/components/ui` — `Sheet` (bottom sheet / dialog), `Toast`, `SmartImage`
 - `/app/api/*`, `/lib/calendar`, `/lib/companion`, `/lib/db` — kept for the archived pages
 
 ## Branding

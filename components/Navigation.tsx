@@ -3,8 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const LINKS = [
   { label: 'Places',  href: '/places' },
@@ -13,7 +12,6 @@ const LINKS = [
 
 export default function Navigation() {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [hash, setHash] = useState('');
 
@@ -30,8 +28,6 @@ export default function Navigation() {
     return () => window.removeEventListener('hashchange', sync);
   }, [pathname]);
 
-  useEffect(() => { setOpen(false); }, [pathname]);
-
   // Active when the link's path matches; for hash links, the hash must match too.
   const isActive = (href: string) => {
     const [path, frag] = href.split('#');
@@ -42,7 +38,7 @@ export default function Navigation() {
 
   return (
     <>
-      <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
+      <header className={`hidden md:block fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
         scrolled
           ? 'bg-obsidian/95 backdrop-blur-md shadow-[0_1px_0_0_rgba(201,168,76,0.1)]'
           : 'bg-obsidian/80 backdrop-blur-sm border-b border-gold/5'
@@ -93,74 +89,11 @@ export default function Navigation() {
             </Link>
           </nav>
 
-          <button
-            type="button"
-            onClick={() => setOpen(v => !v)}
-            className="md:hidden p-2 text-cream/70 hover:text-cream transition-colors"
-            aria-label={open ? 'Close menu' : 'Open menu'}
-          >
-            {open ? <X size={22} strokeWidth={2} /> : <Menu size={22} strokeWidth={2} />}
-          </button>
         </div>
       </header>
 
-      <div className="h-16" />
+      <div className="hidden md:block h-16" />
 
-      <AnimatePresence>
-        {open && (
-          <>
-            <motion.div
-              key="backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.18 }}
-              className="fixed inset-0 z-40 bg-black/60 md:hidden"
-              onClick={() => setOpen(false)}
-            />
-            <motion.div
-              key="drawer"
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.2 }}
-              className="fixed top-16 inset-x-0 z-50 bg-obsidian border-b border-gold/20 shadow-lg md:hidden"
-            >
-              <div className="border-b border-gold/10 px-5 py-2.5 flex items-center gap-2">
-                <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
-                <span className="text-[8px] font-black uppercase tracking-[0.3em] text-cream/40">
-                  Gather · Order · Split · Lagos · Abuja · London
-                </span>
-              </div>
-              <nav className="px-5 py-3 divide-y divide-gold/10">
-                {LINKS.map(({ label, href }) => {
-                  const active = isActive(href);
-                  return (
-                    <Link
-                      key={href}
-                      href={href}
-                      className={`flex items-center justify-between py-3.5 text-[15px] font-medium transition-colors ${
-                        active ? 'text-gold' : 'text-cream/70 hover:text-cream'
-                      }`}
-                    >
-                      {label}
-                      <span className="text-gold/30 text-lg leading-none">&rsaquo;</span>
-                    </Link>
-                  );
-                })}
-                <div className="pt-4 pb-2">
-                  <Link
-                    href="/meetups/new"
-                    className="block w-full text-center py-3.5 bg-gold hover:bg-gold-light text-obsidian text-[12px] font-black uppercase tracking-[0.15em] transition-colors"
-                  >
-                    Start a meetup
-                  </Link>
-                </div>
-              </nav>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
     </>
   );
 }
