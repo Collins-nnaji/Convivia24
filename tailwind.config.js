@@ -7,6 +7,13 @@ module.exports = {
     ],
     theme: {
       extend: {
+        // Tailwind only emits the `/NN` colour-opacity modifiers that exist on
+        // this scale. The default stops at multiples of 5 (and skips 15/35/45…),
+        // so a class like `text-cream/45` silently produced no colour at all and
+        // the element fell back to inheriting black. Every whole percent now works.
+        opacity: Object.fromEntries(
+          Array.from({ length: 101 }, (_, i) => [i, String(i / 100)]),
+        ),
         colors: {
           // Black — used for text and dark surfaces.
           obsidian: {

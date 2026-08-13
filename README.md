@@ -1,24 +1,51 @@
-# Convivia24 — The Mindful Calendar
+# Convivia24 — Gather. Order. Split.
 
-Lower your stress. Optimize your hours. Love your day.
+Know what dinner costs before you go.
 
-Convivia24 is a calm personal calendar. Add what's on your day — tasks, events,
-gatherings with people — and it auto-inserts a quiet 15-minute rest block wherever
-things run back-to-back. A persistent-memory Companion chats with you and proposes
-things to add to your day. When a day gets heavy, **Destress my day** asks the AI for
-a calmer version and lets you accept it with one tap.
+Convivia24 is where a table plans a meal out and sees the split in the same place.
+Pick a venue, pull up its **real menu with real prices**, build the order together, and
+watch each person's share settle as it grows. Shared plates divide only across the people
+actually eating them; service charge and VAT ride along on each individual share.
 
-## Features
+**No money moves through the platform.** It is not a wallet, an escrow, or a payment app —
+you still settle at the till. What it removes is the arithmetic, the awkwardness, and the
+surprise at the end of the night.
 
-- **My 24** (`/my24`) — the day as one soft, scrollable ribbon. Mark things done and
-  they dissolve away. Invite people to any item.
-- **Rest buffers** — pure scheduling logic (`lib/calendar/buffers.ts`) inserts a 15-minute
-  "Rest" block between any two items less than 10 minutes apart. No setup required.
-- **Destress my day** (`/api/ai/destress`) — AI proposes moving low-priority items to
-  tomorrow to clear space; high-priority items are never touched, and nothing moves
-  until you accept.
-- **Companion** (`/companion`) — a chat with persistent memory (`companion_memory`)
-  that remembers preferences, habits and people, and can suggest items to add to My 24.
+## The product
+
+- **Places** (`/places`) — every venue and its full menu, searchable by dish, area or price
+  band, with a typical all-in spend per head.
+- **Meetups** (`/meetups`) — the plans you have going, each showing the running bill and
+  what an even split would come to.
+- **Building an order** (`/meetups/[id]`) — the menu and the split side by side. Pick who
+  you are ordering for (one person, a few, or the whole table), tap anything on the menu,
+  and every share updates live.
+- **Budgets** — anyone can say up front what they are willing to spend. Go past it and
+  Convivia24 flags it while there is still time to change the order.
+
+## How the maths works
+
+`lib/split/compute.ts` is pure and self-contained:
+
+- Every order line belongs to one or more people; the line total divides evenly among them.
+- Each person's subtotal is the sum of their shares.
+- Service charge is a percentage of *their* subtotal; VAT applies to subtotal + service
+  (as it does in Nigeria); an optional tip is a percentage of subtotal.
+- Removing someone strips them from every line they were carrying, and a line left with no
+  payers falls back to the whole table.
+
+Venues and menus live in `lib/dining/venues.ts`. Meetups are stored in `localStorage`
+(`lib/meetup/store.ts`) — there is no account or server round-trip yet, so swapping the
+four `read`/`write` calls in that module for API routes is all that stands between this and
+shared, multi-device meetups.
+
+## Archived: the Resort, Spa & Lounge site
+
+The previous hospitality site (`/stays`, `/convivium`, `/my24`, `/companion`, `/inquire`,
+`/invite/[token]`) is preserved intact under `app/(public)/_archive/`. The leading
+underscore makes it a Next.js private folder, so nothing there is routable — but the code,
+its API routes, and its `lib/` and `components/` modules are all untouched and still
+type-checked. See `app/(public)/_archive/README.md` to bring any of it back.
 
 ## Tech Stack
 - **Framework**: Next.js 16 (App Router)
@@ -59,8 +86,8 @@ schema of the same database.
 - `components/auth/AuthProvider.tsx` — `useUser()` hook; `lib/auth/client.ts` — Google
   sign-in / sign-out.
 
-Every page under `/my24` and `/companion` requires sign-in; signed-out visitors land on
-`/signin?next=...`.
+Auth is wired up and `/signin` is live, but the meetup flow does not require an account —
+meetups are local to the device until sharing lands.
 
 **Neon Auth dashboard setup (once):**
 1. Enable the **Google** social provider.
@@ -72,13 +99,14 @@ Every page under `/my24` and `/companion` requires sign-in; signed-out visitors 
 > the Neon Auth host; it is network-blocked in CI sandboxes.
 
 ## Project Structure
-- `/app/(public)` — `/`, `/my24`, `/companion`, `/signin`
-- `/app/api/calendar` — personal calendar CRUD (`lib/calendar/repo.ts`)
-- `/app/api/companion` — chat + memory
-- `/app/api/ai/destress` — AI rescheduling proposals
-- `/components/calendar` — `MyDayRibbon`, `DestressButton`
-- `/lib/calendar` — `buffers.ts` (rest-buffer logic), `repo.ts` (Postgres data access)
-- `/lib/db` — Neon client, schema, migration runner
+- `/app/(public)` — `/`, `/places`, `/places/[slug]`, `/meetups`, `/meetups/new`,
+  `/meetups/[id]`, `/signin`
+- `/app/(public)/_archive` — the archived resort site (not routable)
+- `/lib/dining/venues.ts` — venues, menus, prices, service and VAT rates
+- `/lib/split/compute.ts` — the bill maths (pure, no I/O)
+- `/lib/meetup/store.ts` — meetup persistence and React binding
+- `/components/meetup` — `MenuPicker`, `OrderList`, `SplitTable`, `VenueCard`, `PersonChip`
+- `/app/api/*`, `/lib/calendar`, `/lib/companion`, `/lib/db` — kept for the archived pages
 
 ## Branding
 - **Obsidian**: `#0a0a0a` · **Gold**: `#c9a84c` · **Cream**: `#f5f0e8`

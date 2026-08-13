@@ -2,13 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BedDouble, Flower2, UtensilsCrossed, Sparkles } from 'lucide-react';
+import { Home, MapPin, Users, Plus } from 'lucide-react';
 
 const TABS = [
-  { href: '/stays',    label: 'Stays',    icon: BedDouble,       exact: false },
-  { href: '/wellness', label: 'Wellness', icon: Flower2,         exact: false },
-  { href: '/dining',   label: 'Dining',   icon: UtensilsCrossed, exact: false },
-  { href: '/events',   label: 'Events',   icon: Sparkles,        exact: false },
+  { href: '/',            label: 'Home',    icon: Home,   exact: true },
+  { href: '/places',      label: 'Places',  icon: MapPin, exact: false },
+  { href: '/meetups',     label: 'Meetups', icon: Users,  exact: false },
+  { href: '/meetups/new', label: 'New',     icon: Plus,   exact: true },
 ];
 
 export default function MobileTabBar() {

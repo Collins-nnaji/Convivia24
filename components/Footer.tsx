@@ -1,10 +1,9 @@
 import Link from 'next/link';
-import WaitlistForm from './WaitlistForm';
 
 const footerLinks = [
-  { label: 'The Resort',    href: '/stays' },
-  { label: 'The Convivium', href: '/convivium' },
-  { label: 'Book a Stay',   href: '/inquire' },
+  { label: 'Places',        href: '/places' },
+  { label: 'Meetups',       href: '/meetups' },
+  { label: 'Start a meetup', href: '/meetups/new' },
 ];
 
 export default function Footer() {
@@ -19,16 +18,16 @@ export default function Footer() {
             </Link>
             <div className="flex items-center gap-2 mb-2">
               <span className="w-1 h-1 bg-gold rounded-full animate-pulse" />
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-cream/40">Stay · Restore · Gather</p>
+              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-cream/40">Gather &middot; Order &middot; Split</p>
             </div>
             <p className="text-xs text-cream/40 max-w-xs leading-relaxed">
-              A resort, spa &amp; lounge. Waterfront suites, wellness, and farm-to-table dining.
-              Lagos · Abuja · London.
+              Plan the meal and see the split in one place. Real menus, real prices, and everyone&apos;s
+              share worked out before the table sits down.
             </p>
           </div>
 
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:gap-12">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-10 gap-y-3">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-16">
+            <div className="grid grid-cols-2 sm:grid-cols-1 gap-x-10 gap-y-3">
               {footerLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -40,9 +39,12 @@ export default function Footer() {
               ))}
             </div>
 
-            <div className="w-full sm:min-w-[280px] sm:max-w-[360px]">
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gold/50 mb-3">Join the Convivium Waitlist</p>
-              <WaitlistForm variant="footer" />
+            <div className="max-w-xs">
+              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gold/50 mb-3">No money moves here</p>
+              <p className="text-xs text-cream/40 leading-relaxed">
+                Convivia24 is not a wallet or a payment app. It works out what each person owes; you
+                settle at the till, the way you always have.
+              </p>
             </div>
           </div>
         </div>
@@ -52,8 +54,8 @@ export default function Footer() {
             <span>&copy; 2026 Convivia24</span>
             <span className="text-cream/20">Lagos &middot; Abuja &middot; London</span>
           </div>
-          <Link href="/inquire" className="text-gold/60 hover:text-gold font-semibold transition-colors uppercase tracking-wider text-[10px]">
-            Book a Stay &rarr;
+          <Link href="/meetups/new" className="text-gold/60 hover:text-gold font-semibold transition-colors uppercase tracking-wider text-[10px]">
+            Start a meetup &rarr;
           </Link>
         </div>
       </div>

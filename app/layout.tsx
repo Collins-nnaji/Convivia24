@@ -17,8 +17,8 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata = {
-  title: 'Convivia24 | Resort, Spa & Lounge',
-  description: 'A resort, spa and lounge in one — waterfront suites, a full wellness circuit, farm-to-table dining, and spaces made for gathering. Stay. Restore. Gather.',
+  title: 'Convivia24 | Gather. Order. Split.',
+  description: 'Plan a meal out with friends and see the split before you go. Real menus with real prices, shared plates divided properly, and everyone’s share worked out as the order grows. No money changes hands here.',
   icons: {
     icon: '/Logo2.png',
   }

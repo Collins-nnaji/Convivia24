@@ -7,8 +7,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 
 const LINKS = [
-  { label: 'The Resort',    href: '/stays' },
-  { label: 'The Convivium', href: '/convivium' },
+  { label: 'Places',  href: '/places' },
+  { label: 'Meetups', href: '/meetups' },
 ];
 
 export default function Navigation() {
@@ -35,7 +35,8 @@ export default function Navigation() {
   // Active when the link's path matches; for hash links, the hash must match too.
   const isActive = (href: string) => {
     const [path, frag] = href.split('#');
-    if (pathname !== path) return false;
+    // Section links stay lit on their detail pages (/places → /places/the-terrace).
+    if (pathname !== path && !pathname.startsWith(`${path}/`)) return false;
     return frag ? hash === `#${frag}` : true;
   };
 
@@ -85,10 +86,10 @@ export default function Navigation() {
             })}
 
             <Link
-              href="/inquire"
+              href="/meetups/new"
               className="ml-2 px-5 py-2 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.15em] transition-colors duration-150"
             >
-              Book a Stay
+              Start a meetup
             </Link>
           </nav>
 
@@ -128,7 +129,7 @@ export default function Navigation() {
               <div className="border-b border-gold/10 px-5 py-2.5 flex items-center gap-2">
                 <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
                 <span className="text-[8px] font-black uppercase tracking-[0.3em] text-cream/40">
-                  Open from 11am · Lagos · Abuja · London
+                  Gather · Order · Split · Lagos · Abuja · London
                 </span>
               </div>
               <nav className="px-5 py-3 divide-y divide-gold/10">
@@ -149,10 +150,10 @@ export default function Navigation() {
                 })}
                 <div className="pt-4 pb-2">
                   <Link
-                    href="/inquire"
+                    href="/meetups/new"
                     className="block w-full text-center py-3.5 bg-gold hover:bg-gold-light text-obsidian text-[12px] font-black uppercase tracking-[0.15em] transition-colors"
                   >
-                    Book a Stay
+                    Start a meetup
                   </Link>
                 </div>
               </nav>
