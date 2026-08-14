@@ -1,5 +1,5 @@
 // Run: npx tsx lib/db/migrate.ts
-import { readFileSync } from 'fs';
+import { readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { neon } from '@neondatabase/serverless';
 
@@ -29,35 +29,51 @@ async function migrate() {
   }
 
   const sql = neon(process.env.DATABASE_URL);
-  const schema = readFileSync(join(process.cwd(), 'lib/db/schema.sql'), 'utf-8');
 
-  const statements = schema
-    .split(';')
-    .map(s => s.trim())
-    .filter(s => {
-      const lines = s.split('\n').filter(l => l.trim() && !l.trim().startsWith('--'));
-      return lines.length > 0;
-    });
+  // schema.sql first (it drops dead tables), then lib/db/migrations/*.sql in
+  // filename order. Every file is written to be idempotent, so re-running the
+  // whole set is the normal way to bring a database up to date.
+  const migrationsDir = join(process.cwd(), 'lib/db/migrations');
+  let migrationFiles: string[] = [];
+  try {
+    migrationFiles = readdirSync(migrationsDir).filter((f) => f.endsWith('.sql')).sort();
+  } catch { /* no migrations directory yet */ }
 
-  console.log(`Running migration (${statements.length} statements)…`);
+  const files = [
+    { label: 'schema.sql', path: join(process.cwd(), 'lib/db/schema.sql') },
+    ...migrationFiles.map((f) => ({ label: `migrations/${f}`, path: join(migrationsDir, f) })),
+  ];
 
-  for (let i = 0; i < statements.length; i++) {
-    const stmt = statements[i];
-    try {
-      await sql.query(stmt);
-      console.log(`  [${i + 1}/${statements.length}] OK`);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      if (stmt.toLowerCase().includes('drop') && msg.includes('does not exist')) {
-        console.log(`  [${i + 1}/${statements.length}] SKIP`);
-      } else {
-        console.error(`  [${i + 1}/${statements.length}] FAIL: ${msg}`);
-        throw err;
+  for (const file of files) {
+    const statements = readFileSync(file.path, 'utf-8')
+      .split(';')
+      .map(s => s.trim())
+      .filter(s => {
+        const lines = s.split('\n').filter(l => l.trim() && !l.trim().startsWith('--'));
+        return lines.length > 0;
+      });
+
+    console.log(`\n${file.label} — ${statements.length} statements`);
+
+    for (let i = 0; i < statements.length; i++) {
+      const stmt = statements[i];
+      try {
+        await sql.query(stmt);
+        console.log(`  [${i + 1}/${statements.length}] OK`);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (stmt.toLowerCase().includes('drop') && msg.includes('does not exist')) {
+          console.log(`  [${i + 1}/${statements.length}] SKIP`);
+        } else {
+          console.error(`  [${i + 1}/${statements.length}] FAIL: ${msg}`);
+          console.error(stmt.split('\n').slice(0, 3).join('\n'));
+          throw err;
+        }
       }
     }
   }
 
-  console.log('Migration complete.');
+  console.log('\nMigration complete.');
 }
 
 migrate().catch((err) => {

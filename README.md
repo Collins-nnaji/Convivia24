@@ -128,9 +128,35 @@ type-checked. See `app/(public)/_archive/README.md` to bring any of it back.
 ```bash
 npm install
 # set DATABASE_URL (Neon), Neon Auth vars, and Azure OpenAI vars in .env.local
-npx tsx lib/db/migrate.ts   # creates the schema
+npx tsx lib/db/migrate.ts   # runs schema.sql, then lib/db/migrations/*.sql in order
 npm run dev
 ```
+
+## Database
+
+The app is client-only today — gatherings in `localStorage`, photos in IndexedDB — so
+nothing here is required to run it. `lib/db/migrations/001_gatherings.sql` is the schema for
+making gatherings shared rather than one copy per phone, and it is ready to run:
+
+- **venues / venue_menu_sections / venue_menu_items** — the menus, currently hardcoded in
+  `lib/dining/venues.ts`.
+- **gatherings / gathering_members** — a private plan and a public open table are the same
+  row, separated only by `visibility`. Members can have a NULL `user_id`, so the friend who
+  never signs up still gets a seat and a share.
+- **gathering_order_lines / gathering_order_line_payers** — the order, and who carries each
+  line. Lines capture `unit_price_kobo` at order time so a later menu change cannot alter a
+  bill someone already settled.
+- **moments / moment_people / moment_reactions** — photo URLs only, never the bytes.
+- **gathering_invites** — the server-backed version of the share link.
+
+Money is stored in **kobo** and rates in **basis points** — integers throughout, because a
+split divides amounts and floats do not survive that. Service, VAT and tip stay in
+`lib/split/compute.ts`, with SQL providing only the joins (`gathering_member_subtotals`,
+`open_tables`), so the rounding has one implementation rather than two that drift.
+
+Verified against PostgreSQL 16: the migration applies cleanly, is idempotent, and
+`gathering_member_subtotals` reproduces the four-person worked example to the naira
+(₦27,750 / ₦32,250 / ₦51,750 / ₦32,750, bill ₦170,871).
 
 ### Key environment variables
 - `DATABASE_URL` — Neon Postgres connection string (required)
