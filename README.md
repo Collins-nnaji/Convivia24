@@ -149,6 +149,11 @@ making gatherings shared rather than one copy per phone, and it is ready to run:
 - **moments / moment_people / moment_reactions** — photo URLs only, never the bytes.
 - **gathering_invites** — the server-backed version of the share link.
 
+`lib/db/migrations/002_seed_venues.sql` fills the menus from `lib/dining/venues.ts` — four
+venues, 48 items. It is generated (`npm run seed:sql`), so the seed can never disagree with
+what the app ships, and it upserts, so re-running after a price change updates the menu
+rather than duplicating it.
+
 Money is stored in **kobo** and rates in **basis points** — integers throughout, because a
 split divides amounts and floats do not survive that. Service, VAT and tip stay in
 `lib/split/compute.ts`, with SQL providing only the joins (`gathering_member_subtotals`,

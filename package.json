@@ -25,7 +25,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "images": "node scripts/build-images.mjs"
+    "images": "node scripts/build-images.mjs",
+    "seed:sql": "node scripts/build-seed.mjs"
   },
   "eslintConfig": {
     "extends": [
