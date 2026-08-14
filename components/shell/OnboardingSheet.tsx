@@ -22,8 +22,9 @@ export default function OnboardingSheet() {
   const [name, setName] = useState('');
   const [budget, setBudget] = useState<number | undefined>();
 
-  // Never on the join screen: someone arriving from an invite link is already
-  // being asked who they are, by a page that has their name in front of them.
+  // Only where someone is about to organise something. Never on the screens
+  // that already ask who you are — an invite, or an open table — where a sheet
+  // sliding up over what you are reading is an interruption, not a welcome.
   const inApp = pathname.startsWith('/meetups') && pathname !== '/meetups/join';
 
   useEffect(() => {
@@ -47,7 +48,7 @@ export default function OnboardingSheet() {
         setOpen(false);
       }}
       title="Before you sit down"
-      subtitle="Two answers, and every meetup you make is pre-filled."
+      subtitle="Two answers, and every table you join is pre-filled."
       footer={
         <button
           type="button"

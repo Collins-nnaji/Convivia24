@@ -221,6 +221,44 @@ export function importMeetup(decoded: DecodedMeetup): Meetup {
   return meetup;
 }
 
+/**
+ * Taking a seat at someone else's open table. The people already going come
+ * along as attendees so the split works from the first tap, and the host's
+ * suggested spend becomes your budget unless the profile says otherwise.
+ */
+export function joinTable(input: {
+  title: string;
+  venueSlug: string;
+  date: string;
+  time: string;
+  note: string;
+  going: string[];
+  yourName: string;
+  yourBudget?: number;
+}): Meetup {
+  const others: Attendee[] = input.going
+    .filter((name) => name.toLowerCase() !== input.yourName.toLowerCase())
+    .map((name) => ({ id: newId('p'), name }));
+  const you: Attendee = { id: newId('p'), name: input.yourName, budget: input.yourBudget };
+
+  const meetup: Meetup = {
+    id: newId('mt'),
+    title: input.title,
+    venueSlug: input.venueSlug,
+    date: input.date,
+    time: input.time,
+    note: input.note,
+    tipPct: 0,
+    attendees: [you, ...others],
+    lines: [],
+    createdAt: new Date().toISOString(),
+    youId: you.id,
+  };
+
+  write([meetup, ...snapshot()]);
+  return meetup;
+}
+
 /* ── device profile ──────────────────────────────────────────────────── */
 
 export interface Profile {

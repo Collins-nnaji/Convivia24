@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, CalendarDays, MapPin, Users } from 'lucide-react';
 import { initials } from '@/components/meetup/PersonChip';
 import { decodeMeetup, type DecodedMeetup } from '@/lib/meetup/share';
-import { importMeetup, setYou } from '@/lib/meetup/store';
+import { importMeetup, saveProfile, setYou } from '@/lib/meetup/store';
 import { getVenue, formatNaira, getMenuItem } from '@/lib/dining/venues';
 import { computeBill } from '@/lib/split/compute';
 
@@ -67,7 +67,11 @@ export default function JoinPage() {
 
   function accept() {
     const meetup = importMeetup(decoded as DecodedMeetup);
-    if (me != null) setYou(meetup.id, meetup.attendees[me].id);
+    if (me != null) {
+      setYou(meetup.id, meetup.attendees[me].id);
+      // Saying which one is you is as good as onboarding — do not ask again.
+      saveProfile({ name: meetup.attendees[me].name, onboarded: true });
+    }
     router.push(`/meetups/${meetup.id}`);
   }
 

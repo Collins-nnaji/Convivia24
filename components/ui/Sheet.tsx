@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { X } from 'lucide-react';
 
@@ -26,6 +27,11 @@ export default function Sheet({
   footer?: React.ReactNode;
 }) {
   const reduce = useReducedMotion();
+  // Sheets render into <body>. The page wrapper sets `relative z-0` for the
+  // route transition, which opens a stacking context — a sheet rendered inside
+  // it can never rise above the tab bar, however high its own z-index goes.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   // Escape closes, and the page behind must not scroll while a sheet is up.
   useEffect(() => {
@@ -40,7 +46,9 @@ export default function Sheet({
     };
   }, [open, onClose]);
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {open && (
         <>
@@ -103,6 +111,7 @@ export default function Sheet({
           </motion.div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }

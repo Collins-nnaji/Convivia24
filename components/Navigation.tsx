@@ -6,8 +6,10 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 const LINKS = [
-  { label: 'Places',  href: '/places' },
-  { label: 'Meetups', href: '/meetups' },
+  { label: 'Moments',  href: '/moments' },
+  { label: 'Discover', href: '/discover' },
+  { label: 'Places',   href: '/places' },
+  { label: 'Plans',    href: '/meetups' },
 ];
 
 export default function Navigation() {
@@ -85,7 +87,7 @@ export default function Navigation() {
               href="/meetups/new"
               className="ml-2 px-5 py-2 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.15em] transition-colors duration-150"
             >
-              Start a meetup
+              Gather
             </Link>
           </nav>
 

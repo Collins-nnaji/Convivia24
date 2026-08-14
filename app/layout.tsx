@@ -17,8 +17,8 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata = {
-  title: 'Convivia24 | Gather. Order. Split.',
-  description: 'Plan a meal out with friends and see the split before you go. Real menus with real prices, shared plates divided properly, and everyone’s share worked out as the order grows. No money changes hands here.',
+  title: 'Convivia24 | Gather. Share. Remember.',
+  description: 'An app for eating and drinking with people. Find an open table with a seat spare, keep the night in photos, and let the bill work itself out — everyone knows their number before the food arrives.',
   applicationName: 'Convivia24',
   appleWebApp: {
     capable: true,

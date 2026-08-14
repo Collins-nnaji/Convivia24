@@ -3,14 +3,14 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Home, MapPin, Users, Plus } from 'lucide-react';
+import { Compass, Images, CalendarHeart, Plus } from 'lucide-react';
 import { useMeetups } from '@/lib/meetup/store';
 
 const TABS = [
-  { href: '/',            label: 'Home',    icon: Home,   exact: true },
-  { href: '/places',      label: 'Places',  icon: MapPin, exact: false },
-  { href: '/meetups',     label: 'Meetups', icon: Users,  exact: false, badge: true },
-  { href: '/meetups/new', label: 'New',     icon: Plus,   exact: true },
+  { href: '/moments',     label: 'Moments',  icon: Images,        exact: false },
+  { href: '/discover',    label: 'Discover', icon: Compass,       exact: false },
+  { href: '/meetups',     label: 'Plans',    icon: CalendarHeart, exact: false, badge: true },
+  { href: '/meetups/new', label: 'New',      icon: Plus,          exact: true },
 ];
 
 export default function MobileTabBar() {

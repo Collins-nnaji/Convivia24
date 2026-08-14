@@ -26,6 +26,17 @@ export function chromeFor(pathname: string): Chrome {
   if (pathname === '/') {
     return { ...ROOT, mobileHeader: 'overlay', title: 'Convivia24' };
   }
+  if (pathname === '/moments') {
+    return { ...ROOT, footer: false, title: 'Moments' };
+  }
+  if (pathname === '/discover') {
+    return { ...ROOT, footer: false, title: 'Discover' };
+  }
+  if (pathname.startsWith('/discover/')) {
+    // No tab bar: this screen ends in a fixed "take a seat" bar, and two stacked
+    // bars means the tab bar sits on top of the only button that matters.
+    return { tabBar: false, footer: false, mobileHeader: 'overlay', title: 'Open table', back: '/discover' };
+  }
   if (pathname === '/places') {
     return { ...ROOT, footer: false, title: 'Places' };
   }

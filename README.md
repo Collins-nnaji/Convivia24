@@ -1,47 +1,65 @@
-# Convivia24 — Gather. Order. Split.
+# Convivia24 — Gather. Share. Remember.
 
-Know what dinner costs before you go.
+An app for eating and drinking with people.
 
-Convivia24 is where a table plans a meal out and sees the split in the same place.
-Pick a venue, pull up its **real menu with real prices**, build the order together, and
-watch each person's share settle as it grows. Shared plates divide only across the people
-actually eating them; service charge and VAT ride along on each individual share.
+Convivia24 is about the table, not the bill. Find a gathering with a seat spare, keep what
+happens there in photos, and let the arithmetic run quietly underneath — everyone knows
+their number before the food arrives, and nobody does maths at the end of a good evening.
 
 **No money moves through the platform.** It is not a wallet, an escrow, or a payment app —
-you still settle at the till. What it removes is the arithmetic, the awkwardness, and the
-surprise at the end of the night.
+you settle at the till. Working out who owes what is a chore the app removes, not the
+reason it exists.
 
-## The product
+## The three things it does
+
+**1. Find a table** — `/discover`
+Open tables are gatherings someone is hosting with room left: a stated vibe, a place, a
+time, who is already going, and an honest number for the evening. Some are old friends;
+one is for people who moved here in January and have eaten alone since. Taking a seat
+creates your own copy of the plan with the whole table already at it.
+
+**2. Keep the night** — `/moments`
+A photo, a line, and who was there. Posted from the table or afterwards, it stays in the
+feed long after anyone remembers what it cost. Every gathering has its own Moments pane,
+so a plan turns into a memory in the same place it was made.
+
+**3. Let the bill sort itself out** — inside every gathering
+The venue's real menu, the order built together, and each person's share moving as it
+grows. Shared plates divide across whoever is eating them; service and VAT ride on each
+individual share; anyone who named a budget gets flagged before they pass it, not after.
+Most of the time nobody opens this pane, which is the point.
+
+## The rest of it
 
 - **Places** (`/places`) — every venue and its full menu, searchable by dish, area or price
   band, with a typical all-in spend per head.
-- **Meetups** (`/meetups`) — the plans you have going, each showing your own share (or the
-  whole bill before you say which person is you).
-- **Building an order** (`/meetups/[id]`) — menu, order and split as three panes on a phone,
-  side by side on a desktop. Pick who you are ordering for (one person, a few, or the whole
-  table), tap anything on the menu, and every share updates live.
-- **Budgets** — anyone can say up front what they are willing to spend. Go past it and
-  Convivia24 flags it while there is still time to change the order.
-- **Sharing** (`/meetups/join`) — the whole plan packs into the URL fragment, so a meetup
-  travels as a ~250-character link through the OS share sheet or the clipboard. The person
-  opening it previews the table, the order and every share, picks which one is them, and
-  keeps their own copy.
+- **Plans** (`/meetups`) — your gatherings, each showing your own share rather than the
+  whole bill.
+- **Sharing** (`/meetups/join`) — a whole plan packs into the URL fragment, so a gathering
+  travels as a ~250-character link through the OS share sheet. Whoever opens it previews
+  the table and the order, says which one is them, and keeps their own copy.
+- **Identity** — anywhere you tell the app your name (onboarding, an invite, taking a seat)
+  it remembers, and never asks again.
 
 ## Built for the phone
 
 The site behaves like an app on a phone and like a website on a desktop, from one route
 table in `components/shell/routes.ts`:
 
-- A **bottom tab bar** for the places you return to (Home, Places, Meetups, New), and
-  focused full-screen flows — creating, joining, ordering — that swap it for a back arrow.
+- A **bottom tab bar** for the places you return to (Moments, Discover, Plans, New), and
+  focused full-screen flows — creating, joining, taking a seat — that swap it for a back
+  arrow. Any screen ending in a fixed commit bar drops the tab bar, or the two stack and
+  the tab bar covers the only button that matters.
 - A **contextual app bar** per route: transparent over a hero, solid once you scroll.
 - **Bottom sheets** (`components/ui/Sheet.tsx`) with a grab handle and drag-to-dismiss,
-  which become centred dialogs above `sm`.
+  which become centred dialogs above `sm`. They portal to `<body>`: the route-transition
+  wrapper sets `relative z-0`, and anything rendered inside that stacking context can never
+  rise above the tab bar however high its z-index goes.
 - Safe-area insets, no tap highlight, 16px inputs (iOS zooms anything smaller on focus),
   `overscroll-behavior` containment, and a full `prefers-reduced-motion` path.
 - **Installable**: `app/manifest.ts` ships a standalone-display PWA that opens on
-  `/meetups`, plus a first-run onboarding sheet that pre-fills your name and usual budget
-  into every meetup you create.
+  `/moments`, plus a first-run onboarding sheet that pre-fills your name and usual budget.
+  It never fires on a screen that already asks who you are — an invite, or an open table.
 
 ## Images
 
@@ -51,6 +69,24 @@ for Netlify, so `scripts/build-images.mjs` pre-builds WebP renditions at 640/128
 placeholder per asset. `components/ui/SmartImage.tsx` serves them with a `srcset`, a blur-up
 and a fade. A phone now pulls about **500KB** for the landing page instead of tens of
 megabytes. Re-run with `npm run images` after adding a PNG to `public/`.
+
+## Where things live
+
+- `lib/social/tables.ts` — open tables (seeded; joining one is real)
+- `lib/moments/store.ts` — moments metadata, reactions, the feed
+- `lib/moments/photos.ts` — photo storage in IndexedDB, with compression
+- `lib/dining/venues.ts` — venues, menus, service and VAT rates
+- `lib/split/compute.ts` — the bill maths, pure and self-contained
+- `lib/meetup/store.ts` — gatherings, the device profile, contacts
+- `lib/meetup/share.ts` — packing a gathering into a link
+
+## Photos
+
+A phone snap is 3–5MB and localStorage holds 5MB for everything, so photos never go near
+it. `lib/moments/photos.ts` downscales each pick to a 1400px WebP through a canvas (which
+strips EXIF as a side effect — a photo shared to a table should not carry the street it was
+taken on) and stores the blob in IndexedDB. The moment record keeps only the id. Object
+URLs are revoked on unmount, or a feed leaks every image scrolled past.
 
 ## How the maths works
 
@@ -130,8 +166,8 @@ meetups are local to the device until sharing lands.
 > the Neon Auth host; it is network-blocked in CI sandboxes.
 
 ## Project Structure
-- `/app/(public)` — `/`, `/places`, `/places/[slug]`, `/meetups`, `/meetups/new`,
-  `/meetups/[id]`, `/signin`
+- `/app/(public)` — `/`, `/moments`, `/discover`, `/discover/[id]`, `/places`,
+  `/places/[slug]`, `/meetups`, `/meetups/new`, `/meetups/[id]`, `/meetups/join`, `/signin`
 - `/app/(public)/_archive` — the archived resort site (not routable)
 - `/lib/dining/venues.ts` — venues, menus, prices, service and VAT rates
 - `/lib/split/compute.ts` — the bill maths (pure, no I/O)
@@ -139,6 +175,7 @@ meetups are local to the device until sharing lands.
 - `/lib/meetup/share.ts` — packing a meetup into a link, and the OS share sheet
 - `/lib/images.ts` + `/scripts/build-images.mjs` — generated responsive image manifest
 - `/components/shell` — `AppShell`, `MobileHeader`, `routes.ts`, `OnboardingSheet`
+- `/components/moments` — `MomentCard`, `MomentComposer`, `MomentPhoto`
 - `/components/meetup` — `MenuPicker`, `OrderList`, `SplitTable`, `YourShare`, `PeopleSheet`
 - `/components/ui` — `Sheet` (bottom sheet / dialog), `Toast`, `SmartImage`
 - `/app/api/*`, `/lib/calendar`, `/lib/companion`, `/lib/db` — kept for the archived pages

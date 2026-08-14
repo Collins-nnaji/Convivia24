@@ -7,11 +7,11 @@ import type { MetadataRoute } from 'next';
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Convivia24 — Gather. Order. Split.',
+    name: 'Convivia24 — Gather. Share. Remember.',
     short_name: 'Convivia24',
     description:
-      'Plan a meal out with friends and see the split before you go. Real menus, real prices, and everyone’s share worked out as the order grows.',
-    start_url: '/meetups',
+      'An app for eating and drinking with people. Find an open table, keep the night, and let the bill work itself out.',
+    start_url: '/moments',
     scope: '/',
     display: 'standalone',
     orientation: 'portrait',
@@ -24,8 +24,9 @@ export default function manifest(): MetadataRoute.Manifest {
       { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
     ],
     shortcuts: [
-      { name: 'New meetup', short_name: 'New', url: '/meetups/new' },
-      { name: 'Browse places', short_name: 'Places', url: '/places' },
+      { name: 'Post a moment', short_name: 'Moment', url: '/moments' },
+      { name: 'Find a table', short_name: 'Discover', url: '/discover' },
+      { name: 'New gathering', short_name: 'New', url: '/meetups/new' },
     ],
   };
 }

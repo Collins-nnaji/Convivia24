@@ -4,13 +4,16 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronLeft, MapPin, Share2, Trash2, Users } from 'lucide-react';
+import { Camera, ChevronLeft, MapPin, Share2, Trash2, Users } from 'lucide-react';
 import MenuPicker from '@/components/meetup/MenuPicker';
 import OrderList from '@/components/meetup/OrderList';
 import SplitTable from '@/components/meetup/SplitTable';
 import YourShare from '@/components/meetup/YourShare';
 import PeopleSheet from '@/components/meetup/PeopleSheet';
 import PersonChip from '@/components/meetup/PersonChip';
+import MomentCard from '@/components/moments/MomentCard';
+import MomentComposer from '@/components/moments/MomentComposer';
+import { useMomentsFor, type Moment } from '@/lib/moments/store';
 import { toast } from '@/components/ui/Toast';
 import { getVenue, formatNaira, type MenuItem } from '@/lib/dining/venues';
 import { computeBill } from '@/lib/split/compute';
@@ -31,7 +34,7 @@ import {
 } from '@/lib/meetup/store';
 
 const TIPS = [0, 5, 10, 15];
-type Pane = 'menu' | 'order' | 'split';
+type Pane = 'menu' | 'order' | 'split' | 'moments';
 
 export default function MeetupPage() {
   const router = useRouter();
@@ -43,6 +46,8 @@ export default function MeetupPage() {
   const [pane, setPane] = useState<Pane>('menu');
   const [ordering, setOrdering] = useState<string[]>([]);
   const [peopleOpen, setPeopleOpen] = useState(false);
+  const [composing, setComposing] = useState(false);
+  const moments = useMomentsFor(id);
 
   useEffect(() => setMounted(true), []);
 
@@ -127,6 +132,7 @@ export default function MeetupPage() {
     { id: 'menu', label: 'Menu' },
     { id: 'order', label: 'Order', count: orderCount },
     { id: 'split', label: 'Split' },
+    { id: 'moments', label: 'Moments', count: moments.length },
   ];
 
   return (
@@ -231,14 +237,14 @@ export default function MeetupPage() {
 
       {/* ═══ SEGMENTED CONTROL (phone) ═══ */}
       <div className="lg:hidden sticky top-[9.25rem] z-20 bg-paper border-b border-obsidian/10">
-        <div className="grid grid-cols-3">
+        <div className="grid grid-cols-4">
           {PANES.map((p) => (
             <button
               key={p.id}
               type="button"
               onClick={() => setPane(p.id)}
               aria-current={pane === p.id ? 'true' : undefined}
-              className="relative py-3 text-[11px] font-black uppercase tracking-[0.15em] active:scale-95 transition-transform"
+              className="relative py-3 text-[10px] font-black uppercase tracking-[0.1em] active:scale-95 transition-transform"
             >
               <span className={pane === p.id ? 'text-obsidian' : 'text-obsidian/35'}>
                 {p.label}
@@ -247,7 +253,7 @@ export default function MeetupPage() {
               {pane === p.id && (
                 <motion.span
                   layoutId="pane-underline"
-                  className="absolute bottom-0 inset-x-5 h-0.5 bg-gold"
+                  className="absolute bottom-0 inset-x-3 h-0.5 bg-gold"
                   transition={{ type: 'spring', stiffness: 480, damping: 34 }}
                 />
               )}
@@ -300,6 +306,13 @@ export default function MeetupPage() {
                 </button>
               </>
             )}
+
+            {pane === 'moments' && (
+              <MomentsPane
+                moments={moments}
+                onCompose={() => setComposing(true)}
+              />
+            )}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -322,6 +335,20 @@ export default function MeetupPage() {
             </p>
           )}
           <MenuPicker venue={venue} disabled={ordering.length === 0} countFor={countFor} onAdd={onAdd} />
+
+          <div className="mt-14 pt-10 border-t border-obsidian/10">
+            <div className="flex items-center justify-between gap-4 mb-6">
+              <h2 className="font-display text-4xl italic text-obsidian leading-none">Moments</h2>
+              <button
+                type="button"
+                onClick={() => setComposing(true)}
+                className="inline-flex items-center gap-2 px-5 py-3 bg-obsidian hover:bg-obsidian-50 text-cream text-[10px] font-black uppercase tracking-[0.2em] transition-colors"
+              >
+                <Camera size={13} /> Post a moment
+              </button>
+            </div>
+            <MomentsPane moments={moments} onCompose={() => setComposing(true)} />
+          </div>
         </section>
 
         <aside className="sticky top-32 space-y-8">
@@ -393,6 +420,52 @@ export default function MeetupPage() {
         onRemove={(pid) => removeAttendee(meetup.id, pid)}
         onSetYou={(pid) => setYou(meetup.id, meetup.youId === pid ? undefined : pid)}
       />
+
+      <MomentComposer
+        open={composing}
+        onClose={() => setComposing(false)}
+        meetupId={meetup.id}
+        venueSlug={venue.slug}
+        people={meetup.attendees.map((a) => a.name)}
+      />
+    </div>
+  );
+}
+
+/** The night as it is remembered, rather than as it is being paid for. */
+function MomentsPane({ moments, onCompose }: { moments: Moment[]; onCompose: () => void }) {
+  if (moments.length === 0) {
+    return (
+      <div className="border border-dashed border-obsidian/20 p-8 text-center">
+        <p className="font-display text-2xl italic text-obsidian mb-2">Nothing kept yet.</p>
+        <p className="text-obsidian/45 text-sm max-w-xs mx-auto mb-6">
+          When the food lands, take a picture. This is the part you will still want in a year.
+        </p>
+        <button
+          type="button"
+          onClick={onCompose}
+          className="inline-flex items-center gap-2 px-6 py-3.5 bg-gold active:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.2em] active:scale-[0.98] transition-transform"
+        >
+          <Camera size={14} /> Post a moment
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <button
+        type="button"
+        onClick={onCompose}
+        className="lg:hidden w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 border border-obsidian/20 text-obsidian text-[11px] font-black uppercase tracking-[0.2em] active:scale-[0.98] transition-transform"
+      >
+        <Camera size={14} /> Post a moment
+      </button>
+      <AnimatePresence initial={false}>
+        {moments.map((m) => (
+          <MomentCard key={m.id} moment={m} onDelete={() => undefined} />
+        ))}
+      </AnimatePresence>
     </div>
   );
 }

@@ -1,9 +1,10 @@
 import Link from 'next/link';
 
 const footerLinks = [
-  { label: 'Places',        href: '/places' },
-  { label: 'Meetups',       href: '/meetups' },
-  { label: 'Start a meetup', href: '/meetups/new' },
+  { label: 'Moments',  href: '/moments' },
+  { label: 'Discover', href: '/discover' },
+  { label: 'Places',   href: '/places' },
+  { label: 'Plans',    href: '/meetups' },
 ];
 
 export default function Footer() {
@@ -18,11 +19,11 @@ export default function Footer() {
             </Link>
             <div className="flex items-center gap-2 mb-2">
               <span className="w-1 h-1 bg-gold rounded-full animate-pulse" />
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-cream/40">Gather &middot; Order &middot; Split</p>
+              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-cream/40">Gather &middot; Share &middot; Remember</p>
             </div>
             <p className="text-xs text-cream/40 max-w-xs leading-relaxed">
-              Plan the meal and see the split in one place. Real menus, real prices, and everyone&apos;s
-              share worked out before the table sits down.
+              An app for gathering around food and drink — finding the table, keeping the night,
+              and quietly working out who owes what.
             </p>
           </div>
 
@@ -54,8 +55,8 @@ export default function Footer() {
             <span>&copy; 2026 Convivia24</span>
             <span className="text-cream/20">Lagos &middot; Abuja &middot; London</span>
           </div>
-          <Link href="/meetups/new" className="text-gold/60 hover:text-gold font-semibold transition-colors uppercase tracking-wider text-[10px]">
-            Start a meetup &rarr;
+          <Link href="/discover" className="text-gold/60 hover:text-gold font-semibold transition-colors uppercase tracking-wider text-[10px]">
+            Find a table &rarr;
           </Link>
         </div>
       </div>
