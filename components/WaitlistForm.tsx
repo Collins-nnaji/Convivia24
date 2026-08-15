@@ -3,8 +3,15 @@
 import { useState } from 'react';
 
 type Variant = 'footer' | 'convivium';
+export type MembershipTier = 'resident' | 'founding' | 'patron';
 
-export default function WaitlistForm({ variant = 'footer' }: { variant?: Variant }) {
+export default function WaitlistForm({
+  variant = 'footer',
+  tier = 'founding',
+}: {
+  variant?: Variant;
+  tier?: MembershipTier;
+}) {
   const [email, setEmail] = useState('');
   const [company, setCompany] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,6 +30,8 @@ export default function WaitlistForm({ variant = 'footer' }: { variant?: Variant
         body: JSON.stringify({
           email: email.trim(),
           company: company.trim() || undefined,
+          source: variant === 'convivium' ? 'convivium' : 'footer',
+          tier: variant === 'convivium' ? tier : undefined,
         }),
       });
 
@@ -57,7 +66,8 @@ export default function WaitlistForm({ variant = 'footer' }: { variant?: Variant
   if (success) {
     return (
       <p className="text-cream/70 text-sm">
-        You&apos;re on the list. We&apos;ll be in touch.
+        You&apos;re on the list
+        {variant === 'convivium' ? ` for ${tier}` : ''}. We&apos;ll be in touch.
       </p>
     );
   }
@@ -106,9 +116,11 @@ export default function WaitlistForm({ variant = 'footer' }: { variant?: Variant
     );
   }
 
-  // Convivium variant — slightly more prominent
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-w-sm">
+      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gold/50">
+        Applying for · {tier}
+      </p>
       <div>
         <label htmlFor="waitlist-conv-email" className={labelClass}>
           Email

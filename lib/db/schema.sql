@@ -1,5 +1,5 @@
--- Convivia24 — The Mindful Calendar
--- Schema: a single personal calendar ("My 24") + the Companion's memory.
+-- Convivia24 — Ritual Commerce + Convivium + Mindful Calendar (soft-parked)
+-- Schema: ritual orders / waitlist / membership interest + My 24 + Companion.
 -- Run: npx tsx lib/db/migrate.ts
 
 -- ═══════════════════════════════════════════════
@@ -154,3 +154,64 @@ CREATE TABLE IF NOT EXISTS daily_reflections (
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_daily_reflections_user_date ON daily_reflections(user_id, reflect_date);
+
+-- ═══════════════════════════════════════════════
+-- RITUAL COMMERCE (Lagos-first kits + Convivium)
+-- Re-created after clean-slate drops above.
+-- ═══════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS waitlist (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email         TEXT NOT NULL UNIQUE,
+  company       TEXT,
+  source        TEXT NOT NULL DEFAULT 'footer'
+                  CHECK (source IN ('footer','convivium','checkout','rituals')),
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS ritual_orders (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email           TEXT NOT NULL,
+  full_name       TEXT NOT NULL,
+  phone           TEXT,
+  address_line1   TEXT NOT NULL,
+  address_line2   TEXT,
+  city            TEXT NOT NULL DEFAULT 'Lagos',
+  area            TEXT,
+  notes           TEXT,
+  subtotal_ngn    INTEGER NOT NULL,
+  status          TEXT NOT NULL DEFAULT 'pending'
+                    CHECK (status IN ('pending','awaiting_payment','paid','fulfilled','cancelled')),
+  payment_ref     TEXT,
+  payment_provider TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_ritual_orders_email ON ritual_orders(LOWER(email));
+CREATE INDEX IF NOT EXISTS idx_ritual_orders_status ON ritual_orders(status);
+
+CREATE TABLE IF NOT EXISTS ritual_order_items (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id      UUID NOT NULL REFERENCES ritual_orders(id) ON DELETE CASCADE,
+  kit_slug      TEXT NOT NULL,
+  kit_name      TEXT NOT NULL,
+  prefer_track  TEXT NOT NULL DEFAULT 'mixed'
+                  CHECK (prefer_track IN ('spirit','zero','mixed')),
+  unit_price_ngn INTEGER NOT NULL,
+  qty           INTEGER NOT NULL DEFAULT 1 CHECK (qty > 0),
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_ritual_order_items_order ON ritual_order_items(order_id);
+
+CREATE TABLE IF NOT EXISTS convivium_members (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email         TEXT NOT NULL UNIQUE,
+  full_name     TEXT,
+  tier          TEXT NOT NULL DEFAULT 'resident'
+                  CHECK (tier IN ('resident','founding','patron')),
+  status        TEXT NOT NULL DEFAULT 'waitlist'
+                  CHECK (status IN ('waitlist','applied','active','declined')),
+  notes         TEXT,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

@@ -17,11 +17,12 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata = {
-  title: 'Convivia24 | Resort, Spa & Lounge',
-  description: 'A resort, spa and lounge in one — waterfront suites, a full wellness circuit, farm-to-table dining, and spaces made for gathering. Stay. Restore. Gather.',
+  title: 'Convivia24 | Experts in drinks · Ritual kits Lagos',
+  description:
+    'Drinks experts shipping cocktail and spirits rituals — alcohol and non-alcoholic, same craft. Not a bottle shop. The Convivium membership. Lagos delivery.',
   icons: {
     icon: '/Logo2.png',
-  }
+  },
 };
 
 export const viewport = {

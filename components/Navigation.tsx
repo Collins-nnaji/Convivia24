@@ -4,15 +4,17 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { Menu, ShoppingBag, X } from 'lucide-react';
+import { useCart } from '@/components/cart/CartProvider';
 
 const LINKS = [
-  { label: 'The Resort',    href: '/stays' },
+  { label: 'Rituals', href: '/rituals' },
   { label: 'The Convivium', href: '/convivium' },
 ];
 
 export default function Navigation() {
   const pathname = usePathname();
+  const { count } = useCart();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [hash, setHash] = useState('');
@@ -30,24 +32,27 @@ export default function Navigation() {
     return () => window.removeEventListener('hashchange', sync);
   }, [pathname]);
 
-  useEffect(() => { setOpen(false); }, [pathname]);
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
-  // Active when the link's path matches; for hash links, the hash must match too.
   const isActive = (href: string) => {
     const [path, frag] = href.split('#');
-    if (pathname !== path) return false;
+    if (pathname !== path && !(path === '/rituals' && pathname.startsWith('/rituals'))) return false;
+    if (path === '/rituals' && pathname.startsWith('/rituals')) return !frag;
     return frag ? hash === `#${frag}` : true;
   };
 
   return (
     <>
-      <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? 'bg-obsidian/95 backdrop-blur-md shadow-[0_1px_0_0_rgba(201,168,76,0.1)]'
-          : 'bg-obsidian/80 backdrop-blur-sm border-b border-gold/5'
-      }`}>
+      <header
+        className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
+          scrolled
+            ? 'bg-obsidian/95 backdrop-blur-md shadow-[0_1px_0_0_rgba(201,168,76,0.1)]'
+            : 'bg-obsidian/80 backdrop-blur-sm border-b border-gold/5'
+        }`}
+      >
         <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
-
           <Link href="/" className="flex items-center gap-3 shrink-0 group" aria-label="Convivia24">
             <img
               src="/convivia24.png"
@@ -57,7 +62,9 @@ export default function Navigation() {
             />
             <span className="hidden sm:flex items-center gap-1.5">
               <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
-              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-cream/40">Lagos · Abuja · London</span>
+              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-cream/40">
+                Lagos · Drinks experts
+              </span>
             </span>
           </Link>
 
@@ -85,21 +92,48 @@ export default function Navigation() {
             })}
 
             <Link
-              href="/inquire"
+              href="/cart"
+              className="relative ml-1 p-2.5 text-cream/60 hover:text-cream transition-colors"
+              aria-label={`Cart${count ? `, ${count} items` : ''}`}
+            >
+              <ShoppingBag size={18} />
+              {count > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-gold text-obsidian text-[9px] font-black flex items-center justify-center">
+                  {count}
+                </span>
+              )}
+            </Link>
+
+            <Link
+              href="/rituals"
               className="ml-2 px-5 py-2 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.15em] transition-colors duration-150"
             >
-              Book a Stay
+              Shop rituals
             </Link>
           </nav>
 
-          <button
-            type="button"
-            onClick={() => setOpen(v => !v)}
-            className="md:hidden p-2 text-cream/70 hover:text-cream transition-colors"
-            aria-label={open ? 'Close menu' : 'Open menu'}
-          >
-            {open ? <X size={22} strokeWidth={2} /> : <Menu size={22} strokeWidth={2} />}
-          </button>
+          <div className="flex items-center gap-1 md:hidden">
+            <Link
+              href="/cart"
+              className="relative p-2 text-cream/70 hover:text-cream"
+              aria-label="Cart"
+            >
+              <ShoppingBag size={20} />
+              {count > 0 && (
+                <span className="absolute top-0.5 right-0.5 min-w-[14px] h-3.5 px-0.5 rounded-full bg-gold text-obsidian text-[8px] font-black flex items-center justify-center">
+                  {count}
+                </span>
+              )}
+            </Link>
+            <button
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              className="p-2 text-cream/70 hover:text-cream transition-colors"
+              aria-label={open ? 'Close menu' : 'Open menu'}
+            >
+              {open ? <X size={22} strokeWidth={2} /> : <Menu size={22} strokeWidth={2} />}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -128,7 +162,7 @@ export default function Navigation() {
               <div className="border-b border-gold/10 px-5 py-2.5 flex items-center gap-2">
                 <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
                 <span className="text-[8px] font-black uppercase tracking-[0.3em] text-cream/40">
-                  Open from 11am · Lagos · Abuja · London
+                  Lagos delivery · 18+
                 </span>
               </div>
               <nav className="px-5 py-3 divide-y divide-gold/10">
@@ -149,10 +183,10 @@ export default function Navigation() {
                 })}
                 <div className="pt-4 pb-2">
                   <Link
-                    href="/inquire"
+                    href="/rituals"
                     className="block w-full text-center py-3.5 bg-gold hover:bg-gold-light text-obsidian text-[12px] font-black uppercase tracking-[0.15em] transition-colors"
                   >
-                    Book a Stay
+                    Shop rituals
                   </Link>
                 </div>
               </nav>
