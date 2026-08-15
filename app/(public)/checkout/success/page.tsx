@@ -3,9 +3,8 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
-import { SectionLabel } from '@/components/ui/SectionLabel';
 import { useCart } from '@/components/cart/CartProvider';
-import { formatNgn } from '@/lib/rituals/catalog';
+import { formatNgn } from '@/lib/drinks/catalog';
 
 type VerifyState =
   | { phase: 'loading' }
@@ -100,11 +99,10 @@ function SuccessBody() {
 
   if (state.phase === 'loading') {
     return (
-      <section className="bg-cream min-h-[70vh] -mt-16 pt-28 pb-20">
+      <section className="bg-paper min-h-[70vh] -mt-16 pt-28 pb-20">
         <div className="max-w-xl mx-auto px-5 sm:px-8">
-          <SectionLabel variant="light">Confirming</SectionLabel>
-          <h1 className="font-display text-4xl italic text-obsidian mb-4">Checking your payment…</h1>
-          <p className="text-obsidian/50 text-sm">This only takes a moment.</p>
+          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ember mb-3">Confirming</p>
+          <h1 className="text-3xl font-bold text-obsidian mb-4">Checking your payment…</h1>
         </div>
       </section>
     );
@@ -112,22 +110,17 @@ function SuccessBody() {
 
   if (state.phase === 'failed') {
     return (
-      <section className="bg-cream min-h-[70vh] -mt-16 pt-28 pb-20">
+      <section className="bg-paper min-h-[70vh] -mt-16 pt-28 pb-20">
         <div className="max-w-xl mx-auto px-5 sm:px-8">
-          <SectionLabel variant="light">Needs attention</SectionLabel>
-          <h1 className="font-display text-4xl italic text-obsidian mb-4">Payment not confirmed</h1>
+          <h1 className="text-3xl font-bold text-obsidian mb-4">Payment not confirmed</h1>
           <p className="text-obsidian/60 leading-relaxed mb-6">{state.message}</p>
-          <p className="text-sm text-obsidian/45 mb-8">Your cart is still available if you want to try again.</p>
           <div className="flex flex-wrap gap-4">
-            <Link
-              href="/checkout"
-              className="px-6 py-3 bg-obsidian text-cream text-[11px] font-black uppercase tracking-[0.2em]"
-            >
+            <Link href="/checkout" className="px-6 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em]">
               Return to checkout
             </Link>
             <Link
               href="/cart"
-              className="px-6 py-3 border border-obsidian/20 text-obsidian text-[11px] font-black uppercase tracking-[0.2em]"
+              className="px-6 py-3 border border-obsidian/15 text-[11px] font-black uppercase tracking-[0.14em]"
             >
               View cart
             </Link>
@@ -139,31 +132,19 @@ function SuccessBody() {
 
   if (state.phase === 'pending') {
     return (
-      <section className="bg-cream min-h-[70vh] -mt-16 pt-28 pb-20">
+      <section className="bg-paper min-h-[70vh] -mt-16 pt-28 pb-20">
         <div className="max-w-xl mx-auto px-5 sm:px-8">
-          <SectionLabel variant="light">Pending</SectionLabel>
-          <h1 className="font-display text-4xl italic text-obsidian mb-4">Payment still processing</h1>
+          <h1 className="text-3xl font-bold text-obsidian mb-4">Payment still processing</h1>
           <p className="text-obsidian/60 leading-relaxed mb-6">
             If you completed Paystack, refresh in a moment. Your cart is kept until we confirm payment.
           </p>
-          {state.orderId && (
-            <p className="text-xs text-obsidian/40 mb-8 font-mono break-all">Order {state.orderId}</p>
-          )}
-          <div className="flex flex-wrap gap-4">
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="px-6 py-3 bg-obsidian text-cream text-[11px] font-black uppercase tracking-[0.2em]"
-            >
-              Refresh status
-            </button>
-            <Link
-              href="/cart"
-              className="px-6 py-3 border border-obsidian/20 text-obsidian text-[11px] font-black uppercase tracking-[0.2em]"
-            >
-              View cart
-            </Link>
-          </div>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em]"
+          >
+            Refresh status
+          </button>
         </div>
       </section>
     );
@@ -172,35 +153,34 @@ function SuccessBody() {
   const isManual = state.phase === 'manual';
 
   return (
-    <section className="bg-cream min-h-[70vh] -mt-16 pt-28 pb-20">
+    <section className="bg-paper min-h-[70vh] -mt-16 pt-28 pb-20">
       <div className="max-w-xl mx-auto px-5 sm:px-8">
-        <SectionLabel variant="light">{isManual ? 'Received' : 'Paid'}</SectionLabel>
-        <h1 className="font-display text-5xl italic text-obsidian mb-4">
-          {isManual ? 'We have your evening.' : 'Tonight is on its way.'}
+        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ember mb-3">
+          {isManual ? 'Received' : 'Paid'}
+        </p>
+        <h1 className="text-3xl sm:text-4xl font-bold text-obsidian mb-4">
+          {isManual ? 'We have your drop.' : 'Your drinks are on the way.'}
         </h1>
         <p className="text-obsidian/60 leading-relaxed mb-6">
           {isManual
-            ? 'Your ritual order is saved. Our Lagos concierge will confirm payment and a delivery window shortly.'
+            ? 'Order saved. Our Lagos team will confirm payment and a delivery window shortly.'
             : 'Payment confirmed. We’ll follow up with delivery timing for Lagos.'}
         </p>
         {typeof state.subtotalNgn === 'number' && (
-          <p className="font-display text-2xl italic text-obsidian mb-2">{formatNgn(state.subtotalNgn)}</p>
+          <p className="text-2xl font-bold text-obsidian mb-2">{formatNgn(state.subtotalNgn)}</p>
         )}
         {state.orderId && (
           <p className="text-xs text-obsidian/40 mb-8 font-mono break-all">Order {state.orderId}</p>
         )}
         <div className="flex flex-wrap gap-4">
-          <Link
-            href="/rituals"
-            className="px-6 py-3 bg-obsidian text-cream text-[11px] font-black uppercase tracking-[0.2em]"
-          >
-            Browse more rituals
+          <Link href="/shop" className="px-6 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em]">
+            Shop more
           </Link>
           <Link
-            href="/convivium"
-            className="px-6 py-3 border border-obsidian/20 text-obsidian text-[11px] font-black uppercase tracking-[0.2em]"
+            href="/circles"
+            className="px-6 py-3 border border-obsidian/15 text-[11px] font-black uppercase tracking-[0.14em]"
           >
-            The Convivium
+            Explore Circles
           </Link>
         </div>
       </div>
@@ -210,7 +190,7 @@ function SuccessBody() {
 
 export default function CheckoutSuccessPage() {
   return (
-    <Suspense fallback={<div className="min-h-[50vh] bg-cream" />}>
+    <Suspense fallback={<div className="min-h-[50vh] bg-paper" />}>
       <SuccessBody />
     </Suspense>
   );

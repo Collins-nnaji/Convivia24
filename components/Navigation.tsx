@@ -4,12 +4,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Menu, ShoppingBag, X } from 'lucide-react';
+import { Menu, Search, ShoppingBag, X } from 'lucide-react';
 import { useCart } from '@/components/cart/CartProvider';
 
 const LINKS = [
-  { label: 'Rituals', href: '/rituals' },
-  { label: 'The Convivium', href: '/convivium' },
+  { label: 'Shop', href: '/shop' },
+  { label: 'Circles', href: '/circles' },
+  { label: 'Crews', href: '/crews' },
+  { label: 'For venues', href: '/venues' },
 ];
 
 export default function Navigation() {
@@ -17,7 +19,6 @@ export default function Navigation() {
   const { count } = useCart();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [hash, setHash] = useState('');
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 8);
@@ -26,21 +27,12 @@ export default function Navigation() {
   }, []);
 
   useEffect(() => {
-    const sync = () => setHash(window.location.hash);
-    sync();
-    window.addEventListener('hashchange', sync);
-    return () => window.removeEventListener('hashchange', sync);
-  }, [pathname]);
-
-  useEffect(() => {
     setOpen(false);
   }, [pathname]);
 
   const isActive = (href: string) => {
-    const [path, frag] = href.split('#');
-    if (pathname !== path && !(path === '/rituals' && pathname.startsWith('/rituals'))) return false;
-    if (path === '/rituals' && pathname.startsWith('/rituals')) return !frag;
-    return frag ? hash === `#${frag}` : true;
+    if (href === '/shop') return pathname === '/shop' || pathname.startsWith('/shop/');
+    return pathname === href || pathname.startsWith(`${href}/`);
   };
 
   return (
@@ -48,42 +40,35 @@ export default function Navigation() {
       <header
         className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
           scrolled
-            ? 'bg-obsidian/95 backdrop-blur-md shadow-[0_1px_0_0_rgba(201,168,76,0.1)]'
-            : 'bg-obsidian/80 backdrop-blur-sm border-b border-gold/5'
+            ? 'bg-white/95 backdrop-blur-md shadow-[0_1px_0_0_rgba(10,10,10,0.08)]'
+            : 'bg-white border-b border-obsidian/6'
         }`}
       >
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 shrink-0 group" aria-label="Convivia24">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between gap-4">
+          <Link href="/" className="shrink-0 flex items-center" aria-label="Convivia24">
             <img
               src="/convivia24.png"
               alt="Convivia24"
-              className="h-7 w-auto"
-              style={{ filter: 'brightness(0) invert(1)' }}
+              className="h-9 sm:h-10 w-auto rounded-sm"
             />
-            <span className="hidden sm:flex items-center gap-1.5">
-              <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
-              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-cream/40">
-                Lagos · Drinks experts
-              </span>
-            </span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-0.5">
             {LINKS.map(({ label, href }) => {
               const active = isActive(href);
               return (
                 <Link
                   key={href}
                   href={href}
-                  className={`relative px-4 py-2 text-[13px] font-medium tracking-wide transition-colors duration-150 ${
-                    active ? 'text-cream' : 'text-cream/50 hover:text-cream'
+                  className={`relative px-3.5 py-2 text-[13px] font-medium tracking-wide transition-colors ${
+                    active ? 'text-obsidian' : 'text-obsidian/45 hover:text-obsidian'
                   }`}
                 >
                   {label}
                   {active && (
                     <motion.span
                       layoutId="nav-pill"
-                      className="absolute inset-0 bg-gold/10 border border-gold/20 -z-10"
+                      className="absolute inset-x-2 bottom-1 h-0.5 bg-ember"
                       transition={{ type: 'spring', stiffness: 400, damping: 32 }}
                     />
                   )}
@@ -92,35 +77,42 @@ export default function Navigation() {
             })}
 
             <Link
+              href="/shop"
+              className="ml-1 p-2.5 text-obsidian/40 hover:text-obsidian transition-colors"
+              aria-label="Search"
+            >
+              <Search size={18} />
+            </Link>
+
+            <Link
               href="/cart"
-              className="relative ml-1 p-2.5 text-cream/60 hover:text-cream transition-colors"
+              className="relative p-2.5 text-obsidian/40 hover:text-obsidian transition-colors"
               aria-label={`Cart${count ? `, ${count} items` : ''}`}
             >
               <ShoppingBag size={18} />
               {count > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-gold text-obsidian text-[9px] font-black flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-ember text-white text-[9px] font-black flex items-center justify-center">
                   {count}
                 </span>
               )}
             </Link>
 
             <Link
-              href="/rituals"
-              className="ml-2 px-5 py-2 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.15em] transition-colors duration-150"
+              href="/shop"
+              className="ml-2 px-5 py-2 btn-brand text-[11px] font-black uppercase tracking-[0.12em]"
             >
-              Shop rituals
+              Order drinks
             </Link>
           </nav>
 
           <div className="flex items-center gap-1 md:hidden">
-            <Link
-              href="/cart"
-              className="relative p-2 text-cream/70 hover:text-cream"
-              aria-label="Cart"
-            >
+            <Link href="/shop" className="p-2 text-obsidian/50" aria-label="Search">
+              <Search size={20} />
+            </Link>
+            <Link href="/cart" className="relative p-2 text-obsidian/50" aria-label="Cart">
               <ShoppingBag size={20} />
               {count > 0 && (
-                <span className="absolute top-0.5 right-0.5 min-w-[14px] h-3.5 px-0.5 rounded-full bg-gold text-obsidian text-[8px] font-black flex items-center justify-center">
+                <span className="absolute top-0.5 right-0.5 min-w-[14px] h-3.5 px-0.5 rounded-full bg-ember text-white text-[8px] font-black flex items-center justify-center">
                   {count}
                 </span>
               )}
@@ -128,10 +120,10 @@ export default function Navigation() {
             <button
               type="button"
               onClick={() => setOpen((v) => !v)}
-              className="p-2 text-cream/70 hover:text-cream transition-colors"
+              className="p-2 text-obsidian/50"
               aria-label={open ? 'Close menu' : 'Open menu'}
             >
-              {open ? <X size={22} strokeWidth={2} /> : <Menu size={22} strokeWidth={2} />}
+              {open ? <X size={22} /> : <Menu size={22} />}
             </button>
           </div>
         </div>
@@ -147,8 +139,7 @@ export default function Navigation() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.18 }}
-              className="fixed inset-0 z-40 bg-black/60 md:hidden"
+              className="fixed inset-0 z-40 bg-black/40 md:hidden"
               onClick={() => setOpen(false)}
             />
             <motion.div
@@ -156,37 +147,27 @@ export default function Navigation() {
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.2 }}
-              className="fixed top-16 inset-x-0 z-50 bg-obsidian border-b border-gold/20 shadow-lg md:hidden"
+              className="fixed top-16 inset-x-0 z-50 bg-white border-b border-obsidian/10 shadow-lg md:hidden"
             >
-              <div className="border-b border-gold/10 px-5 py-2.5 flex items-center gap-2">
-                <span className="w-1 h-1 rounded-full bg-gold animate-pulse" />
-                <span className="text-[8px] font-black uppercase tracking-[0.3em] text-cream/40">
-                  Lagos delivery · 18+
-                </span>
-              </div>
-              <nav className="px-5 py-3 divide-y divide-gold/10">
-                {LINKS.map(({ label, href }) => {
-                  const active = isActive(href);
-                  return (
-                    <Link
-                      key={href}
-                      href={href}
-                      className={`flex items-center justify-between py-3.5 text-[15px] font-medium transition-colors ${
-                        active ? 'text-gold' : 'text-cream/70 hover:text-cream'
-                      }`}
-                    >
-                      {label}
-                      <span className="text-gold/30 text-lg leading-none">&rsaquo;</span>
-                    </Link>
-                  );
-                })}
+              <nav className="px-5 py-3 divide-y divide-obsidian/8">
+                {LINKS.map(({ label, href }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={`flex items-center justify-between py-3.5 text-[15px] font-medium ${
+                      isActive(href) ? 'text-ember' : 'text-obsidian/70'
+                    }`}
+                  >
+                    {label}
+                    <span className="text-ember/40 text-lg">&rsaquo;</span>
+                  </Link>
+                ))}
                 <div className="pt-4 pb-2">
                   <Link
-                    href="/rituals"
-                    className="block w-full text-center py-3.5 bg-gold hover:bg-gold-light text-obsidian text-[12px] font-black uppercase tracking-[0.15em] transition-colors"
+                    href="/shop"
+                    className="block w-full text-center py-3.5 btn-brand text-[12px] font-black uppercase tracking-[0.12em]"
                   >
-                    Shop rituals
+                    Order drinks
                   </Link>
                 </div>
               </nav>

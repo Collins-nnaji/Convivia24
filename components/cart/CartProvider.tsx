@@ -9,46 +9,41 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { getRitualBySlug, type AbvTrack } from '@/lib/rituals/catalog';
+import { getDrinkBySlug } from '@/lib/drinks/catalog';
 
 export type CartLine = {
   slug: string;
   name: string;
   priceNgn: number;
   qty: number;
-  preferTrack: AbvTrack;
 };
 
 type CartContextValue = {
   lines: CartLine[];
   count: number;
   subtotalNgn: number;
-  addKit: (slug: string, preferTrack?: AbvTrack, qty?: number) => void;
+  addProduct: (slug: string, qty?: number) => void;
+  /** @deprecated use addProduct */
+  addKit: (slug: string, _preferTrack?: string, qty?: number) => void;
   setQty: (slug: string, qty: number) => void;
-  setPreferTrack: (slug: string, preferTrack: AbvTrack) => void;
   remove: (slug: string) => void;
   clear: () => void;
   refreshPrices: () => void;
 };
 
-const STORAGE_KEY = 'convivia_ritual_cart';
+const STORAGE_KEY = 'convivia_drinks_cart';
 const CartContext = createContext<CartContextValue | null>(null);
 
 function normalizeLines(raw: CartLine[]): CartLine[] {
   return raw
     .map((line) => {
-      const kit = getRitualBySlug(line.slug);
-      if (!kit) return null;
-      const preferTrack =
-        line.preferTrack === 'spirit' || line.preferTrack === 'zero' || line.preferTrack === 'mixed'
-          ? line.preferTrack
-          : kit.track;
+      const product = getDrinkBySlug(line.slug);
+      if (!product) return null;
       return {
-        slug: kit.slug,
-        name: kit.name,
-        priceNgn: kit.priceNgn,
-        qty: Math.max(1, Math.min(12, Number(line.qty) || 1)),
-        preferTrack,
+        slug: product.slug,
+        name: product.name,
+        priceNgn: product.priceNgn,
+        qty: Math.max(1, Math.min(24, Number(line.qty) || 1)),
       } satisfies CartLine;
     })
     .filter(Boolean) as CartLine[];
@@ -80,11 +75,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(lines));
   }, [lines, hydrated]);
 
-  const addKit = useCallback((slug: string, preferTrack: AbvTrack = 'mixed', qty = 1) => {
-    const kit = getRitualBySlug(slug);
-    if (!kit) return;
-    const addQty = Math.max(1, Math.min(12, qty));
-    const track = preferTrack === 'mixed' && kit.track !== 'mixed' ? kit.track : preferTrack;
+  const addProduct = useCallback((slug: string, qty = 1) => {
+    const product = getDrinkBySlug(slug);
+    if (!product) return;
+    const addQty = Math.max(1, Math.min(24, qty));
     setLines((prev) => {
       const existing = prev.find((l) => l.slug === slug);
       if (existing) {
@@ -92,10 +86,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
           l.slug === slug
             ? {
                 ...l,
-                qty: Math.min(12, l.qty + addQty),
-                preferTrack: track,
-                priceNgn: kit.priceNgn,
-                name: kit.name,
+                qty: Math.min(24, l.qty + addQty),
+                priceNgn: product.priceNgn,
+                name: product.name,
               }
             : l
         );
@@ -103,25 +96,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return [
         ...prev,
         {
-          slug: kit.slug,
-          name: kit.name,
-          priceNgn: kit.priceNgn,
+          slug: product.slug,
+          name: product.name,
+          priceNgn: product.priceNgn,
           qty: addQty,
-          preferTrack: track,
         },
       ];
     });
   }, []);
 
+  const addKit = useCallback(
+    (slug: string, _preferTrack?: string, qty = 1) => {
+      addProduct(slug, qty);
+    },
+    [addProduct]
+  );
+
   const setQty = useCallback((slug: string, qty: number) => {
     setLines((prev) => {
       if (qty <= 0) return prev.filter((l) => l.slug !== slug);
-      return prev.map((l) => (l.slug === slug ? { ...l, qty: Math.min(12, qty) } : l));
+      return prev.map((l) => (l.slug === slug ? { ...l, qty: Math.min(24, qty) } : l));
     });
-  }, []);
-
-  const setPreferTrack = useCallback((slug: string, preferTrack: AbvTrack) => {
-    setLines((prev) => prev.map((l) => (l.slug === slug ? { ...l, preferTrack } : l)));
   }, []);
 
   const remove = useCallback((slug: string) => {
@@ -141,14 +136,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       lines,
       count,
       subtotalNgn,
+      addProduct,
       addKit,
       setQty,
-      setPreferTrack,
       remove,
       clear,
       refreshPrices,
     };
-  }, [lines, addKit, setQty, setPreferTrack, remove, clear, refreshPrices]);
+  }, [lines, addProduct, addKit, setQty, remove, clear, refreshPrices]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

@@ -45,44 +45,38 @@ export default function AgeGate() {
 
   if (state === 'verified') return null;
 
-  // Block first paint until cookie is known (checking) and while gate is open
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-obsidian p-5"
+      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/80 p-5"
       role="dialog"
       aria-modal="true"
       aria-labelledby="age-gate-title"
       aria-busy={state === 'checking'}
     >
       {state === 'checking' ? (
-        <p className="text-cream/40 text-[10px] font-black uppercase tracking-[0.3em]">Convivia24</p>
+        <img src="/convivia24.png" alt="Convivia24" className="h-10 w-auto rounded-sm" />
       ) : (
-        <div className="w-full max-w-md bg-obsidian border border-gold/25 p-8 sm:p-10 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.8)]">
-          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gold/70 mb-4">
-            Lagos delivery · 18+
-          </p>
-          <h2
-            id="age-gate-title"
-            className="font-display text-3xl sm:text-4xl italic text-cream leading-tight mb-4"
-          >
+        <div className="w-full max-w-md bg-white p-8 sm:p-10 shadow-2xl">
+          <img src="/convivia24.png" alt="Convivia24" className="h-10 w-auto rounded-sm mb-6" />
+          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ember mb-3">Lagos delivery · 18+</p>
+          <h2 id="age-gate-title" className="text-2xl sm:text-3xl font-bold text-obsidian leading-tight mb-3">
             Are you of legal drinking age?
           </h2>
-          <p className="text-sm text-cream/55 leading-relaxed mb-8">
-            Convivia is a house of drinks experts — spirit and zero-proof ritual kits. You must be 18 or older
-            to enter. Zero-proof is still part of our craft — we ask everyone.
+          <p className="text-sm text-obsidian/55 leading-relaxed mb-8">
+            We deliver alcohol and mixers to parties, clubs, and lounges. You must be 18 or older to enter.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               type="button"
               onClick={confirm}
-              className="flex-1 px-5 py-3.5 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.15em] transition-colors"
+              className="flex-1 px-5 py-3.5 btn-brand text-[11px] font-black uppercase tracking-[0.15em]"
             >
               Yes — enter
             </button>
             <button
               type="button"
               onClick={decline}
-              className="flex-1 px-5 py-3.5 border border-cream/20 text-cream/70 hover:text-cream hover:border-cream/40 text-[11px] font-black uppercase tracking-[0.15em] transition-colors"
+              className="flex-1 px-5 py-3.5 border border-obsidian/15 text-obsidian/60 hover:text-obsidian text-[11px] font-black uppercase tracking-[0.15em]"
             >
               No
             </button>

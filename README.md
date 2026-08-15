@@ -1,27 +1,26 @@
-# Convivia24 — Experts in drinks (not a bottle shop)
+# Convivia24 — Drinks to the party, club & lounge
 
-Cocktail and spirits specialists shipping **alcohol and non-alcoholic ritual kits** for how you restore,
-gather, and celebrate — plus **The Convivium** membership (monthly drops, permanent seat).
-Lagos-first delivery. Age 18+.
-
-My 24 / Companion remain in the repo as member tools (soft-parked from primary nav).
+Lagos drink ordering and delivery for **parties, clubs, and lounges** — plus **Circles** (outdoor / like-minded crews) and **Party Crews** (shared group orders). Age 18+.
 
 ## Product surfaces
 
-- **`/`** — Brand home: tonight’s rituals + Convivium
-- **`/rituals`** — Catalog (mood + ABV track filters)
-- **`/rituals/[slug]`** — Kit PDP (serve ritual, track swap, add to cart)
-- **`/cart`** · **`/checkout`** — Lagos checkout (Paystack when configured; manual concierge fallback)
-- **`/convivium`** — Membership tiers + waitlist
-- Age gate on all public pages
+- **`/`** — Brand home (logo, shop + start a crew)
+- **`/shop`** · **`/shop/[slug]`** — Catalog + PDP (search, categories, party packs)
+- **`/cart`** · **`/checkout`** — Address or venue delivery; Paystack when configured
+- **`/circles`** — Community feed (join / like, vibe tags)
+- **`/crews`** · **`/crews/[id]`** — Shared cart, invite link, equal-split hint
+- **`/venues`** — B2B inquire for clubs & lounges
+- Age gate on public pages
 
-## Tech Stack
-- **Framework**: Next.js 16 (App Router) · **TypeScript** · **Tailwind** · Framer Motion
-- **Database**: Neon Postgres (`@neondatabase/serverless`)
-- **Auth**: Neon Auth (Better Auth) — used by My 24 / Companion
-- **Payments**: Paystack (`PAYSTACK_SECRET_KEY`) via `/api/stripe/checkout` + webhook
+My 24 / Companion remain soft-parked (out of primary nav). `/rituals` redirects to `/shop`.
 
-## Getting Started
+## Tech stack
+
+- Next.js 16 (App Router) · TypeScript · Tailwind · Framer Motion
+- Neon Postgres · Neon Auth (member tools)
+- Paystack via `/api/stripe/checkout` + webhook
+
+## Getting started
 
 ```bash
 npm install
@@ -30,22 +29,17 @@ npx tsx lib/db/migrate.ts
 npm run dev
 ```
 
-### Key environment variables
-- `DATABASE_URL` — Neon Postgres (required for waitlist / orders)
-- `PAYSTACK_SECRET_KEY` — optional; without it, checkout saves the order and uses concierge follow-up
-- `NEXT_PUBLIC_APP_URL` — site origin for Paystack callback URLs
-- `NEON_AUTH_*` / Azure OpenAI — only needed for My 24 / Companion
+### Env
 
-## Schema (commerce)
+- `DATABASE_URL` — Neon (waitlist / orders)
+- `PAYSTACK_SECRET_KEY` — optional; without it, checkout uses concierge follow-up
+- `NEXT_PUBLIC_APP_URL` — Paystack callback origin
 
-See `lib/db/schema.sql`:
-- `waitlist`, `convivium_members`
-- `ritual_orders`, `ritual_order_items`
-- Plus existing calendar / companion tables
+## Catalog & cart
 
-Ritual kit catalog is code-seeded in `lib/rituals/catalog.ts` (easy to edit; DB holds orders).
+- Seeded products: [`lib/drinks/catalog.ts`](lib/drinks/catalog.ts)
+- Cart: [`components/cart/CartProvider.tsx`](components/cart/CartProvider.tsx)
+- Circles seeds: [`lib/circles/seeds.ts`](lib/circles/seeds.ts)
+- Party Crews (localStorage): [`lib/crews/store.ts`](lib/crews/store.ts)
 
-## Project structure (commerce)
-- `lib/rituals/catalog.ts` — kits
-- `components/rituals/*` · `components/AgeGate.tsx` · `components/cart/CartProvider.tsx`
-- `app/api/orders` · `app/api/waitlist` · `app/api/stripe/checkout` · `app/api/stripe/webhook`
+Brand logo: `/public/convivia24.png` (red→black wordmark). Accent: ember red `#E23B2F`.

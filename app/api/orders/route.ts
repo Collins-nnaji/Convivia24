@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql, { apiErrorResponse } from '@/lib/db';
-import { getRitualBySlug } from '@/lib/rituals/catalog';
+import { getDrinkBySlug } from '@/lib/drinks/catalog';
 
 type IncomingItem = {
   slug: string;
   qty: number;
-  preferTrack?: string;
 };
 
 export async function POST(req: NextRequest) {
@@ -14,10 +13,24 @@ export async function POST(req: NextRequest) {
     const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
     const fullName = typeof body.fullName === 'string' ? body.fullName.trim() : '';
     const phone = typeof body.phone === 'string' ? body.phone.trim() : '';
-    const addressLine1 = typeof body.addressLine1 === 'string' ? body.addressLine1.trim() : '';
+    const deliveryMode = body.deliveryMode === 'venue' ? 'venue' : 'address';
+    const venueName = typeof body.venueName === 'string' ? body.venueName.trim() : '';
+    const addressLine1 =
+      deliveryMode === 'venue'
+        ? venueName || (typeof body.addressLine1 === 'string' ? body.addressLine1.trim() : '')
+        : typeof body.addressLine1 === 'string'
+          ? body.addressLine1.trim()
+          : '';
     const addressLine2 = typeof body.addressLine2 === 'string' ? body.addressLine2.trim() : null;
     const area = typeof body.area === 'string' ? body.area.trim() : null;
-    const notes = typeof body.notes === 'string' ? body.notes.trim() : null;
+    const notesRaw = typeof body.notes === 'string' ? body.notes.trim() : '';
+    const crewId = typeof body.crewId === 'string' ? body.crewId.trim() : '';
+    const notesParts = [
+      deliveryMode === 'venue' ? `Delivery: venue — ${venueName || addressLine1}` : 'Delivery: address',
+      crewId ? `Crew: ${crewId}` : '',
+      notesRaw,
+    ].filter(Boolean);
+    const notes = notesParts.join(' · ') || null;
     const items = Array.isArray(body.items) ? (body.items as IncomingItem[]) : [];
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -30,7 +43,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'A phone number is required for Lagos delivery.' }, { status: 400 });
     }
     if (!addressLine1) {
-      return NextResponse.json({ error: 'Delivery address is required.' }, { status: 400 });
+      return NextResponse.json(
+        { error: deliveryMode === 'venue' ? 'Venue / lounge name is required.' : 'Delivery address is required.' },
+        { status: 400 }
+      );
     }
     if (items.length === 0) {
       return NextResponse.json({ error: 'Your cart is empty.' }, { status: 400 });
@@ -45,20 +61,16 @@ export async function POST(req: NextRequest) {
     }[] = [];
 
     for (const item of items) {
-      const kit = getRitualBySlug(item.slug);
-      if (!kit) {
-        return NextResponse.json({ error: `Unknown ritual: ${item.slug}` }, { status: 400 });
+      const product = getDrinkBySlug(item.slug);
+      if (!product) {
+        return NextResponse.json({ error: `Unknown product: ${item.slug}` }, { status: 400 });
       }
-      const qty = Math.max(1, Math.min(12, Number(item.qty) || 1));
-      const preferTrack =
-        item.preferTrack === 'spirit' || item.preferTrack === 'zero' || item.preferTrack === 'mixed'
-          ? item.preferTrack
-          : kit.track;
+      const qty = Math.max(1, Math.min(24, Number(item.qty) || 1));
       resolved.push({
-        slug: kit.slug,
-        name: kit.name,
-        preferTrack,
-        unitPrice: kit.priceNgn,
+        slug: product.slug,
+        name: product.name,
+        preferTrack: product.category,
+        unitPrice: product.priceNgn,
         qty,
       });
     }
@@ -96,7 +108,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-/** Cancel a pending/awaiting order (e.g. Paystack init failed). */
 export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json();

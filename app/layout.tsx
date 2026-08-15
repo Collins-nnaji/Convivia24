@@ -1,5 +1,5 @@
 import './globals.css';
-import { Outfit, Cormorant_Garamond } from 'next/font/google';
+import { Outfit } from 'next/font/google';
 import AuthProvider from '@/components/auth/AuthProvider';
 
 const outfit = Outfit({
@@ -8,18 +8,10 @@ const outfit = Outfit({
   variable: '--font-outfit',
 });
 
-const cormorant = Cormorant_Garamond({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-  style: ['normal', 'italic'],
-  display: 'swap',
-  variable: '--font-cormorant',
-});
-
 export const metadata = {
-  title: 'Convivia24 | Experts in drinks · Ritual kits Lagos',
+  title: 'Convivia24 | Drinks to the party, club & lounge',
   description:
-    'Drinks experts shipping cocktail and spirits rituals — alcohol and non-alcoholic, same craft. Not a bottle shop. The Convivium membership. Lagos delivery.',
+    'Drink ordering and delivery for parties, clubs, and lounges in Lagos. Circles for outdoor crews. Party Crews for shared drops. Age 18+.',
   icons: {
     icon: '/Logo2.png',
   },
@@ -37,7 +29,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${outfit.variable} ${cormorant.variable} font-sans bg-paper text-obsidian antialiased`} suppressHydrationWarning>
+      <body className={`${outfit.variable} font-sans bg-paper text-obsidian antialiased`} suppressHydrationWarning>
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

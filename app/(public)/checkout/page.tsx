@@ -2,18 +2,21 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { SectionLabel } from '@/components/ui/SectionLabel';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import { useCart } from '@/components/cart/CartProvider';
-import { formatNgn } from '@/lib/rituals/catalog';
+import { formatNgn } from '@/lib/drinks/catalog';
 
 const PENDING_ORDER_KEY = 'convivia_pending_order';
 
-export default function CheckoutPage() {
+function CheckoutForm() {
   const { lines, subtotalNgn, refreshPrices } = useCart();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const crewId = searchParams.get('crew') || '';
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [deliveryMode, setDeliveryMode] = useState<'address' | 'venue'>('address');
 
   useEffect(() => {
     refreshPrices();
@@ -30,14 +33,16 @@ export default function CheckoutPage() {
       email: String(fd.get('email') || ''),
       fullName: String(fd.get('fullName') || ''),
       phone: String(fd.get('phone') || ''),
+      deliveryMode,
+      venueName: String(fd.get('venueName') || ''),
       addressLine1: String(fd.get('addressLine1') || ''),
       addressLine2: String(fd.get('addressLine2') || ''),
       area: String(fd.get('area') || ''),
       notes: String(fd.get('notes') || ''),
+      crewId: crewId || undefined,
       items: lines.map((l) => ({
         slug: l.slug,
         qty: l.qty,
-        preferTrack: l.preferTrack,
       })),
     };
 
@@ -75,7 +80,6 @@ export default function CheckoutPage() {
         return;
       }
 
-      // Keep cart until success page verifies payment
       if (payData.redirectUrl) {
         window.location.href = payData.redirectUrl;
         return;
@@ -98,11 +102,11 @@ export default function CheckoutPage() {
 
   if (lines.length === 0) {
     return (
-      <section className="bg-cream min-h-[60vh] -mt-16 pt-28 px-5">
+      <section className="bg-paper min-h-[60vh] -mt-16 pt-28 px-5">
         <div className="max-w-lg mx-auto">
-          <h1 className="font-display text-4xl italic mb-4">Your cart is empty</h1>
-          <Link href="/rituals" className="text-[11px] font-black uppercase tracking-[0.2em] text-gold-dark">
-            Browse rituals →
+          <h1 className="text-3xl font-bold mb-4">Your cart is empty</h1>
+          <Link href="/shop" className="text-[11px] font-black uppercase tracking-[0.2em] text-ember">
+            Shop drinks →
           </Link>
         </div>
       </section>
@@ -110,20 +114,42 @@ export default function CheckoutPage() {
   }
 
   const inputClass =
-    'w-full bg-transparent border-0 border-b border-obsidian/20 focus:border-gold focus:ring-0 text-obsidian text-sm py-2.5 px-0 placeholder-obsidian/25';
+    'w-full bg-transparent border-0 border-b border-obsidian/20 focus:border-ember focus:ring-0 text-obsidian text-sm py-2.5 px-0 placeholder-obsidian/25';
 
   return (
     <>
-      <section className="bg-obsidian -mt-16 pt-28 pb-14">
+      <section className="bg-white border-b border-obsidian/5 -mt-16 pt-28 pb-12">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
-          <SectionLabel>Lagos delivery</SectionLabel>
-          <h1 className="font-display text-5xl italic text-cream">Checkout</h1>
+          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ember mb-2">Lagos delivery</p>
+          <h1 className="text-3xl sm:text-4xl font-bold brand-text">Checkout</h1>
+          {crewId && (
+            <p className="mt-2 text-xs text-obsidian/45">
+              Checking out Party Crew <span className="font-mono text-ember">{crewId}</span>
+            </p>
+          )}
         </div>
       </section>
 
-      <section className="bg-cream py-14">
+      <section className="bg-paper py-12 sm:py-14">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 grid lg:grid-cols-12 gap-12">
           <form onSubmit={onSubmit} className="lg:col-span-7 space-y-6">
+            <div className="flex gap-2 mb-2">
+              {(['address', 'venue'] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setDeliveryMode(mode)}
+                  className={`px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] ${
+                    deliveryMode === mode
+                      ? 'bg-obsidian text-white'
+                      : 'bg-white border border-obsidian/10 text-obsidian/45'
+                  }`}
+                >
+                  {mode === 'address' ? 'Home / party address' : 'Club / lounge'}
+                </button>
+              ))}
+            </div>
+
             <div className="grid sm:grid-cols-2 gap-6">
               <div>
                 <label className="text-[9px] font-black uppercase tracking-[0.25em] text-obsidian/40 block mb-1">
@@ -144,12 +170,30 @@ export default function CheckoutPage() {
               </label>
               <input name="phone" type="tel" required className={inputClass} placeholder="+234…" />
             </div>
-            <div>
-              <label className="text-[9px] font-black uppercase tracking-[0.25em] text-obsidian/40 block mb-1">
-                Address
-              </label>
-              <input name="addressLine1" required className={inputClass} placeholder="Street, building" />
-            </div>
+
+            {deliveryMode === 'venue' ? (
+              <div>
+                <label className="text-[9px] font-black uppercase tracking-[0.25em] text-obsidian/40 block mb-1">
+                  Venue / lounge name
+                </label>
+                <input
+                  name="venueName"
+                  required
+                  className={inputClass}
+                  placeholder="e.g. Quilox, Cubana, private lounge"
+                />
+                <input type="hidden" name="addressLine1" value="" />
+              </div>
+            ) : (
+              <div>
+                <label className="text-[9px] font-black uppercase tracking-[0.25em] text-obsidian/40 block mb-1">
+                  Address
+                </label>
+                <input name="addressLine1" required className={inputClass} placeholder="Street, building" />
+                <input type="hidden" name="venueName" value="" />
+              </div>
+            )}
+
             <div className="grid sm:grid-cols-2 gap-6">
               <div>
                 <label className="text-[9px] font-black uppercase tracking-[0.25em] text-obsidian/40 block mb-1">
@@ -159,7 +203,7 @@ export default function CheckoutPage() {
               </div>
               <div>
                 <label className="text-[9px] font-black uppercase tracking-[0.25em] text-obsidian/40 block mb-1">
-                  Landmark / apt
+                  Landmark / table note
                 </label>
                 <input name="addressLine2" className={inputClass} placeholder="Optional" />
               </div>
@@ -168,36 +212,32 @@ export default function CheckoutPage() {
               <label className="text-[9px] font-black uppercase tracking-[0.25em] text-obsidian/40 block mb-1">
                 Notes
               </label>
-              <input name="notes" className={inputClass} placeholder="Gate codes, preferred evening window…" />
+              <input name="notes" className={inputClass} placeholder="Gate codes, preferred window…" />
             </div>
 
             <p className="text-xs text-obsidian/45 leading-relaxed">
-              By placing this order you confirm you are 18+ if any spirit track is included. Zero-proof kits still
-              ship from our drinks house.
+              By ordering you confirm you are 18+ if alcohol is included.
             </p>
 
-            {error && <p className="text-red-600 text-sm">{error}</p>}
+            {error && <p className="text-ember text-sm">{error}</p>}
 
             <button
               type="submit"
               disabled={loading}
-              className="px-8 py-4 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.2em] disabled:opacity-60"
+              className="px-8 py-4 btn-brand text-[11px] font-black uppercase tracking-[0.14em] disabled:opacity-60"
             >
               {loading ? 'Placing order…' : `Pay ${formatNgn(subtotalNgn)}`}
             </button>
           </form>
 
           <aside className="lg:col-span-5">
-            <div className="border border-obsidian/10 p-6 space-y-4 bg-white/40">
+            <div className="border border-obsidian/8 p-6 space-y-4 bg-white">
               <p className="text-[9px] font-black uppercase tracking-[0.25em] text-obsidian/40">Order</p>
               <ul className="space-y-3">
                 {lines.map((l) => (
                   <li key={l.slug} className="flex justify-between gap-4 text-sm">
                     <span className="text-obsidian/70">
                       {l.name} × {l.qty}
-                      <span className="block text-[10px] uppercase tracking-wider text-obsidian/35">
-                        {l.preferTrack}
-                      </span>
                     </span>
                     <span>{formatNgn(l.priceNgn * l.qty)}</span>
                   </li>
@@ -205,12 +245,20 @@ export default function CheckoutPage() {
               </ul>
               <div className="pt-4 border-t border-obsidian/10 flex justify-between items-baseline">
                 <span className="text-obsidian/45 text-sm">Total</span>
-                <span className="font-display text-3xl italic">{formatNgn(subtotalNgn)}</span>
+                <span className="text-2xl font-bold">{formatNgn(subtotalNgn)}</span>
               </div>
             </div>
           </aside>
         </div>
       </section>
     </>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div className="min-h-[50vh] bg-paper" />}>
+      <CheckoutForm />
+    </Suspense>
   );
 }

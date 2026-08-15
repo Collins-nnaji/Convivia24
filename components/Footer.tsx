@@ -1,70 +1,49 @@
 import Link from 'next/link';
-import WaitlistForm from './WaitlistForm';
 
 const footerLinks = [
-  { label: 'Rituals', href: '/rituals' },
-  { label: 'The Convivium', href: '/convivium' },
+  { label: 'Shop', href: '/shop' },
+  { label: 'Circles', href: '/circles' },
+  { label: 'Crews', href: '/crews' },
+  { label: 'Venues', href: '/venues' },
   { label: 'Cart', href: '/cart' },
 ];
 
 export default function Footer() {
   return (
-    <footer className="bg-obsidian border-t border-gold/20">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-14 pb-12">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-8 mb-10 pb-10 border-b border-gold/10">
-          <div>
-            <Link href="/" className="hover:opacity-80 transition-opacity block mb-3">
+    <footer className="bg-obsidian border-t border-white/10 pb-20 md:pb-0">
+      <div className="max-w-6xl mx-auto px-5 sm:px-8 py-6 sm:py-7">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-4 min-w-0">
+            <Link href="/" className="shrink-0 hover:opacity-90 transition-opacity" aria-label="Convivia24">
               <img
                 src="/convivia24.png"
                 alt="Convivia24"
-                className="h-7 w-auto object-contain"
+                className="h-6 w-auto"
                 style={{ filter: 'brightness(0) invert(1)' }}
               />
             </Link>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-1 h-1 bg-gold rounded-full animate-pulse" />
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-cream/40">
-                Experts in drinks · Not a bottle shop
-              </p>
-            </div>
-            <p className="text-xs text-cream/40 max-w-xs leading-relaxed">
-              Cocktail and spirits specialists shipping rituals for how you restore, gather, and celebrate.
-              Alcohol and non-alcoholic. Lagos delivery.
+            <p className="hidden sm:block text-[10px] text-white/35 truncate">
+              Lagos drinks · parties, clubs & lounges · 18+
             </p>
           </div>
 
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:gap-12">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-10 gap-y-3">
-              {footerLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="whitespace-nowrap text-sm text-cream/40 hover:text-cream transition-colors"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-
-            <div className="w-full sm:min-w-[280px] sm:max-w-[360px]">
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gold/50 mb-3">
-                Join the Convivium Waitlist
-              </p>
-              <WaitlistForm variant="footer" />
-            </div>
-          </div>
+          <nav className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            {footerLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-xs text-white/45 hover:text-white transition-colors"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-cream/30">
-          <div className="flex items-center gap-6">
-            <span>&copy; 2026 Convivia24</span>
-            <span className="text-cream/20">Lagos first · 18+</span>
-          </div>
-          <Link
-            href="/rituals"
-            className="text-gold/60 hover:text-gold font-semibold transition-colors uppercase tracking-wider text-[10px]"
-          >
-            Shop rituals &rarr;
+        <div className="mt-4 pt-4 border-t border-white/8 flex flex-wrap items-center justify-between gap-2 text-[11px] text-white/30">
+          <span>&copy; 2026 Convivia24</span>
+          <Link href="/shop" className="text-ember hover:text-ember-light uppercase tracking-wider text-[10px] font-semibold">
+            Order drinks →
           </Link>
         </div>
       </div>
