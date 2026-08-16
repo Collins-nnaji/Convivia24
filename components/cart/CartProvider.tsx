@@ -23,8 +23,6 @@ type CartContextValue = {
   count: number;
   subtotalNgn: number;
   addProduct: (slug: string, qty?: number) => void;
-  /** @deprecated use addProduct */
-  addKit: (slug: string, _preferTrack?: string, qty?: number) => void;
   setQty: (slug: string, qty: number) => void;
   remove: (slug: string) => void;
   clear: () => void;
@@ -105,13 +103,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const addKit = useCallback(
-    (slug: string, _preferTrack?: string, qty = 1) => {
-      addProduct(slug, qty);
-    },
-    [addProduct]
-  );
-
   const setQty = useCallback((slug: string, qty: number) => {
     setLines((prev) => {
       if (qty <= 0) return prev.filter((l) => l.slug !== slug);
@@ -137,13 +128,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
       count,
       subtotalNgn,
       addProduct,
-      addKit,
       setQty,
       remove,
       clear,
       refreshPrices,
     };
-  }, [lines, addProduct, addKit, setQty, remove, clear, refreshPrices]);
+  }, [lines, addProduct, setQty, remove, clear, refreshPrices]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

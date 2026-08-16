@@ -44,10 +44,10 @@ export default function InquirePage() {
             </motion.p>
             <motion.div variants={fadeUp} className="flex flex-wrap gap-3">
               <Link
-                href="/rituals"
-                className="inline-flex items-center gap-2 px-7 py-3.5 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.15em]"
+                href="/shop"
+                className="inline-flex items-center gap-2 px-7 py-3.5 btn-brand text-[11px] font-black uppercase tracking-[0.15em]"
               >
-                Shop rituals <ArrowRight size={14} />
+                Shop drinks <ArrowRight size={14} />
               </Link>
               <Link
                 href="/convivium#apply-founding"

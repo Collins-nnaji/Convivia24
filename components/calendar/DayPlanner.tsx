@@ -189,7 +189,7 @@ export default function DayPlanner({ onAccept }: { onAccept: (blocks: PlanBlock[
               <button
                 onClick={accept}
                 disabled={applying}
-                className="w-full sm:w-auto px-4 py-2 bg-gold hover:bg-gold-light text-obsidian text-xs font-semibold transition-colors disabled:opacity-50"
+                className="w-full sm:w-auto px-4 py-2 btn-brand text-xs font-semibold disabled:opacity-50"
               >
                 {applying ? 'Adding…' : 'Add to my day'}
               </button>

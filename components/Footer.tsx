@@ -2,10 +2,10 @@ import Link from 'next/link';
 
 const footerLinks = [
   { label: 'Shop', href: '/shop' },
-  { label: 'Circles', href: '/circles' },
-  { label: 'Crews', href: '/crews' },
-  { label: 'Venues', href: '/venues' },
-  { label: 'Cart', href: '/cart' },
+  { label: 'Events', href: '/events' },
+  { label: 'Partners', href: '/partners' },
+  { label: 'Privacy', href: '/privacy' },
+  { label: 'Terms', href: '/terms' },
 ];
 
 export default function Footer() {
@@ -41,10 +41,15 @@ export default function Footer() {
         </div>
 
         <div className="mt-4 pt-4 border-t border-white/8 flex flex-wrap items-center justify-between gap-2 text-[11px] text-white/30">
-          <span>&copy; 2026 Convivia24</span>
-          <Link href="/shop" className="text-ember hover:text-ember-light uppercase tracking-wider text-[10px] font-semibold">
-            Order drinks →
-          </Link>
+          <span>&copy; 2026 Convivia24 · 18+</span>
+          <div className="flex items-center gap-4">
+            <Link href="/privacy" className="hover:text-white/60 transition-colors">
+              Privacy
+            </Link>
+            <Link href="/terms" className="hover:text-white/60 transition-colors">
+              Terms
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

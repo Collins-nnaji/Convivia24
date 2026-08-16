@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Minus, Plus, UsersRound } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Minus, Plus } from 'lucide-react';
 import { useCart } from '@/components/cart/CartProvider';
-import DrinkPlaceholder from '@/components/shop/DrinkPlaceholder';
+import DrinkPhoto from '@/components/shop/DrinkPhoto';
 import { formatNgn, CATEGORY_LABELS, type DrinkProduct } from '@/lib/drinks/catalog';
 
 export default function ProductDetail({ product }: { product: DrinkProduct }) {
@@ -30,13 +30,9 @@ export default function ProductDetail({ product }: { product: DrinkProduct }) {
 
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-16">
           <div className="relative aspect-[3/4] sm:aspect-square overflow-hidden border border-obsidian/10 bg-paper">
-            <DrinkPlaceholder
-              category={product.category}
-              name={product.name}
-              className="absolute inset-0 w-full h-full"
-            />
+            <DrinkPhoto product={product} className="absolute inset-0 w-full h-full" />
             {product.deal && (
-              <span className="absolute top-4 left-4 bg-ember text-white text-[9px] font-black uppercase tracking-wider px-2.5 py-1 z-10">
+              <span className="absolute top-4 left-4 badge-brand text-[9px] font-black uppercase tracking-wider px-2.5 py-1 z-10">
                 Hot deal
               </span>
             )}
@@ -48,12 +44,24 @@ export default function ProductDetail({ product }: { product: DrinkProduct }) {
             </p>
             <h1 className="text-3xl sm:text-4xl font-bold text-obsidian mb-2">{product.name}</h1>
             <p className="text-sm text-obsidian/45 mb-4">
-              {product.abv}% ABV · {product.volume}
-              {product.servesHint ? ` · ${product.servesHint}` : ''}
+              {[product.brand, product.origin, `${product.abv}% ABV`, product.volume, product.servesHint]
+                .filter(Boolean)
+                .join(' · ')}
             </p>
             <p className="text-2xl font-bold brand-text mb-6">{formatNgn(product.priceNgn)}</p>
             <p className="text-obsidian/60 leading-relaxed mb-2">{product.tagline}</p>
-            <p className="text-sm text-obsidian/50 leading-relaxed mb-8">{product.description}</p>
+            <p className="text-sm text-obsidian/50 leading-relaxed mb-6">{product.description}</p>
+            {product.includes && product.includes.length > 0 ? (
+              <ul className="mb-8 space-y-1.5">
+                {product.includes.map((item) => (
+                  <li key={item} className="text-sm text-obsidian/70 flex gap-2">
+                    <span className="text-ember">▸</span> {item}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="mb-8" />
+            )}
 
             <div className="flex items-center gap-4 mb-6">
               <div className="flex items-center border border-obsidian/15">
@@ -86,10 +94,10 @@ export default function ProductDetail({ product }: { product: DrinkProduct }) {
                 {added ? 'Added ✓' : 'Add to cart'}
               </button>
               <Link
-                href={`/crews?add=${product.slug}`}
+                href="/events"
                 className="flex-1 inline-flex items-center justify-center gap-2 py-3.5 border border-obsidian/15 text-obsidian text-[11px] font-black uppercase tracking-[0.14em] hover:border-ember hover:text-ember transition-colors"
               >
-                <UsersRound size={14} /> Add to Crew
+                <CalendarDays size={14} /> Drop to an event
               </Link>
             </div>
           </div>

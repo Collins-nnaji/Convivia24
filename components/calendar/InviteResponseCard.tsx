@@ -53,7 +53,7 @@ export default function InviteResponseCard({
             <button
               onClick={() => respond('accepted')}
               disabled={responding}
-              className="flex items-center gap-2 px-6 py-3 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-black uppercase tracking-[0.15em] transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-6 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.15em] disabled:opacity-50"
             >
               <Check size={14} /> Accept
             </button>

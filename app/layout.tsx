@@ -1,5 +1,5 @@
 import './globals.css';
-import { Outfit } from 'next/font/google';
+import { Montserrat, Outfit } from 'next/font/google';
 import AuthProvider from '@/components/auth/AuthProvider';
 
 const outfit = Outfit({
@@ -8,10 +8,17 @@ const outfit = Outfit({
   variable: '--font-outfit',
 });
 
+const montserrat = Montserrat({
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-montserrat',
+});
+
 export const metadata = {
   title: 'Convivia24 | Drinks to the party, club & lounge',
   description:
-    'Drink ordering and delivery for parties, clubs, and lounges in Lagos. Circles for outdoor crews. Party Crews for shared drops. Age 18+.',
+    'Lagos drinks to the party, club, and lounge. Events around you, Guest Card perks, partner wholesale. Age 18+.',
   icons: {
     icon: '/Logo2.png',
   },
@@ -29,7 +36,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${outfit.variable} font-sans bg-paper text-obsidian antialiased`} suppressHydrationWarning>
+      <body className={`${outfit.variable} ${montserrat.variable} font-sans bg-paper text-obsidian antialiased`} suppressHydrationWarning>
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

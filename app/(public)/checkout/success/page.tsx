@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { useCart } from '@/components/cart/CartProvider';
 import { formatNgn } from '@/lib/drinks/catalog';
+import { earnFromOrder, spendWallet } from '@/lib/loyalty/store';
 
 type VerifyState =
   | { phase: 'loading' }
@@ -20,6 +21,20 @@ function SuccessBody() {
   const reference = params.get('reference') || params.get('trxref');
   const { clear } = useCart();
   const [state, setState] = useState<VerifyState>({ phase: 'loading' });
+
+  function applyLoyalty(subtotal?: number) {
+    try {
+      const raw = sessionStorage.getItem('convivia_loyalty_apply');
+      const parsed = raw ? (JSON.parse(raw) as { subtotalNgn?: number; walletNgn?: number }) : {};
+      const spend = Number(parsed.walletNgn) || 0;
+      const earnOn = Number(subtotal || parsed.subtotalNgn) || 0;
+      if (spend > 0) spendWallet(spend);
+      if (earnOn > 0) earnFromOrder(earnOn);
+      sessionStorage.removeItem('convivia_loyalty_apply');
+    } catch {
+      /* ignore */
+    }
+  }
 
   useEffect(() => {
     if (!orderId && !reference) {
@@ -51,6 +66,7 @@ function SuccessBody() {
           if (mode === 'manual' || data.mode === 'manual') {
             clear();
             sessionStorage.removeItem('convivia_pending_order');
+            applyLoyalty(data.subtotalNgn);
             setState({
               phase: 'manual',
               orderId: data.orderId,
@@ -60,6 +76,7 @@ function SuccessBody() {
           }
           clear();
           sessionStorage.removeItem('convivia_pending_order');
+          applyLoyalty(data.subtotalNgn);
           setState({
             phase: 'paid',
             orderId: data.orderId,
@@ -71,6 +88,7 @@ function SuccessBody() {
         if (mode === 'manual' || data.mode === 'manual') {
           clear();
           sessionStorage.removeItem('convivia_pending_order');
+          applyLoyalty(data.subtotalNgn);
           setState({
             phase: 'manual',
             orderId: data.orderId,
@@ -177,10 +195,10 @@ function SuccessBody() {
             Shop more
           </Link>
           <Link
-            href="/circles"
+            href="/events"
             className="px-6 py-3 border border-obsidian/15 text-[11px] font-black uppercase tracking-[0.14em]"
           >
-            Explore Circles
+            Tonight&apos;s events
           </Link>
         </div>
       </div>

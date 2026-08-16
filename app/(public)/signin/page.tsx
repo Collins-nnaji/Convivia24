@@ -9,9 +9,9 @@ import { signInWithGoogle, signInWithEmail, signUpWithEmail } from '@/lib/auth/c
 import { useUser } from '@/components/auth/AuthProvider';
 
 const PERKS = [
-  { icon: CalendarHeart, text: 'My 24 — your whole day as one calm, scrollable ribbon.' },
-  { icon: Wind, text: 'Rest buffers auto-inserted between back-to-back plans.' },
-  { icon: MessageCircle, text: 'A Companion that remembers what matters to you.' },
+  { icon: CalendarHeart, text: 'Plan parties and send personal RSVP invite links.' },
+  { icon: Wind, text: 'Order drinks to homes, clubs, and lounges across Lagos.' },
+  { icon: MessageCircle, text: 'Guest Card perks and partner desks on one account.' },
 ];
 
 function SignInInner() {
@@ -69,7 +69,9 @@ function SignInInner() {
         <h1 className="font-display text-4xl sm:text-5xl font-light italic text-obsidian tracking-tight mb-3">
           {mode === 'signup' ? 'Create your account.' : 'Sign in to Convivia24.'}
         </h1>
-        <p className="text-obsidian/55 mb-8 leading-relaxed">One account for My 24 and your Companion — synced everywhere you sign in.</p>
+        <p className="text-obsidian/55 mb-8 leading-relaxed">
+          One Neon Auth account for shop orders, party invites, and your Guest Card — synced everywhere you sign in.
+        </p>
 
         <div className="bg-white border border-obsidian/12 shadow-sm p-6 sm:p-8">
           {!authConfigured && (

@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { useCart } from '@/components/cart/CartProvider';
 import { formatNgn } from '@/lib/drinks/catalog';
+import { checkoutPricing, isEnrolled } from '@/lib/loyalty/store';
 
 const PENDING_ORDER_KEY = 'convivia_pending_order';
 
@@ -13,14 +14,28 @@ function CheckoutForm() {
   const { lines, subtotalNgn, refreshPrices } = useCart();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const crewId = searchParams.get('crew') || '';
+  const eventId = searchParams.get('event') || '';
+  const venuePrefill = searchParams.get('venue') || '';
+  const areaPrefill = searchParams.get('area') || '';
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [deliveryMode, setDeliveryMode] = useState<'address' | 'venue'>('address');
+  const [deliveryMode, setDeliveryMode] = useState<'address' | 'venue'>(venuePrefill ? 'venue' : 'address');
+  const [pricing, setPricing] = useState({
+    discountPct: 0,
+    discountNgn: 0,
+    walletNgn: 0,
+    payableNgn: subtotalNgn,
+  });
+  const [enrolled, setEnrolled] = useState(false);
 
   useEffect(() => {
     refreshPrices();
   }, [refreshPrices]);
+
+  useEffect(() => {
+    setPricing(checkoutPricing(subtotalNgn));
+    setEnrolled(isEnrolled());
+  }, [subtotalNgn]);
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -39,7 +54,7 @@ function CheckoutForm() {
       addressLine2: String(fd.get('addressLine2') || ''),
       area: String(fd.get('area') || ''),
       notes: String(fd.get('notes') || ''),
-      crewId: crewId || undefined,
+      eventId: eventId || undefined,
       items: lines.map((l) => ({
         slug: l.slug,
         qty: l.qty,
@@ -62,6 +77,10 @@ function CheckoutForm() {
 
       orderId = orderData.orderId as string;
       sessionStorage.setItem(PENDING_ORDER_KEY, orderId);
+      sessionStorage.setItem(
+        'convivia_loyalty_apply',
+        JSON.stringify({ subtotalNgn, walletNgn: pricing.walletNgn })
+      );
 
       const payRes = await fetch('/api/stripe/checkout', {
         method: 'POST',
@@ -122,9 +141,9 @@ function CheckoutForm() {
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ember mb-2">Lagos delivery</p>
           <h1 className="text-3xl sm:text-4xl font-bold brand-text">Checkout</h1>
-          {crewId && (
+          {eventId && (
             <p className="mt-2 text-xs text-obsidian/45">
-              Checking out Party Crew <span className="font-mono text-ember">{crewId}</span>
+              Dropping to event <span className="font-mono text-ember">{eventId}</span>
             </p>
           )}
         </div>
@@ -179,8 +198,9 @@ function CheckoutForm() {
                 <input
                   name="venueName"
                   required
+                  defaultValue={venuePrefill}
                   className={inputClass}
-                  placeholder="e.g. Quilox, Cubana, private lounge"
+                  placeholder="e.g. Lumen Lounge, Harbour House"
                 />
                 <input type="hidden" name="addressLine1" value="" />
               </div>
@@ -199,7 +219,7 @@ function CheckoutForm() {
                 <label className="text-[9px] font-black uppercase tracking-[0.25em] text-obsidian/40 block mb-1">
                   Area
                 </label>
-                <input name="area" required className={inputClass} placeholder="Victoria Island, Lekki…" />
+                <input name="area" required defaultValue={areaPrefill} className={inputClass} placeholder="Victoria Island, Lekki…" />
               </div>
               <div>
                 <label className="text-[9px] font-black uppercase tracking-[0.25em] text-obsidian/40 block mb-1">
@@ -226,7 +246,7 @@ function CheckoutForm() {
               disabled={loading}
               className="px-8 py-4 btn-brand text-[11px] font-black uppercase tracking-[0.14em] disabled:opacity-60"
             >
-              {loading ? 'Placing order…' : `Pay ${formatNgn(subtotalNgn)}`}
+              {loading ? 'Placing order…' : `Pay ${formatNgn(pricing.payableNgn)}`}
             </button>
           </form>
 
@@ -243,9 +263,28 @@ function CheckoutForm() {
                   </li>
                 ))}
               </ul>
-              <div className="pt-4 border-t border-obsidian/10 flex justify-between items-baseline">
-                <span className="text-obsidian/45 text-sm">Total</span>
-                <span className="text-2xl font-bold">{formatNgn(subtotalNgn)}</span>
+              <div className="pt-4 border-t border-obsidian/10 space-y-2">
+                {pricing.discountNgn > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-obsidian/45">Guest Card {pricing.discountPct}%</span>
+                    <span className="text-ember">−{formatNgn(pricing.discountNgn)}</span>
+                  </div>
+                )}
+                {pricing.walletNgn > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-obsidian/45">Wallet</span>
+                    <span className="text-ember">−{formatNgn(pricing.walletNgn)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between items-baseline">
+                  <span className="text-obsidian/45 text-sm">Total</span>
+                  <span className="text-2xl font-bold">{formatNgn(pricing.payableNgn)}</span>
+                </div>
+                {!enrolled && (
+                  <Link href="/card" className="block text-[10px] font-black uppercase tracking-[0.14em] text-ember pt-1">
+                    Activate Guest Card for perks →
+                  </Link>
+                )}
               </div>
             </div>
           </aside>

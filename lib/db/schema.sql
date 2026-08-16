@@ -28,6 +28,10 @@ DROP TABLE IF EXISTS organizers CASCADE;
 DROP TABLE IF EXISTS inquiries CASCADE;
 DROP TABLE IF EXISTS waitlist CASCADE;
 DROP TABLE IF EXISTS uploads CASCADE;
+DROP TABLE IF EXISTS circle_likes CASCADE;
+DROP TABLE IF EXISTS circle_members CASCADE;
+DROP TABLE IF EXISTS circle_posts CASCADE;
+DROP TABLE IF EXISTS circles CASCADE;
 
 -- ═══════════════════════════════════════════════
 -- PERSONAL TASKS ("My 24" — manual items + AI rest buffers)

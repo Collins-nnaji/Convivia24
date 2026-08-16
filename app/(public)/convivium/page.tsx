@@ -193,7 +193,7 @@ export default function ConviviumPage() {
                   }`}
                 >
                   {t.featured && (
-                    <span className="absolute -top-3 left-8 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold text-obsidian text-[9px] font-black uppercase tracking-[0.2em]">
+                    <span className="absolute -top-3 left-8 inline-flex items-center gap-1.5 px-3 py-1 rounded-full badge-brand text-[9px] font-black uppercase tracking-[0.2em]">
                       Most chosen
                     </span>
                   )}
@@ -235,7 +235,7 @@ export default function ConviviumPage() {
                     onClick={() => setApplyTier(t.tierKey)}
                     className={`inline-flex items-center justify-center gap-2 px-6 py-3.5 text-[11px] font-black uppercase tracking-[0.2em] transition-colors ${
                       t.featured
-                        ? 'bg-gold hover:bg-gold-light text-obsidian'
+                        ? 'btn-brand'
                         : 'bg-obsidian hover:bg-obsidian/90 text-cream'
                     }`}
                   >
@@ -277,7 +277,7 @@ export default function ConviviumPage() {
                   }}
                   className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.15em] transition-colors ${
                     applyTier === t
-                      ? 'bg-gold text-obsidian'
+                      ? 'badge-brand'
                       : 'border border-gold/30 text-cream/50 hover:text-cream'
                   }`}
                 >
@@ -296,19 +296,19 @@ export default function ConviviumPage() {
         </div>
       </section>
 
-      <section className="bg-gold">
+      <section className="brand-gradient">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-12 sm:py-16 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
           <div>
-            <h2 className="font-display text-2xl sm:text-4xl italic text-obsidian mb-2">
+            <h2 className="font-display text-2xl sm:text-4xl italic text-cream mb-2">
               Prefer a single evening?
             </h2>
-            <p className="text-obsidian/60 text-sm">Browse ritual kits — no membership required</p>
+            <p className="text-cream/70 text-sm">Browse the shop — no membership required</p>
           </div>
           <Link
-            href="/rituals"
+            href="/shop"
             className="inline-flex items-center gap-2 px-8 py-4 bg-obsidian hover:bg-obsidian/90 text-cream text-[11px] font-black uppercase tracking-[0.2em] transition-colors shrink-0"
           >
-            Shop rituals <ArrowRight size={14} />
+            Shop drinks <ArrowRight size={14} />
           </Link>
         </div>
       </section>

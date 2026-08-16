@@ -6,11 +6,23 @@ const TONES: Record<DrinkCategory, { bg: string; ink: string; accent: string }> 
   cognac: { bg: '#EAD4C0', ink: '#4A2810', accent: '#A0522D' },
   wines: { bg: '#F0DDE3', ink: '#4A1528', accent: '#8B1E3F' },
   spirits: { bg: '#DCE8E4', ink: '#1A332C', accent: '#2F6F5E' },
+  cocktails: { bg: '#F8E4C8', ink: '#5C2E0A', accent: '#8B2A22' },
   mixers: { bg: '#DCEAF2', ink: '#16324A', accent: '#2B6CB0' },
-  'party-packs': { bg: '#F5D9D6', ink: '#4A1512', accent: '#E23B2F' },
+  'party-packs': { bg: '#F5D9D6', ink: '#4A1512', accent: '#8B2A22' },
 };
 
 function BottleSvg({ category, accent, ink }: { category: DrinkCategory; accent: string; ink: string }) {
+  if (category === 'cocktails') {
+    return (
+      <svg viewBox="0 0 72 110" className="w-[38%] max-w-[4.2rem] h-auto" aria-hidden>
+        <rect x="18" y="8" width="36" height="94" rx="8" fill={accent} opacity="0.28" stroke={ink} strokeWidth="2" />
+        <rect x="18" y="8" width="36" height="22" rx="8" fill={accent} />
+        <rect x="18" y="22" width="36" height="8" fill={ink} opacity="0.85" />
+        <circle cx="36" cy="58" r="10" fill={accent} opacity="0.7" />
+        <path d="M28 82h16" stroke={ink} strokeWidth="2" opacity="0.45" />
+      </svg>
+    );
+  }
   if (category === 'mixers') {
     return (
       <svg viewBox="0 0 80 120" className="w-[40%] max-w-[4.5rem] h-auto" aria-hidden>

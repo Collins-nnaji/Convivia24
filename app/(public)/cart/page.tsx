@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { ArrowRight, Minus, Plus, Trash2 } from 'lucide-react';
 import { useCart } from '@/components/cart/CartProvider';
-import { formatNgn } from '@/lib/drinks/catalog';
+import DrinkPhoto from '@/components/shop/DrinkPhoto';
+import { formatNgn, getDrinkBySlug } from '@/lib/drinks/catalog';
 
 export default function CartPage() {
   const { lines, subtotalNgn, setQty, remove } = useCart();
@@ -38,7 +39,18 @@ export default function CartPage() {
                 {lines.map((line) => (
                   <li key={line.slug} className="border-b border-obsidian/10 pb-6">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                      <div>
+                      <div className="flex items-center gap-4 min-w-0">
+                        <Link
+                          href={`/shop/${line.slug}`}
+                          className="relative shrink-0 w-16 h-20 border border-obsidian/10 bg-white overflow-hidden"
+                        >
+                          <DrinkPhoto
+                            product={getDrinkBySlug(line.slug) ?? { name: line.name, category: 'spirits' }}
+                            className="absolute inset-0 w-full h-full"
+                            watermark={false}
+                          />
+                        </Link>
+                        <div className="min-w-0">
                         <Link
                           href={`/shop/${line.slug}`}
                           className="text-lg font-semibold text-obsidian hover:text-ember"
@@ -46,6 +58,7 @@ export default function CartPage() {
                           {line.name}
                         </Link>
                         <p className="text-sm text-obsidian/45 mt-0.5">{formatNgn(line.priceNgn)} each</p>
+                        </div>
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="flex items-center border border-obsidian/15">
@@ -100,10 +113,10 @@ export default function CartPage() {
                     Checkout <ArrowRight size={14} />
                   </Link>
                   <Link
-                    href="/crews"
+                    href="/events"
                     className="block text-center text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40 hover:text-ember"
                   >
-                    Or start a Party Crew →
+                    Or drop to an event →
                   </Link>
                 </div>
               </aside>

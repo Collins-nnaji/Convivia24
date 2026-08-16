@@ -1,11 +1,65 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql, { apiErrorResponse } from '@/lib/db';
 import { getDrinkBySlug } from '@/lib/drinks/catalog';
+import { getCurrentUser } from '@/lib/auth/session';
 
 type IncomingItem = {
   slug: string;
   qty: number;
 };
+
+export async function GET() {
+  try {
+    const user = await getCurrentUser();
+    if (!user?.email) {
+      return NextResponse.json({ orders: [], authRequired: true }, { status: 401 });
+    }
+
+    const email = user.email.trim().toLowerCase();
+    const orders = await sql`
+      SELECT
+        o.id,
+        o.status,
+        o.subtotal_ngn,
+        o.address_line1,
+        o.area,
+        o.created_at,
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'slug', i.kit_slug,
+              'name', i.kit_name,
+              'qty', i.qty,
+              'unitPriceNgn', i.unit_price_ngn
+            )
+            ORDER BY i.created_at
+          ) FILTER (WHERE i.id IS NOT NULL),
+          '[]'::json
+        ) AS items
+      FROM ritual_orders o
+      LEFT JOIN ritual_order_items i ON i.order_id = o.id
+      WHERE LOWER(o.email) = ${email}
+      GROUP BY o.id
+      ORDER BY o.created_at DESC
+      LIMIT 50
+    `;
+
+    return NextResponse.json({
+      orders: orders.map((o) => ({
+        id: o.id,
+        status: o.status,
+        subtotalNgn: o.subtotal_ngn,
+        addressLine1: o.address_line1,
+        area: o.area,
+        createdAt: o.created_at,
+        items: o.items,
+      })),
+    });
+  } catch (err) {
+    const { status, error } = apiErrorResponse(err, 'Unable to load orders.');
+    return NextResponse.json({ error, orders: [] }, { status });
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,8 +79,10 @@ export async function POST(req: NextRequest) {
     const area = typeof body.area === 'string' ? body.area.trim() : null;
     const notesRaw = typeof body.notes === 'string' ? body.notes.trim() : '';
     const crewId = typeof body.crewId === 'string' ? body.crewId.trim() : '';
+    const eventId = typeof body.eventId === 'string' ? body.eventId.trim() : '';
     const notesParts = [
       deliveryMode === 'venue' ? `Delivery: venue — ${venueName || addressLine1}` : 'Delivery: address',
+      eventId ? `Event: ${eventId}` : '',
       crewId ? `Crew: ${crewId}` : '',
       notesRaw,
     ].filter(Boolean);

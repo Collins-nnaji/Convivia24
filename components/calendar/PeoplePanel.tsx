@@ -91,7 +91,7 @@ export default function PeoplePanel() {
             value={relationship} onChange={(e) => setRelationship(e.target.value)} placeholder="Relationship (optional)"
             className="w-full px-2 py-1.5 border border-obsidian/10 bg-white text-xs focus:border-gold outline-none"
           />
-          <button type="submit" className="w-full py-1.5 bg-gold hover:bg-gold-light text-obsidian text-[11px] font-semibold transition-colors">
+          <button type="submit" className="w-full py-1.5 btn-brand text-[11px] font-semibold">
             Add
           </button>
         </form>

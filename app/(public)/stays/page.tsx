@@ -28,7 +28,7 @@ const ROOMS = [
     desc: 'A calm, generous room with a king bed, warm textiles, and floor-to-ceiling glass onto the skyline. A writing desk, a soaking tub, and coffee brought up at sunrise.',
     details: ['King bed · 42m²', 'Skyline views', 'Deep soaking tub', 'Breakfast & spa circuit included'],
     from: '₦180,000',
-    image: '/The Spaces2.png',
+    image: '/Homepage.png',
   },
   {
     num: '02',
@@ -122,10 +122,10 @@ export default function StaysPage() {
 
   const hero =
     tab === 'wellness'
-      ? { img: '/The Spaces3.png', label: 'The Wellness', title: 'Leave lighter\nthan you arrived.', copy: 'A full-service spa, a thermal circuit, and a daily rhythm of movement — designed as one continuous ritual. Residents enjoy the circuit at no charge.' }
+      ? { img: '/Homepage.png', label: 'The Wellness', title: 'Leave lighter\nthan you arrived.', copy: 'A full-service spa, a thermal circuit, and a daily rhythm of movement — designed as one continuous ritual. Residents enjoy the circuit at no charge.' }
       : tab === 'dining'
-      ? { img: '/Convivium3.png', label: 'The Table & Lounge', title: 'Farm to table.\nDusk till late.', copy: 'A restaurant built around the resort garden by day, and a candlelit lounge with a daily-changing cocktail by night. Guests dine on the terrace; the lounge opens to all from four.' }
-      : { img: '/The Spaces.png', label: 'The Resort', title: 'Stay. Restore.\nGather.', copy: 'Rooms, villas, a spa, and a table — one resort, three things done properly. Every stay includes breakfast and full use of the wellness circuit.' };
+      ? { img: '/Homepage.png', label: 'The Table & Lounge', title: 'Farm to table.\nDusk till late.', copy: 'A restaurant built around the resort garden by day, and a candlelit lounge with a daily-changing cocktail by night. Guests dine on the terrace; the lounge opens to all from four.' }
+      : { img: '/Homepage.png', label: 'The Resort', title: 'Stay. Restore.\nGather.', copy: 'Rooms, villas, a spa, and a table — one resort, three things done properly. Every stay includes breakfast and full use of the wellness circuit.' };
 
   return (
     <>
@@ -185,11 +185,11 @@ export default function StaysPage() {
       {tab === 'dining' && <DiningSection />}
 
       {/* CTA */}
-      <section className="bg-gold">
+      <section className="brand-gradient">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-12 sm:py-16 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
           <div>
-            <h2 className="font-display text-2xl sm:text-4xl italic text-obsidian mb-2">Plan your escape.</h2>
-            <p className="text-obsidian/60 text-sm">Stay &middot; Restore &middot; Gather &middot; Lagos &middot; Abuja &middot; London</p>
+            <h2 className="font-display text-2xl sm:text-4xl italic text-cream mb-2">Plan your escape.</h2>
+            <p className="text-cream/70 text-sm">Stay &middot; Restore &middot; Gather &middot; Lagos &middot; Abuja &middot; London</p>
           </div>
           <Link href="/inquire" className="inline-flex items-center gap-2 px-8 py-4 bg-obsidian hover:bg-obsidian-50 text-cream text-[11px] font-black uppercase tracking-[0.2em] transition-colors shrink-0">
             Book a Stay <ArrowRight size={14} />
@@ -279,7 +279,7 @@ function WellnessSection() {
             <motion.div variants={fadeUp}><SectionLabel variant="light">The Thermal Circuit</SectionLabel></motion.div>
             <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center mb-16">
               <motion.div variants={fadeUp} className="relative">
-                <img src="/The Spaces3.png" alt="The spa at Convivia24" className="w-full aspect-[4/3] object-cover" />
+                <img src="/Homepage.png" alt="The spa at Convivia24" className="w-full aspect-[4/3] object-cover object-[center_70%]" />
                 <div className="absolute top-0 left-0 w-full h-1 bg-gold" />
               </motion.div>
               <div>

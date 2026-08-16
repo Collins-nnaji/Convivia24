@@ -2,13 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ShoppingBag, Store, Users, UsersRound } from 'lucide-react';
+import { CalendarDays, CalendarPlus, ShoppingBag, Store } from 'lucide-react';
 import { useCart } from '@/components/cart/CartProvider';
 
 const TABS = [
   { href: '/shop', label: 'Shop', icon: Store },
-  { href: '/circles', label: 'Circles', icon: Users },
-  { href: '/crews', label: 'Crews', icon: UsersRound },
+  { href: '/events', label: 'Events', icon: CalendarDays },
+  { href: '/plan', label: 'Plan', icon: CalendarPlus },
   { href: '/cart', label: 'Cart', icon: ShoppingBag },
 ];
 
@@ -26,7 +26,11 @@ export default function MobileTabBar() {
           const active =
             href === '/shop'
               ? pathname === '/shop' || pathname.startsWith('/shop/')
-              : pathname === href || pathname.startsWith(`${href}/`);
+              : href === '/events'
+                ? pathname === '/events' || pathname.startsWith('/events/')
+                : href === '/plan'
+                  ? pathname === '/plan' || pathname.startsWith('/plan/') || pathname.startsWith('/rsvp/')
+                  : pathname === href || pathname.startsWith(`${href}/`);
           return (
             <Link
               key={href}
@@ -45,8 +49,8 @@ export default function MobileTabBar() {
               >
                 {label}
               </span>
-              {href === '/cart' && count > 0 && (
-                <span className="absolute top-1.5 right-[22%] min-w-[14px] h-3.5 px-0.5 rounded-full bg-ember text-white text-[8px] font-black flex items-center justify-center">
+              {href === '/cart' && (
+                <span className="absolute top-1.5 right-[18%] min-w-[16px] h-4 px-1 rounded-full bg-obsidian text-white text-[8px] font-black flex items-center justify-center">
                   {count}
                 </span>
               )}

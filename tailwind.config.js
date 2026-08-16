@@ -15,17 +15,17 @@ module.exports = {
           200: '#111111',
         },
         ember: {
-          DEFAULT: '#E23B2F',
-          light:   '#F05A4F',
-          dark:    '#B82C22',
-          muted:   '#C43A30',
+          DEFAULT: '#8B2A22',
+          light:   '#A3382E',
+          dark:    '#4A1512',
+          muted:   '#6E1F1A',
         },
         // Legacy aliases → ember (keeps older class names from soft-parked pages working)
         gold: {
-          DEFAULT: '#E23B2F',
-          light:   '#F05A4F',
-          dark:    '#B82C22',
-          muted:   '#C43A30',
+          DEFAULT: '#8B2A22',
+          light:   '#A3382E',
+          dark:    '#4A1512',
+          muted:   '#6E1F1A',
         },
         cream: {
           DEFAULT: '#F7F5F3',
@@ -33,7 +33,7 @@ module.exports = {
           dark:    '#EDEAE6',
           muted:   '#D4CFC8',
         },
-        champagne: '#E23B2F',
+        champagne: '#8B2A22',
         paper: {
           DEFAULT: '#FAFAF8',
           dark:    '#F0EEEC',
@@ -41,6 +41,7 @@ module.exports = {
       },
       fontFamily: {
         display: ['var(--font-outfit)', 'sans-serif'],
+        logo:    ['var(--font-montserrat)', 'sans-serif'],
         sans:    ['var(--font-outfit)', 'sans-serif'],
       },
       animation: {
