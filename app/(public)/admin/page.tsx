@@ -33,6 +33,20 @@ type AdminEvent = {
 
 type VenueOption = { slug: string; name: string };
 
+type TriviaEntry = {
+  id: string;
+  code: string;
+  roundSlug: string;
+  brand: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  score: number;
+  total: number;
+  status: string;
+  createdAt: string;
+};
+
 type EventDraft = {
   id?: string;
   title: string;
@@ -86,7 +100,7 @@ function formatWhen(iso: string): string {
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
   const [password, setPassword] = useState('');
-  const [tab, setTab] = useState<'drinks' | 'events'>('drinks');
+  const [tab, setTab] = useState<'drinks' | 'events' | 'trivia'>('drinks');
   const [items, setItems] = useState<Item[]>([]);
   const [events, setEvents] = useState<AdminEvent[]>([]);
   const [venues, setVenues] = useState<VenueOption[]>([]);
@@ -99,6 +113,8 @@ export default function AdminPage() {
   const [blobOk, setBlobOk] = useState(false);
   const [aiOk, setAiOk] = useState(false);
   const [eventsError, setEventsError] = useState('');
+  const [entries, setEntries] = useState<TriviaEntry[]>([]);
+  const [triviaError, setTriviaError] = useState('');
 
   const loadStock = useCallback(async () => {
     const res = await fetch('/api/admin/inventory');
@@ -127,11 +143,38 @@ export default function AdminPage() {
     setDraft((d) => (d.venueSlug ? d : { ...d, venueSlug: data.venues?.[0]?.slug || '' }));
   }, []);
 
+  const loadTrivia = useCallback(async () => {
+    const res = await fetch('/api/admin/trivia');
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setTriviaError(data.error || 'Could not load entries.');
+      return;
+    }
+    setTriviaError(data.error || '');
+    setEntries(data.entries || []);
+  }, []);
+
+  async function setEntryStatus(entry: TriviaEntry, status: string) {
+    setTriviaError('');
+    const res = await fetch('/api/admin/trivia', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: entry.id, status }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setTriviaError(data.error || 'Could not update the entry.');
+      return;
+    }
+    setEntries((rows) => rows.map((r) => (r.id === entry.id ? { ...r, status } : r)));
+  }
+
   useEffect(() => {
     loadStock()
       .then(loadEvents)
+      .then(loadTrivia)
       .catch(() => setAuthed(false));
-  }, [loadStock, loadEvents]);
+  }, [loadStock, loadEvents, loadTrivia]);
 
   async function login(e: FormEvent) {
     e.preventDefault();
@@ -149,6 +192,7 @@ export default function AdminPage() {
     }
     await loadStock();
     await loadEvents();
+    await loadTrivia();
   }
 
   async function onUpload(e: FormEvent<HTMLFormElement>) {
@@ -339,7 +383,7 @@ export default function AdminPage() {
         </div>
 
         <div className="flex gap-1 mb-8 border-b border-obsidian/10">
-          {(['drinks', 'events'] as const).map((key) => (
+          {(['drinks', 'events', 'trivia'] as const).map((key) => (
             <button
               key={key}
               type="button"
@@ -348,12 +392,70 @@ export default function AdminPage() {
                 tab === key ? 'border-ember text-ember' : 'border-transparent text-obsidian/40 hover:text-obsidian/70'
               }`}
             >
-              {key === 'drinks' ? `Drinks (${items.length})` : `Events (${events.length})`}
+              {key === 'drinks'
+                ? `Drinks (${items.length})`
+                : key === 'events'
+                  ? `Events (${events.length})`
+                  : `Trivia (${entries.length})`}
             </button>
           ))}
         </div>
 
-        {tab === 'drinks' ? (
+        {tab === 'trivia' ? (
+          <>
+            {triviaError && <p className="text-sm text-ember mb-6">{triviaError}</p>}
+            <h2 className="font-bold mb-1">Draw entries</h2>
+            <p className="text-sm text-obsidian/50 mb-5">
+              Everyone who passed a brand round. Mark a winner, then mark the bottle claimed once collected.
+            </p>
+            <div className="space-y-3">
+              {entries.map((entry) => (
+                <div key={entry.id} className="bg-white p-4 sm:p-5 shadow-sm flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-medium">{entry.name}</p>
+                      <span className="text-[9px] font-black uppercase tracking-[0.12em] px-2 py-0.5 bg-paper text-obsidian/50">
+                        {entry.brand}
+                      </span>
+                      <span
+                        className={`text-[9px] font-black uppercase tracking-[0.12em] px-2 py-0.5 ${
+                          entry.status === 'won'
+                            ? 'bg-ember text-white'
+                            : entry.status === 'claimed'
+                              ? 'bg-obsidian text-white'
+                              : 'bg-paper text-obsidian/45'
+                        }`}
+                      >
+                        {entry.status}
+                      </span>
+                    </div>
+                    <p className="text-[12px] text-obsidian/50 mt-1 truncate">
+                      {entry.email}
+                      {entry.phone ? ` · ${entry.phone}` : ''} · scored {entry.score}/{entry.total}
+                    </p>
+                    <p className="text-[11px] text-obsidian/40 font-mono mt-0.5">{entry.code}</p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {(['won', 'claimed', 'void'] as const).map((status) => (
+                      <button
+                        key={status}
+                        type="button"
+                        disabled={entry.status === status}
+                        onClick={() => setEntryStatus(entry, status)}
+                        className="px-3 py-2 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-35"
+                      >
+                        {status}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              {entries.length === 0 && !triviaError && (
+                <p className="text-sm text-obsidian/45">No entries yet.</p>
+              )}
+            </div>
+          </>
+        ) : tab === 'drinks' ? (
           <>
             {msg && <p className="text-sm text-ember mb-6">{msg}</p>}
             {advice && (

@@ -12,7 +12,7 @@ import { formatNgn } from '@/lib/drinks/catalog';
 const LINKS = [
   { label: 'Shop', href: '/shop' },
   { label: 'Events', href: '/events' },
-  { label: 'Plan', href: '/plan' },
+  { label: 'Trivia', href: '/trivia' },
 ];
 
 export default function Navigation() {
@@ -37,7 +37,7 @@ export default function Navigation() {
   const isActive = (href: string) => {
     if (href === '/shop') return pathname === '/shop' || pathname.startsWith('/shop/');
     if (href === '/events') return pathname === '/events' || pathname.startsWith('/events/');
-    if (href === '/plan') return pathname === '/plan' || pathname.startsWith('/plan/') || pathname.startsWith('/rsvp/');
+    if (href === '/trivia') return pathname === '/trivia' || pathname.startsWith('/trivia/');
     if (href === '/partners') return pathname === '/partners' || pathname.startsWith('/partners/');
     if (href === '/cart') return pathname === '/cart' || pathname.startsWith('/checkout');
     return pathname === href || pathname.startsWith(`${href}/`);
@@ -125,7 +125,7 @@ export default function Navigation() {
                       <p className="px-4 py-2 text-[11px] text-obsidian/45 truncate border-b border-obsidian/6 mb-1">
                         {user.email}
                       </p>
-                      <Link href="/plan" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
+                      <Link href="/shop?plan=1" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
                         My parties
                       </Link>
                       <Link href="/orders" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>

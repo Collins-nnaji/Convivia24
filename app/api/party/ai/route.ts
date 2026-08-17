@@ -15,7 +15,8 @@ export async function POST(req: NextRequest) {
     const hours = Number(body.hours) || 5;
     const vibe = (body.vibe || 'balanced') as PartyVibe;
     const budgetNgn = body.budgetNgn ? Number(body.budgetNgn) : undefined;
-    const question = String(body.question || '').trim();
+    const question = String(body.question || '').trim().slice(0, 500);
+    const occasion = String(body.occasion || '').trim().slice(0, 60);
 
     const plan = recommendDrinks({ guests, hours, vibe, budgetNgn });
     const planText = plan.lines
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
     if (!aiConfigured()) {
       return NextResponse.json({
         plan,
-        advice: `For ${guests} guests over ~${hours}h (${vibe}): aim for about ${plan.drinksPerGuest} pours each. Recommended basket totals ${formatNgn(plan.totalNgn)}.`,
+        advice: `For ${guests} guests over ~${hours}h${occasion ? ` (${occasion})` : ''}: aim for about ${plan.drinksPerGuest} pours each. This basket totals ${formatNgn(plan.totalNgn)}.`,
         ai: false,
       });
     }
@@ -35,11 +36,11 @@ export async function POST(req: NextRequest) {
         {
           role: 'system',
           content:
-            'You are Convivia24 party planner for Lagos. Be practical, concise, and nightlife-aware. Recommend drinks and hosting tips. Never encourage underage drinking.',
+            'You are the Convivia24 party planner for Lagos. Be practical, concise, and nightlife-aware. Recommend drinks, quantities and hosting tips for the occasion. Never encourage underage or excessive drinking.',
         },
         {
           role: 'user',
-          content: `Party: ${guests} guests, ${hours} hours, vibe=${vibe}${budgetNgn ? `, budget ${budgetNgn}` : ''}.\nSuggested basket:\n${planText}\n\n${question || 'Give a short hosting plan and any tweaks to the basket.'}`,
+          content: `Party: ${guests} guests, ${hours} hours, vibe=${vibe}${occasion ? `, occasion=${occasion}` : ''}${budgetNgn ? `, budget ${budgetNgn}` : ''}.\nSuggested basket:\n${planText}\n\n${question || 'Give a short hosting plan and any tweaks to the basket.'}`,
         },
       ],
       temperature: 0.6,

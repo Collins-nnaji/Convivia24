@@ -238,3 +238,43 @@ CREATE TABLE IF NOT EXISTS night_events (
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_night_events_published ON night_events(published, starts_at);
+
+-- ═══════════════════════════════════════════════
+-- PARTY PLANS (saved from the shop-side planning tool)
+-- ═══════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS party_plans (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id      TEXT NOT NULL,
+  name          TEXT NOT NULL,
+  occasion      TEXT,
+  event_date    DATE,
+  venue         TEXT,
+  guests        INTEGER NOT NULL DEFAULT 40 CHECK (guests > 0),
+  hours         INTEGER NOT NULL DEFAULT 5 CHECK (hours > 0),
+  vibe          TEXT NOT NULL DEFAULT 'balanced',
+  budget_ngn    INTEGER,
+  plan          JSONB,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_party_plans_owner ON party_plans(owner_id, created_at DESC);
+
+-- ═══════════════════════════════════════════════
+-- TRIVIA DRAW ENTRIES (brand rounds on /trivia)
+-- ═══════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS trivia_entries (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code          TEXT NOT NULL UNIQUE,
+  round_slug    TEXT NOT NULL,
+  brand         TEXT NOT NULL,
+  name          TEXT NOT NULL,
+  email         TEXT NOT NULL,
+  phone         TEXT,
+  score         INTEGER NOT NULL DEFAULT 0,
+  total         INTEGER NOT NULL DEFAULT 0,
+  status        TEXT NOT NULL DEFAULT 'entered'
+                  CHECK (status IN ('entered','won','claimed','void')),
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_trivia_entries_round ON trivia_entries(round_slug, created_at DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_trivia_entries_once ON trivia_entries(round_slug, LOWER(email));

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { ProductCard } from '@/components/shop/ProductCard';
+import PartyPlanner from '@/components/shop/PartyPlanner';
 import { CategoryIcon } from '@/components/icons/ShopIcons';
 import {
   CATEGORIES,
@@ -23,6 +24,7 @@ export default function ShopCatalog() {
   const params = useSearchParams();
   const initialCat = params.get('category') as DrinkCategory | null;
   const initialQ = params.get('q') || '';
+  const plannerOpen = params.get('plan') === '1';
 
   const [query, setQuery] = useState(initialQ);
   const [category, setCategory] = useState<DrinkCategory | 'all'>(
@@ -112,6 +114,8 @@ export default function ShopCatalog() {
           </button>
         ))}
       </div>
+
+      <PartyPlanner defaultOpen={plannerOpen} />
 
       {showRails && (
         <>

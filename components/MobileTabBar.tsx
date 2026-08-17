@@ -2,13 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CalendarDays, CalendarPlus, ShoppingBag, Store } from 'lucide-react';
+import { CalendarDays, ShoppingBag, Store, Trophy } from 'lucide-react';
 import { useCart } from '@/components/cart/CartProvider';
 
 const TABS = [
   { href: '/shop', label: 'Shop', icon: Store },
   { href: '/events', label: 'Events', icon: CalendarDays },
-  { href: '/plan', label: 'Plan', icon: CalendarPlus },
+  { href: '/trivia', label: 'Trivia', icon: Trophy },
   { href: '/cart', label: 'Cart', icon: ShoppingBag },
 ];
 
@@ -23,14 +23,7 @@ export default function MobileTabBar() {
     >
       <div className="grid grid-cols-4 h-16">
         {TABS.map(({ href, label, icon: Icon }) => {
-          const active =
-            href === '/shop'
-              ? pathname === '/shop' || pathname.startsWith('/shop/')
-              : href === '/events'
-                ? pathname === '/events' || pathname.startsWith('/events/')
-                : href === '/plan'
-                  ? pathname === '/plan' || pathname.startsWith('/plan/') || pathname.startsWith('/rsvp/')
-                  : pathname === href || pathname.startsWith(`${href}/`);
+          const active = pathname === href || pathname.startsWith(`${href}/`);
           return (
             <Link
               key={href}
