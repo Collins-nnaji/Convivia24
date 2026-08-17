@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRound, isPass } from '@/lib/trivia/catalog';
+import { liveRoundSlug } from '@/lib/trivia/schedule';
 import { createEntry, DuplicateEntryError } from '@/lib/trivia/entries';
 import { apiErrorResponse, DatabaseUnavailableError } from '@/lib/db';
 import { rateLimit, clientIp } from '@/lib/redis';
@@ -15,6 +16,15 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({}));
     const round = getRound(String(body.roundSlug || ''));
     if (!round) return NextResponse.json({ error: 'Unknown round.' }, { status: 400 });
+
+    // Only this week's sponsoring brand takes entries; older rounds are practice.
+    const live = await liveRoundSlug();
+    if (live.roundSlug !== round.slug) {
+      return NextResponse.json(
+        { error: 'This round’s draw has closed. Play the brand running this week to enter.' },
+        { status: 409 }
+      );
+    }
 
     const name = String(body.name || '').trim().slice(0, 80);
     const email = String(body.email || '').trim().slice(0, 160);

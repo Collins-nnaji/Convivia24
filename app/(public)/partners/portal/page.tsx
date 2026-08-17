@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import ConviviumCard from '@/components/ConviviumCard';
+import PricingDesk from '@/components/partners/PricingDesk';
 import DrinkPhoto from '@/components/shop/DrinkPhoto';
 import {
   PREMIUM_CONVERSIONS,
@@ -21,7 +22,7 @@ import { DRINKS, formatNgn, getDrinkBySlug } from '@/lib/drinks/catalog';
 export default function PartnerPortalPage() {
   const router = useRouter();
   const [partner, setPartner] = useState(() => getPartner());
-  const [tab, setTab] = useState<'stock' | 'wholesale' | 'card'>('card');
+  const [tab, setTab] = useState<'pricing' | 'stock' | 'wholesale' | 'card'>('card');
   const [cart, setCart] = useState<Record<string, number>>({});
   const [msg, setMsg] = useState('');
   const [ready, setReady] = useState(false);
@@ -30,6 +31,8 @@ export default function PartnerPortalPage() {
     const p = getPartner();
     setPartner(p);
     setReady(true);
+    // ?tab=pricing lands straight on the margin desk after onboarding.
+    if (new URLSearchParams(window.location.search).get('tab') === 'pricing') setTab('pricing');
     if (!isPartner(p)) router.replace('/partners');
   }, [router]);
 
@@ -100,6 +103,7 @@ export default function PartnerPortalPage() {
 
         <div className="flex gap-2 mb-8">
           {([
+            ['pricing', 'Margin desk'],
             ['card', 'Premium card'],
             ['stock', 'Inventory'],
             ['wholesale', 'Wholesale'],
@@ -117,6 +121,8 @@ export default function PartnerPortalPage() {
           ))}
         </div>
         {msg && <p className="text-sm text-ember mb-6">{msg}</p>}
+
+        {tab === 'pricing' && <PricingDesk />}
 
         {tab === 'card' && (
           <div className="grid lg:grid-cols-12 gap-10">

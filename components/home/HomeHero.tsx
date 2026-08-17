@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
+import HeroGuestCard from '@/components/loyalty/HeroGuestCard';
 
 /** One cycle of distinct lines — duplicated only so the marquee loops seamlessly. */
 const LINES = [
@@ -48,36 +49,40 @@ export default function HomeHero() {
         <h1 className="sr-only">Drinks to the party. Events around you.</h1>
       </div>
 
-      <div className="max-w-6xl mx-auto px-5 sm:px-8 py-6 sm:py-8 flex flex-col items-center gap-5 border-b border-ember/10">
-        <div className="relative">
-          <motion.img
-            src="/Logo2.png"
-            alt="Convivia24"
-            className="w-28 h-28 sm:w-36 sm:h-36 object-contain"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 14, repeat: Infinity, ease: 'linear' }}
-          />
-          <span className="absolute -right-1 -bottom-1 sm:right-0 sm:bottom-0 bg-paper rounded-full p-0.5">
-            <Age18Badge />
-          </span>
+      <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-10 border-b border-ember/10 grid md:grid-cols-2 gap-10 md:gap-8 items-center">
+        <div className="flex flex-col items-center md:items-start gap-5">
+          <div className="relative">
+            <motion.img
+              src="/Logo2.png"
+              alt="Convivia24"
+              className="w-28 h-28 sm:w-36 sm:h-36 object-contain"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 14, repeat: Infinity, ease: 'linear' }}
+            />
+            <span className="absolute -right-1 -bottom-1 sm:right-0 sm:bottom-0 bg-paper rounded-full p-0.5">
+              <Age18Badge />
+            </span>
+          </div>
+          <p className="font-wordmark-md text-sm sm:text-base text-obsidian/55 text-center md:text-left tracking-[0.12em]">
+            Your premium beverage partner
+          </p>
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
+            <Link
+              href="/shop"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 btn-brand text-[10px] font-wordmark-sm"
+            >
+              Shop drinks <ArrowRight size={12} />
+            </Link>
+            <Link
+              href="/events"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 border border-obsidian/15 text-obsidian hover:border-ember hover:text-ember text-[10px] font-wordmark-sm transition-colors"
+            >
+              Tonight&apos;s events
+            </Link>
+          </div>
         </div>
-        <p className="font-wordmark-md text-sm sm:text-base text-obsidian/55 text-center tracking-[0.12em]">
-          Your premium beverage partner
-        </p>
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          <Link
-            href="/shop"
-            className="inline-flex items-center gap-1.5 px-5 py-2.5 btn-brand text-[10px] font-wordmark-sm"
-          >
-            Shop drinks <ArrowRight size={12} />
-          </Link>
-          <Link
-            href="/events"
-            className="inline-flex items-center gap-1.5 px-5 py-2.5 border border-obsidian/15 text-obsidian hover:border-ember hover:text-ember text-[10px] font-wordmark-sm transition-colors"
-          >
-            Tonight&apos;s events
-          </Link>
-        </div>
+
+        <HeroGuestCard />
       </div>
     </section>
   );

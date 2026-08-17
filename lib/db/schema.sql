@@ -278,3 +278,49 @@ CREATE TABLE IF NOT EXISTS trivia_entries (
 );
 CREATE INDEX IF NOT EXISTS idx_trivia_entries_round ON trivia_entries(round_slug, created_at DESC);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_trivia_entries_once ON trivia_entries(round_slug, LOWER(email));
+
+-- ═══════════════════════════════════════════════
+-- TRIVIA SCHEDULE (one sponsoring brand per week)
+-- ═══════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS trivia_weeks (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  round_slug    TEXT NOT NULL,
+  week_start    DATE NOT NULL UNIQUE,
+  published     BOOLEAN NOT NULL DEFAULT true,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_trivia_weeks_start ON trivia_weeks(week_start DESC);
+
+-- ═══════════════════════════════════════════════
+-- PARTNER OUTLETS + MENU PRICING TOOL
+-- ═══════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS partner_outlets (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id        TEXT NOT NULL UNIQUE,
+  venue_name      TEXT NOT NULL,
+  email           TEXT NOT NULL,
+  contact         TEXT,
+  area            TEXT,
+  venue_kind      TEXT NOT NULL DEFAULT 'lounge',
+  seats           INTEGER,
+  target_margin_pct INTEGER NOT NULL DEFAULT 72
+                    CHECK (target_margin_pct BETWEEN 1 AND 95),
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS partner_pricing_items (
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  outlet_id           UUID NOT NULL REFERENCES partner_outlets(id) ON DELETE CASCADE,
+  slug                TEXT,
+  name                TEXT NOT NULL,
+  category            TEXT,
+  bottle_cost_ngn     INTEGER NOT NULL DEFAULT 0 CHECK (bottle_cost_ngn >= 0),
+  sell_price_ngn      INTEGER NOT NULL DEFAULT 0 CHECK (sell_price_ngn >= 0),
+  servings_per_bottle INTEGER NOT NULL DEFAULT 12 CHECK (servings_per_bottle > 0),
+  bottles_per_month   INTEGER NOT NULL DEFAULT 0 CHECK (bottles_per_month >= 0),
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_partner_pricing_outlet ON partner_pricing_items(outlet_id);

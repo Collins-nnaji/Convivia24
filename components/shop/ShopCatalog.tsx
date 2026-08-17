@@ -31,7 +31,6 @@ export default function ShopCatalog() {
     initialCat && CATEGORIES.includes(initialCat) ? initialCat : 'all'
   );
   const [products, setProducts] = useState<ShopProduct[]>(DRINKS);
-  const [live, setLive] = useState(false);
 
   useEffect(() => {
     fetch('/api/shop/catalog')
@@ -39,7 +38,6 @@ export default function ShopCatalog() {
       .then((data) => {
         if (Array.isArray(data.products) && data.products.length) {
           setProducts(data.products);
-          setLive(!data.degraded);
         }
       })
       .catch(() => {});
@@ -67,19 +65,8 @@ export default function ShopCatalog() {
   const showRails = !query && category === 'all';
 
   return (
-    <div className="max-w-6xl mx-auto px-5 sm:px-8 py-10 sm:py-14">
-      <div className="mb-8">
-        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ember mb-2">Shop</p>
-        <h1 className="text-3xl sm:text-4xl font-bold text-obsidian mb-2">
-          <span className="brand-text">Order drinks</span>
-        </h1>
-        <p className="text-sm text-obsidian/50">
-          Parties, clubs, lounges — Lagos delivery
-          {live ? ' · live stock' : ''}
-        </p>
-      </div>
-
-      <div className="relative mb-6">
+    <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-5 sm:pt-6 pb-12 sm:pb-16">
+      <div className="relative mb-5">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-obsidian/35" />
         <input
           type="search"
@@ -90,7 +77,7 @@ export default function ShopCatalog() {
         />
       </div>
 
-      <div className="flex gap-2 overflow-x-auto scrollbar-hide mb-10 -mx-5 px-5 sm:mx-0 sm:px-0">
+      <div className="flex gap-2 overflow-x-auto scrollbar-hide mb-8 -mx-5 px-5 sm:mx-0 sm:px-0">
         <button
           type="button"
           onClick={() => setCategory('all')}

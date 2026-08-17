@@ -2,8 +2,11 @@
 
 import { FormEvent, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, CalendarPlus, Package } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ArrowRight, CalendarPlus, LineChart, Package } from 'lucide-react';
 import ConviviumCard from '@/components/ConviviumCard';
+import { joinPartner } from '@/lib/partners/store';
+import { VENUE_KINDS } from '@/lib/partners/pricing';
 
 const PILLARS = [
   {
@@ -16,31 +19,58 @@ const PILLARS = [
     title: 'Upload your events',
     body: 'List nights at your outlet on the Convivia board. Guests find you, RSVP, and order drinks to the table.',
   },
+  {
+    icon: LineChart,
+    title: 'Menu margin desk',
+    body: 'Price every bottle against your own cost: pour cost, target-margin price, profit per bottle, and what wholesale would save you each month.',
+  },
 ];
 
 export default function PartnersPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
 
-  function onInterest(e: FormEvent<HTMLFormElement>) {
+  /** Open the desk: create the outlet record, then drop straight into the tool. */
+  async function onboard(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
+    setError('');
     const fd = new FormData(e.currentTarget);
-    fetch('/api/waitlist', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: fd.get('email'),
-        fullName: fd.get('name'),
-        company: `${fd.get('venue')} · ${fd.get('area')}`,
-        source: 'convivium',
-      }),
-    })
-      .catch(() => {})
-      .finally(() => {
-        setLoading(false);
-        setSent(true);
+    const payload = {
+      venueName: String(fd.get('venue') || ''),
+      email: String(fd.get('email') || ''),
+      contact: String(fd.get('name') || ''),
+      area: String(fd.get('area') || ''),
+      venueKind: String(fd.get('venueKind') || 'lounge'),
+      seats: fd.get('seats') ? Number(fd.get('seats')) : null,
+      targetMarginPct: fd.get('targetMarginPct') ? Number(fd.get('targetMarginPct')) : 72,
+    };
+
+    try {
+      const res = await fetch('/api/partners/outlet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error || 'Could not open the desk.');
+        return;
+      }
+      // Keep the local partner session in step so the portal opens signed in.
+      joinPartner({
+        venueName: payload.venueName,
+        email: payload.email,
+        area: payload.area,
+        contact: payload.contact,
+      });
+      router.push('/partners/portal?tab=pricing');
+    } catch {
+      setError('Could not open the desk.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -88,40 +118,56 @@ export default function PartnersPage() {
 
           <div className="lg:col-span-7">
             <div className="bg-white p-6 sm:p-8 shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)]">
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-ember mb-2">Coming soon</p>
-              <h2 className="font-bold text-xl text-obsidian mb-2">Invite signup portal</h2>
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-ember mb-2">Open your desk</p>
+              <h2 className="font-bold text-xl text-obsidian mb-2">Outlet sign-up</h2>
               <p className="text-base text-obsidian/55 leading-relaxed mb-6">
-                Partners will manage the account, place bulk orders, upload events, and watch the Convivium card
-                grow — by invite only at first. Leave your desk details and we will send access.
+                Takes a minute. You get the wholesale desk, event uploads, your Convivium Premium record, and the
+                menu margin tool — priced against your own costs.
               </p>
 
-              {sent ? (
-                <p className="text-base text-ember font-medium py-6">
-                  Interest saved. We will invite your outlet when the portal opens.
-                </p>
-              ) : (
-                <form onSubmit={onInterest} className="space-y-5">
-                  <div className="grid sm:grid-cols-2 gap-5">
-                    <Field label="Your name" name="name" required />
-                    <Field label="Email" name="email" type="email" required />
-                  </div>
-                  <Field label="Venue / outlet" name="venue" required />
+              <form onSubmit={onboard} className="space-y-5">
+                <div className="grid sm:grid-cols-2 gap-5">
+                  <Field label="Your name" name="name" required />
+                  <Field label="Email" name="email" type="email" required />
+                </div>
+                <Field label="Venue / outlet" name="venue" required />
+                <div className="grid sm:grid-cols-2 gap-5">
                   <Field label="Area" name="area" placeholder="Victoria Island, Lekki…" required />
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="px-7 py-3.5 btn-brand text-[12px] font-black uppercase tracking-[0.14em] disabled:opacity-60"
-                  >
-                    {loading ? 'Sending…' : 'Request an invite'}
-                  </button>
-                </form>
-              )}
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 block mb-1">
+                      Room type
+                    </label>
+                    <select
+                      name="venueKind"
+                      className="w-full border-0 border-b border-obsidian/15 focus:border-ember focus:ring-0 text-sm py-2 bg-transparent capitalize"
+                    >
+                      {VENUE_KINDS.map((kind) => (
+                        <option key={kind} value={kind}>
+                          {kind}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-5">
+                  <Field label="Covers / seats" name="seats" type="number" placeholder="120" />
+                  <Field label="Target margin %" name="targetMarginPct" type="number" placeholder="72" />
+                </div>
+                {error && <p className="text-sm text-ember">{error}</p>}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-7 py-3.5 btn-brand text-[12px] font-black uppercase tracking-[0.14em] disabled:opacity-60"
+                >
+                  {loading ? 'Opening…' : 'Open my desk'}
+                </button>
+              </form>
             </div>
 
             <p className="mt-6 text-sm text-obsidian/45">
-              Preview the desk layout now (demo){' '}
+              Already onboarded?{' '}
               <Link href="/partners/portal" className="inline-flex items-center gap-1 text-ember font-semibold">
-                Open portal demo <ArrowRight size={14} />
+                Open the portal <ArrowRight size={14} />
               </Link>
             </p>
           </div>

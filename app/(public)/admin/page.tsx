@@ -33,6 +33,17 @@ type AdminEvent = {
 
 type VenueOption = { slug: string; name: string };
 
+type TriviaWeek = {
+  id: string;
+  roundSlug: string;
+  weekStart: string;
+  weekEnd: string;
+  published: boolean;
+  live: boolean;
+};
+
+type RoundOption = { slug: string; brand: string; prizeLabel: string };
+
 type TriviaEntry = {
   id: string;
   code: string;
@@ -115,6 +126,10 @@ export default function AdminPage() {
   const [eventsError, setEventsError] = useState('');
   const [entries, setEntries] = useState<TriviaEntry[]>([]);
   const [triviaError, setTriviaError] = useState('');
+  const [weeks, setWeeks] = useState<TriviaWeek[]>([]);
+  const [rounds, setRounds] = useState<RoundOption[]>([]);
+  const [weekRound, setWeekRound] = useState('');
+  const [weekStart, setWeekStart] = useState('');
 
   const loadStock = useCallback(async () => {
     const res = await fetch('/api/admin/inventory');
@@ -144,15 +159,52 @@ export default function AdminPage() {
   }, []);
 
   const loadTrivia = useCallback(async () => {
-    const res = await fetch('/api/admin/trivia');
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      setTriviaError(data.error || 'Could not load entries.');
+    const [entryRes, schedRes] = await Promise.all([
+      fetch('/api/admin/trivia'),
+      fetch('/api/admin/trivia/schedule'),
+    ]);
+    const entryData = await entryRes.json().catch(() => ({}));
+    const schedData = await schedRes.json().catch(() => ({}));
+    if (!entryRes.ok && !schedRes.ok) {
+      setTriviaError(entryData.error || schedData.error || 'Could not load trivia.');
       return;
     }
-    setTriviaError(data.error || '');
-    setEntries(data.entries || []);
+    setTriviaError(entryData.error || schedData.error || '');
+    setEntries(entryData.entries || []);
+    setWeeks(schedData.weeks || []);
+    setRounds(schedData.rounds || []);
+    setWeekRound((v) => v || schedData.rounds?.[0]?.slug || '');
+    setWeekStart((v) => v || schedData.thisWeek || '');
   }, []);
+
+  async function scheduleWeek() {
+    setTriviaError('');
+    const res = await fetch('/api/admin/trivia/schedule', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ roundSlug: weekRound, weekStart }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setTriviaError(data.error || 'Could not schedule the week.');
+      return;
+    }
+    setWeeks((rows) => {
+      const without = rows.filter((r) => r.weekStart !== data.week.weekStart);
+      return [data.week, ...without].sort((a, b) => b.weekStart.localeCompare(a.weekStart));
+    });
+  }
+
+  async function removeWeek(week: TriviaWeek) {
+    setTriviaError('');
+    const res = await fetch(`/api/admin/trivia/schedule?id=${encodeURIComponent(week.id)}`, { method: 'DELETE' });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setTriviaError(data.error || 'Could not remove the week.');
+      return;
+    }
+    setWeeks((rows) => rows.filter((r) => r.id !== week.id));
+  }
 
   async function setEntryStatus(entry: TriviaEntry, status: string) {
     setTriviaError('');
@@ -404,6 +456,75 @@ export default function AdminPage() {
         {tab === 'trivia' ? (
           <>
             {triviaError && <p className="text-sm text-ember mb-6">{triviaError}</p>}
+
+            <div className="bg-white p-6 sm:p-8 mb-12 shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)]">
+              <h2 className="font-bold">Brand of the week</h2>
+              <p className="text-sm text-obsidian/50 mt-1 mb-5">
+                One sponsoring house plays at a time. The week covering today is live on /trivia; every other round
+                stays open as practice with no draw.
+              </p>
+              <div className="grid sm:grid-cols-3 gap-4 items-end">
+                <label className="block">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 block mb-1">
+                    Brand
+                  </span>
+                  <select value={weekRound} onChange={(e) => setWeekRound(e.target.value)} className={inputClass}>
+                    {rounds.map((r) => (
+                      <option key={r.slug} value={r.slug}>
+                        {r.brand} — {r.prizeLabel}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 block mb-1">
+                    Week starting
+                  </span>
+                  <input type="date" value={weekStart} onChange={(e) => setWeekStart(e.target.value)} className={inputClass} />
+                </label>
+                <button
+                  type="button"
+                  onClick={scheduleWeek}
+                  disabled={!weekRound || !weekStart}
+                  className="px-5 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em] disabled:opacity-40"
+                >
+                  Set week
+                </button>
+              </div>
+
+              {weeks.length > 0 && (
+                <ul className="mt-6 pt-6 border-t border-obsidian/10 space-y-2">
+                  {weeks.map((week) => (
+                    <li key={week.id} className="flex items-center gap-3 flex-wrap">
+                      <span className="text-[11px] text-obsidian/45 tabular-nums w-40">
+                        {week.weekStart} → {week.weekEnd}
+                      </span>
+                      <span className="font-medium text-sm">
+                        {rounds.find((r) => r.slug === week.roundSlug)?.brand || week.roundSlug}
+                      </span>
+                      {week.live && (
+                        <span className="text-[9px] font-black uppercase tracking-[0.12em] px-2 py-0.5 bg-ember text-white">
+                          Live
+                        </span>
+                      )}
+                      {!week.published && (
+                        <span className="text-[9px] font-black uppercase tracking-[0.12em] px-2 py-0.5 bg-paper text-obsidian/45">
+                          Hidden
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => removeWeek(week)}
+                        className="ml-auto text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40 hover:text-ember"
+                      >
+                        Remove
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
             <h2 className="font-bold mb-1">Draw entries</h2>
             <p className="text-sm text-obsidian/50 mb-5">
               Everyone who passed a brand round. Mark a winner, then mark the bottle claimed once collected.

@@ -12,12 +12,16 @@ export type TriviaQuestion = {
   explainer: string;
 };
 
+export type TriviaGlyph = 'grape' | 'cask' | 'bubbles' | 'still';
+
 export type TriviaRound = {
   slug: string;
   brand: string;
   house: string;
   category: string;
   blurb: string;
+  /** Decorative house craft mark drawn on the round's card. */
+  glyph: TriviaGlyph;
   /** Correct answers needed to qualify for the draw. */
   passScore: number;
   /** Shop slug of the bottle the sponsor is putting up. */
@@ -33,6 +37,7 @@ export const TRIVIA_ROUNDS: TriviaRound[] = [
     house: 'Cognac · Maison Hennessy',
     category: 'cognac',
     blurb: 'Cognac grades, grapes and the Charente. Five questions on the biggest house in the region.',
+    glyph: 'grape',
     passScore: 4,
     prizeSlug: 'hennessy-vs',
     prizeLabel: 'Hennessy VS 70cl',
@@ -80,6 +85,7 @@ export const TRIVIA_ROUNDS: TriviaRound[] = [
     house: 'Scotch whisky · Diageo',
     category: 'whisky',
     blurb: 'The striding man, the labels, and what blended Scotch actually means.',
+    glyph: 'cask',
     passScore: 4,
     prizeSlug: 'johnnie-walker-black',
     prizeLabel: 'Johnnie Walker Black Label 75cl',
@@ -132,6 +138,7 @@ export const TRIVIA_ROUNDS: TriviaRound[] = [
     house: 'Champagne · Épernay',
     category: 'champagne',
     blurb: 'Bubbles, dosage and the méthode champenoise — how the house actually makes it.',
+    glyph: 'bubbles',
     passScore: 4,
     prizeSlug: 'moet-imperial',
     prizeLabel: 'Moët & Chandon Impérial Brut 75cl',
@@ -189,6 +196,7 @@ export const TRIVIA_ROUNDS: TriviaRound[] = [
     house: 'Irish whiskey · Midleton',
     category: 'whisky',
     blurb: 'Triple distillation, pot still character, and what separates Irish from Scotch.',
+    glyph: 'still',
     passScore: 4,
     prizeSlug: 'jameson-original',
     prizeLabel: 'Jameson Original 70cl',
