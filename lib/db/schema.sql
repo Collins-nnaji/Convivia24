@@ -219,3 +219,22 @@ CREATE TABLE IF NOT EXISTS convivium_members (
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- ═══════════════════════════════════════════════
+-- NIGHT EVENTS (admin-managed listings on /events)
+-- ═══════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS night_events (
+  id            TEXT PRIMARY KEY,
+  title         TEXT NOT NULL,
+  venue_slug    TEXT NOT NULL,
+  tag           TEXT NOT NULL DEFAULT 'Lounge',
+  blurb         TEXT NOT NULL DEFAULT '',
+  expected      TEXT NOT NULL DEFAULT '',
+  cover_ngn     INTEGER,
+  starts_at     TIMESTAMPTZ NOT NULL,
+  ends_at       TIMESTAMPTZ NOT NULL,
+  published     BOOLEAN NOT NULL DEFAULT true,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_night_events_published ON night_events(published, starts_at);

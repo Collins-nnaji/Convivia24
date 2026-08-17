@@ -10,8 +10,8 @@ const footerLinks = [
 
 export default function Footer() {
   return (
-    <footer className="bg-obsidian border-t border-white/10 pb-20 md:pb-0">
-      <div className="max-w-6xl mx-auto px-5 sm:px-8 py-6 sm:py-7">
+    <footer className="bg-obsidian border-t border-white/10 mt-auto">
+      <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-6 sm:pt-7 pb-[calc(1.5rem+4rem+env(safe-area-inset-bottom))] md:pb-7">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-4 min-w-0">
             <Link href="/" className="shrink-0 hover:opacity-90 transition-opacity" aria-label="Convivia24">
@@ -22,7 +22,7 @@ export default function Footer() {
                 style={{ filter: 'brightness(0) invert(1)' }}
               />
             </Link>
-            <p className="hidden sm:block text-[10px] text-white/35 truncate">
+            <p className="hidden sm:block text-[10px] text-white/40 truncate">
               Lagos drinks · parties, clubs & lounges · 18+
             </p>
           </div>
@@ -32,7 +32,7 @@ export default function Footer() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-xs text-white/45 hover:text-white transition-colors"
+                className="text-xs text-white/60 hover:text-white transition-colors"
               >
                 {link.label}
               </Link>
@@ -40,7 +40,7 @@ export default function Footer() {
           </nav>
         </div>
 
-        <div className="mt-4 pt-4 border-t border-white/8 flex flex-wrap items-center justify-between gap-2 text-[11px] text-white/30">
+        <div className="mt-4 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-2 text-[11px] text-white/30">
           <span>&copy; 2026 Convivia24 · 18+</span>
           <div className="flex items-center gap-4">
             <Link href="/privacy" className="hover:text-white/60 transition-colors">

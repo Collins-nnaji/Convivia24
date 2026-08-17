@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ArrowLeft, CalendarDays, MapPin, ShoppingBag, Star } from 'lucide-react';
-import { formatEventWhen, getEvent } from '@/lib/events/catalog';
+import { formatEventWhen } from '@/lib/events/catalog';
+import { useEvent } from '@/lib/events/use-feed';
 import { venueRating } from '@/lib/venues/reviews';
 import { formatNgn } from '@/lib/drinks/catalog';
 import { getWallet, isEnrolled, rsvpEvent } from '@/lib/loyalty/store';
@@ -14,7 +15,7 @@ import { tagToArt } from '@/components/graphics/NightArt';
 export default function EventDetailPage() {
   const params = useParams();
   const id = String(params.id || '');
-  const event = useMemo(() => getEvent(id), [id]);
+  const event = useEvent(id);
   const [msg, setMsg] = useState('');
   const [going, setGoing] = useState(false);
   const [enrolled, setEnrolled] = useState(false);

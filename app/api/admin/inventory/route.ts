@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin, setAdminSession } from '@/lib/admin';
-import { listInventory, upsertAdminProduct, adjustStock } from '@/lib/inventory';
+import { listInventory, upsertAdminProduct, adminStockList, editStockRow, StockEditError } from '@/lib/inventory';
 import { uploadBlob, validateImageFile, blobConfigured } from '@/lib/azure/blob';
 import { apiErrorResponse } from '@/lib/db';
 import { rateLimit, clientIp, redis } from '@/lib/redis';
@@ -11,7 +11,7 @@ export async function GET() {
   const gate = await requireAdmin();
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
-    const items = await listInventory(false);
+    const items = await adminStockList();
     return NextResponse.json({
       items,
       blobConfigured: blobConfigured(),
@@ -42,9 +42,32 @@ export async function POST(req: NextRequest) {
       if (body.action === 'adjust') {
         const gate = await requireAdmin();
         if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
-        const row = await adjustStock(String(body.slug), Number(body.onHand));
-        await redis()?.del('shop:catalog:v1');
-        return NextResponse.json({ item: row });
+        const slug = String(body.slug || '');
+        if (!slug) return NextResponse.json({ error: 'Slug is required.' }, { status: 400 });
+        const patch: Parameters<typeof editStockRow>[1] = {};
+        if (body.onHand != null && body.onHand !== '') patch.onHand = Number(body.onHand);
+        if (body.priceNgn != null && body.priceNgn !== '') patch.priceNgn = Number(body.priceNgn);
+        if (body.lowStockThreshold != null && body.lowStockThreshold !== '') {
+          patch.lowStockThreshold = Number(body.lowStockThreshold);
+        }
+        if (typeof body.active === 'boolean') patch.active = body.active;
+        if (Object.values(patch).some((v) => typeof v === 'number' && !Number.isFinite(v))) {
+          return NextResponse.json({ error: 'Numbers must be valid.' }, { status: 400 });
+        }
+        if (Object.keys(patch).length === 0) {
+          return NextResponse.json({ error: 'Nothing to update.' }, { status: 400 });
+        }
+        try {
+          const row = await editStockRow(slug, patch);
+          if (!row) return NextResponse.json({ error: 'Unknown SKU.' }, { status: 404 });
+          await redis()?.del('shop:catalog:v1');
+          return NextResponse.json({ item: row });
+        } catch (err) {
+          if (err instanceof StockEditError) {
+            return NextResponse.json({ error: err.message }, { status: 400 });
+          }
+          throw err;
+        }
       }
       if (body.action === 'ai-list') {
         const gate = await requireAdmin();

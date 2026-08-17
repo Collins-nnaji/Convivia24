@@ -15,12 +15,12 @@ import {
 import NightArt, { tagToArt } from '@/components/graphics/NightArt';
 import { LAGOS_AREAS, formatKm, haversineKm } from '@/lib/geo/lagos';
 import {
-  allEvents,
   formatEventWhen,
   isThisWeekend,
   isTonight,
   type ResolvedEvent,
 } from '@/lib/events/catalog';
+import { useEventFeed } from '@/lib/events/use-feed';
 import { VENUES, VENUE_KIND_LABELS, type Venue } from '@/lib/venues/catalog';
 import { venueRating } from '@/lib/venues/reviews';
 import { formatNgn } from '@/lib/drinks/catalog';
@@ -38,6 +38,7 @@ const SHADOWS = [
 
 export default function EventsExplorer() {
   const params = useSearchParams();
+  const feed = useEventFeed();
   const initialTab = params.get('tab') === 'venues' ? 'venues' : 'events';
   const [tab, setTab] = useState<Tab>(initialTab);
   const [area, setArea] = useState<string>(params.get('area') || 'all');
@@ -84,7 +85,7 @@ export default function EventsExplorer() {
   }
 
   const events = useMemo(() => {
-    let list = allEvents();
+    let list = feed;
     if (area !== 'all') list = list.filter((e) => e.venue.areaId === area);
     if (when === 'tonight') list = list.filter(isTonight);
     if (when === 'weekend') list = list.filter(isThisWeekend);
@@ -92,7 +93,7 @@ export default function EventsExplorer() {
       list = [...list].sort((a, b) => haversineKm(here, a.venue) - haversineKm(here, b.venue));
     }
     return list;
-  }, [area, when, here]);
+  }, [feed, area, when, here]);
 
   const venues = useMemo(() => {
     let list: (Venue & { km?: number })[] =
@@ -105,7 +106,7 @@ export default function EventsExplorer() {
     return list;
   }, [area, here]);
 
-  const tonightCount = useMemo(() => allEvents().filter(isTonight).length, []);
+  const tonightCount = useMemo(() => feed.filter(isTonight).length, [feed]);
   const activeFilterCount =
     (area !== 'all' ? 1 : 0) + (tab === 'events' && when !== 'all' ? 1 : 0) + (here ? 1 : 0);
 

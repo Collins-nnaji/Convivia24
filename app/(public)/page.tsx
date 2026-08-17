@@ -4,7 +4,6 @@ import Link from 'next/link';
 import DrinkPlaceholder from '@/components/shop/DrinkPlaceholder';
 import DrinkPhoto from '@/components/shop/DrinkPhoto';
 import HomeHero from '@/components/home/HomeHero';
-import Footer from '@/components/Footer';
 import { allEvents, formatEventWhen, isTonight } from '@/lib/events/catalog';
 import {
   DRINKS,
@@ -156,8 +155,6 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
-
-      <Footer />
     </>
   );
 }

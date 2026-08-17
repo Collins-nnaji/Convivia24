@@ -130,6 +130,108 @@ export async function adjustStock(slug: string, onHand: number): Promise<Invento
   return rows[0] ? mapRow(rows[0]) : null;
 }
 
+export type AdminStockRow = InventoryRow & { tracked: boolean };
+
+/**
+ * Every SKU the shop can sell — live inventory rows first, then catalog drinks
+ * that have never been stocked (so the desk can set their counts too).
+ */
+export async function adminStockList(): Promise<AdminStockRow[]> {
+  const rows = await listInventory(false);
+  const bySlug = new Map(rows.map((r) => [r.slug, r]));
+  const untracked: AdminStockRow[] = DRINKS.filter((d) => !bySlug.has(d.slug)).map((d) => ({
+    slug: d.slug,
+    name: d.name,
+    on_hand: 0,
+    reserved: 0,
+    low_stock_threshold: 6,
+    track_stock: true,
+    active: true,
+    image_url: d.image || null,
+    category: d.category,
+    brand: d.brand || null,
+    volume: d.volume || null,
+    abv: d.abv ?? null,
+    price_ngn: d.priceNgn ?? null,
+    tagline: d.tagline || null,
+    description: d.description || null,
+    source: 'catalog',
+    available: 0,
+    tracked: false,
+  }));
+  return [...rows.map((r) => ({ ...r, tracked: true })), ...untracked];
+}
+
+export class StockEditError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'StockEditError';
+  }
+}
+
+/**
+ * Edit an existing SKU's live fields from the admin desk. Any field left
+ * undefined is untouched. Seeded catalog SKUs are inserted on first edit so
+ * their stock can be managed alongside admin-uploaded ones.
+ */
+export async function editStockRow(
+  slug: string,
+  patch: { onHand?: number; priceNgn?: number | null; lowStockThreshold?: number; active?: boolean }
+): Promise<InventoryRow | null> {
+  const existing = await getInventory(slug);
+  if (!existing) {
+    const seed = DRINKS.find((d) => d.slug === slug);
+    if (!seed) return null;
+    await sql`
+      INSERT INTO inventory (slug, name, on_hand, category, brand, volume, abv, price_ngn, tagline, description, source)
+      VALUES (
+        ${seed.slug}, ${seed.name}, 0, ${seed.category}, ${seed.brand || null}, ${seed.volume || null},
+        ${seed.abv ?? null}, ${seed.priceNgn ?? null}, ${seed.tagline || null}, ${seed.description || null}, 'seed'
+      )
+      ON CONFLICT (slug) DO NOTHING
+    `;
+  }
+
+  const reserved = existing?.reserved ?? 0;
+  if (patch.onHand != null && Math.floor(patch.onHand) < reserved) {
+    throw new StockEditError(`On hand cannot go below ${reserved} reserved unit(s).`);
+  }
+
+  const onHand = patch.onHand != null ? Math.max(0, Math.floor(patch.onHand)) : null;
+  const priceNgn = patch.priceNgn != null ? Math.max(0, Math.floor(patch.priceNgn)) : null;
+  const threshold = patch.lowStockThreshold != null ? Math.max(0, Math.floor(patch.lowStockThreshold)) : null;
+  const active = patch.active != null ? patch.active : null;
+
+  const rows = await sql`
+    UPDATE inventory SET
+      on_hand = COALESCE(${onHand}, on_hand),
+      price_ngn = COALESCE(${priceNgn}, price_ngn),
+      low_stock_threshold = COALESCE(${threshold}, low_stock_threshold),
+      active = COALESCE(${active}, active),
+      updated_at = NOW()
+    WHERE slug = ${slug}
+    RETURNING *
+  `;
+  if (!rows[0]) return null;
+  const row = mapRow(rows[0]);
+  if (onHand != null) {
+    const previous = existing?.on_hand ?? 0;
+    await logMovement(slug, onHand - previous, 'adjust', 'Admin stock edit');
+  }
+  return row;
+}
+
+async function logMovement(slug: string, delta: number, reason: string, note: string) {
+  try {
+    await sql`
+      INSERT INTO inventory_movements (slug, delta_on_hand, reason, note)
+      VALUES (${slug}, ${delta}, ${reason}, ${note})
+    `;
+  } catch {
+    /* movement log is best-effort */
+  }
+}
+
 /** Merge static catalog + admin inventory into shop products with live stock. */
 export async function shopCatalog(): Promise<(DrinkProduct & { onHand?: number; available?: number; lowStock?: boolean })[]> {
   let stock: InventoryRow[] = [];
