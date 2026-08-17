@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { useCart } from '@/components/cart/CartProvider';
 import { formatNgn } from '@/lib/drinks/catalog';
-import { checkoutPricing, isEnrolled } from '@/lib/loyalty/store';
+import { isEnrolled } from '@/lib/loyalty/store';
 
 const PENDING_ORDER_KEY = 'convivia_pending_order';
 
@@ -20,22 +20,24 @@ function CheckoutForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [deliveryMode, setDeliveryMode] = useState<'address' | 'venue'>(venuePrefill ? 'venue' : 'address');
-  const [pricing, setPricing] = useState({
-    discountPct: 0,
-    discountNgn: 0,
-    walletNgn: 0,
-    payableNgn: subtotalNgn,
-  });
+  // Tier discount comes from the server's points record — the same source the
+  // order is priced from — so the amount shown is the amount charged.
+  const [discountPct, setDiscountPct] = useState(0);
   const [enrolled, setEnrolled] = useState(false);
+  const discountNgn = Math.round((subtotalNgn * discountPct) / 100);
+  const payableNgn = Math.max(0, subtotalNgn - discountNgn);
 
   useEffect(() => {
     refreshPrices();
   }, [refreshPrices]);
 
   useEffect(() => {
-    setPricing(checkoutPricing(subtotalNgn));
     setEnrolled(isEnrolled());
-  }, [subtotalNgn]);
+    fetch('/api/loyalty/me')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => setDiscountPct(Number(data?.standing?.discountPct) || 0))
+      .catch(() => {});
+  }, []);
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -79,7 +81,7 @@ function CheckoutForm() {
       sessionStorage.setItem(PENDING_ORDER_KEY, orderId);
       sessionStorage.setItem(
         'convivia_loyalty_apply',
-        JSON.stringify({ subtotalNgn, walletNgn: pricing.walletNgn })
+        JSON.stringify({ subtotalNgn, discountNgn: orderData.loyaltyDiscountNgn ?? 0 })
       );
 
       const payRes = await fetch('/api/stripe/checkout', {
@@ -246,7 +248,7 @@ function CheckoutForm() {
               disabled={loading}
               className="px-8 py-4 btn-brand text-[11px] font-black uppercase tracking-[0.14em] disabled:opacity-60"
             >
-              {loading ? 'Placing order…' : `Pay ${formatNgn(pricing.payableNgn)}`}
+              {loading ? 'Placing order…' : `Pay ${formatNgn(payableNgn)}`}
             </button>
           </form>
 
@@ -264,21 +266,15 @@ function CheckoutForm() {
                 ))}
               </ul>
               <div className="pt-4 border-t border-obsidian/10 space-y-2">
-                {pricing.discountNgn > 0 && (
+                {discountNgn > 0 && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-obsidian/45">Guest Card {pricing.discountPct}%</span>
-                    <span className="text-ember">−{formatNgn(pricing.discountNgn)}</span>
-                  </div>
-                )}
-                {pricing.walletNgn > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-obsidian/45">Wallet</span>
-                    <span className="text-ember">−{formatNgn(pricing.walletNgn)}</span>
+                    <span className="text-obsidian/45">Guest Card {discountPct}%</span>
+                    <span className="text-ember">−{formatNgn(discountNgn)}</span>
                   </div>
                 )}
                 <div className="flex justify-between items-baseline">
                   <span className="text-obsidian/45 text-sm">Total</span>
-                  <span className="text-2xl font-bold">{formatNgn(pricing.payableNgn)}</span>
+                  <span className="text-2xl font-bold">{formatNgn(payableNgn)}</span>
                 </div>
                 {!enrolled && (
                   <Link href="/card" className="block text-[10px] font-black uppercase tracking-[0.14em] text-ember pt-1">

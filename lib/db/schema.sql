@@ -324,3 +324,24 @@ CREATE TABLE IF NOT EXISTS partner_pricing_items (
   updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_partner_pricing_outlet ON partner_pricing_items(outlet_id);
+
+-- ═══════════════════════════════════════════════
+-- LOYALTY MEMBERS (server-side points, so tier discounts can be trusted)
+-- ═══════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS loyalty_members (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id        TEXT NOT NULL UNIQUE,
+  email           TEXT NOT NULL,
+  name            TEXT,
+  points          INTEGER NOT NULL DEFAULT 0 CHECK (points >= 0),
+  lifetime_points INTEGER NOT NULL DEFAULT 0 CHECK (lifetime_points >= 0),
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_loyalty_members_email ON loyalty_members(LOWER(email));
+
+-- Orders carry the loyalty discount that was actually applied.
+ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS loyalty_discount_ngn INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS total_ngn INTEGER;
+ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS loyalty_owner_id TEXT;
+ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS loyalty_points_awarded INTEGER NOT NULL DEFAULT 0;

@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     }
 
     const [order] = await sql`
-      SELECT id, email, full_name, subtotal_ngn, status, payment_ref
+      SELECT id, email, full_name, subtotal_ngn, total_ngn, status, payment_ref
       FROM ritual_orders
       WHERE id = ${orderId}
       LIMIT 1
@@ -55,8 +55,10 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Reuse existing Paystack reference when resuming the same order
-    const amountKobo = Number(order.subtotal_ngn) * 100;
+    // Charge the loyalty-adjusted total the order was created with.
+    const chargeableNgn = Number(order.total_ngn ?? order.subtotal_ngn);
+    const amountKobo = chargeableNgn * 100;
+    // Reuse the existing Paystack reference when resuming the same order.
     const reference =
       (order.payment_ref as string) ||
       `convivia_${orderId.replace(/-/g, '').slice(0, 24)}_${Date.now().toString(36)}`;

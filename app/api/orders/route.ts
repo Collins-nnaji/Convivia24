@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import sql, { apiErrorResponse } from '@/lib/db';
 import { getDrinkBySlug } from '@/lib/drinks/catalog';
 import { getCurrentUser } from '@/lib/auth/session';
+import { getMember, loyaltyDiscountNgn, resolveMemberOwner } from '@/lib/loyalty/members';
 
 type IncomingItem = {
   slug: string;
@@ -21,6 +22,8 @@ export async function GET() {
         o.id,
         o.status,
         o.subtotal_ngn,
+        o.loyalty_discount_ngn,
+        o.total_ngn,
         o.address_line1,
         o.area,
         o.created_at,
@@ -49,6 +52,8 @@ export async function GET() {
         id: o.id,
         status: o.status,
         subtotalNgn: o.subtotal_ngn,
+        loyaltyDiscountNgn: Number(o.loyalty_discount_ngn ?? 0),
+        totalNgn: Number(o.total_ngn ?? o.subtotal_ngn),
         addressLine1: o.address_line1,
         area: o.area,
         createdAt: o.created_at,
@@ -133,12 +138,20 @@ export async function POST(req: NextRequest) {
 
     const subtotal = resolved.reduce((n, r) => n + r.unitPrice * r.qty, 0);
 
+    // Tier discount comes from the server's own points record, never the client.
+    const loyaltyOwnerId = await resolveMemberOwner();
+    const member = loyaltyOwnerId ? await getMember(loyaltyOwnerId) : null;
+    const discount = loyaltyDiscountNgn(subtotal, member);
+    const total = Math.max(0, subtotal - discount.ngn);
+
     const [order] = await sql`
       INSERT INTO ritual_orders (
-        email, full_name, phone, address_line1, address_line2, city, area, notes, subtotal_ngn, status
+        email, full_name, phone, address_line1, address_line2, city, area, notes,
+        subtotal_ngn, loyalty_discount_ngn, total_ngn, loyalty_owner_id, status
       ) VALUES (
         ${email}, ${fullName}, ${phone}, ${addressLine1}, ${addressLine2},
-        'Lagos', ${area}, ${notes}, ${subtotal}, 'pending'
+        'Lagos', ${area}, ${notes},
+        ${subtotal}, ${discount.ngn}, ${total}, ${member ? loyaltyOwnerId : null}, 'pending'
       )
       RETURNING id, subtotal_ngn, status
     `;
@@ -156,6 +169,9 @@ export async function POST(req: NextRequest) {
       ok: true,
       orderId,
       subtotalNgn: subtotal,
+      loyaltyDiscountPct: discount.pct,
+      loyaltyDiscountNgn: discount.ngn,
+      totalNgn: total,
       status: 'pending',
     });
   } catch (err) {

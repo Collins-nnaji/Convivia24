@@ -5,7 +5,6 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { useCart } from '@/components/cart/CartProvider';
 import { formatNgn } from '@/lib/drinks/catalog';
-import { earnFromOrder, spendWallet } from '@/lib/loyalty/store';
 
 type VerifyState =
   | { phase: 'loading' }
@@ -22,14 +21,12 @@ function SuccessBody() {
   const { clear } = useCart();
   const [state, setState] = useState<VerifyState>({ phase: 'loading' });
 
-  function applyLoyalty(subtotal?: number) {
+  /**
+   * Order points are awarded server-side when the payment verifies, so nothing
+   * is banked in the browser here — this only clears the hand-off record.
+   */
+  function applyLoyalty(_subtotal?: number) {
     try {
-      const raw = sessionStorage.getItem('convivia_loyalty_apply');
-      const parsed = raw ? (JSON.parse(raw) as { subtotalNgn?: number; walletNgn?: number }) : {};
-      const spend = Number(parsed.walletNgn) || 0;
-      const earnOn = Number(subtotal || parsed.subtotalNgn) || 0;
-      if (spend > 0) spendWallet(spend);
-      if (earnOn > 0) earnFromOrder(earnOn);
       sessionStorage.removeItem('convivia_loyalty_apply');
     } catch {
       /* ignore */

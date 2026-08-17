@@ -7,9 +7,16 @@ import { ArrowRight, ChevronDown, CreditCard } from 'lucide-react';
 import ConviviumCard from '@/components/ConviviumCard';
 import { useUser } from '@/components/auth/AuthProvider';
 import { useCart } from '@/components/cart/CartProvider';
-import { enroll, getWallet, isEnrolled, type LoyaltyWallet } from '@/lib/loyalty/store';
-import { nextTier, tierForPoints } from '@/lib/loyalty/program';
 import { formatNgn } from '@/lib/drinks/catalog';
+
+type Standing = {
+  claimed: boolean;
+  points: number;
+  tierName: string;
+  discountPct: number;
+  nextTierName: string | null;
+  pointsToNextTier: number;
+};
 
 /**
  * The signed-in shopper's own Guest Card, collapsed. Sits on the shop and in
@@ -19,25 +26,38 @@ import { formatNgn } from '@/lib/drinks/catalog';
 export default function GuestCardStrip({ className = '' }: { className?: string }) {
   const { user, loading } = useUser();
   const { subtotalNgn } = useCart();
-  const [wallet, setWallet] = useState<LoyaltyWallet | null>(null);
+  const [standing, setStanding] = useState<Standing | null>(null);
   const [open, setOpen] = useState(false);
+  const [claiming, setClaiming] = useState(false);
 
   useEffect(() => {
-    setWallet(getWallet());
-  }, []);
+    if (!user) return;
+    fetch('/api/loyalty/me')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => setStanding(data?.standing ?? null))
+      .catch(() => {});
+  }, [user]);
 
   if (loading || !user) return null;
 
-  const enrolled = wallet ? isEnrolled(wallet) : false;
-  const points = wallet?.points ?? 0;
-  const tier = tierForPoints(points);
-  const upcoming = nextTier(points);
-  const toGo = upcoming ? Math.max(0, upcoming.minPoints - points) : 0;
-  const discountNgn = Math.round((subtotalNgn * tier.shopDiscountPct) / 100);
+  const enrolled = Boolean(standing?.claimed);
+  const points = standing?.points ?? 0;
+  const discountPct = standing?.discountPct ?? 0;
+  const discountNgn = Math.round((subtotalNgn * discountPct) / 100);
 
-  function claim() {
-    setWallet(enroll(user?.name || user?.email?.split('@')[0] || 'Guest', user?.email || ''));
-    setOpen(true);
+  async function claim() {
+    setClaiming(true);
+    try {
+      const res = await fetch('/api/loyalty/me', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: user?.name || '' }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) setStanding(data.standing);
+    } finally {
+      setClaiming(false);
+    }
   }
 
   return (
@@ -56,7 +76,7 @@ export default function GuestCardStrip({ className = '' }: { className?: string 
           <span className="block text-[10px] font-black uppercase tracking-[0.2em] text-ember">Guest Card</span>
           <span className="block text-[12px] text-obsidian/55 truncate">
             {enrolled
-              ? `${tier.name} · ${points.toLocaleString('en-NG')} pts${
+              ? `${standing?.tierName} · ${points.toLocaleString('en-NG')} pts${
                   discountNgn > 0 ? ` · ${formatNgn(discountNgn)} off this order` : ''
                 }`
               : 'Not claimed yet — points on every order'}
@@ -78,8 +98,8 @@ export default function GuestCardStrip({ className = '' }: { className?: string 
             <div className="border-t border-obsidian/10 p-4 sm:p-5">
               <ConviviumCard
                 kind="loyalty"
-                tier={enrolled ? tier.name.toUpperCase() : 'GUEST CARD'}
-                name={(enrolled ? wallet?.name : user.name || user.email) ?.toUpperCase() || 'YOUR NAME'}
+                tier={enrolled ? (standing?.tierName || 'GUEST').toUpperCase() : 'GUEST CARD'}
+                name={(user.name || user.email)?.toUpperCase() || 'YOUR NAME'}
                 points={points}
               />
 
@@ -88,20 +108,18 @@ export default function GuestCardStrip({ className = '' }: { className?: string 
                   <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
                     <div>
                       <dt className="text-[10px] font-black uppercase tracking-[0.16em] text-obsidian/35">Tier</dt>
-                      <dd className="font-semibold">{tier.name}</dd>
+                      <dd className="font-semibold">{standing?.tierName}</dd>
                     </div>
                     <div>
                       <dt className="text-[10px] font-black uppercase tracking-[0.16em] text-obsidian/35">
                         Shop discount
                       </dt>
-                      <dd className="font-semibold">
-                        {tier.shopDiscountPct > 0 ? `${tier.shopDiscountPct}%` : 'None yet'}
-                      </dd>
+                      <dd className="font-semibold">{discountPct > 0 ? `${discountPct}%` : 'None yet'}</dd>
                     </div>
                   </dl>
                   <p className="text-[12px] text-obsidian/45 mt-3">
-                    {upcoming
-                      ? `${toGo.toLocaleString('en-NG')} pts to ${upcoming.name} — ${upcoming.blurb}`
+                    {standing?.nextTierName
+                      ? `${standing.pointsToNextTier.toLocaleString('en-NG')} pts to ${standing.nextTierName} — keep earning on orders, RSVPs and reviews.`
                       : 'Top tier reached. Table credit at partner rooms is yours.'}
                   </p>
                   <Link
@@ -120,9 +138,10 @@ export default function GuestCardStrip({ className = '' }: { className?: string 
                   <button
                     type="button"
                     onClick={claim}
-                    className="mt-3 px-5 py-2.5 btn-brand text-[10px] font-black uppercase tracking-[0.14em]"
+                    disabled={claiming}
+                    className="mt-3 px-5 py-2.5 btn-brand text-[10px] font-black uppercase tracking-[0.14em] disabled:opacity-50"
                   >
-                    Claim my card
+                    {claiming ? 'Claiming…' : 'Claim my card'}
                   </button>
                 </>
               )}
