@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { ArrowRight, Minus, Plus, Trash2 } from 'lucide-react';
 import { useCart } from '@/components/cart/CartProvider';
 import DrinkPhoto from '@/components/shop/DrinkPhoto';
-import CartGuestCard from '@/components/loyalty/CartGuestCard';
+import GuestCardStrip from '@/components/loyalty/GuestCardStrip';
 import { formatNgn, getDrinkBySlug } from '@/lib/drinks/catalog';
 
 export default function CartPage() {
@@ -99,7 +99,7 @@ export default function CartPage() {
               </ul>
 
               <aside className="lg:col-span-4">
-                <CartGuestCard subtotalNgn={subtotalNgn} />
+                <GuestCardStrip className="mb-6" />
                 <div className="bg-white border border-obsidian/8 p-6 space-y-4">
                   <div className="flex justify-between text-sm">
                     <span className="text-obsidian/50">Subtotal</span>

@@ -6,17 +6,19 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, ChevronDown, CreditCard } from 'lucide-react';
 import ConviviumCard from '@/components/ConviviumCard';
 import { useUser } from '@/components/auth/AuthProvider';
+import { useCart } from '@/components/cart/CartProvider';
 import { enroll, getWallet, isEnrolled, type LoyaltyWallet } from '@/lib/loyalty/store';
 import { nextTier, tierForPoints } from '@/lib/loyalty/program';
 import { formatNgn } from '@/lib/drinks/catalog';
 
 /**
- * The signed-in shopper's own Guest Card, collapsed above the cart summary.
- * Shows the discount their tier earns on this order, so the card is useful at
- * the moment it matters. Hidden entirely when signed out.
+ * The signed-in shopper's own Guest Card, collapsed. Sits on the shop and in
+ * the cart, and shows the discount their tier earns on what is in the cart
+ * right now. Hidden entirely when signed out.
  */
-export default function CartGuestCard({ subtotalNgn = 0 }: { subtotalNgn?: number }) {
+export default function GuestCardStrip({ className = '' }: { className?: string }) {
   const { user, loading } = useUser();
+  const { subtotalNgn } = useCart();
   const [wallet, setWallet] = useState<LoyaltyWallet | null>(null);
   const [open, setOpen] = useState(false);
 
@@ -39,7 +41,7 @@ export default function CartGuestCard({ subtotalNgn = 0 }: { subtotalNgn?: numbe
   }
 
   return (
-    <div className="border border-obsidian/10 bg-white mb-6">
+    <div className={`border border-obsidian/10 bg-white ${className}`}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

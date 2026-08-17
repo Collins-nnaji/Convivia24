@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { ProductCard } from '@/components/shop/ProductCard';
 import PartyPlanner from '@/components/shop/PartyPlanner';
+import GuestCardStrip from '@/components/loyalty/GuestCardStrip';
 import { CategoryIcon } from '@/components/icons/ShopIcons';
 import {
   CATEGORIES,
@@ -101,6 +102,8 @@ export default function ShopCatalog() {
           </button>
         ))}
       </div>
+
+      <GuestCardStrip className="mb-4" />
 
       <PartyPlanner defaultOpen={plannerOpen} />
 
