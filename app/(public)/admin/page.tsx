@@ -516,6 +516,9 @@ export default function AdminPage() {
       published: event.published,
     });
     setTab('events');
+    // #app-scroll is the actual scroll container on mobile (see the (public)
+    // layout's app-shell wrapper); window.scrollTo alone is a no-op there.
+    document.getElementById('app-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 

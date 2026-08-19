@@ -26,9 +26,18 @@ export default function Navigation() {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 8);
+    // On mobile the page itself doesn't scroll — #app-scroll does (see the
+    // (public) layout's app-shell wrapper) — so both need watching. On
+    // desktop that element reverts to normal flow and window scroll fires.
+    const appScroll = document.getElementById('app-scroll');
+    const handler = () => setScrolled(window.scrollY > 8 || (appScroll?.scrollTop ?? 0) > 8);
     window.addEventListener('scroll', handler, { passive: true });
-    return () => window.removeEventListener('scroll', handler);
+    appScroll?.addEventListener('scroll', handler, { passive: true });
+    handler();
+    return () => {
+      window.removeEventListener('scroll', handler);
+      appScroll?.removeEventListener('scroll', handler);
+    };
   }, []);
 
   useEffect(() => {
