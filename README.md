@@ -14,6 +14,9 @@ Lagos drink ordering and delivery for **parties, clubs, and lounges**. Age 18+.
 - **`/circles`** — Vibe-tagged interest groups (join/leave), DB-backed
 - **`/companion`** — AI night-planning chat, now in primary nav
 - **`/venues`** — B2B inquire for clubs & lounges
+- **`/partners`** · **`/partners/portal`** — Outlet sign-up + desk (margin pricing, Premium points, wholesale
+  restocking, perk → gift-card conversion). Requires the same Neon Auth sign-in customers use — no more
+  anonymous/localStorage partner state
 - **`/admin`** — Stock desk, order fulfillment + delivery tracking + refunds, gift card issuance, events &
   trivia scheduling (signed admin session, or Neon Auth allowlist)
 - **`/age-check`** — Server-enforced 18+ gate (see `proxy.ts`); a request without a valid signed cookie never
@@ -47,6 +50,12 @@ npm run dev
 - `RESEND_API_URL` — optional, defaults to `https://api.resend.com`
 - `ADMIN_NOTIFY_EMAIL` — optional; BCC'd on every "order received" email as an ops copy
 - `ADMIN_PASSWORD` / `CONVIVIA_ADMIN_EMAILS` — admin desk access (shared password or a Neon Auth allowlist)
+- `TERMII_API_KEY` — enables SMS (and WhatsApp, via `TERMII_CHANNEL=whatsapp`) order/delivery updates;
+  without it, `lib/notify/termii.ts` no-ops the same way Resend does
+- `TERMII_SENDER_ID` — optional, your registered Termii sender ID; falls back to Termii's shared "N-Alert" ID
+- `TERMII_API_URL` — optional, defaults to `https://api.ng.termii.com/api`
+- `NEON_AUTH_COOKIE_SECRET` — signs the age-gate cookie (`lib/age-gate.ts`) in addition to Neon Auth's own
+  session; without it, age-gate signing falls back to a fixed non-secret string (fine for local dev, not prod)
 
 ## Catalog & cart
 
@@ -57,6 +66,7 @@ npm run dev
   or consumes it as the order moves through cancel/refund/delivered
 - Gift cards: [`lib/commerce/gift-cards.ts`](lib/commerce/gift-cards.ts), DB-backed, issued from `/admin`
 - Order emails (Resend): [`lib/email/resend.ts`](lib/email/resend.ts), [`lib/email/templates.ts`](lib/email/templates.ts), wired via [`lib/commerce/notify.ts`](lib/commerce/notify.ts)
+- Order SMS/WhatsApp (Termii): [`lib/notify/termii.ts`](lib/notify/termii.ts), same `notify.ts` call sites as email
 
 ## Testing & CI
 
@@ -69,8 +79,23 @@ npx tsc --noEmit  # typecheck
 
 ## Mobile
 
-No native wrapper right now — the `android/`/`ios/` directories were unconfigured, dependency-less Capacitor
-scaffolding with no custom code, so they were removed. Regenerate with `npx cap add android` / `npx cap add ios`
-if a native shell is picked up again.
+`android/`/`ios/` are real Capacitor projects (`@capacitor/core`, `@capacitor/android`, `@capacitor/ios`, see
+`capacitor.config.ts`). This is a full Next.js SSR app — API routes, `proxy.ts`, cookie-based auth/age-gate —
+so it can't be statically exported into the native bundle the way a static site can. Instead the native shell
+wraps the **live deployed site**: the WebView loads `NEXT_PUBLIC_APP_URL` directly (`server.url` mode), so every
+request still runs through the real Next.js server and native Capacitor plugins (push, share, haptics) are
+still available on top of it.
+
+```bash
+# set NEXT_PUBLIC_APP_URL to your real deployed origin first
+npm run cap:sync     # copy web config + sync native plugins
+npm run cap:android  # opens the project in Android Studio
+npm run cap:ios      # opens the project in Xcode
+```
+
+Building an installable app/IPA and publishing to the Play Store / App Store needs your own developer accounts
+— not something this repo can do for you. App icon/splash screen are still Capacitor's defaults; generate real
+ones with `npx @capacitor/assets generate` once brand assets in the right (square) proportions exist — the
+current `/public/convivia24.png` is a wide wordmark, not an icon shape.
 
 Brand logo: `/public/convivia24.png` (red→black wordmark). Accent: ember red `#E23B2F`.

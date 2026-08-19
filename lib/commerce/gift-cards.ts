@@ -55,6 +55,13 @@ export async function listGiftCards(limit = 100): Promise<GiftCard[]> {
   return rows.map(mapRow);
 }
 
+export async function listGiftCardsIssuedBy(issuedBy: string, limit = 30): Promise<GiftCard[]> {
+  const rows = await sql`
+    SELECT * FROM gift_cards WHERE issued_by = ${issuedBy} ORDER BY created_at DESC LIMIT ${limit}
+  `;
+  return rows.map(mapRow);
+}
+
 /**
  * Atomically claims a card for one order. The guarded UPDATE is the actual
  * security boundary — a code only pays out if a matching, still-active row

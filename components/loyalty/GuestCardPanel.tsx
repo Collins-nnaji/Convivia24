@@ -3,13 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import ConviviumCard from '@/components/ConviviumCard';
-import {
-  applyGiftCode,
-  enroll,
-  getWallet,
-  isEnrolled,
-  redeemPerk,
-} from '@/lib/loyalty/store';
+import { enroll, getWallet, isEnrolled, redeemPerk } from '@/lib/loyalty/store';
 import { LOYALTY_PERKS, LOYALTY_TIERS, nextTier, tierForPoints } from '@/lib/loyalty/program';
 import { formatNgn } from '@/lib/drinks/catalog';
 
@@ -17,7 +11,6 @@ export default function GuestCardPanel() {
   const [wallet, setWallet] = useState(getWallet);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [code, setCode] = useState('');
   const [msg, setMsg] = useState('');
 
   useEffect(() => {
@@ -47,18 +40,6 @@ export default function GuestCardPanel() {
     }
     setWallet(result);
     setMsg('Perk unlocked.');
-  }
-
-  function onGift(e: FormEvent) {
-    e.preventDefault();
-    const result = applyGiftCode(code);
-    if ('error' in result) {
-      setMsg(result.error);
-      return;
-    }
-    setWallet(result);
-    setCode('');
-    setMsg('Gift card added to your wallet.');
   }
 
   return (
@@ -146,17 +127,15 @@ export default function GuestCardPanel() {
               </ul>
             </div>
 
-            <form onSubmit={onGift} className="bg-white border border-obsidian/8 p-5 flex flex-col sm:flex-row gap-3">
-              <input
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="Gift card code (from a partner venue)"
-                className="flex-1 border-0 border-b border-obsidian/15 focus:border-ember focus:ring-0 text-sm py-2"
-              />
-              <button type="submit" className="px-5 py-2.5 btn-brand text-[10px] font-black uppercase tracking-[0.12em]">
-                Load
-              </button>
-            </form>
+            <div className="bg-white border border-obsidian/8 p-5">
+              <p className="text-sm text-obsidian/60">
+                Have a gift card code from a partner venue?{' '}
+                <Link href="/shop" className="text-ember font-semibold">
+                  Enter it at checkout
+                </Link>{' '}
+                — it comes straight off your order total.
+              </p>
+            </div>
 
             <div>
               <h2 className="font-bold mb-3">Activity</h2>

@@ -461,3 +461,46 @@ INSERT INTO circles (slug, name, vibe_tag, description) VALUES
   ('ladies-night', 'Ladies Night', 'Girls night', 'Coordinating drops and tables for a night out with the girls.'),
   ('after-hours', 'After Hours', 'Late night', 'For the crews still going after the lounges close.')
 ON CONFLICT (slug) DO NOTHING;
+
+-- ═══════════════════════════════════════════════
+-- PARTNER WHOLESALE + PREMIUM POINTS
+-- Real, DB-backed replacement for the old localStorage partner desk — tied
+-- to the same partner_outlets record the (real) margin-pricing tool uses.
+-- Wholesale/points/perk-conversion routes additionally require an actual
+-- signed-in Neon Auth owner (owner_id LIKE 'user:%'), not the anonymous
+-- guest-cookie identity the free pricing tool allows.
+-- ═══════════════════════════════════════════════
+ALTER TABLE partner_outlets ADD COLUMN IF NOT EXISTS points INTEGER NOT NULL DEFAULT 0 CHECK (points >= 0);
+ALTER TABLE partner_outlets ADD COLUMN IF NOT EXISTS lifetime_points INTEGER NOT NULL DEFAULT 0 CHECK (lifetime_points >= 0);
+
+CREATE TABLE IF NOT EXISTS partner_inventory (
+  outlet_id   UUID NOT NULL REFERENCES partner_outlets(id) ON DELETE CASCADE,
+  slug        TEXT NOT NULL,
+  on_hand     INTEGER NOT NULL DEFAULT 0 CHECK (on_hand >= 0),
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (outlet_id, slug)
+);
+
+CREATE TABLE IF NOT EXISTS partner_wholesale_orders (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  outlet_id     UUID NOT NULL REFERENCES partner_outlets(id) ON DELETE CASCADE,
+  items         JSONB NOT NULL,
+  total_ngn     INTEGER NOT NULL CHECK (total_ngn >= 0),
+  points_earned INTEGER NOT NULL DEFAULT 0,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_partner_wholesale_outlet ON partner_wholesale_orders(outlet_id, created_at DESC);
+
+-- ═══════════════════════════════════════════════
+-- SMS / WHATSAPP DELIVERY LOG (Termii) — best-effort, mirrors email sends.
+-- ═══════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS sms_log (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id    UUID REFERENCES ritual_orders(id) ON DELETE SET NULL,
+  to_phone    TEXT NOT NULL,
+  channel     TEXT NOT NULL DEFAULT 'generic' CHECK (channel IN ('generic', 'whatsapp', 'dnd')),
+  status      TEXT NOT NULL CHECK (status IN ('sent', 'failed')),
+  error       TEXT,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_sms_log_order ON sms_log(order_id);

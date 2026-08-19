@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AlertTriangle, ArrowUpRight, Plus, Trash2, TrendingUp } from 'lucide-react';
 import { DRINKS, formatNgn } from '@/lib/drinks/catalog';
-import { WHOLESALE_OFF_PCT } from '@/lib/partners/store';
+import { WHOLESALE_OFF_PCT } from '@/lib/partners/pricing';
 import type { ItemAnalysis, PortfolioAnalysis } from '@/lib/partners/pricing';
 
 const inputClass =

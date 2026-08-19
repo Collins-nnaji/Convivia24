@@ -1,5 +1,17 @@
 import { DRINKS, formatNgn } from '@/lib/drinks/catalog';
-import { wholesalePriceNgn } from '@/lib/partners/store';
+
+export const WHOLESALE_OFF_PCT = 22;
+
+export function wholesalePriceNgn(retailNgn: number): number {
+  return Math.round((retailNgn * (1 - WHOLESALE_OFF_PCT / 100)) / 100) * 100;
+}
+
+/** Premium-points → gift-card conversions, redeemable through the real gift_cards ledger. */
+export const PREMIUM_CONVERSIONS = [
+  { id: 'gc-25', points: 5000, valueNgn: 25000, label: '₦25,000 guest gift card' },
+  { id: 'gc-60', points: 10000, valueNgn: 60000, label: '₦60,000 guest gift card' },
+  { id: 'gc-175', points: 25000, valueNgn: 175000, label: '₦175,000 guest gift card' },
+] as const;
 
 /**
  * Menu pricing analysis for outlet owners. All money in naira, all inputs are

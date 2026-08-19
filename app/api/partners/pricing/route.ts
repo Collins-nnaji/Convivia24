@@ -14,6 +14,7 @@ import { captureApiError } from '@/lib/sentry';
 
 async function requireOutlet() {
   const ownerId = await resolveOutletOwner();
+  if (!ownerId) return null;
   const outlet = await getOutlet(ownerId);
   return outlet;
 }

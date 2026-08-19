@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, CalendarPlus, LineChart, Package } from 'lucide-react';
 import ConviviumCard from '@/components/ConviviumCard';
-import { joinPartner } from '@/lib/partners/store';
+import { useUser } from '@/components/auth/AuthProvider';
 import { VENUE_KINDS } from '@/lib/partners/pricing';
 
 const PILLARS = [
@@ -28,12 +28,17 @@ const PILLARS = [
 
 export default function PartnersPage() {
   const router = useRouter();
+  const { user, loading: authLoading } = useUser();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  /** Open the desk: create the outlet record, then drop straight into the tool. */
+  /** Open the desk: create the real, DB-backed outlet record, then drop straight into the tool. */
   async function onboard(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!user) {
+      router.push('/signin?next=/partners');
+      return;
+    }
     setLoading(true);
     setError('');
     const fd = new FormData(e.currentTarget);
@@ -58,13 +63,6 @@ export default function PartnersPage() {
         setError(data.error || 'Could not open the desk.');
         return;
       }
-      // Keep the local partner session in step so the portal opens signed in.
-      joinPartner({
-        venueName: payload.venueName,
-        email: payload.email,
-        area: payload.area,
-        contact: payload.contact,
-      });
       router.push('/partners/portal?tab=pricing');
     } catch {
       setError('Could not open the desk.');
@@ -154,12 +152,18 @@ export default function PartnersPage() {
                   <Field label="Target margin %" name="targetMarginPct" type="number" placeholder="72" />
                 </div>
                 {error && <p className="text-sm text-ember">{error}</p>}
+                {!authLoading && !user && (
+                  <p className="text-sm text-obsidian/45">
+                    You'll sign in with the same account customers use — this is a real, secured partner record,
+                    not a demo.
+                  </p>
+                )}
                 <button
                   type="submit"
                   disabled={loading}
                   className="px-7 py-3.5 btn-brand text-[12px] font-black uppercase tracking-[0.14em] disabled:opacity-60"
                 >
-                  {loading ? 'Opening…' : 'Open my desk'}
+                  {loading ? 'Opening…' : !authLoading && !user ? 'Sign in to open my desk' : 'Open my desk'}
                 </button>
               </form>
             </div>

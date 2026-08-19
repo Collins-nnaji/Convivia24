@@ -11,12 +11,12 @@ import { apiErrorResponse, DatabaseUnavailableError } from '@/lib/db';
 import { rateLimit, clientIp } from '@/lib/redis';
 import { captureApiError } from '@/lib/sentry';
 
-/** The signed-in outlet's own record, or null when they have not onboarded. */
+/** The signed-in outlet's own record, or null when signed out / not yet onboarded. */
 export async function GET() {
   try {
     const ownerId = await resolveOutletOwner();
-    const outlet = await getOutlet(ownerId);
-    return NextResponse.json({ outlet, venueKinds: VENUE_KINDS });
+    const outlet = ownerId ? await getOutlet(ownerId) : null;
+    return NextResponse.json({ outlet, venueKinds: VENUE_KINDS, signedIn: Boolean(ownerId) });
   } catch (err) {
     captureApiError(err, { route: 'partners/outlet GET' });
     return NextResponse.json({ outlet: null, venueKinds: VENUE_KINDS, degraded: true });
@@ -43,6 +43,7 @@ export async function POST(req: NextRequest) {
     if (invalid) return NextResponse.json({ error: invalid }, { status: 400 });
 
     const ownerId = await resolveOutletOwner();
+    if (!ownerId) return NextResponse.json({ error: 'Sign in to open a partner desk.' }, { status: 401 });
     const outlet = await upsertOutlet(ownerId, input);
     return NextResponse.json({ outlet }, { status: 201 });
   } catch (err) {
