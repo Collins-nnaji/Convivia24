@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { Users, MessageCircle } from 'lucide-react';
 import { useUser } from '@/components/auth/AuthProvider';
 
 type Circle = {
@@ -51,56 +52,65 @@ export default function CirclesPanel() {
 
   return (
     <div>
-      <div className="mb-6 max-w-xl">
-        <h2 className="font-logo font-extrabold uppercase tracking-tight text-xl sm:text-2xl text-obsidian mb-2">
+      <div className="mb-8 max-w-xl">
+        <h2 className="font-bold text-2xl text-gray-900 mb-2 flex items-center gap-2">
+          <MessageCircle size={22} className="text-indigo-500" />
           Circles
         </h2>
-        <p className="text-sm sm:text-base text-obsidian/55 leading-relaxed">
-          Community rooms for Lagos nights — follow the crowds that match your vibe. We&apos;ll point drops,
-          events, and trivia your way.
+        <p className="text-sm text-gray-500 leading-relaxed">
+          Community rooms for Lagos nights — follow the crowds that match your vibe.
+          Discuss plans, share event links, and coordinate.
         </p>
       </div>
 
       {!authLoading && !user && (
-        <div className="bg-white p-5 mb-6 flex items-center justify-between gap-4 flex-wrap shadow-[0_14px_40px_-20px_rgba(10,10,10,0.3)]">
-          <p className="text-sm text-obsidian/60">Sign in to follow circles.</p>
+        <div className="bg-white rounded-xl p-5 mb-6 flex items-center justify-between gap-4 flex-wrap border border-gray-100">
+          <p className="text-sm text-gray-500">Sign in to follow circles and join discussions.</p>
           <Link
             href={`/signin?next=${encodeURIComponent('/events?tab=circles')}`}
-            className="px-5 py-2.5 btn-brand text-[11px] font-black uppercase tracking-[0.14em]"
+            className="px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition"
           >
             Sign in
           </Link>
         </div>
       )}
-      {error && <p className="text-sm text-ember mb-6">{error}</p>}
+      {error && <p className="text-sm text-rose-500 mb-6">{error}</p>}
 
       {loading ? (
-        <p className="text-sm text-obsidian/45">Loading circles…</p>
+        <p className="text-sm text-gray-400">Loading circles...</p>
       ) : (
-        <div className="grid sm:grid-cols-2 gap-4 sm:gap-5">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {circles.map((c) => (
             <div
               key={c.id}
-              className="bg-white p-6 flex flex-col shadow-[0_14px_40px_-20px_rgba(10,10,10,0.3)]"
+              className="bg-white rounded-xl p-5 flex flex-col border border-gray-100 hover:border-indigo-200 transition-colors"
             >
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-ember mb-2">{c.vibeTag}</span>
-              <h3 className="font-logo font-extrabold uppercase tracking-tight text-lg text-obsidian mb-2">
-                {c.name}
-              </h3>
-              <p className="text-sm text-obsidian/55 leading-relaxed mb-4 flex-1">{c.description}</p>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-sm font-bold text-indigo-600">
+                  {c.name[0]}
+                </div>
+                <div>
+                  <span className="text-[10px] font-semibold text-indigo-600 uppercase tracking-wider">{c.vibeTag}</span>
+                </div>
+              </div>
+              <h3 className="font-bold text-gray-900 mb-1">{c.name}</h3>
+              <p className="text-sm text-gray-500 leading-relaxed mb-4 flex-1">{c.description}</p>
               <div className="flex items-center justify-between gap-3">
-                <span className="text-[11px] text-obsidian/40">
-                  {c.memberCount} {c.memberCount === 1 ? 'follower' : 'followers'}
+                <span className="text-xs text-gray-400 flex items-center gap-1">
+                  <Users size={12} />
+                  {c.memberCount} {c.memberCount === 1 ? 'member' : 'members'}
                 </span>
                 <button
                   type="button"
                   disabled={!user || busy === c.id}
                   onClick={() => toggle(c)}
-                  className={`px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-40 ${
-                    c.joined ? 'border border-obsidian/15 text-obsidian/60' : 'btn-brand'
+                  className={`px-4 py-2 text-xs font-semibold rounded-lg transition disabled:opacity-40 ${
+                    c.joined
+                      ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      : 'bg-indigo-600 text-white hover:bg-indigo-700'
                   }`}
                 >
-                  {busy === c.id ? '…' : c.joined ? 'Following' : 'Follow'}
+                  {busy === c.id ? '...' : c.joined ? 'Following' : 'Follow'}
                 </button>
               </div>
             </div>

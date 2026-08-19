@@ -10,7 +10,7 @@ import {
   type EventInput,
 } from '@/lib/events/store';
 import { EVENT_TAGS } from '@/lib/events/catalog';
-import { VENUES } from '@/lib/venues/catalog';
+import { listVenues } from '@/lib/venues/repo';
 import { apiErrorResponse } from '@/lib/db';
 import { rateLimit, clientIp, redis } from '@/lib/redis';
 import { captureApiError } from '@/lib/sentry';
@@ -22,18 +22,18 @@ async function invalidateFeed() {
 export async function GET() {
   const gate = await requireAdmin();
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
-  const form = {
-    tags: EVENT_TAGS,
-    venues: VENUES.map((v) => ({ slug: v.slug, name: v.name })),
-  };
+
   try {
-    const events = await listEvents(false);
-    return NextResponse.json({ events, ...form });
+    const [events, dbVenues] = await Promise.all([
+      listEvents(false),
+      listVenues({ status: 'active' }),
+    ]);
+    const venues = dbVenues.map((v) => ({ slug: v.slug, name: v.name }));
+    return NextResponse.json({ events, tags: EVENT_TAGS, venues });
   } catch (err) {
     captureApiError(err, { route: 'admin/events GET' });
-    // Keep the form usable and report the problem alongside an empty list.
     const { error } = apiErrorResponse(err, 'Could not load events.');
-    return NextResponse.json({ events: [], ...form, error });
+    return NextResponse.json({ events: [], tags: EVENT_TAGS, venues: [], error });
   }
 }
 
@@ -60,9 +60,6 @@ export async function POST(req: NextRequest) {
 
     const invalid = validateEventInput(input);
     if (invalid) return NextResponse.json({ error: invalid }, { status: 400 });
-    if (!VENUES.some((v) => v.slug === input.venueSlug)) {
-      return NextResponse.json({ error: 'Unknown venue.' }, { status: 400 });
-    }
 
     const event = await upsertEvent(input);
     await invalidateFeed();

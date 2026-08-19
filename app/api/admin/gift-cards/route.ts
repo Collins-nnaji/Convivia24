@@ -39,3 +39,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  const gate = await requireAdmin();
+  if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
+  try {
+    const id = new URL(req.url).searchParams.get('id');
+    if (!id) return NextResponse.json({ error: 'Gift card ID required.' }, { status: 400 });
+    const { default: sql } = await import('@/lib/db');
+    await sql`DELETE FROM gift_cards WHERE id = ${id}`;
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    captureApiError(err, { route: 'admin/gift-cards DELETE' });
+    const { status, error } = apiErrorResponse(err, 'Could not delete gift card.');
+    return NextResponse.json({ error }, { status });
+  }
+}

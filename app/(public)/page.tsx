@@ -1,11 +1,13 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import DrinkPlaceholder from '@/components/shop/DrinkPlaceholder';
 import DrinkPhoto from '@/components/shop/DrinkPhoto';
 import HomeHero from '@/components/home/HomeHero';
 import Footer from '@/components/Footer';
-import { allEvents, formatEventWhen, isTonight } from '@/lib/events/catalog';
+import { formatEventWhen, isTonight, type ResolvedEvent } from '@/lib/events/catalog';
+import { useEventFeed } from '@/lib/events/use-feed';
 import {
   DRINKS,
   CATEGORIES,
@@ -18,9 +20,9 @@ const featured = (
   DRINKS.filter((d) => d.featured && (d.image || d.packImages?.length))
 ).slice(0, 4);
 
-const tonight = allEvents().filter(isTonight).slice(0, 3);
-
 export default function HomePage() {
+  const feed = useEventFeed();
+  const tonight = feed.filter(isTonight).slice(0, 3);
   return (
     <>
       <HomeHero />

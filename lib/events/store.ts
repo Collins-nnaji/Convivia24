@@ -1,14 +1,14 @@
 import sql from '@/lib/db';
-import { EVENT_TAGS, type EventTag, type NightEvent } from '@/lib/events/catalog';
+import { EVENT_TAGS, type EventTag, type NightEvent, type VenueSnapshot } from '@/lib/events/catalog';
 
 export const EVENTS_CACHE_KEY = 'events:feed:v1';
 
-/** A night_events row, shaped for the public feed. */
 export type StoredEvent = NightEvent & {
   startsAtIso: string;
   endsAtIso: string;
   source: 'admin';
   published: boolean;
+  venue?: VenueSnapshot;
 };
 
 export type EventInput = {
@@ -26,7 +26,7 @@ export type EventInput = {
 
 function mapRow(r: Record<string, unknown>): StoredEvent {
   const tag = String(r.tag || 'Lounge') as EventTag;
-  return {
+  const event: StoredEvent = {
     id: String(r.id),
     title: String(r.title),
     venueSlug: String(r.venue_slug),
@@ -39,6 +39,24 @@ function mapRow(r: Record<string, unknown>): StoredEvent {
     source: 'admin',
     published: r.published !== false,
   };
+
+  if (r.venue_name) {
+    event.venue = {
+      slug: String(r.venue_slug),
+      name: String(r.venue_name),
+      kind: String(r.venue_kind || 'lounge'),
+      areaId: String(r.venue_area_id || ''),
+      area: String(r.venue_area || ''),
+      address: String(r.venue_address || ''),
+      lat: Number(r.venue_lat || 0),
+      lng: Number(r.venue_lng || 0),
+      tagline: String(r.venue_tagline || ''),
+      cardPerk: String(r.venue_card_perk || ''),
+      photoUrl: r.venue_photo_url ? String(r.venue_photo_url) : null,
+    };
+  }
+
+  return event;
 }
 
 function makeId(title: string): string {
@@ -53,17 +71,38 @@ function makeId(title: string): string {
 
 export async function listEvents(publishedOnly = false): Promise<StoredEvent[]> {
   const rows = publishedOnly
-    ? await sql`SELECT * FROM night_events WHERE published = true ORDER BY starts_at ASC`
-    : await sql`SELECT * FROM night_events ORDER BY starts_at ASC`;
+    ? await sql`
+        SELECT e.*, v.name AS venue_name, v.kind AS venue_kind, v.area_id AS venue_area_id,
+          v.area AS venue_area, v.address AS venue_address, v.lat AS venue_lat,
+          v.lng AS venue_lng, v.tagline AS venue_tagline, v.card_perk AS venue_card_perk,
+          v.photo_url AS venue_photo_url
+        FROM night_events e
+        LEFT JOIN venues v ON v.slug = e.venue_slug AND v.status = 'active'
+        WHERE e.published = true
+        ORDER BY e.starts_at ASC
+      `
+    : await sql`
+        SELECT e.*, v.name AS venue_name, v.kind AS venue_kind, v.area_id AS venue_area_id,
+          v.area AS venue_area, v.address AS venue_address, v.lat AS venue_lat,
+          v.lng AS venue_lng, v.tagline AS venue_tagline, v.card_perk AS venue_card_perk,
+          v.photo_url AS venue_photo_url
+        FROM night_events e
+        LEFT JOIN venues v ON v.slug = e.venue_slug AND v.status = 'active'
+        ORDER BY e.starts_at ASC
+      `;
   return rows.map(mapRow);
 }
 
-/** Published events that have not finished yet — what the public feed shows. */
 export async function listUpcomingEvents(): Promise<StoredEvent[]> {
   const rows = await sql`
-    SELECT * FROM night_events
-    WHERE published = true AND ends_at > NOW() - INTERVAL '6 hours'
-    ORDER BY starts_at ASC
+    SELECT e.*, v.name AS venue_name, v.kind AS venue_kind, v.area_id AS venue_area_id,
+      v.area AS venue_area, v.address AS venue_address, v.lat AS venue_lat,
+      v.lng AS venue_lng, v.tagline AS venue_tagline, v.card_perk AS venue_card_perk,
+      v.photo_url AS venue_photo_url
+    FROM night_events e
+    LEFT JOIN venues v ON v.slug = e.venue_slug AND v.status = 'active'
+    WHERE e.published = true
+    ORDER BY e.starts_at ASC
   `;
   return rows.map(mapRow);
 }

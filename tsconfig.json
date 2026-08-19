@@ -36,6 +36,9 @@
     "**/*.tsx"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "capacitor.config.ts",
+    "vitest.config.mts",
+    "**/*.test.ts"
   ]
 }

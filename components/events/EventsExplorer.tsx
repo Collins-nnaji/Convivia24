@@ -5,14 +5,18 @@ import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
+  Calendar,
   ChevronDown,
+  Heart,
   MapPin,
   Navigation as NavIcon,
+  Search,
   SlidersHorizontal,
   Star,
+  Users,
   X,
+  Image as ImageIcon,
 } from 'lucide-react';
-import NightArt, { tagToArt } from '@/components/graphics/NightArt';
 import { LAGOS_AREAS, formatKm, haversineKm } from '@/lib/geo/lagos';
 import {
   formatEventWhen,
@@ -21,13 +25,41 @@ import {
   type ResolvedEvent,
 } from '@/lib/events/catalog';
 import { useEventFeed } from '@/lib/events/use-feed';
-import { VENUES, VENUE_KIND_LABELS, type Venue } from '@/lib/venues/catalog';
-import { venueRating } from '@/lib/venues/reviews';
 import { formatNgn } from '@/lib/drinks/catalog';
 import CirclesPanel from '@/components/events/CirclesPanel';
 
 type Tab = 'events' | 'venues' | 'circles';
 type WhenFilter = 'all' | 'tonight' | 'weekend';
+type VenueKind = 'all' | 'club' | 'lounge' | 'rooftop' | 'beach' | 'live' | 'restaurant' | 'bar';
+
+type APIVenue = {
+  id: string;
+  slug: string;
+  name: string;
+  kind: string;
+  areaId: string;
+  area: string;
+  tagline: string;
+  about: string;
+  photoUrl: string | null;
+  followerCount: number;
+  reviewCount: number;
+  avgRating: number;
+  followed: boolean;
+  hours: string;
+  cardPerk: string;
+};
+
+const VENUE_KIND_OPTIONS: { id: VenueKind; label: string }[] = [
+  { id: 'all', label: 'All' },
+  { id: 'club', label: 'Clubs' },
+  { id: 'lounge', label: 'Lounges' },
+  { id: 'rooftop', label: 'Rooftops' },
+  { id: 'beach', label: 'Beach' },
+  { id: 'live', label: 'Live' },
+  { id: 'restaurant', label: 'Restaurants' },
+  { id: 'bar', label: 'Bars' },
+];
 
 function dayKey(d: Date): string {
   const y = d.getFullYear();
@@ -53,22 +85,6 @@ function dayHeading(d: Date): string {
   return d.toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'short' });
 }
 
-function formatChipDate(key: string): string {
-  const [y, m, d] = key.split('-').map(Number);
-  const date = new Date(y, m - 1, d);
-  if (key === todayKey()) return 'Tonight';
-  if (key === tomorrowKey()) return 'Tomorrow';
-  return date.toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short' });
-}
-
-const SHADOWS = [
-  'shadow-[0_18px_50px_-22px_rgba(10,10,10,0.45)]',
-  'shadow-[0_22px_55px_-20px_rgba(74,21,18,0.38)]',
-  'shadow-[0_16px_48px_-18px_rgba(10,10,10,0.4)]',
-  'shadow-[0_20px_52px_-24px_rgba(139,42,34,0.32)]',
-  'shadow-[0_24px_60px_-26px_rgba(10,10,10,0.42)]',
-];
-
 export default function EventsExplorer() {
   const params = useSearchParams();
   const router = useRouter();
@@ -81,14 +97,28 @@ export default function EventsExplorer() {
   const [date, setDate] = useState('');
   const [here, setHere] = useState<{ lat: number; lng: number } | null>(null);
   const [geoMsg, setGeoMsg] = useState('');
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const [nowLabel, setNowLabel] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [venueKind, setVenueKind] = useState<VenueKind>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [venues, setVenues] = useState<APIVenue[]>([]);
+  const [venuesLoading, setVenuesLoading] = useState(false);
 
   useEffect(() => {
     const next = params.get('tab');
     if (next === 'venues' || next === 'circles') setTab(next);
     else if (!next) setTab('events');
   }, [params]);
+
+  useEffect(() => {
+    if (tab === 'venues') {
+      setVenuesLoading(true);
+      fetch(`/api/venues${area !== 'all' ? `?area=${area}` : ''}`)
+        .then((r) => r.json())
+        .then((d) => setVenues(d.venues || []))
+        .catch(() => {})
+        .finally(() => setVenuesLoading(false));
+    }
+  }, [tab, area]);
 
   function selectTab(next: Tab) {
     setTab(next);
@@ -99,21 +129,6 @@ export default function EventsExplorer() {
     router.replace(suffix ? `/events?${suffix}` : '/events', { scroll: false });
   }
 
-  useEffect(() => {
-    const tick = () => {
-      setNowLabel(
-        new Date().toLocaleTimeString('en-NG', {
-          hour: 'numeric',
-          minute: '2-digit',
-          second: '2-digit',
-        })
-      );
-    };
-    tick();
-    const id = window.setInterval(tick, 1000);
-    return () => window.clearInterval(id);
-  }, []);
-
   function nearMe() {
     if (!navigator.geolocation) {
       setGeoMsg('Location is not available on this device.');
@@ -122,10 +137,9 @@ export default function EventsExplorer() {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setHere({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setGeoMsg('Sorted by distance from you.');
-        setFiltersOpen(false);
+        setGeoMsg('Sorted by distance.');
       },
-      () => setGeoMsg('Could not read location — showing Lagos citywide.')
+      () => setGeoMsg('Could not read location.')
     );
   }
 
@@ -139,6 +153,15 @@ export default function EventsExplorer() {
     } else if (when === 'weekend') {
       list = list.filter(isThisWeekend);
     }
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(
+        (e) =>
+          e.title.toLowerCase().includes(q) ||
+          e.venue.name.toLowerCase().includes(q) ||
+          e.blurb.toLowerCase().includes(q)
+      );
+    }
     list = [...list].sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
     if (here) {
       list = [...list].sort((a, b) => {
@@ -148,13 +171,19 @@ export default function EventsExplorer() {
       });
     }
     return list;
-  }, [feed, area, when, date, here]);
+  }, [feed, area, when, date, here, searchQuery]);
 
-  const eventDays = useMemo(() => {
-    const keys = new Set<string>();
-    for (const e of feed) keys.add(dayKey(e.startsAt));
-    return [...keys].sort();
-  }, [feed]);
+  const filteredVenues = useMemo(() => {
+    let list = venues;
+    if (venueKind !== 'all') list = list.filter((v) => v.kind === venueKind);
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(
+        (v) => v.name.toLowerCase().includes(q) || v.area.toLowerCase().includes(q) || v.tagline.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [venues, venueKind, searchQuery]);
 
   const eventGroups = useMemo(() => {
     const map = new Map<string, ResolvedEvent[]>();
@@ -171,32 +200,7 @@ export default function EventsExplorer() {
     }));
   }, [events]);
 
-  const venues = useMemo(() => {
-    let list: (Venue & { km?: number })[] =
-      area === 'all' ? [...VENUES] : VENUES.filter((v) => v.areaId === area);
-    if (here) {
-      list = list
-        .map((v) => ({ ...v, km: haversineKm(here, v) }))
-        .sort((a, b) => (a.km || 0) - (b.km || 0));
-    }
-    return list;
-  }, [area, here]);
-
   const tonightCount = useMemo(() => feed.filter(isTonight).length, [feed]);
-  const activeFilterCount =
-    (area !== 'all' ? 1 : 0) +
-    (tab === 'events' && when !== 'all' ? 1 : 0) +
-    (tab === 'events' && date ? 1 : 0) +
-    (here ? 1 : 0);
-
-  const areaLabel = area === 'all' ? 'All Lagos' : LAGOS_AREAS.find((a) => a.id === area)?.name || area;
-  const whenLabel = date
-    ? formatChipDate(date)
-    : when === 'all'
-      ? 'Any time'
-      : when === 'tonight'
-        ? 'Tonight'
-        : 'This weekend';
 
   function clearFilters() {
     setArea('all');
@@ -204,242 +208,219 @@ export default function EventsExplorer() {
     setDate('');
     setHere(null);
     setGeoMsg('');
-  }
-
-  function pickWhen(next: WhenFilter) {
-    setWhen(next);
-    setDate('');
-  }
-
-  function pickDate(next: string) {
-    setDate(next);
-    setWhen('all');
+    setVenueKind('all');
+    setSearchQuery('');
   }
 
   return (
-    <div className="bg-paper min-h-[70vh]">
-      <div className="relative overflow-hidden border-b border-obsidian/8">
-        <div className="absolute inset-0 brand-gradient opacity-[0.05]" />
+    <div className="bg-[#FAFAFA] min-h-screen">
+      {/* Header */}
+      <div className="border-b border-gray-200 bg-white sticky top-0 z-30">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14 sm:h-16">
+            <div className="flex items-center gap-4">
+              <h1 className="font-bold text-lg sm:text-xl text-gray-900">
+                Discover
+              </h1>
+              <div className="hidden sm:flex items-center gap-1 text-xs text-gray-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                {tonightCount} tonight
+              </div>
+            </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-8 lg:px-10 py-4 sm:py-5">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            <h1 className="font-logo font-black tracking-tight uppercase text-xl sm:text-2xl text-obsidian leading-none">
-              What&apos;s on <span className="brand-text">tonight</span>
-            </h1>
-            <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-obsidian text-white text-[9px] font-black uppercase tracking-[0.16em]">
-              <span className="w-1.5 h-1.5 rounded-full bg-ember live-beep" />
-              Live
-            </span>
-            <span className="text-xs font-mono text-obsidian/40 tabular-nums">{nowLabel}</span>
-            <span className="ml-auto hidden sm:flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/45">
-              <span>{tonightCount} tonight</span>
-              <span>{VENUES.length} rooms</span>
-            </span>
+            {/* Search bar */}
+            <div className="relative w-full max-w-xs sm:max-w-sm">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={tab === 'venues' ? 'Search venues...' : 'Search events...'}
+                className="w-full pl-9 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition"
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setSidebarOpen((v) => !v)}
+              className="sm:hidden p-2 text-gray-500"
+            >
+              <SlidersHorizontal size={18} />
+            </button>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex gap-1 -mb-px">
+            {(['events', 'venues', 'circles'] as const).map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => selectTab(t)}
+                className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                  tab === t
+                    ? 'border-indigo-600 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {t === 'events' ? 'Events' : t === 'venues' ? 'Venues' : 'Circles'}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-10 py-7 sm:py-10">
-        <div className="flex flex-wrap items-center gap-2 mb-5">
-          {(['events', 'venues', 'circles'] as const).map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => selectTab(t)}
-              className={`px-5 py-2.5 text-xs font-black uppercase tracking-[0.14em] transition-colors ${
-                tab === t ? 'badge-brand' : 'bg-white border border-obsidian/10 text-obsidian/50'
-              }`}
-            >
-              {t === 'events' ? 'Events' : t === 'venues' ? 'Venues' : 'Circles'}
-            </button>
-          ))}
-
-          {tab !== 'circles' && (
-          <button
-            type="button"
-            onClick={() => setFiltersOpen((v) => !v)}
-            className={`ml-auto inline-flex items-center gap-2 px-4 py-2.5 text-xs font-black uppercase tracking-[0.12em] border transition-colors ${
-              filtersOpen || activeFilterCount > 0
-                ? 'border-ember text-ember bg-ember/5'
-                : 'border-obsidian/15 text-obsidian/55 hover:border-ember hover:text-ember'
-            }`}
-            aria-expanded={filtersOpen}
-          >
-            <SlidersHorizontal size={14} />
-            Filters
-            {activeFilterCount > 0 && (
-              <span className="min-w-[18px] h-5 px-1.5 rounded-full bg-obsidian text-white text-[10px] flex items-center justify-center">
-                {activeFilterCount}
-              </span>
-            )}
-            <ChevronDown size={14} className={`transition-transform ${filtersOpen ? 'rotate-180' : ''}`} />
-          </button>
-          )}
+      {tab === 'circles' ? (
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <CirclesPanel />
         </div>
+      ) : (
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex gap-6">
+            {/* Left sidebar filters */}
+            <aside className={`shrink-0 w-60 ${sidebarOpen ? 'block' : 'hidden'} sm:block`}>
+              <div className="sticky top-24 space-y-6">
+                {/* Area filter */}
+                <FilterSection title="Area">
+                  <FilterChip active={area === 'all'} onClick={() => setArea('all')}>All Lagos</FilterChip>
+                  {LAGOS_AREAS.map((a) => (
+                    <FilterChip key={a.id} active={area === a.id} onClick={() => setArea(a.id)}>
+                      {a.name}
+                    </FilterChip>
+                  ))}
+                </FilterSection>
 
-        {tab !== 'circles' && !filtersOpen && activeFilterCount > 0 && (
-          <div className="flex flex-wrap items-center gap-2 mb-5 text-sm text-obsidian/45">
-            <span>
-              {areaLabel}
-              {tab === 'events' ? ` · ${whenLabel}` : ''}
-              {here ? ' · Near me' : ''}
-            </span>
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="inline-flex items-center gap-1 text-ember font-semibold uppercase tracking-[0.1em] text-xs"
-            >
-              <X size={12} /> Clear
-            </button>
-          </div>
-        )}
-
-        {tab !== 'circles' && (
-        <AnimatePresence initial={false}>
-          {filtersOpen && (
-            <motion.div
-              key="filters"
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.22, ease: 'easeOut' }}
-              className="overflow-hidden mb-6"
-            >
-              <div className="bg-white p-5 sm:p-6 space-y-5 shadow-[0_14px_40px_-20px_rgba(10,10,10,0.3)]">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/35 mb-2.5">
-                    Area
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <Chip active={area === 'all'} onClick={() => setArea('all')}>
-                      All Lagos
-                    </Chip>
-                    {LAGOS_AREAS.map((a) => (
-                      <Chip key={a.id} active={area === a.id} onClick={() => setArea(a.id)}>
-                        {a.name}
-                      </Chip>
-                    ))}
-                  </div>
-                </div>
-
+                {/* Date filter (events only) */}
                 {tab === 'events' && (
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/35 mb-2.5">
-                      Date
-                    </p>
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {(
-                        [
-                          ['all', 'Any day'],
-                          ['tonight', 'Tonight'],
-                          ['weekend', 'This weekend'],
-                        ] as const
-                      ).map(([id, label]) => (
-                        <Chip key={id} active={!date && when === id} onClick={() => pickWhen(id)}>
-                          {label}
-                        </Chip>
-                      ))}
+                  <FilterSection title="When">
+                    <FilterChip active={when === 'all' && !date} onClick={() => { setWhen('all'); setDate(''); }}>
+                      Any time
+                    </FilterChip>
+                    <FilterChip active={when === 'tonight'} onClick={() => { setWhen('tonight'); setDate(''); }}>
+                      Tonight
+                    </FilterChip>
+                    <FilterChip active={when === 'weekend'} onClick={() => { setWhen('weekend'); setDate(''); }}>
+                      This weekend
+                    </FilterChip>
+                    <div className="pt-1">
+                      <input
+                        type="date"
+                        value={date}
+                        onChange={(e) => { setDate(e.target.value); setWhen('all'); }}
+                        className="w-full text-xs border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                      />
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      {eventDays.map((key) => (
-                        <Chip key={key} active={date === key} onClick={() => pickDate(key)}>
-                          {formatChipDate(key)}
-                        </Chip>
-                      ))}
-                      <label className="inline-flex items-center gap-2 px-3 py-2 bg-paper border border-obsidian/10 text-xs font-black uppercase tracking-[0.12em] text-obsidian/50">
-                        Pick date
-                        <input
-                          type="date"
-                          value={date}
-                          min={eventDays[0] || todayKey()}
-                          onChange={(e) => (e.target.value ? pickDate(e.target.value) : pickWhen('all'))}
-                          className="border-0 bg-transparent p-0 text-obsidian/70 font-medium uppercase tracking-normal text-xs focus:ring-0"
-                        />
-                      </label>
-                    </div>
-                  </div>
+                  </FilterSection>
                 )}
 
-                <div className="flex flex-wrap items-center gap-3 pt-1">
+                {/* Venue kind filter (venues only) */}
+                {tab === 'venues' && (
+                  <FilterSection title="Type">
+                    {VENUE_KIND_OPTIONS.map((opt) => (
+                      <FilterChip key={opt.id} active={venueKind === opt.id} onClick={() => setVenueKind(opt.id)}>
+                        {opt.label}
+                      </FilterChip>
+                    ))}
+                  </FilterSection>
+                )}
+
+                {/* Near me */}
+                <div>
                   <button
                     type="button"
                     onClick={nearMe}
-                    className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-black uppercase tracking-[0.12em] border border-obsidian/15 hover:border-ember hover:text-ember"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition"
                   >
-                    <NavIcon size={13} /> Near me
+                    <NavIcon size={14} /> Near me
                   </button>
-                  {activeFilterCount > 0 && (
-                    <button
-                      type="button"
-                      onClick={clearFilters}
-                      className="text-xs font-black uppercase tracking-[0.12em] text-obsidian/40 hover:text-ember"
-                    >
-                      Reset
-                    </button>
-                  )}
-                  {geoMsg && <p className="text-sm text-obsidian/40 w-full sm:w-auto">{geoMsg}</p>}
+                  {geoMsg && <p className="text-xs text-gray-400 mt-2 text-center">{geoMsg}</p>}
                 </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        )}
 
-        {tab === 'circles' ? (
-          <CirclesPanel />
-        ) : tab === 'events' ? (
-          events.length === 0 ? (
-            <p className="text-base text-obsidian/45 py-12">
-              No events in this window. Open filters and try another cut.
-            </p>
-          ) : (
-            <div className="space-y-8 sm:space-y-10">
-              {eventGroups.map((group) => (
-                <section key={group.key}>
-                  <div className="flex items-baseline justify-between gap-3 mb-3 sm:mb-4">
-                    <h2 className="font-logo font-extrabold uppercase tracking-tight text-sm sm:text-base text-obsidian">
-                      {group.label}
-                    </h2>
-                    <span className="text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/35">
-                      {group.items.length} {group.items.length === 1 ? 'night' : 'nights'}
-                    </span>
+                {/* Clear */}
+                {(area !== 'all' || when !== 'all' || date || here || venueKind !== 'all') && (
+                  <button
+                    type="button"
+                    onClick={clearFilters}
+                    className="w-full text-xs font-medium text-gray-400 hover:text-gray-600 flex items-center justify-center gap-1"
+                  >
+                    <X size={12} /> Clear all filters
+                  </button>
+                )}
+              </div>
+            </aside>
+
+            {/* Main content */}
+            <main className="flex-1 min-w-0">
+              {tab === 'events' ? (
+                events.length === 0 ? (
+                  <div className="text-center py-20">
+                    <Calendar size={40} className="mx-auto text-gray-300 mb-4" />
+                    <p className="text-gray-500">No events match your filters.</p>
+                    <button type="button" onClick={clearFilters} className="mt-3 text-sm text-indigo-600 font-medium">
+                      Clear filters
+                    </button>
                   </div>
-                  <div className="space-y-4 sm:space-y-5">
-                    {group.items.map((event, i) => (
-                      <EventRow key={event.id} event={event} here={here} index={i} />
+                ) : (
+                  <div className="space-y-8">
+                    {eventGroups.map((group) => (
+                      <section key={group.key}>
+                        <h2 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                          <Calendar size={14} className="text-indigo-500" />
+                          {group.label}
+                          <span className="text-xs font-normal text-gray-400 ml-auto">
+                            {group.items.length} {group.items.length === 1 ? 'event' : 'events'}
+                          </span>
+                        </h2>
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                          {group.items.map((event) => (
+                            <EventCard key={event.id} event={event} here={here} />
+                          ))}
+                        </div>
+                      </section>
                     ))}
                   </div>
-                </section>
-              ))}
-            </div>
-          )
-        ) : (
-          <div className="space-y-5 sm:space-y-6">
-            {venues.map((venue, i) => (
-              <VenueRow key={venue.slug} venue={venue} km={venue.km} index={i} />
-            ))}
+                )
+              ) : venuesLoading ? (
+                <div className="text-center py-20">
+                  <p className="text-gray-400">Loading venues...</p>
+                </div>
+              ) : filteredVenues.length === 0 ? (
+                <div className="text-center py-20">
+                  <ImageIcon size={40} className="mx-auto text-gray-300 mb-4" />
+                  <p className="text-gray-500">No venues found.</p>
+                </div>
+              ) : (
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {filteredVenues.map((venue) => (
+                    <VenueCard key={venue.id} venue={venue} />
+                  ))}
+                </div>
+              )}
+            </main>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function Chip({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: ReactNode;
-}) {
+function FilterSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div>
+      <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{title}</h3>
+      <div className="flex flex-wrap gap-1.5">{children}</div>
+    </div>
+  );
+}
+
+function FilterChip({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`shrink-0 px-3.5 py-2 text-xs font-black uppercase tracking-[0.12em] ${
-        active ? 'bg-obsidian text-white' : 'bg-paper border border-obsidian/10 text-obsidian/50'
+      className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
+        active
+          ? 'bg-indigo-600 text-white shadow-sm'
+          : 'bg-white text-gray-600 border border-gray-200 hover:border-indigo-300 hover:text-indigo-600'
       }`}
     >
       {children}
@@ -447,120 +428,123 @@ function Chip({
   );
 }
 
-function EventRow({
-  event,
-  here,
-  index,
-}: {
-  event: ResolvedEvent;
-  here: { lat: number; lng: number } | null;
-  index: number;
-}) {
+function EventCard({ event, here }: { event: ResolvedEvent; here: { lat: number; lng: number } | null }) {
   const km = here ? haversineKm(here, event.venue) : null;
   const live = isTonight(event);
-  const shadow = SHADOWS[index % SHADOWS.length];
+  const past = event.endsAt < new Date();
 
   return (
     <Link
       href={`/events/${event.id}`}
-      className={`group relative block bg-white ${shadow} hover:-translate-y-0.5 transition-all duration-300`}
+      className={`group block bg-white rounded-xl overflow-hidden border border-gray-100 hover:border-indigo-200 hover:shadow-lg transition-all duration-300 ${past ? 'opacity-60' : ''}`}
     >
-      <div className="flex flex-col sm:flex-row sm:items-stretch gap-0">
-        <div className="relative w-full sm:w-36 md:w-44 lg:w-52 shrink-0 aspect-[16/10] sm:aspect-auto sm:min-h-[140px]">
-          <NightArt kind={tagToArt(event.tag)} className="absolute inset-0 h-full" label={event.tag} />
-          {live && (
-            <span className="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1.5 bg-obsidian/85 text-white text-[10px] font-black uppercase tracking-[0.14em] px-2 py-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-ember live-beep" />
-              Doors open
+      {/* Photo placeholder */}
+      <div className="relative aspect-[16/10] bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden">
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-12 h-12 mx-auto rounded-full bg-white/80 flex items-center justify-center mb-1">
+              <Calendar size={20} className="text-slate-400" />
+            </div>
+          </div>
+        </div>
+        {past && (
+          <div className="absolute top-3 left-3 bg-gray-500 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">
+            Ended
+          </div>
+        )}
+        {live && !past && (
+          <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-green-500 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">
+            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            Live
+          </div>
+        )}
+        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-[10px] font-semibold text-gray-700 px-2.5 py-1 rounded-full">
+          {event.tag}
+        </div>
+      </div>
+
+      <div className="p-4">
+        <p className="text-[11px] font-semibold text-indigo-600 mb-1">
+          {formatEventWhen(event)}
+        </p>
+        <h3 className="font-bold text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-1">
+          {event.title}
+        </h3>
+        <p className="text-sm text-gray-500 mt-1.5 line-clamp-2 leading-relaxed">
+          {event.blurb}
+        </p>
+        <div className="mt-3 flex items-center gap-3 text-xs text-gray-400">
+          <span className="inline-flex items-center gap-1">
+            <MapPin size={12} />
+            {event.venue.name}
+            {km != null && <span>· {formatKm(km)}</span>}
+          </span>
+          {event.coverNgn != null && (
+            <span className="ml-auto font-medium text-gray-600">
+              {formatNgn(event.coverNgn)}
             </span>
           )}
         </div>
-
-        <div className="min-w-0 flex-1 p-5 sm:p-6 lg:p-7 flex flex-col justify-center">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mb-2">
-            <p className="text-xs sm:text-sm font-black uppercase tracking-[0.14em] text-ember">
-              {formatEventWhen(event)}
-            </p>
-            {!live && (
-              <span
-                className="w-2 h-2 rounded-full bg-obsidian/20"
-                style={undefined}
-                aria-hidden
-              />
-            )}
-          </div>
-
-          <h2 className="font-logo font-extrabold uppercase tracking-tight text-xl sm:text-2xl lg:text-[1.7rem] text-obsidian group-hover:text-ember transition-colors leading-snug">
-            {event.title}
-          </h2>
-
-          <p className="text-base text-obsidian/55 mt-2 max-w-3xl leading-relaxed line-clamp-2">
-            {event.blurb}
-          </p>
-
-          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm text-obsidian/50">
-            <span className="inline-flex items-center gap-1.5">
-              <MapPin size={15} />
-              {event.venue.name} · {event.venue.area}
-              {km != null && <span className="text-obsidian/35">· {formatKm(km)}</span>}
-            </span>
-            <span className="tabular-nums font-medium text-obsidian/60">{event.expected}</span>
-            {event.coverNgn != null && (
-              <span className="tabular-nums">Door from {formatNgn(event.coverNgn)}</span>
-            )}
-          </div>
-        </div>
-
-        <span className="hidden lg:flex items-center shrink-0 pr-7 text-ember/35 text-2xl group-hover:text-ember group-hover:translate-x-1 transition-all">
-          →
-        </span>
       </div>
     </Link>
   );
 }
 
-function VenueRow({ venue, km, index }: { venue: Venue; km?: number; index: number }) {
-  const { avg, count } = venueRating(venue.slug);
-  const shadow = SHADOWS[index % SHADOWS.length];
-
+function VenueCard({ venue }: { venue: APIVenue }) {
   return (
     <Link
       href={`/events/venues/${venue.slug}`}
-      className={`group relative block bg-white ${shadow} hover:-translate-y-0.5 transition-all duration-300`}
+      className="group block bg-white rounded-xl overflow-hidden border border-gray-100 hover:border-indigo-200 hover:shadow-lg transition-all duration-300"
     >
-      <div className="flex flex-col sm:flex-row sm:items-stretch gap-0">
-        <div className="relative w-full sm:w-36 md:w-44 lg:w-52 shrink-0 aspect-[16/10] sm:aspect-auto sm:min-h-[140px]">
-          <NightArt kind={venue.kind} className="absolute inset-0 h-full" label={VENUE_KIND_LABELS[venue.kind]} />
+      {/* Photo */}
+      <div className="relative aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+        {venue.photoUrl ? (
+          <img src={venue.photoUrl} alt={venue.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-full bg-white/80 flex items-center justify-center">
+              <ImageIcon size={24} className="text-gray-400" />
+            </div>
+          </div>
+        )}
+        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-[10px] font-semibold text-gray-700 px-2.5 py-1 rounded-full capitalize">
+          {venue.kind}
+        </div>
+      </div>
+
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <h3 className="font-bold text-gray-900 group-hover:text-indigo-600 transition-colors truncate">
+              {venue.name}
+            </h3>
+            <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
+              <MapPin size={11} /> {venue.area}
+            </p>
+          </div>
+          {venue.avgRating > 0 && (
+            <div className="flex items-center gap-1 shrink-0">
+              <Star size={12} className="text-amber-400" fill="currentColor" />
+              <span className="text-xs font-semibold text-gray-700">{venue.avgRating.toFixed(1)}</span>
+            </div>
+          )}
         </div>
 
-        <div className="min-w-0 flex-1 p-5 sm:p-6 lg:p-7 flex flex-col justify-center">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mb-2">
-            <span className="text-xs font-black uppercase tracking-[0.14em] text-obsidian/40">
-              {VENUE_KIND_LABELS[venue.kind]}
-            </span>
-            <span className="inline-flex items-center gap-1.5 text-sm text-obsidian/50">
-              <Star size={14} className="text-ember" fill="currentColor" />
-              {avg.toFixed(1)} · {count} reviews
-            </span>
-          </div>
+        <p className="text-sm text-gray-500 mt-2 line-clamp-2 leading-relaxed">
+          {venue.tagline}
+        </p>
 
-          <h2 className="font-logo font-extrabold uppercase tracking-tight text-xl sm:text-2xl text-obsidian group-hover:text-ember transition-colors">
-            {venue.name}
-          </h2>
-          <p className="text-base text-obsidian/55 mt-2 max-w-3xl leading-relaxed">{venue.tagline}</p>
-          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm text-obsidian/50">
-            <span className="inline-flex items-center gap-1.5">
-              <MapPin size={15} />
-              {venue.area}
-              {km != null && <span className="text-obsidian/35">· {formatKm(km)}</span>}
-            </span>
-            <span className="text-ember font-medium">{venue.cardPerk}</span>
-          </div>
+        <div className="mt-3 flex items-center gap-4 text-xs text-gray-400">
+          <span className="inline-flex items-center gap-1">
+            <Heart size={11} /> {venue.followerCount}
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <Star size={11} /> {venue.reviewCount} reviews
+          </span>
+          {venue.hours && (
+            <span className="ml-auto text-gray-500 truncate max-w-[120px]">{venue.hours}</span>
+          )}
         </div>
-
-        <span className="hidden lg:flex items-center shrink-0 pr-7 text-ember/35 text-2xl group-hover:text-ember group-hover:translate-x-1 transition-all">
-          →
-        </span>
       </div>
     </Link>
   );

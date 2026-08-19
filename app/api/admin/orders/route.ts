@@ -181,3 +181,19 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  const gate = await requireAdmin();
+  if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
+  try {
+    const id = new URL(req.url).searchParams.get('id');
+    if (!id) return NextResponse.json({ error: 'Order ID required.' }, { status: 400 });
+    await sql`DELETE FROM ritual_order_items WHERE order_id = ${id}`;
+    await sql`DELETE FROM ritual_orders WHERE id = ${id}`;
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    captureApiError(err, { route: 'admin/orders DELETE' });
+    const { status, error } = apiErrorResponse(err, 'Could not delete order.');
+    return NextResponse.json({ error }, { status });
+  }
+}

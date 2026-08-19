@@ -29,7 +29,13 @@ async function migrate() {
   }
 
   const sql = neon(process.env.DATABASE_URL);
-  const schema = readFileSync(join(process.cwd(), 'lib/db/schema.sql'), 'utf-8');
+  const schemaFiles = [
+    'lib/db/schema.sql',
+    'lib/db/venues-migration.sql',
+  ];
+  const schema = schemaFiles
+    .map(f => readFileSync(join(process.cwd(), f), 'utf-8'))
+    .join('\n');
 
   const statements = schema
     .split(';')

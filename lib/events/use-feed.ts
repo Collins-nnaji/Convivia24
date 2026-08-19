@@ -1,52 +1,78 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { mergeEvents, seedEvents, type NightEvent, type ResolvedEvent } from '@/lib/events/catalog';
+import { type ResolvedEvent, type VenueSnapshot } from '@/lib/events/catalog';
 
-/** Seeded nights plus whatever the admin desk has published, once it loads. */
+type APIEvent = {
+  id: string;
+  title: string;
+  venueSlug: string;
+  tag: string;
+  blurb: string;
+  expected: string;
+  coverNgn?: number;
+  startsAtIso: string;
+  endsAtIso: string;
+  venue?: VenueSnapshot;
+};
+
+function toResolved(raw: APIEvent): ResolvedEvent {
+  const venue: VenueSnapshot = raw.venue || {
+    slug: raw.venueSlug,
+    name: raw.venueSlug,
+    kind: 'lounge',
+    areaId: '',
+    area: '',
+    address: '',
+    lat: 0,
+    lng: 0,
+    tagline: '',
+    cardPerk: '',
+  };
+  return {
+    ...raw,
+    source: 'admin',
+    venue,
+    startsAt: new Date(raw.startsAtIso),
+    endsAt: new Date(raw.endsAtIso),
+  } as ResolvedEvent;
+}
+
 export function useEventFeed(): ResolvedEvent[] {
-  const [events, setEvents] = useState<ResolvedEvent[]>(seedEvents);
+  const [events, setEvents] = useState<ResolvedEvent[]>([]);
 
   useEffect(() => {
     let cancelled = false;
-    fetchRemote()
-      .then((remote) => {
-        if (!cancelled) setEvents(mergeEvents(remote));
+    fetch('/api/events')
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled) return;
+        const list: APIEvent[] = data.events || [];
+        setEvents(list.map(toResolved).sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime()));
       })
       .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   return events;
 }
 
 export function useEvent(id: string): ResolvedEvent | undefined {
-  const [event, setEvent] = useState<ResolvedEvent | undefined>(() =>
-    seedEvents().find((e) => e.id === id)
-  );
+  const [event, setEvent] = useState<ResolvedEvent | undefined>(undefined);
 
   useEffect(() => {
     let cancelled = false;
-    setEvent(seedEvents().find((e) => e.id === id));
-    fetchRemote()
-      .then((remote) => {
+    fetch('/api/events')
+      .then((r) => r.json())
+      .then((data) => {
         if (cancelled) return;
-        setEvent(mergeEvents(remote).find((e) => e.id === id));
+        const list: APIEvent[] = data.events || [];
+        const found = list.find((e) => e.id === id);
+        if (found) setEvent(toResolved(found));
       })
       .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [id]);
 
   return event;
-}
-
-async function fetchRemote(): Promise<NightEvent[]> {
-  const res = await fetch('/api/events');
-  if (!res.ok) return [];
-  const body = (await res.json()) as { events?: NightEvent[] };
-  return Array.isArray(body.events) ? body.events : [];
 }

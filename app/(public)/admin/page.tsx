@@ -151,7 +151,7 @@ function formatWhen(iso: string): string {
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
   const [password, setPassword] = useState('');
-  const [tab, setTab] = useState<'drinks' | 'events' | 'trivia' | 'orders' | 'giftcards'>('drinks');
+  const [tab, setTab] = useState<'drinks' | 'events' | 'trivia' | 'orders' | 'giftcards' | 'venues'>('drinks');
   const [items, setItems] = useState<Item[]>([]);
   const [events, setEvents] = useState<AdminEvent[]>([]);
   const [venues, setVenues] = useState<VenueOption[]>([]);
@@ -319,6 +319,15 @@ export default function AdminPage() {
     );
   }
 
+  async function deleteOrder(order: AdminOrder) {
+    if (!window.confirm(`Delete order ${order.id.slice(0, 8).toUpperCase()} from ${order.fullName}? This cannot be undone.`)) return;
+    setUpdatingOrder(order.id);
+    const res = await fetch(`/api/admin/orders?id=${order.id}`, { method: 'DELETE' });
+    setUpdatingOrder('');
+    if (res.ok) setOrders((rows) => rows.filter((r) => r.id !== order.id));
+    else setOrdersError('Could not delete order.');
+  }
+
   const loadGiftCards = useCallback(async () => {
     const res = await fetch('/api/admin/gift-cards');
     const data = await res.json().catch(() => ({}));
@@ -343,6 +352,20 @@ export default function AdminPage() {
     }
     setGiftCards((rows) => [data.card, ...rows]);
     (e.target as HTMLFormElement).reset();
+  }
+
+  async function deleteGiftCard(id: string) {
+    if (!window.confirm('Delete this gift card?')) return;
+    const res = await fetch(`/api/admin/gift-cards?id=${id}`, { method: 'DELETE' });
+    if (res.ok) setGiftCards((rows) => rows.filter((r) => r.id !== id));
+    else setGiftCardError('Could not delete gift card.');
+  }
+
+  async function deleteTrivia(entry: TriviaEntry) {
+    if (!window.confirm(`Delete trivia entry from ${entry.name}?`)) return;
+    const res = await fetch(`/api/admin/trivia?id=${entry.id}`, { method: 'DELETE' });
+    if (res.ok) setEntries((rows) => rows.filter((r) => r.id !== entry.id));
+    else setTriviaError('Could not delete entry.');
   }
 
   async function setEntryStatus(entry: TriviaEntry, status: string) {
@@ -426,6 +449,24 @@ export default function AdminPage() {
       rows.map((row) => (row.slug === slug ? { ...row, ...(data.item as Item), tracked: true } : row))
     );
     setMsg(`Updated ${data.item?.name || slug}`);
+  }
+
+  async function deleteStock(slug: string, name: string) {
+    if (!window.confirm(`Delete ${name} from inventory?`)) return;
+    setSavingSlug(slug);
+    const res = await fetch('/api/admin/inventory', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete', slug }),
+    });
+    setSavingSlug('');
+    if (res.ok) {
+      setItems((rows) => rows.filter((r) => r.slug !== slug));
+      setMsg(`Deleted ${name}`);
+    } else {
+      const data = await res.json().catch(() => ({}));
+      setMsg(data.error || 'Could not delete item.');
+    }
   }
 
   async function askAi() {
@@ -581,7 +622,7 @@ export default function AdminPage() {
         </div>
 
         <div className="flex gap-1 mb-8 border-b border-obsidian/10 overflow-x-auto">
-          {(['drinks', 'orders', 'giftcards', 'events', 'trivia'] as const).map((key) => (
+          {(['drinks', 'orders', 'giftcards', 'events', 'venues', 'trivia'] as const).map((key) => (
             <button
               key={key}
               type="button"
@@ -598,7 +639,9 @@ export default function AdminPage() {
                     ? `Gift cards (${giftCards.length})`
                     : key === 'events'
                       ? `Events (${events.length})`
-                      : `Trivia (${entries.length})`}
+                      : key === 'venues'
+                        ? 'Venues'
+                        : `Trivia (${entries.length})`}
             </button>
           ))}
         </div>
@@ -685,6 +728,16 @@ export default function AdminPage() {
                     </div>
 
                     <TrackingForm order={order} saving={updatingOrder === order.id} onSave={(patch) => saveTracking(order, patch)} />
+                    <div className="mt-2 pt-2 border-t border-obsidian/5">
+                      <button
+                        type="button"
+                        disabled={updatingOrder === order.id}
+                        onClick={() => deleteOrder(order)}
+                        className="text-[10px] font-black uppercase tracking-[0.1em] px-3 py-2 border border-ember/40 text-ember disabled:opacity-40"
+                      >
+                        Delete order
+                      </button>
+                    </div>
                   </div>
                 );
               })}
@@ -721,6 +774,7 @@ export default function AdminPage() {
                     <th className="p-3">Status</th>
                     <th className="p-3">Note</th>
                     <th className="p-3">Issued</th>
+                    <th className="p-3"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -739,6 +793,9 @@ export default function AdminPage() {
                       </td>
                       <td className="p-3 text-obsidian/50">{c.note || '—'}</td>
                       <td className="p-3 text-obsidian/40 text-xs">{formatWhen(c.createdAt)}</td>
+                      <td className="p-3">
+                        <button type="button" onClick={() => deleteGiftCard(c.id)} className="text-[10px] font-black uppercase text-ember hover:text-ember/80">Delete</button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -861,6 +918,13 @@ export default function AdminPage() {
                         {status}
                       </button>
                     ))}
+                    <button
+                      type="button"
+                      onClick={() => deleteTrivia(entry)}
+                      className="px-3 py-2 border border-ember/40 text-ember text-[10px] font-black uppercase tracking-[0.12em]"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               ))}
@@ -869,6 +933,8 @@ export default function AdminPage() {
               )}
             </div>
           </>
+        ) : tab === 'venues' ? (
+          <AdminVenuesTab />
         ) : tab === 'drinks' ? (
           <>
             {msg && <p className="text-sm text-ember mb-6">{msg}</p>}
@@ -917,6 +983,7 @@ export default function AdminPage() {
                   item={item}
                   saving={savingSlug === item.slug}
                   onSave={(patch) => saveStock(item.slug, patch)}
+                  onDelete={() => deleteStock(item.slug, item.name)}
                 />
               ))}
               {items.length === 0 && <p className="text-sm text-obsidian/45">No SKUs yet.</p>}
@@ -1195,10 +1262,12 @@ function StockRow({
   item,
   saving,
   onSave,
+  onDelete,
 }: {
   item: Item;
   saving: boolean;
   onSave: (patch: Record<string, unknown>) => void;
+  onDelete: () => void;
 }) {
   const [onHand, setOnHand] = useState(String(item.on_hand));
   const [price, setPrice] = useState(item.price_ngn != null ? String(item.price_ngn) : '');
@@ -1296,6 +1365,14 @@ function StockRow({
         >
           {item.active ? 'Unlist' : 'List'}
         </button>
+        <button
+          type="button"
+          disabled={saving}
+          onClick={onDelete}
+          className="px-3 py-2.5 border border-ember/40 text-ember text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-40"
+        >
+          Delete
+        </button>
       </div>
     </div>
   );
@@ -1319,5 +1396,240 @@ function Field({
       <FieldLabel>{label}</FieldLabel>
       <input name={name} type={type} required={required} placeholder={placeholder} className={inputClass} />
     </div>
+  );
+}
+
+type AdminVenue = {
+  id: string;
+  slug: string;
+  name: string;
+  kind: string;
+  area: string;
+  areaId: string;
+  status: string;
+  source: string;
+  photoUrl: string | null;
+  tagline: string;
+  about: string;
+  hours: string;
+  followerCount: number;
+  reviewCount: number;
+};
+
+function AdminVenuesTab() {
+  const [venues, setVenues] = useState<AdminVenue[]>([]);
+  const [areas, setAreas] = useState<{ id: string; name: string }[]>([]);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const [name, setName] = useState('');
+  const [slug, setSlug] = useState('');
+  const [kind, setKind] = useState('lounge');
+  const [areaId, setAreaId] = useState('vi');
+  const [areaName, setAreaName] = useState('Victoria Island');
+  const [tagline, setTagline] = useState('');
+  const [about, setAbout] = useState('');
+  const [hours, setHours] = useState('');
+  const [photoUrl, setPhotoUrl] = useState('');
+
+  useEffect(() => {
+    fetch('/api/admin/venues')
+      .then((r) => r.json())
+      .then((d) => {
+        setVenues(d.venues || []);
+        setAreas(d.areas || []);
+      })
+      .catch(() => setError('Could not load venues.'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  function autoSlug(n: string) {
+    setName(n);
+    setSlug(n.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
+  }
+
+  async function createVenue(e: FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    setError('');
+    const res = await fetch('/api/admin/venues', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name, slug, kind, areaId, area: areaName,
+        tagline, about, hours, photoUrl: photoUrl || null,
+      }),
+    });
+    const data = await res.json();
+    setSaving(false);
+    if (!res.ok) { setError(data.error || 'Could not create venue.'); return; }
+    setVenues((v) => [data.venue, ...v]);
+    setShowForm(false);
+    setName(''); setSlug(''); setTagline(''); setAbout(''); setHours(''); setPhotoUrl('');
+  }
+
+  async function approveVenue(venue: AdminVenue) {
+    const res = await fetch('/api/admin/venues', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: venue.id, status: 'active' }),
+    });
+    if (res.ok) setVenues((v) => v.map((x) => x.id === venue.id ? { ...x, status: 'active' } : x));
+  }
+
+  async function suspendVenue(venue: AdminVenue) {
+    const res = await fetch('/api/admin/venues', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: venue.id, status: 'suspended' }),
+    });
+    if (res.ok) setVenues((v) => v.map((x) => x.id === venue.id ? { ...x, status: 'suspended' } : x));
+  }
+
+  async function removeVenue(venue: AdminVenue) {
+    if (!window.confirm(`Delete ${venue.name}?`)) return;
+    const res = await fetch(`/api/admin/venues?id=${venue.id}`, { method: 'DELETE' });
+    if (res.ok) setVenues((v) => v.filter((x) => x.id !== venue.id));
+  }
+
+  if (loading) return <p className="text-sm text-obsidian/45">Loading venues…</p>;
+
+  const pending = venues.filter((v) => v.status === 'pending');
+  const active = venues.filter((v) => v.status === 'active');
+  const suspended = venues.filter((v) => v.status === 'suspended');
+
+  return (
+    <>
+      {error && <p className="text-sm text-ember mb-4">{error}</p>}
+
+      <div className="flex items-center justify-between mb-6">
+        <p className="text-sm text-obsidian/50">
+          Manage venue profiles. Approve partner submissions, add photos, and control visibility.
+        </p>
+        <button
+          type="button"
+          onClick={() => setShowForm(!showForm)}
+          className="px-5 py-2.5 btn-brand text-[10px] font-black uppercase tracking-[0.14em]"
+        >
+          {showForm ? 'Cancel' : '+ Add venue'}
+        </button>
+      </div>
+
+      {showForm && (
+        <form onSubmit={createVenue} className="bg-white p-6 mb-8 shadow-sm space-y-4">
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <FieldLabel>Name</FieldLabel>
+              <input value={name} onChange={(e) => autoSlug(e.target.value)} required className={inputClass} />
+            </div>
+            <div>
+              <FieldLabel>Slug</FieldLabel>
+              <input value={slug} onChange={(e) => setSlug(e.target.value)} required className={inputClass} />
+            </div>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-4">
+            <div>
+              <FieldLabel>Type</FieldLabel>
+              <select value={kind} onChange={(e) => setKind(e.target.value)} className={inputClass}>
+                {['club','lounge','rooftop','beach','live','restaurant','bar'].map((k) => (
+                  <option key={k} value={k}>{k}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <FieldLabel>Area</FieldLabel>
+              <select
+                value={areaId}
+                onChange={(e) => {
+                  setAreaId(e.target.value);
+                  const a = areas.find((x) => x.id === e.target.value);
+                  if (a) setAreaName(a.name);
+                }}
+                className={inputClass}
+              >
+                {areas.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <FieldLabel>Hours</FieldLabel>
+              <input value={hours} onChange={(e) => setHours(e.target.value)} placeholder="e.g. Thu-Sun · 7pm-3am" className={inputClass} />
+            </div>
+          </div>
+          <div>
+            <FieldLabel>Photo URL</FieldLabel>
+            <input value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} placeholder="https://..." className={inputClass} />
+          </div>
+          <div>
+            <FieldLabel>Tagline</FieldLabel>
+            <input value={tagline} onChange={(e) => setTagline(e.target.value)} className={inputClass} />
+          </div>
+          <div>
+            <FieldLabel>About</FieldLabel>
+            <textarea value={about} onChange={(e) => setAbout(e.target.value)} rows={3} className={`${inputClass} resize-y`} />
+          </div>
+          <button type="submit" disabled={saving} className="px-6 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em]">
+            {saving ? 'Saving…' : 'Create venue'}
+          </button>
+        </form>
+      )}
+
+      {pending.length > 0 && (
+        <div className="mb-8">
+          <h3 className="text-sm font-bold text-ember mb-3">Pending approval ({pending.length})</h3>
+          <div className="space-y-3">
+            {pending.map((v) => (
+              <div key={v.id} className="bg-white p-4 shadow-sm flex items-center gap-4">
+                <div className="w-12 h-12 rounded bg-paper flex items-center justify-center shrink-0">
+                  {v.photoUrl ? <img src={v.photoUrl} alt="" className="w-full h-full object-cover rounded" /> : <span className="text-lg">📍</span>}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium">{v.name}</p>
+                  <p className="text-xs text-obsidian/45">{v.kind} · {v.area} · via {v.source}</p>
+                </div>
+                <button type="button" onClick={() => approveVenue(v)} className="px-3 py-2 border border-green-500 text-green-600 text-[10px] font-black uppercase">Approve</button>
+                <button type="button" onClick={() => removeVenue(v)} className="px-3 py-2 border border-ember/40 text-ember text-[10px] font-black uppercase">Reject</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <h3 className="text-sm font-bold mb-3">Active venues ({active.length})</h3>
+      <div className="space-y-3 mb-8">
+        {active.map((v) => (
+          <div key={v.id} className="bg-white p-4 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded bg-paper flex items-center justify-center shrink-0 overflow-hidden">
+              {v.photoUrl ? <img src={v.photoUrl} alt="" className="w-full h-full object-cover" /> : <span className="text-lg">📍</span>}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-medium">{v.name}</p>
+              <p className="text-xs text-obsidian/45">{v.kind} · {v.area} · {v.followerCount} followers · {v.reviewCount} reviews</p>
+            </div>
+            <button type="button" onClick={() => suspendVenue(v)} className="px-3 py-2 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em]">Suspend</button>
+            <button type="button" onClick={() => removeVenue(v)} className="px-3 py-2 border border-ember/40 text-ember text-[10px] font-black uppercase tracking-[0.12em]">Delete</button>
+          </div>
+        ))}
+        {active.length === 0 && <p className="text-sm text-obsidian/45">No active venues. Create one above.</p>}
+      </div>
+
+      {suspended.length > 0 && (
+        <div>
+          <h3 className="text-sm font-bold text-obsidian/50 mb-3">Suspended ({suspended.length})</h3>
+          <div className="space-y-3">
+            {suspended.map((v) => (
+              <div key={v.id} className="bg-white p-4 shadow-sm flex items-center gap-4 opacity-60">
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium">{v.name}</p>
+                  <p className="text-xs text-obsidian/45">{v.kind} · {v.area}</p>
+                </div>
+                <button type="button" onClick={() => approveVenue(v)} className="px-3 py-2 border border-obsidian/15 text-[10px] font-black uppercase">Reactivate</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </>
   );
 }

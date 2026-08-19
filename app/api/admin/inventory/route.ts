@@ -75,6 +75,16 @@ export async function POST(req: NextRequest) {
           throw err;
         }
       }
+      if (body.action === 'delete') {
+        const gate = await requireAdmin();
+        if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
+        const slug = String(body.slug || '');
+        if (!slug) return NextResponse.json({ error: 'Slug is required.' }, { status: 400 });
+        const { default: dbSql } = await import('@/lib/db');
+        await dbSql`DELETE FROM inventory WHERE slug = ${slug}`;
+        await redis()?.del('shop:catalog:v1');
+        return NextResponse.json({ ok: true });
+      }
       if (body.action === 'ai-list') {
         const gate = await requireAdmin();
         if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
