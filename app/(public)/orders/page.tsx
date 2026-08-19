@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useUser } from '@/components/auth/AuthProvider';
 import { formatNgn } from '@/lib/drinks/catalog';
+import { ORDER_STATUS_LABELS, type OrderStatus } from '@/lib/commerce/status';
+import OrderTrackingStepper from '@/components/orders/OrderTrackingStepper';
+import StandingCard from '@/components/loyalty/StandingCard';
 
 type OrderItem = {
   slug: string;
@@ -14,20 +17,18 @@ type OrderItem = {
 
 type Order = {
   id: string;
-  status: string;
+  status: OrderStatus;
   subtotalNgn: number;
+  giftCardDiscountNgn: number;
+  totalNgn: number;
   addressLine1: string;
   area: string | null;
+  courierName: string | null;
+  riderPhone: string | null;
+  etaAt: string | null;
+  trackingNote: string | null;
   createdAt: string;
   items: OrderItem[];
-};
-
-const STATUS_LABEL: Record<string, string> = {
-  pending: 'Pending',
-  awaiting_payment: 'Awaiting payment',
-  paid: 'Paid',
-  fulfilled: 'Delivered',
-  cancelled: 'Cancelled',
 };
 
 export default function OrdersPage() {
@@ -59,6 +60,8 @@ export default function OrdersPage() {
         <p className="text-[10px] font-wordmark-sm text-ember mb-2">Account</p>
         <h1 className="font-wordmark text-3xl sm:text-4xl text-obsidian mb-2">Order history</h1>
         <p className="text-sm text-obsidian/50 mb-8 font-light">Past drinks drops tied to your signed-in email.</p>
+
+        {!authLoading && user && <StandingCard />}
 
         {authLoading || loading ? (
           <p className="text-sm text-obsidian/45">Loading…</p>
@@ -94,7 +97,7 @@ export default function OrdersPage() {
                       })}
                     </p>
                     <p className="text-sm font-medium text-obsidian mt-0.5">
-                      {formatNgn(order.subtotalNgn)}
+                      {formatNgn(order.totalNgn ?? order.subtotalNgn)}
                     </p>
                     <p className="text-xs text-obsidian/45 mt-0.5 truncate max-w-[16rem] sm:max-w-md">
                       {order.addressLine1}
@@ -102,9 +105,16 @@ export default function OrdersPage() {
                     </p>
                   </div>
                   <span className="text-[10px] font-wordmark-sm px-2.5 py-1 border border-obsidian/15 text-obsidian/70">
-                    {STATUS_LABEL[order.status] || order.status}
+                    {ORDER_STATUS_LABELS[order.status] || order.status}
                   </span>
                 </div>
+                <OrderTrackingStepper
+                  status={order.status}
+                  courierName={order.courierName}
+                  riderPhone={order.riderPhone}
+                  etaAt={order.etaAt}
+                  trackingNote={order.trackingNote}
+                />
                 <ul className="divide-y divide-obsidian/6 border-t border-obsidian/6">
                   {(order.items || []).map((item) => (
                     <li key={`${order.id}-${item.slug}`} className="py-2 flex justify-between gap-3 text-sm">

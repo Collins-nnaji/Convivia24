@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { formatNgn } from '@/lib/drinks/catalog';
 import { ORDER_STATUS_LABELS, type OrderStatus } from '@/lib/commerce/status';
 
@@ -67,14 +68,34 @@ type AdminOrder = {
   status: OrderStatus;
   subtotalNgn: number;
   loyaltyDiscountNgn: number;
+  giftCardDiscountNgn: number;
   totalNgn: number;
   addressLine1: string;
   addressLine2: string | null;
   area: string | null;
   notes: string | null;
+  courierName: string | null;
+  riderPhone: string | null;
+  etaAt: string | null;
+  trackingNote: string | null;
+  paymentProvider: string | null;
+  paymentRef: string | null;
+  refundRef: string | null;
+  refundedNgn: number;
   createdAt: string;
   updatedAt: string;
   items: { name: string; qty: number; unitPriceNgn: number }[];
+};
+
+type GiftCard = {
+  id: string;
+  code: string;
+  valueNgn: number;
+  status: 'active' | 'redeemed' | 'void';
+  issuedBy: string;
+  note: string | null;
+  redeemedOrderId: string | null;
+  createdAt: string;
 };
 
 type EventDraft = {
@@ -130,7 +151,7 @@ function formatWhen(iso: string): string {
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
   const [password, setPassword] = useState('');
-  const [tab, setTab] = useState<'drinks' | 'events' | 'trivia' | 'orders'>('drinks');
+  const [tab, setTab] = useState<'drinks' | 'events' | 'trivia' | 'orders' | 'giftcards'>('drinks');
   const [items, setItems] = useState<Item[]>([]);
   const [events, setEvents] = useState<AdminEvent[]>([]);
   const [venues, setVenues] = useState<VenueOption[]>([]);
@@ -153,6 +174,9 @@ export default function AdminPage() {
   const [ordersError, setOrdersError] = useState('');
   const [settableStatuses, setSettableStatuses] = useState<OrderStatus[]>([]);
   const [updatingOrder, setUpdatingOrder] = useState('');
+  const [giftCards, setGiftCards] = useState<GiftCard[]>([]);
+  const [giftCardError, setGiftCardError] = useState('');
+  const [giftCardIssuing, setGiftCardIssuing] = useState(false);
 
   const loadStock = useCallback(async () => {
     const res = await fetch('/api/admin/inventory');
@@ -258,6 +282,69 @@ export default function AdminPage() {
     setOrders((rows) => rows.map((r) => (r.id === order.id ? { ...r, status } : r)));
   }
 
+  async function saveTracking(order: AdminOrder, patch: { courierName?: string; riderPhone?: string; etaAt?: string | null; trackingNote?: string }) {
+    setOrdersError('');
+    setUpdatingOrder(order.id);
+    const res = await fetch('/api/admin/orders', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId: order.id, status: order.status, ...patch }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setUpdatingOrder('');
+    if (!res.ok) {
+      setOrdersError(data.error || 'Could not save tracking info.');
+      return;
+    }
+    setOrders((rows) => rows.map((r) => (r.id === order.id ? { ...r, ...patch } as AdminOrder : r)));
+  }
+
+  async function refundOrder(order: AdminOrder) {
+    if (!window.confirm(`Refund ${order.fullName}'s order for ${formatNgn(order.totalNgn)}?`)) return;
+    setOrdersError('');
+    setUpdatingOrder(order.id);
+    const res = await fetch('/api/admin/orders', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId: order.id, action: 'refund' }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setUpdatingOrder('');
+    if (!res.ok) {
+      setOrdersError(data.error || 'Could not refund this order.');
+      return;
+    }
+    setOrders((rows) =>
+      rows.map((r) => (r.id === order.id ? { ...r, status: 'refunded', refundedNgn: data.refundedNgn } : r))
+    );
+  }
+
+  const loadGiftCards = useCallback(async () => {
+    const res = await fetch('/api/admin/gift-cards');
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) setGiftCards(data.cards || []);
+  }, []);
+
+  async function issueGiftCard(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setGiftCardError('');
+    setGiftCardIssuing(true);
+    const fd = new FormData(e.currentTarget);
+    const res = await fetch('/api/admin/gift-cards', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ valueNgn: Number(fd.get('valueNgn')), note: String(fd.get('note') || '') }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setGiftCardIssuing(false);
+    if (!res.ok) {
+      setGiftCardError(data.error || 'Could not issue gift card.');
+      return;
+    }
+    setGiftCards((rows) => [data.card, ...rows]);
+    (e.target as HTMLFormElement).reset();
+  }
+
   async function setEntryStatus(entry: TriviaEntry, status: string) {
     setTriviaError('');
     const res = await fetch('/api/admin/trivia', {
@@ -278,8 +365,9 @@ export default function AdminPage() {
       .then(loadEvents)
       .then(loadTrivia)
       .then(loadOrders)
+      .then(loadGiftCards)
       .catch(() => setAuthed(false));
-  }, [loadStock, loadEvents, loadTrivia, loadOrders]);
+  }, [loadStock, loadEvents, loadTrivia, loadOrders, loadGiftCards]);
 
   async function login(e: FormEvent) {
     e.preventDefault();
@@ -299,6 +387,7 @@ export default function AdminPage() {
     await loadEvents();
     await loadTrivia();
     await loadOrders();
+    await loadGiftCards();
   }
 
   async function onUpload(e: FormEvent<HTMLFormElement>) {
@@ -488,13 +577,13 @@ export default function AdminPage() {
           )}
         </div>
 
-        <div className="flex gap-1 mb-8 border-b border-obsidian/10">
-          {(['drinks', 'orders', 'events', 'trivia'] as const).map((key) => (
+        <div className="flex gap-1 mb-8 border-b border-obsidian/10 overflow-x-auto">
+          {(['drinks', 'orders', 'giftcards', 'events', 'trivia'] as const).map((key) => (
             <button
               key={key}
               type="button"
               onClick={() => setTab(key)}
-              className={`px-4 py-2.5 text-[11px] font-black uppercase tracking-[0.14em] border-b-2 -mb-px transition-colors ${
+              className={`px-4 py-2.5 text-[11px] font-black uppercase tracking-[0.14em] border-b-2 -mb-px transition-colors whitespace-nowrap ${
                 tab === key ? 'border-ember text-ember' : 'border-transparent text-obsidian/40 hover:text-obsidian/70'
               }`}
             >
@@ -502,9 +591,11 @@ export default function AdminPage() {
                 ? `Drinks (${items.length})`
                 : key === 'orders'
                   ? `Orders (${orders.length})`
-                  : key === 'events'
-                    ? `Events (${events.length})`
-                    : `Trivia (${entries.length})`}
+                  : key === 'giftcards'
+                    ? `Gift cards (${giftCards.length})`
+                    : key === 'events'
+                      ? `Events (${events.length})`
+                      : `Trivia (${entries.length})`}
             </button>
           ))}
         </div>
@@ -513,68 +604,143 @@ export default function AdminPage() {
           <>
             {ordersError && <p className="text-sm text-ember mb-6">{ordersError}</p>}
             <p className="text-sm text-obsidian/50 mb-5">
-              Move an order through fulfillment. Each change emails the customer automatically (once Resend is
-              configured).
+              Move an order through fulfillment, add rider ETA/contact, or refund it. Each status change emails
+              the customer automatically (once Resend is configured).
             </p>
             <div className="space-y-3">
-              {orders.map((order) => (
-                <div key={order.id} className="bg-white p-4 shadow-sm">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="font-medium">
-                        {order.fullName}{' '}
-                        <span className="text-[11px] text-obsidian/40 font-mono font-normal">
-                          {order.id.slice(0, 8).toUpperCase()}
-                        </span>
-                      </p>
-                      <p className="text-[12px] text-obsidian/50 truncate">
-                        {order.email}
-                        {order.phone ? ` · ${order.phone}` : ''}
-                      </p>
-                      <p className="text-[12px] text-obsidian/50">
-                        {order.addressLine1}
-                        {order.area ? `, ${order.area}` : ''}
-                      </p>
-                      <p className="text-[12px] text-obsidian/45 mt-1">
-                        {order.items.map((i) => `${i.name} × ${i.qty}`).join(' · ')}
-                      </p>
+              {orders.map((order) => {
+                const refundable = !['refunded', 'cancelled', 'pending', 'awaiting_payment'].includes(order.status);
+                return (
+                  <div key={order.id} className="bg-white p-4 shadow-sm">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-medium">
+                          {order.fullName}{' '}
+                          <span className="text-[11px] text-obsidian/40 font-mono font-normal">
+                            {order.id.slice(0, 8).toUpperCase()}
+                          </span>
+                        </p>
+                        <p className="text-[12px] text-obsidian/50 truncate">
+                          {order.email}
+                          {order.phone ? ` · ${order.phone}` : ''}
+                        </p>
+                        <p className="text-[12px] text-obsidian/50">
+                          {order.addressLine1}
+                          {order.area ? `, ${order.area}` : ''}
+                        </p>
+                        <p className="text-[12px] text-obsidian/45 mt-1">
+                          {order.items.map((i) => `${i.name} × ${i.qty}`).join(' · ')}
+                        </p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="font-bold">{formatNgn(order.totalNgn)}</p>
+                        {order.giftCardDiscountNgn > 0 && (
+                          <p className="text-[11px] text-ember">−{formatNgn(order.giftCardDiscountNgn)} gift card</p>
+                        )}
+                        {order.status === 'refunded' && order.refundedNgn > 0 && (
+                          <p className="text-[11px] text-obsidian/40">Refunded {formatNgn(order.refundedNgn)}</p>
+                        )}
+                        <p className="text-[11px] text-obsidian/40">{formatWhen(order.createdAt)}</p>
+                      </div>
                     </div>
-                    <div className="text-right shrink-0">
-                      <p className="font-bold">{formatNgn(order.totalNgn)}</p>
-                      <p className="text-[11px] text-obsidian/40">{formatWhen(order.createdAt)}</p>
+
+                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-obsidian/10 flex-wrap">
+                      <span className="text-[10px] font-black uppercase tracking-[0.12em] px-2 py-1 bg-paper text-obsidian/60">
+                        {ORDER_STATUS_LABELS[order.status] || order.status}
+                      </span>
+                      {refundable && (
+                        <button
+                          type="button"
+                          disabled={updatingOrder === order.id}
+                          onClick={() => refundOrder(order)}
+                          className="text-[10px] font-black uppercase tracking-[0.1em] px-3 py-2 border border-obsidian/15 text-obsidian/60 hover:border-ember hover:text-ember disabled:opacity-40"
+                        >
+                          Refund
+                        </button>
+                      )}
+                      <select
+                        value=""
+                        disabled={updatingOrder === order.id}
+                        onChange={(e) => {
+                          const next = e.target.value as OrderStatus;
+                          if (next) updateOrderStatus(order, next);
+                          e.target.value = '';
+                        }}
+                        className="ml-auto text-[11px] font-black uppercase tracking-[0.1em] border border-obsidian/15 px-3 py-2 disabled:opacity-40"
+                      >
+                        <option value="">
+                          {updatingOrder === order.id ? 'Updating…' : 'Set status…'}
+                        </option>
+                        {settableStatuses
+                          .filter((s) => s !== order.status)
+                          .map((s) => (
+                            <option key={s} value={s}>
+                              {ORDER_STATUS_LABELS[s] || s}
+                            </option>
+                          ))}
+                      </select>
                     </div>
+
+                    <TrackingForm order={order} saving={updatingOrder === order.id} onSave={(patch) => saveTracking(order, patch)} />
                   </div>
-                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-obsidian/10">
-                    <span className="text-[10px] font-black uppercase tracking-[0.12em] px-2 py-1 bg-paper text-obsidian/60">
-                      {ORDER_STATUS_LABELS[order.status] || order.status}
-                    </span>
-                    <select
-                      value=""
-                      disabled={updatingOrder === order.id}
-                      onChange={(e) => {
-                        const next = e.target.value as OrderStatus;
-                        if (next) updateOrderStatus(order, next);
-                        e.target.value = '';
-                      }}
-                      className="ml-auto text-[11px] font-black uppercase tracking-[0.1em] border border-obsidian/15 px-3 py-2 disabled:opacity-40"
-                    >
-                      <option value="">
-                        {updatingOrder === order.id ? 'Updating…' : 'Set status…'}
-                      </option>
-                      {settableStatuses
-                        .filter((s) => s !== order.status)
-                        .map((s) => (
-                          <option key={s} value={s}>
-                            {ORDER_STATUS_LABELS[s] || s}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
               {orders.length === 0 && !ordersError && (
                 <p className="text-sm text-obsidian/45">No paid orders yet.</p>
               )}
+            </div>
+          </>
+        ) : tab === 'giftcards' ? (
+          <>
+            {giftCardError && <p className="text-sm text-ember mb-6">{giftCardError}</p>}
+            <form onSubmit={issueGiftCard} className="bg-white p-6 sm:p-8 mb-10 space-y-4 shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)]">
+              <h2 className="font-bold">Issue a gift card</h2>
+              <p className="text-sm text-obsidian/50">
+                Generates a real, single-use code backed by the database — a customer applies it at checkout to
+                take the value straight off their order total.
+              </p>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <Field name="valueNgn" label="Value (NGN)" type="number" required />
+                <Field name="note" label="Note (internal)" placeholder="e.g. goodwill credit, order #1234" />
+              </div>
+              <button type="submit" disabled={giftCardIssuing} className="px-6 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em] disabled:opacity-60">
+                {giftCardIssuing ? 'Issuing…' : 'Issue gift card'}
+              </button>
+            </form>
+
+            <h2 className="font-bold mb-4">Issued codes</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm bg-white border border-obsidian/8">
+                <thead>
+                  <tr className="text-left text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40 border-b border-obsidian/8">
+                    <th className="p-3">Code</th>
+                    <th className="p-3">Value</th>
+                    <th className="p-3">Status</th>
+                    <th className="p-3">Note</th>
+                    <th className="p-3">Issued</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {giftCards.map((c) => (
+                    <tr key={c.id} className="border-b border-obsidian/6">
+                      <td className="p-3 font-mono text-xs">{c.code}</td>
+                      <td className="p-3">{formatNgn(c.valueNgn)}</td>
+                      <td className="p-3">
+                        <span
+                          className={`text-[10px] font-black uppercase tracking-[0.1em] px-2 py-1 ${
+                            c.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-paper text-obsidian/50'
+                          }`}
+                        >
+                          {c.status}
+                        </span>
+                      </td>
+                      <td className="p-3 text-obsidian/50">{c.note || '—'}</td>
+                      <td className="p-3 text-obsidian/40 text-xs">{formatWhen(c.createdAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {giftCards.length === 0 && <p className="text-sm text-obsidian/45 p-3">No gift cards issued yet.</p>}
             </div>
           </>
         ) : tab === 'trivia' ? (
@@ -949,6 +1115,79 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+function TrackingForm({
+  order,
+  saving,
+  onSave,
+}: {
+  order: AdminOrder;
+  saving: boolean;
+  onSave: (patch: { courierName?: string; riderPhone?: string; etaAt?: string | null; trackingNote?: string }) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [courierName, setCourierName] = useState(order.courierName || '');
+  const [riderPhone, setRiderPhone] = useState(order.riderPhone || '');
+  const [etaLocal, setEtaLocal] = useState(order.etaAt ? toLocalInput(order.etaAt) : '');
+  const [trackingNote, setTrackingNote] = useState(order.trackingNote || '');
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="mt-2 text-[10px] font-black uppercase tracking-[0.1em] text-obsidian/40 hover:text-ember"
+      >
+        {order.courierName || order.etaAt ? `Rider: ${order.courierName || '—'} · edit tracking` : '+ Add rider / ETA'}
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-3 pt-3 border-t border-obsidian/10 grid sm:grid-cols-4 gap-3">
+      <div>
+        <FieldLabel>Rider name</FieldLabel>
+        <input value={courierName} onChange={(e) => setCourierName(e.target.value)} className={inputClass} placeholder="e.g. Tunde" />
+      </div>
+      <div>
+        <FieldLabel>Rider phone</FieldLabel>
+        <input value={riderPhone} onChange={(e) => setRiderPhone(e.target.value)} className={inputClass} placeholder="+234…" />
+      </div>
+      <div>
+        <FieldLabel>ETA</FieldLabel>
+        <input type="datetime-local" value={etaLocal} onChange={(e) => setEtaLocal(e.target.value)} className={inputClass} />
+      </div>
+      <div>
+        <FieldLabel>Tracking note</FieldLabel>
+        <input value={trackingNote} onChange={(e) => setTrackingNote(e.target.value)} className={inputClass} placeholder="Optional" />
+      </div>
+      <div className="sm:col-span-4 flex gap-2">
+        <button
+          type="button"
+          disabled={saving}
+          onClick={() =>
+            onSave({
+              courierName,
+              riderPhone,
+              etaAt: etaLocal ? fromLocalInput(etaLocal) : null,
+              trackingNote,
+            })
+          }
+          className="px-4 py-2 btn-brand text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-40"
+        >
+          {saving ? '…' : 'Save tracking'}
+        </button>
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          className="px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function StockRow({
   item,
   saving,
@@ -979,8 +1218,7 @@ function StockRow({
     <div className="bg-white p-4 shadow-sm flex flex-col lg:flex-row lg:items-center gap-4">
       <div className="flex items-center gap-3 min-w-0 lg:w-64">
         {item.image_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={item.image_url} alt="" className="w-10 h-12 object-cover shrink-0" />
+          <Image src={item.image_url} alt="" width={40} height={48} className="w-10 h-12 object-cover shrink-0" />
         ) : (
           <div className="w-10 h-12 bg-paper border border-obsidian/10 shrink-0" />
         )}

@@ -6,10 +6,12 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
 import { getDrinkBySlug } from '@/lib/drinks/catalog';
+import { useUser } from '@/components/auth/AuthProvider';
 
 export type CartLine = {
   slug: string;
@@ -62,6 +64,8 @@ function loadCart(): CartLine[] {
 export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  const { user, loading: authLoading } = useUser();
+  const syncedForUser = useRef<string | null>(null);
 
   useEffect(() => {
     setLines(loadCart());
@@ -72,6 +76,46 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (!hydrated) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(lines));
   }, [lines, hydrated]);
+
+  // Signed-in users get a server-backed cart so it survives a device switch —
+  // on sign-in, adopt the server's cart if it has one, otherwise push the
+  // local (guest) cart up so it isn't lost.
+  useEffect(() => {
+    if (!hydrated || authLoading) return;
+    if (!user) {
+      syncedForUser.current = null;
+      return;
+    }
+    if (syncedForUser.current === user.id) return;
+    syncedForUser.current = user.id;
+
+    fetch('/api/cart')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        const serverItems = Array.isArray(data?.items) ? (data.items as CartLine[]) : [];
+        if (serverItems.length > 0) {
+          setLines(normalizeLines(serverItems));
+        } else if (lines.length > 0) {
+          fetch('/api/cart', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ items: lines }),
+          }).catch(() => {});
+        }
+      })
+      .catch(() => {});
+    // Only re-run when sign-in state changes — not on every cart edit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, authLoading, user]);
+
+  useEffect(() => {
+    if (!hydrated || authLoading || !user || syncedForUser.current !== user.id) return;
+    fetch('/api/cart', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: lines }),
+    }).catch(() => {});
+  }, [lines, hydrated, authLoading, user]);
 
   const addProduct = useCallback((slug: string, qty = 1) => {
     const product = getDrinkBySlug(slug);

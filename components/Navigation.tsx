@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -13,6 +14,7 @@ const LINKS = [
   { label: 'Shop', href: '/shop' },
   { label: 'Events', href: '/events' },
   { label: 'Trivia', href: '/trivia' },
+  { label: 'Companion', href: '/companion' },
 ];
 
 export default function Navigation() {
@@ -56,7 +58,14 @@ export default function Navigation() {
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-3">
           <Link href="/" className="shrink-0 flex items-center" aria-label="Convivia24">
-            <img src="/convivia24.png" alt="Convivia24" className="h-8 sm:h-10 w-auto rounded-sm" />
+            <Image
+              src="/convivia24.png"
+              alt="Convivia24"
+              width={299}
+              height={55}
+              priority
+              className="h-8 sm:h-10 w-auto rounded-sm"
+            />
           </Link>
 
           <nav className="hidden md:flex items-center gap-0.5 ml-auto">
@@ -102,7 +111,7 @@ export default function Navigation() {
                   aria-expanded={accountOpen}
                 >
                   {user.image ? (
-                    <img src={user.image} alt="" className="w-6 h-6 rounded-full object-cover" />
+                    <Image src={user.image} alt="" width={24} height={24} className="w-6 h-6 rounded-full object-cover" />
                   ) : (
                     <span className="w-6 h-6 rounded-full badge-brand flex items-center justify-center text-[10px] font-black">
                       {firstName.slice(0, 1).toUpperCase()}
@@ -130,6 +139,12 @@ export default function Navigation() {
                       </Link>
                       <Link href="/orders" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
                         Order history
+                      </Link>
+                      <Link href="/crews" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
+                        Party Crews
+                      </Link>
+                      <Link href="/circles" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
+                        Circles
                       </Link>
                       <button
                         type="button"
@@ -232,6 +247,14 @@ export default function Navigation() {
                   <>
                     <Link href="/orders" className="flex items-center justify-between py-3.5 text-[15px] font-medium text-obsidian/70">
                       Order history
+                      <span className="text-ember/40 text-lg">&rsaquo;</span>
+                    </Link>
+                    <Link href="/crews" className="flex items-center justify-between py-3.5 text-[15px] font-medium text-obsidian/70">
+                      Party Crews
+                      <span className="text-ember/40 text-lg">&rsaquo;</span>
+                    </Link>
+                    <Link href="/circles" className="flex items-center justify-between py-3.5 text-[15px] font-medium text-obsidian/70">
+                      Circles
                       <span className="text-ember/40 text-lg">&rsaquo;</span>
                     </Link>
                     <button

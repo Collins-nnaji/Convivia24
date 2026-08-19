@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 const footerLinks = [
   { label: 'Shop', href: '/shop' },
@@ -15,9 +16,11 @@ export default function Footer() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-4 min-w-0">
             <Link href="/" className="shrink-0 hover:opacity-90 transition-opacity" aria-label="Convivia24">
-              <img
+              <Image
                 src="/convivia24.png"
                 alt="Convivia24"
+                width={299}
+                height={55}
                 className="h-6 w-auto"
                 style={{ filter: 'brightness(0) invert(1)' }}
               />

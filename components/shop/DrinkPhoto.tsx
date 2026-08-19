@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import DrinkPlaceholder from '@/components/shop/DrinkPlaceholder';
 import type { DrinkProduct } from '@/lib/drinks/catalog';
 
@@ -24,7 +25,7 @@ export default function DrinkPhoto({ product, className = '', watermark = true }
               key={`${src}-${i}`}
               className={`relative overflow-hidden bg-white ${count === 3 && i === 0 ? 'row-span-2' : ''}`}
             >
-              <img src={src} alt="" className="absolute inset-0 h-full w-full object-contain p-1" />
+              <Image src={src} alt="" fill sizes="200px" className="object-contain p-1" />
             </div>
           ))}
         </div>
@@ -35,10 +36,12 @@ export default function DrinkPhoto({ product, className = '', watermark = true }
   if (product.image) {
     return (
       <div className={`relative bg-white ${className}`}>
-        <img
+        <Image
           src={product.image}
           alt={product.name}
-          className="absolute inset-0 h-full w-full object-contain object-center p-3 sm:p-4"
+          fill
+          sizes="(min-width: 1024px) 300px, 50vw"
+          className="object-contain object-center p-3 sm:p-4"
         />
       </div>
     );

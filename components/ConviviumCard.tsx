@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 export type CardKind = 'convivium' | 'loyalty' | 'premium';
 
@@ -100,9 +101,11 @@ export default function ConviviumCard({
               <p className="text-[8px] font-black uppercase tracking-[0.4em] text-cream/55 mb-1">{brand}</p>
               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-cream/85">{tier}</p>
             </div>
-            <img
+            <Image
               src="/convivia24.png"
               alt=""
+              width={299}
+              height={55}
               className="h-5 w-auto opacity-90"
               style={{ filter: 'brightness(0) invert(1)' }}
             />

@@ -216,19 +216,89 @@ export async function editStockRow(
   const row = mapRow(rows[0]);
   if (onHand != null) {
     const previous = existing?.on_hand ?? 0;
-    await logMovement(slug, onHand - previous, 'adjust', 'Admin stock edit');
+    await logMovement(slug, { onHand: onHand - previous }, 'adjust', 'Admin stock edit');
   }
   return row;
 }
 
-async function logMovement(slug: string, delta: number, reason: string, note: string) {
+async function logMovement(
+  slug: string,
+  delta: { onHand?: number; reserved?: number },
+  reason: string,
+  note: string,
+  orderId?: string
+) {
   try {
     await sql`
-      INSERT INTO inventory_movements (slug, delta_on_hand, reason, note)
-      VALUES (${slug}, ${delta}, ${reason}, ${note})
+      INSERT INTO inventory_movements (slug, delta_on_hand, delta_reserved, reason, order_id, note)
+      VALUES (${slug}, ${delta.onHand ?? 0}, ${delta.reserved ?? 0}, ${reason}, ${orderId || null}, ${note})
     `;
   } catch {
     /* movement log is best-effort */
+  }
+}
+
+export type StockLine = { slug: string; qty: number };
+
+/**
+ * Reserves stock for every tracked line item on order creation, so two
+ * shoppers can't both check out the last bottle. The HTTP-only Neon driver
+ * has no interactive transactions, so this reserves one line at a time and
+ * compensates (releases) anything already reserved if a later line fails —
+ * a saga rather than a single ACID transaction, but it never lets `reserved`
+ * exceed `on_hand` (the DB's own CHECK constraint backs that up too).
+ * Untracked items (no inventory row, or track_stock=false) are skipped.
+ */
+export async function reserveStockForOrder(
+  lines: StockLine[],
+  orderId: string
+): Promise<{ error: string } | null> {
+  const reservedSoFar: StockLine[] = [];
+  for (const line of lines) {
+    const rows = await sql`
+      UPDATE inventory
+      SET reserved = reserved + ${line.qty}, updated_at = NOW()
+      WHERE slug = ${line.slug} AND track_stock = true AND (on_hand - reserved) >= ${line.qty}
+      RETURNING slug
+    `;
+    if (rows.length > 0) {
+      reservedSoFar.push(line);
+      await logMovement(line.slug, { reserved: line.qty }, 'reserve', `Reserved for order ${orderId}`, orderId);
+      continue;
+    }
+
+    const [existing] = await sql`SELECT name, track_stock FROM inventory WHERE slug = ${line.slug} LIMIT 1`;
+    if (!existing || existing.track_stock === false) continue; // not stock-tracked — nothing to reserve
+
+    for (const r of reservedSoFar) {
+      await sql`UPDATE inventory SET reserved = GREATEST(0, reserved - ${r.qty}), updated_at = NOW() WHERE slug = ${r.slug}`;
+      await logMovement(r.slug, { reserved: -r.qty }, 'release', `Rolled back — ${line.slug} unavailable`, orderId);
+    }
+    return { error: `${existing.name || line.slug} doesn't have enough stock right now.` };
+  }
+  return null;
+}
+
+/** Releases reserved-but-not-yet-fulfilled stock — order cancelled or refunded. */
+export async function releaseStockForOrder(lines: StockLine[], orderId: string): Promise<void> {
+  for (const l of lines) {
+    await sql`
+      UPDATE inventory SET reserved = GREATEST(0, reserved - ${l.qty}), updated_at = NOW()
+      WHERE slug = ${l.slug} AND track_stock = true
+    `;
+    await logMovement(l.slug, { reserved: -l.qty }, 'release', `Released — order ${orderId}`, orderId);
+  }
+}
+
+/** Consumes stock for good — order actually left the building (delivered/fulfilled). */
+export async function fulfillStockForOrder(lines: StockLine[], orderId: string): Promise<void> {
+  for (const l of lines) {
+    await sql`
+      UPDATE inventory
+      SET on_hand = GREATEST(0, on_hand - ${l.qty}), reserved = GREATEST(0, reserved - ${l.qty}), updated_at = NOW()
+      WHERE slug = ${l.slug} AND track_stock = true
+    `;
+    await logMovement(l.slug, { onHand: -l.qty, reserved: -l.qty }, 'fulfill', `Fulfilled — order ${orderId}`, orderId);
   }
 }
 

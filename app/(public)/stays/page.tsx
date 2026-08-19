@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ArrowRight, BedDouble, Flower2, UtensilsCrossed } from 'lucide-react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
@@ -134,7 +135,7 @@ export default function StaysPage() {
         <div className="absolute inset-0">
           {hero.img ? (
             <>
-              <img src={hero.img} alt="" className="w-full h-full object-cover" />
+              <Image src={hero.img} alt="" fill priority sizes="100vw" className="object-cover" />
               <div className="absolute inset-0 bg-gradient-to-r from-obsidian/90 via-obsidian/60 to-obsidian/20" />
               <div className="absolute inset-0 bg-gradient-to-t from-obsidian/80 via-transparent to-obsidian/30" />
             </>
@@ -216,7 +217,7 @@ function StaysSection() {
               className={`grid lg:grid-cols-2 gap-8 lg:gap-12 items-center ${i % 2 === 1 ? 'lg:[direction:rtl]' : ''}`}
             >
               <motion.div variants={fadeUp} className="relative [direction:ltr]">
-                <img src={room.image} alt={room.name} className="w-full aspect-[4/3] object-cover" />
+                <Image src={room.image} alt={room.name} width={800} height={600} className="w-full aspect-[4/3] object-cover" />
                 <div className="absolute top-0 left-0 w-full h-1 bg-gold" />
                 <span className="absolute bottom-4 right-5 font-display text-6xl italic text-cream/90 leading-none select-none drop-shadow-lg">{room.num}</span>
               </motion.div>
@@ -279,7 +280,13 @@ function WellnessSection() {
             <motion.div variants={fadeUp}><SectionLabel variant="light">The Thermal Circuit</SectionLabel></motion.div>
             <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center mb-16">
               <motion.div variants={fadeUp} className="relative">
-                <img src="/Homepage.png" alt="The spa at Convivia24" className="w-full aspect-[4/3] object-cover object-[center_70%]" />
+                <Image
+                  src="/Homepage.png"
+                  alt="The spa at Convivia24"
+                  width={3168}
+                  height={1344}
+                  className="w-full aspect-[4/3] object-cover object-[center_70%]"
+                />
                 <div className="absolute top-0 left-0 w-full h-1 bg-gold" />
               </motion.div>
               <div>
@@ -398,7 +405,13 @@ function DiningSection() {
       {/* IMAGE BREAK — the terrace bar */}
       <section className="relative bg-obsidian">
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
-          <img src="/conv1.png" alt="The terrace bar at Convivia24" className="w-full h-[40vh] sm:h-[50vh] object-cover" />
+          <Image
+            src="/conv1.png"
+            alt="The terrace bar at Convivia24"
+            width={2816}
+            height={1536}
+            className="w-full h-[40vh] sm:h-[50vh] object-cover"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-cream via-transparent to-obsidian/40" />
         </motion.div>
       </section>

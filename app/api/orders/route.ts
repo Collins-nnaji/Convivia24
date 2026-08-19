@@ -5,6 +5,9 @@ import { getCurrentUser } from '@/lib/auth/session';
 import { getMember, loyaltyDiscountNgn, resolveMemberOwner } from '@/lib/loyalty/members';
 import { notifyOrderReceived } from '@/lib/commerce/notify';
 import { rateLimit, clientIp } from '@/lib/redis';
+import { reserveStockForOrder, releaseStockForOrder } from '@/lib/inventory';
+import { redeemGiftCardForOrder } from '@/lib/commerce/gift-cards';
+import { releaseOrderResources } from '@/lib/commerce/fulfillment';
 
 type IncomingItem = {
   slug: string;
@@ -25,9 +28,14 @@ export async function GET() {
         o.status,
         o.subtotal_ngn,
         o.loyalty_discount_ngn,
+        o.gift_card_discount_ngn,
         o.total_ngn,
         o.address_line1,
         o.area,
+        o.courier_name,
+        o.rider_phone,
+        o.eta_at,
+        o.tracking_note,
         o.created_at,
         COALESCE(
           json_agg(
@@ -55,9 +63,14 @@ export async function GET() {
         status: o.status,
         subtotalNgn: o.subtotal_ngn,
         loyaltyDiscountNgn: Number(o.loyalty_discount_ngn ?? 0),
+        giftCardDiscountNgn: Number(o.gift_card_discount_ngn ?? 0),
         totalNgn: Number(o.total_ngn ?? o.subtotal_ngn),
         addressLine1: o.address_line1,
         area: o.area,
+        courierName: o.courier_name,
+        riderPhone: o.rider_phone,
+        etaAt: o.eta_at,
+        trackingNote: o.tracking_note,
         createdAt: o.created_at,
         items: o.items,
       })),
@@ -98,6 +111,7 @@ export async function POST(req: NextRequest) {
     ].filter(Boolean);
     const notes = notesParts.join(' · ') || null;
     const items = Array.isArray(body.items) ? (body.items as IncomingItem[]) : [];
+    const giftCardCode = typeof body.giftCardCode === 'string' ? body.giftCardCode.trim() : '';
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json({ error: 'A valid email is required.' }, { status: 400 });
@@ -170,6 +184,34 @@ export async function POST(req: NextRequest) {
       `;
     }
 
+    // Reserve stock before this order can be paid for — two shoppers can't
+    // both walk away with the last bottle. Roll the whole order back if any
+    // tracked line is out of stock, rather than silently overselling it.
+    const stockLines = resolved.map((r) => ({ slug: r.slug, qty: r.qty }));
+    const reservationError = await reserveStockForOrder(stockLines, orderId);
+    if (reservationError) {
+      await sql`DELETE FROM ritual_orders WHERE id = ${orderId}`;
+      return NextResponse.json({ error: reservationError.error }, { status: 409 });
+    }
+
+    let finalTotal = total;
+    let giftCardAppliedNgn = 0;
+    if (giftCardCode) {
+      const redemption = await redeemGiftCardForOrder(giftCardCode, orderId);
+      if ('error' in redemption) {
+        await releaseStockForOrder(stockLines, orderId);
+        await sql`DELETE FROM ritual_orders WHERE id = ${orderId}`;
+        return NextResponse.json({ error: redemption.error }, { status: 400 });
+      }
+      giftCardAppliedNgn = Math.min(redemption.valueNgn, finalTotal);
+      finalTotal = Math.max(0, finalTotal - giftCardAppliedNgn);
+      await sql`
+        UPDATE ritual_orders
+        SET total_ngn = ${finalTotal}, gift_card_discount_ngn = ${giftCardAppliedNgn}, gift_card_id = ${redemption.id}
+        WHERE id = ${orderId}
+      `;
+    }
+
     await notifyOrderReceived(orderId);
 
     return NextResponse.json({
@@ -178,7 +220,8 @@ export async function POST(req: NextRequest) {
       subtotalNgn: subtotal,
       loyaltyDiscountPct: discount.pct,
       loyaltyDiscountNgn: discount.ngn,
-      totalNgn: total,
+      giftCardAppliedNgn,
+      totalNgn: finalTotal,
       status: 'pending',
     });
   } catch (err) {
@@ -211,6 +254,8 @@ export async function PATCH(req: NextRequest) {
     if (!order) {
       return NextResponse.json({ error: 'Order not found or cannot be cancelled.' }, { status: 404 });
     }
+
+    await releaseOrderResources(order.id as string);
 
     return NextResponse.json({ ok: true, orderId: order.id, status: order.status });
   } catch (err) {

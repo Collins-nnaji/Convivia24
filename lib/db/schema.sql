@@ -356,3 +356,108 @@ ALTER TABLE ritual_orders ADD CONSTRAINT ritual_orders_status_check
     'pending', 'awaiting_payment', 'paid', 'processing', 'packed',
     'out_for_delivery', 'delivered', 'fulfilled', 'cancelled', 'refunded'
   ));
+
+-- ═══════════════════════════════════════════════
+-- GIFT CARDS — admin-issued, DB-backed, single-use at checkout.
+-- Separate from the partner portal's localStorage perk-conversion demo,
+-- which stays a self-contained sales demo with no real money behind it.
+-- ═══════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS gift_cards (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code              TEXT NOT NULL UNIQUE,
+  value_ngn         INTEGER NOT NULL CHECK (value_ngn > 0),
+  status            TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'redeemed', 'void')),
+  issued_by         TEXT NOT NULL,
+  note              TEXT,
+  redeemed_order_id UUID REFERENCES ritual_orders(id),
+  redeemed_at       TIMESTAMPTZ,
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_gift_cards_status ON gift_cards(status);
+
+-- ═══════════════════════════════════════════════
+-- DELIVERY TRACKING + REFUNDS + GIFT-CARD DISCOUNT (ritual_orders extensions)
+-- ═══════════════════════════════════════════════
+ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS courier_name TEXT;
+ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS rider_phone TEXT;
+ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS eta_at TIMESTAMPTZ;
+ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS tracking_note TEXT;
+ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS refund_ref TEXT;
+ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS refunded_ngn INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS gift_card_discount_ngn INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS gift_card_id UUID REFERENCES gift_cards(id);
+ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS stock_consumed BOOLEAN NOT NULL DEFAULT false;
+
+-- ═══════════════════════════════════════════════
+-- SERVER-SIDE CART — signed-in users only; guests keep the localStorage cart.
+-- ═══════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS carts (
+  user_id     TEXT PRIMARY KEY,
+  items       JSONB NOT NULL DEFAULT '[]'::jsonb,
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ═══════════════════════════════════════════════
+-- PARTY CREWS — shared group orders with an invite link.
+-- ═══════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS crews (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name          TEXT NOT NULL,
+  invite_code   TEXT NOT NULL UNIQUE,
+  owner_id      TEXT NOT NULL,
+  status        TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'checked_out', 'closed')),
+  order_id      UUID REFERENCES ritual_orders(id),
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_crews_owner ON crews(owner_id);
+
+CREATE TABLE IF NOT EXISTS crew_members (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  crew_id       UUID NOT NULL REFERENCES crews(id) ON DELETE CASCADE,
+  user_id       TEXT NOT NULL,
+  name          TEXT NOT NULL,
+  joined_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (crew_id, user_id)
+);
+CREATE INDEX IF NOT EXISTS idx_crew_members_crew ON crew_members(crew_id);
+
+CREATE TABLE IF NOT EXISTS crew_cart_items (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  crew_id         UUID NOT NULL REFERENCES crews(id) ON DELETE CASCADE,
+  slug            TEXT NOT NULL,
+  name            TEXT NOT NULL,
+  unit_price_ngn  INTEGER NOT NULL,
+  qty             INTEGER NOT NULL DEFAULT 1 CHECK (qty > 0),
+  added_by        TEXT NOT NULL,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (crew_id, slug)
+);
+CREATE INDEX IF NOT EXISTS idx_crew_cart_items_crew ON crew_cart_items(crew_id);
+
+-- ═══════════════════════════════════════════════
+-- CIRCLES — vibe-tagged interest groups, join/leave.
+-- ═══════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS circles (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug          TEXT NOT NULL UNIQUE,
+  name          TEXT NOT NULL,
+  vibe_tag      TEXT NOT NULL,
+  description   TEXT NOT NULL,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS circle_members (
+  circle_id     UUID NOT NULL REFERENCES circles(id) ON DELETE CASCADE,
+  user_id       TEXT NOT NULL,
+  name          TEXT NOT NULL,
+  joined_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (circle_id, user_id)
+);
+
+INSERT INTO circles (slug, name, vibe_tag, description) VALUES
+  ('rooftop-lagos', 'Rooftop Lagos', 'Skyline', 'Sundowners and skyline views across VI and Ikoyi.'),
+  ('afrobeats-heads', 'Afrobeats Heads', 'Dance floor', 'For the ones who move first when the DJ drops the intro.'),
+  ('whisky-society', 'Whisky Society', 'Sip & savor', 'Slow pours, cask talk, and the good glassware.'),
+  ('ladies-night', 'Ladies Night', 'Girls night', 'Coordinating drops and tables for a night out with the girls.'),
+  ('after-hours', 'After Hours', 'Late night', 'For the crews still going after the lounges close.')
+ON CONFLICT (slug) DO NOTHING;

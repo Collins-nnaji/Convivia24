@@ -15,6 +15,7 @@ function CheckoutForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const eventId = searchParams.get('event') || '';
+  const crewId = searchParams.get('crewId') || '';
   const venuePrefill = searchParams.get('venue') || '';
   const areaPrefill = searchParams.get('area') || '';
   const [loading, setLoading] = useState(false);
@@ -24,6 +25,7 @@ function CheckoutForm() {
   // order is priced from — so the amount shown is the amount charged.
   const [discountPct, setDiscountPct] = useState(0);
   const [enrolled, setEnrolled] = useState(false);
+  const [giftCardCode, setGiftCardCode] = useState('');
   const discountNgn = Math.round((subtotalNgn * discountPct) / 100);
   const payableNgn = Math.max(0, subtotalNgn - discountNgn);
 
@@ -57,6 +59,8 @@ function CheckoutForm() {
       area: String(fd.get('area') || ''),
       notes: String(fd.get('notes') || ''),
       eventId: eventId || undefined,
+      crewId: crewId || undefined,
+      giftCardCode: giftCardCode.trim() || undefined,
       items: lines.map((l) => ({
         slug: l.slug,
         qty: l.qty,
@@ -99,6 +103,14 @@ function CheckoutForm() {
         sessionStorage.removeItem(PENDING_ORDER_KEY);
         setError(payData.error || 'Payment could not start. Your cart is intact — try again.');
         return;
+      }
+
+      if (crewId) {
+        fetch(`/api/crews/${crewId}/checkout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId }),
+        }).catch(() => {});
       }
 
       if (payData.redirectUrl) {
@@ -235,6 +247,17 @@ function CheckoutForm() {
                 Notes
               </label>
               <input name="notes" className={inputClass} placeholder="Gate codes, preferred window…" />
+            </div>
+            <div>
+              <label className="text-[9px] font-black uppercase tracking-[0.25em] text-obsidian/40 block mb-1">
+                Gift card code
+              </label>
+              <input
+                value={giftCardCode}
+                onChange={(e) => setGiftCardCode(e.target.value)}
+                className={inputClass}
+                placeholder="Optional — CV24-XXXX-XXXX"
+              />
             </div>
 
             <p className="text-xs text-obsidian/45 leading-relaxed">

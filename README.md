@@ -5,17 +5,21 @@ Lagos drink ordering and delivery for **parties, clubs, and lounges**. Age 18+.
 ## Product surfaces
 
 - **`/`** — Brand home (logo, shop)
-- **`/shop`** · **`/shop/[slug]`** — Catalog + PDP (search, categories, party packs)
-- **`/cart`** · **`/checkout`** — Address or venue delivery; Paystack when configured
+- **`/shop`** · **`/shop/[slug]`** — Catalog + PDP (search, categories, party packs); a Companion CTA sits above
+  the search bar
+- **`/cart`** · **`/checkout`** — Address or venue delivery, gift-card codes, Paystack when configured
+- **`/orders`** — Order history with a live fulfillment tracker (rider/ETA) and real loyalty tier standing
+- **`/crews`** · **`/crews/[id]`** — Party Crews: start a crew, share the invite link, everyone adds to one
+  shared cart, one member checks out for the group
+- **`/circles`** — Vibe-tagged interest groups (join/leave), DB-backed
+- **`/companion`** — AI night-planning chat, now in primary nav
 - **`/venues`** — B2B inquire for clubs & lounges
-- **`/admin`** — Stock desk, order fulfillment, events & trivia scheduling (password or Neon Auth allowlist)
-- Age gate on public pages
+- **`/admin`** — Stock desk, order fulfillment + delivery tracking + refunds, gift card issuance, events &
+  trivia scheduling (signed admin session, or Neon Auth allowlist)
+- **`/age-check`** — Server-enforced 18+ gate (see `proxy.ts`); a request without a valid signed cookie never
+  reaches a gated page at all
 
-My 24 / Companion remain soft-parked (out of primary nav). `/rituals` redirects to `/shop`.
-`/circles` and `/crews` currently redirect to `/events` — the standalone Circles feed and Party Crews
-shared-cart feature described in earlier drafts of this README were pulled from primary nav and are not
-implemented (no `lib/circles` or `lib/crews` module exists). Treat any mention of them elsewhere as aspirational
-until they're rebuilt.
+My 24 remains soft-parked (out of primary nav). `/rituals` redirects to `/shop`.
 
 ## Tech stack
 
@@ -47,7 +51,26 @@ npm run dev
 ## Catalog & cart
 
 - Seeded products: [`lib/drinks/catalog.ts`](lib/drinks/catalog.ts)
-- Cart: [`components/cart/CartProvider.tsx`](components/cart/CartProvider.tsx)
+- Cart: [`components/cart/CartProvider.tsx`](components/cart/CartProvider.tsx) — `localStorage` for guests,
+  synced to Postgres (`carts` table, `/api/cart`) once signed in
+- Inventory reservation: [`lib/inventory.ts`](lib/inventory.ts) reserves stock on order creation and releases
+  or consumes it as the order moves through cancel/refund/delivered
+- Gift cards: [`lib/commerce/gift-cards.ts`](lib/commerce/gift-cards.ts), DB-backed, issued from `/admin`
 - Order emails (Resend): [`lib/email/resend.ts`](lib/email/resend.ts), [`lib/email/templates.ts`](lib/email/templates.ts), wired via [`lib/commerce/notify.ts`](lib/commerce/notify.ts)
+
+## Testing & CI
+
+```bash
+npm test          # vitest — pure logic: loyalty tiers, order statuses, catalog, age-gate signing
+npx tsc --noEmit  # typecheck
+```
+
+`.github/workflows/ci.yml` runs install → typecheck → test → build on every push/PR.
+
+## Mobile
+
+No native wrapper right now — the `android/`/`ios/` directories were unconfigured, dependency-less Capacitor
+scaffolding with no custom code, so they were removed. Regenerate with `npx cap add android` / `npx cap add ios`
+if a native shell is picked up again.
 
 Brand logo: `/public/convivia24.png` (red→black wordmark). Accent: ember red `#E23B2F`.

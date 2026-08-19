@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeft, Check, GraduationCap, Lock, Trophy, X } from 'lucide-react';
 import { HeroHalo, HouseGlyph } from '@/components/trivia/TriviaIcons';
@@ -287,11 +288,12 @@ function Hero({
               transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
             >
               {bottle?.image ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={bottle.image}
                   alt={bottle.name}
-                  className="w-full h-full object-contain drop-shadow-[0_18px_28px_rgba(10,10,10,0.28)]"
+                  fill
+                  sizes="200px"
+                  className="object-contain drop-shadow-[0_18px_28px_rgba(10,10,10,0.28)]"
                 />
               ) : (
                 <HouseGlyph glyph={round.glyph} className="w-full h-full text-ember/40" />
@@ -512,8 +514,7 @@ function Result({
             animate={passed && isLive ? { rotate: [0, -3, 3, 0] } : {}}
             transition={{ duration: 0.7 }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={bottle.image} alt={bottle.name} className="w-full h-full object-contain" />
+            <Image src={bottle.image} alt={bottle.name} fill sizes="80px" className="object-contain" />
           </motion.div>
         )}
       </div>

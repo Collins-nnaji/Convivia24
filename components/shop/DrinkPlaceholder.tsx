@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import type { DrinkCategory } from '@/lib/drinks/catalog';
 
 const TONES: Record<DrinkCategory, { bg: string; ink: string; accent: string }> = {
@@ -101,9 +102,11 @@ export default function DrinkPlaceholder({ category, name, className = '', water
         </p>
       ) : null}
       {watermark ? (
-        <img
+        <Image
           src="/convivia24.png"
           alt=""
+          width={299}
+          height={55}
           className="absolute bottom-2 right-2 h-3.5 w-auto opacity-35 pointer-events-none"
         />
       ) : null}
