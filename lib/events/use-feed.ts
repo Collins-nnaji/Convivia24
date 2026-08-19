@@ -1,45 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { type ResolvedEvent, type VenueSnapshot } from '@/lib/events/catalog';
+import { mergeEvents, seedEvents, type NightEvent, type ResolvedEvent, type VenueSnapshot } from '@/lib/events/catalog';
 
-type APIEvent = {
-  id: string;
-  title: string;
-  venueSlug: string;
-  tag: string;
-  blurb: string;
-  expected: string;
-  coverNgn?: number;
+type APIEvent = NightEvent & {
   startsAtIso: string;
   endsAtIso: string;
   venue?: VenueSnapshot;
 };
 
-function toResolved(raw: APIEvent): ResolvedEvent {
-  const venue: VenueSnapshot = raw.venue || {
-    slug: raw.venueSlug,
-    name: raw.venueSlug,
-    kind: 'lounge',
-    areaId: '',
-    area: '',
-    address: '',
-    lat: 0,
-    lng: 0,
-    tagline: '',
-    cardPerk: '',
-  };
-  return {
-    ...raw,
-    source: 'admin',
-    venue,
-    startsAt: new Date(raw.startsAtIso),
-    endsAt: new Date(raw.endsAtIso),
-  } as ResolvedEvent;
-}
-
 export function useEventFeed(): ResolvedEvent[] {
-  const [events, setEvents] = useState<ResolvedEvent[]>([]);
+  const [events, setEvents] = useState<ResolvedEvent[]>(seedEvents);
 
   useEffect(() => {
     let cancelled = false;
@@ -47,31 +18,73 @@ export function useEventFeed(): ResolvedEvent[] {
       .then((r) => r.json())
       .then((data) => {
         if (cancelled) return;
-        const list: APIEvent[] = data.events || [];
-        setEvents(list.map(toResolved).sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime()));
+        const remote: APIEvent[] = data.events || [];
+        if (remote.length === 0) {
+          setEvents(seedEvents());
+          return;
+        }
+        const normalized: NightEvent[] = remote.map((e) => ({
+          id: e.id,
+          title: e.title,
+          venueSlug: e.venueSlug,
+          tag: e.tag,
+          blurb: e.blurb,
+          expected: e.expected,
+          coverNgn: e.coverNgn,
+          startsAtIso: e.startsAtIso,
+          endsAtIso: e.endsAtIso,
+          source: 'admin',
+          venue: e.venue,
+        })) as NightEvent[];
+        setEvents(mergeEvents(normalized as (NightEvent & { venue?: VenueSnapshot })[]));
       })
-      .catch(() => {});
-    return () => { cancelled = true; };
+      .catch(() => {
+        if (!cancelled) setEvents(seedEvents());
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return events;
 }
 
 export function useEvent(id: string): ResolvedEvent | undefined {
-  const [event, setEvent] = useState<ResolvedEvent | undefined>(undefined);
+  const [event, setEvent] = useState<ResolvedEvent | undefined>(() => seedEvents().find((e) => e.id === id));
 
   useEffect(() => {
     let cancelled = false;
+    setEvent(seedEvents().find((e) => e.id === id));
     fetch('/api/events')
       .then((r) => r.json())
       .then((data) => {
         if (cancelled) return;
-        const list: APIEvent[] = data.events || [];
-        const found = list.find((e) => e.id === id);
-        if (found) setEvent(toResolved(found));
+        const remote: APIEvent[] = data.events || [];
+        const merged = remote.length > 0
+          ? mergeEvents(
+              remote.map((e) => ({
+                id: e.id,
+                title: e.title,
+                venueSlug: e.venueSlug,
+                tag: e.tag,
+                blurb: e.blurb,
+                expected: e.expected,
+                coverNgn: e.coverNgn,
+                startsAtIso: e.startsAtIso,
+                endsAtIso: e.endsAtIso,
+                source: 'admin' as const,
+                venue: e.venue,
+              }))
+            )
+          : seedEvents();
+        setEvent(merged.find((e) => e.id === id));
       })
-      .catch(() => {});
-    return () => { cancelled = true; };
+      .catch(() => {
+        if (!cancelled) setEvent(seedEvents().find((e) => e.id === id));
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   return event;

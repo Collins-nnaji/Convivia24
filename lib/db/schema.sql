@@ -327,7 +327,7 @@ ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS total_ngn INTEGER;
 ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS loyalty_owner_id TEXT;
 ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS loyalty_points_awarded INTEGER NOT NULL DEFAULT 0;
 
--- The original status CHECK only allowed a handful of values; the app's
+-- The original status CHECK only allowed a handful of values. The app's
 -- OrderStatus type (lib/commerce/status.ts) also drives orders through
 -- processing/packed/out_for_delivery/delivered/refunded. Widen the constraint
 -- to match, or those transitions fail at the DB with a check violation.
@@ -370,7 +370,7 @@ ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS gift_card_id UUID REFERENCES 
 ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS stock_consumed BOOLEAN NOT NULL DEFAULT false;
 
 -- ═══════════════════════════════════════════════
--- SERVER-SIDE CART — signed-in users only; guests keep the localStorage cart.
+-- SERVER-SIDE CART — signed-in users only, guests keep the localStorage cart.
 -- ═══════════════════════════════════════════════
 CREATE TABLE IF NOT EXISTS carts (
   user_id     TEXT PRIMARY KEY,

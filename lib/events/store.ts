@@ -1,5 +1,6 @@
 import sql from '@/lib/db';
 import { EVENT_TAGS, type EventTag, type NightEvent, type VenueSnapshot } from '@/lib/events/catalog';
+import { getVenue } from '@/lib/venues/catalog';
 
 export const EVENTS_CACHE_KEY = 'events:feed:v1';
 
@@ -54,6 +55,22 @@ function mapRow(r: Record<string, unknown>): StoredEvent {
       cardPerk: String(r.venue_card_perk || ''),
       photoUrl: r.venue_photo_url ? String(r.venue_photo_url) : null,
     };
+  } else {
+    const v = getVenue(String(r.venue_slug));
+    if (v) {
+      event.venue = {
+        slug: v.slug,
+        name: v.name,
+        kind: v.kind,
+        areaId: v.areaId,
+        area: v.area,
+        address: v.address,
+        lat: v.lat,
+        lng: v.lng,
+        tagline: v.tagline,
+        cardPerk: v.cardPerk,
+      };
+    }
   }
 
   return event;

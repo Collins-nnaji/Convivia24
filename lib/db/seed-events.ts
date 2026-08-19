@@ -3,6 +3,8 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { neon } from '@neondatabase/serverless';
+import { EVENTS_CACHE_KEY } from '../events/store';
+import { redis } from '../redis';
 
 for (const file of ['.env.local', '.env']) {
   try {
@@ -62,6 +64,11 @@ async function seed() {
         starts_at = EXCLUDED.starts_at, ends_at = EXCLUDED.ends_at, updated_at = NOW()
     `;
     console.log(`  Seeded: ${ev.title}`);
+  }
+  try {
+    await redis()?.del(EVENTS_CACHE_KEY);
+  } catch {
+    /* cache clear is best-effort */
   }
   console.log('Done. All events are now in the DB.');
 }
