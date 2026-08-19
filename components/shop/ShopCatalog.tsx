@@ -68,19 +68,6 @@ export default function ShopCatalog() {
 
   return (
     <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-5 sm:pt-6 pb-12 sm:pb-16">
-      <Link
-        href="/companion"
-        className="flex items-center justify-between gap-3 mb-5 px-4 py-3 bg-obsidian text-white group"
-      >
-        <span className="text-xs sm:text-sm">
-          <span className="font-semibold">Not sure what to get?</span>{' '}
-          <span className="text-white/60">Ask the Companion to plan the night.</span>
-        </span>
-        <span className="shrink-0 text-[10px] font-black uppercase tracking-[0.12em] text-ember group-hover:text-ember/80">
-          Ask →
-        </span>
-      </Link>
-
       <div className="relative mb-5">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-obsidian/35" />
         <input

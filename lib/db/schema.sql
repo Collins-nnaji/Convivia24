@@ -32,6 +32,11 @@ DROP TABLE IF EXISTS circle_likes CASCADE;
 DROP TABLE IF EXISTS circle_members CASCADE;
 DROP TABLE IF EXISTS circle_posts CASCADE;
 DROP TABLE IF EXISTS circles CASCADE;
+DROP TABLE IF EXISTS crew_cart_items CASCADE;
+DROP TABLE IF EXISTS crew_members CASCADE;
+DROP TABLE IF EXISTS crews CASCADE;
+DROP TABLE IF EXISTS companion_messages CASCADE;
+DROP TABLE IF EXISTS companion_conversations CASCADE;
 
 -- ═══════════════════════════════════════════════
 -- PERSONAL TASKS ("My 24" — manual items + AI rest buffers)
@@ -86,33 +91,9 @@ CREATE TABLE IF NOT EXISTS calendar_feed_tokens (
 CREATE UNIQUE INDEX IF NOT EXISTS idx_calendar_feed_tokens_token ON calendar_feed_tokens(token);
 
 -- ═══════════════════════════════════════════════
--- COMPANION (the learning AI chatbot — chat history + remembered facts)
+-- MEMORY (facts from onboarding + reflections — used by My 24 planning)
 -- ═══════════════════════════════════════════════
 
--- A single chat thread. Users can run several in parallel ("New chat").
-CREATE TABLE IF NOT EXISTS companion_conversations (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id       TEXT NOT NULL,
-  title         TEXT,
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_companion_conversations_user ON companion_conversations(user_id, updated_at DESC);
-
-CREATE TABLE IF NOT EXISTS companion_messages (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id       TEXT NOT NULL,
-  role          TEXT NOT NULL CHECK (role IN ('user','assistant')),
-  content       TEXT NOT NULL,
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_companion_messages_user ON companion_messages(user_id, created_at);
-
--- Each message belongs to a conversation (nullable for rows created before threads existed).
-ALTER TABLE companion_messages ADD COLUMN IF NOT EXISTS conversation_id UUID;
-CREATE INDEX IF NOT EXISTS idx_companion_messages_conversation ON companion_messages(conversation_id, created_at);
-
--- One row per remembered fact about a user (preferences, habits, people, goals)
 CREATE TABLE IF NOT EXISTS companion_memory (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id       TEXT NOT NULL,
@@ -396,43 +377,6 @@ CREATE TABLE IF NOT EXISTS carts (
   items       JSONB NOT NULL DEFAULT '[]'::jsonb,
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-
--- ═══════════════════════════════════════════════
--- PARTY CREWS — shared group orders with an invite link.
--- ═══════════════════════════════════════════════
-CREATE TABLE IF NOT EXISTS crews (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name          TEXT NOT NULL,
-  invite_code   TEXT NOT NULL UNIQUE,
-  owner_id      TEXT NOT NULL,
-  status        TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'checked_out', 'closed')),
-  order_id      UUID REFERENCES ritual_orders(id),
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_crews_owner ON crews(owner_id);
-
-CREATE TABLE IF NOT EXISTS crew_members (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  crew_id       UUID NOT NULL REFERENCES crews(id) ON DELETE CASCADE,
-  user_id       TEXT NOT NULL,
-  name          TEXT NOT NULL,
-  joined_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE (crew_id, user_id)
-);
-CREATE INDEX IF NOT EXISTS idx_crew_members_crew ON crew_members(crew_id);
-
-CREATE TABLE IF NOT EXISTS crew_cart_items (
-  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  crew_id         UUID NOT NULL REFERENCES crews(id) ON DELETE CASCADE,
-  slug            TEXT NOT NULL,
-  name            TEXT NOT NULL,
-  unit_price_ngn  INTEGER NOT NULL,
-  qty             INTEGER NOT NULL DEFAULT 1 CHECK (qty > 0),
-  added_by        TEXT NOT NULL,
-  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE (crew_id, slug)
-);
-CREATE INDEX IF NOT EXISTS idx_crew_cart_items_crew ON crew_cart_items(crew_id);
 
 -- ═══════════════════════════════════════════════
 -- CIRCLES — vibe-tagged interest groups, join/leave.

@@ -14,7 +14,6 @@ const LINKS = [
   { label: 'Shop', href: '/shop' },
   { label: 'Events', href: '/events' },
   { label: 'Trivia', href: '/trivia' },
-  { label: 'Companion', href: '/companion' },
 ];
 
 export default function Navigation() {
@@ -149,12 +148,6 @@ export default function Navigation() {
                       <Link href="/orders" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
                         Order history
                       </Link>
-                      <Link href="/crews" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
-                        Party Crews
-                      </Link>
-                      <Link href="/circles" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
-                        Circles
-                      </Link>
                       <button
                         type="button"
                         onClick={() => {
@@ -256,14 +249,6 @@ export default function Navigation() {
                   <>
                     <Link href="/orders" className="flex items-center justify-between py-3.5 text-[15px] font-medium text-obsidian/70">
                       Order history
-                      <span className="text-ember/40 text-lg">&rsaquo;</span>
-                    </Link>
-                    <Link href="/crews" className="flex items-center justify-between py-3.5 text-[15px] font-medium text-obsidian/70">
-                      Party Crews
-                      <span className="text-ember/40 text-lg">&rsaquo;</span>
-                    </Link>
-                    <Link href="/circles" className="flex items-center justify-between py-3.5 text-[15px] font-medium text-obsidian/70">
-                      Circles
                       <span className="text-ember/40 text-lg">&rsaquo;</span>
                     </Link>
                     <button

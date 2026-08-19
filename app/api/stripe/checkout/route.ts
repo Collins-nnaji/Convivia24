@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql, { apiErrorResponse } from '@/lib/db';
 import { rateLimit, clientIp } from '@/lib/redis';
+import { flutterwaveSecret, initializeFlutterwavePayment } from '@/lib/payments/flutterwave';
 
 /**
- * Lagos-first checkout via Paystack.
- * If PAYSTACK_SECRET_KEY is unset, marks the order awaiting_payment and
+ * Lagos-first checkout via Flutterwave.
+ * If FLUTTERWAVE_SECRET_KEY is unset, marks the order awaiting_payment and
  * returns a manual-confirm path (concierge will follow up).
  */
 export async function POST(req: NextRequest) {
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest) {
     }
 
     const [order] = await sql`
-      SELECT id, email, full_name, subtotal_ngn, total_ngn, status, payment_ref
+      SELECT id, email, full_name, phone, subtotal_ngn, total_ngn, status, payment_ref
       FROM ritual_orders
       WHERE id = ${orderId}
       LIMIT 1
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'This order was cancelled. Please checkout again.' }, { status: 400 });
     }
 
-    const secret = process.env.PAYSTACK_SECRET_KEY;
+    const secret = flutterwaveSecret();
     const origin =
       process.env.NEXT_PUBLIC_APP_URL ||
       req.headers.get('origin') ||
@@ -59,58 +60,41 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Charge the loyalty-adjusted total the order was created with.
     const chargeableNgn = Number(order.total_ngn ?? order.subtotal_ngn);
-    const amountKobo = chargeableNgn * 100;
-    // Reuse the existing Paystack reference when resuming the same order.
-    const reference =
+    const txRef =
       (order.payment_ref as string) ||
       `convivia_${orderId.replace(/-/g, '').slice(0, 24)}_${Date.now().toString(36)}`;
 
-    const initRes = await fetch('https://api.paystack.co/transaction/initialize', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${secret}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: order.email,
-        amount: amountKobo,
-        currency: 'NGN',
-        reference,
-        callback_url: `${origin}/checkout/success?order=${orderId}`,
-        metadata: {
-          order_id: orderId,
-          full_name: order.full_name,
-        },
-      }),
+    const init = await initializeFlutterwavePayment({
+      txRef,
+      amountNgn: chargeableNgn,
+      email: String(order.email),
+      name: String(order.full_name),
+      phone: order.phone ? String(order.phone) : null,
+      redirectUrl: `${origin}/checkout/success?order=${orderId}`,
+      orderId,
     });
 
-    const initData = await initRes.json();
-    if (!initRes.ok || !initData?.data?.authorization_url) {
-      console.error('Paystack init failed', initData);
-      return NextResponse.json(
-        { error: 'Payment provider unavailable. Please try again.' },
-        { status: 502 }
-      );
+    if ('error' in init) {
+      return NextResponse.json({ error: init.error }, { status: 502 });
     }
 
     await sql`
       UPDATE ritual_orders
       SET
         status = 'awaiting_payment',
-        payment_provider = 'paystack',
-        payment_ref = ${initData.data.reference},
+        payment_provider = 'flutterwave',
+        payment_ref = ${init.txRef},
         updated_at = NOW()
       WHERE id = ${orderId}
     `;
 
     return NextResponse.json({
       ok: true,
-      mode: 'paystack',
+      mode: 'flutterwave',
       orderId,
-      redirectUrl: initData.data.authorization_url as string,
-      reference: initData.data.reference as string,
+      redirectUrl: init.link,
+      reference: init.txRef,
     });
   } catch (err) {
     const { status, error } = apiErrorResponse(err, 'Checkout failed.');

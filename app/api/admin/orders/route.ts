@@ -6,6 +6,7 @@ import { notifyOrderStatus } from '@/lib/commerce/notify';
 import { formatNgn } from '@/lib/drinks/catalog';
 import { releaseOrderResources, fulfillOrderStock } from '@/lib/commerce/fulfillment';
 import { rateLimit, clientIp } from '@/lib/redis';
+import { refundFlutterwave } from '@/lib/payments/flutterwave';
 import { captureApiError } from '@/lib/sentry';
 
 /** Statuses the desk can hand-set. System-only statuses (pending, awaiting_payment) are excluded. */
@@ -93,26 +94,6 @@ export async function GET() {
   }
 }
 
-async function refundViaPaystack(reference: string, amountNgn: number): Promise<{ refundRef: string } | { error: string }> {
-  const secret = process.env.PAYSTACK_SECRET_KEY;
-  if (!secret) return { error: 'Paystack is not configured.' };
-  try {
-    const res = await fetch('https://api.paystack.co/refund', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${secret}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ transaction: reference, amount: amountNgn * 100 }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || !data?.status) {
-      return { error: data?.message || 'Paystack refund failed.' };
-    }
-    return { refundRef: String(data?.data?.id ?? reference) };
-  } catch (err) {
-    console.error('Paystack refund error', err);
-    return { error: 'Could not reach Paystack.' };
-  }
-}
-
 export async function PATCH(req: NextRequest) {
   const gate = await requireAdmin();
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
@@ -124,7 +105,7 @@ export async function PATCH(req: NextRequest) {
     const orderId = typeof body.orderId === 'string' ? body.orderId.trim() : '';
     if (!orderId) return NextResponse.json({ error: 'orderId is required.' }, { status: 400 });
 
-    // Refund is its own action — it calls out to Paystack and always lands on status=refunded.
+    // Refund is its own action — it calls out to Flutterwave and always lands on status=refunded.
     if (body.action === 'refund') {
       const [order] = await sql`
         SELECT id, status, total_ngn, subtotal_ngn, payment_provider, payment_ref
@@ -136,8 +117,11 @@ export async function PATCH(req: NextRequest) {
       }
       const amountNgn = Number(order.total_ngn ?? order.subtotal_ngn);
       let refundRef = 'manual';
-      if (order.payment_provider === 'paystack' && order.payment_ref) {
-        const result = await refundViaPaystack(order.payment_ref as string, amountNgn);
+      if (
+        (order.payment_provider === 'flutterwave' || order.payment_provider === 'paystack') &&
+        order.payment_ref
+      ) {
+        const result = await refundFlutterwave(order.payment_ref as string, amountNgn);
         if ('error' in result) return NextResponse.json({ error: result.error }, { status: 502 });
         refundRef = result.refundRef;
       }

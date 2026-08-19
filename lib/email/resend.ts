@@ -66,7 +66,11 @@ export async function sendEmail(input: SendEmailInput): Promise<{ sent: boolean;
   }
 }
 
-export function adminNotifyEmail(): string | null {
-  const email = process.env.ADMIN_NOTIFY_EMAIL?.trim();
-  return email && email.includes('@') ? email : null;
+export function adminNotifyEmail(): string | string[] | null {
+  const emails = (process.env.ADMIN_NOTIFY_EMAIL || '')
+    .split(',')
+    .map((e) => e.trim())
+    .filter((e) => e.includes('@'));
+  if (emails.length === 0) return null;
+  return emails.length === 1 ? emails[0] : emails;
 }

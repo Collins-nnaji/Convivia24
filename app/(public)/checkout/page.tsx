@@ -15,7 +15,6 @@ function CheckoutForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const eventId = searchParams.get('event') || '';
-  const crewId = searchParams.get('crewId') || '';
   const venuePrefill = searchParams.get('venue') || '';
   const areaPrefill = searchParams.get('area') || '';
   const [loading, setLoading] = useState(false);
@@ -59,7 +58,6 @@ function CheckoutForm() {
       area: String(fd.get('area') || ''),
       notes: String(fd.get('notes') || ''),
       eventId: eventId || undefined,
-      crewId: crewId || undefined,
       giftCardCode: giftCardCode.trim() || undefined,
       items: lines.map((l) => ({
         slug: l.slug,
@@ -103,14 +101,6 @@ function CheckoutForm() {
         sessionStorage.removeItem(PENDING_ORDER_KEY);
         setError(payData.error || 'Payment could not start. Your cart is intact — try again.');
         return;
-      }
-
-      if (crewId) {
-        fetch(`/api/crews/${crewId}/checkout`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orderId }),
-        }).catch(() => {});
       }
 
       if (payData.redirectUrl) {

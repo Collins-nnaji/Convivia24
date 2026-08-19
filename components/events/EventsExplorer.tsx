@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   ChevronDown,
@@ -24,9 +24,42 @@ import { useEventFeed } from '@/lib/events/use-feed';
 import { VENUES, VENUE_KIND_LABELS, type Venue } from '@/lib/venues/catalog';
 import { venueRating } from '@/lib/venues/reviews';
 import { formatNgn } from '@/lib/drinks/catalog';
+import CirclesPanel from '@/components/events/CirclesPanel';
 
-type Tab = 'events' | 'venues';
+type Tab = 'events' | 'venues' | 'circles';
 type WhenFilter = 'all' | 'tonight' | 'weekend';
+
+function dayKey(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function todayKey(): string {
+  return dayKey(new Date());
+}
+
+function tomorrowKey(): string {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return dayKey(d);
+}
+
+function dayHeading(d: Date): string {
+  const key = dayKey(d);
+  if (key === todayKey()) return 'Tonight';
+  if (key === tomorrowKey()) return 'Tomorrow';
+  return d.toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'short' });
+}
+
+function formatChipDate(key: string): string {
+  const [y, m, d] = key.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  if (key === todayKey()) return 'Tonight';
+  if (key === tomorrowKey()) return 'Tomorrow';
+  return date.toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short' });
+}
 
 const SHADOWS = [
   'shadow-[0_18px_50px_-22px_rgba(10,10,10,0.45)]',
@@ -38,20 +71,33 @@ const SHADOWS = [
 
 export default function EventsExplorer() {
   const params = useSearchParams();
+  const router = useRouter();
   const feed = useEventFeed();
-  const initialTab = params.get('tab') === 'venues' ? 'venues' : 'events';
+  const tabParam = params.get('tab');
+  const initialTab: Tab = tabParam === 'venues' || tabParam === 'circles' ? tabParam : 'events';
   const [tab, setTab] = useState<Tab>(initialTab);
   const [area, setArea] = useState<string>(params.get('area') || 'all');
   const [when, setWhen] = useState<WhenFilter>('all');
+  const [date, setDate] = useState('');
   const [here, setHere] = useState<{ lat: number; lng: number } | null>(null);
   const [geoMsg, setGeoMsg] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [nowLabel, setNowLabel] = useState('');
-  const [pulse, setPulse] = useState(0);
 
   useEffect(() => {
-    if (params.get('tab') === 'venues') setTab('venues');
+    const next = params.get('tab');
+    if (next === 'venues' || next === 'circles') setTab(next);
+    else if (!next) setTab('events');
   }, [params]);
+
+  function selectTab(next: Tab) {
+    setTab(next);
+    const qs = new URLSearchParams(params.toString());
+    if (next === 'events') qs.delete('tab');
+    else qs.set('tab', next);
+    const suffix = qs.toString();
+    router.replace(suffix ? `/events?${suffix}` : '/events', { scroll: false });
+  }
 
   useEffect(() => {
     const tick = () => {
@@ -62,7 +108,6 @@ export default function EventsExplorer() {
           second: '2-digit',
         })
       );
-      setPulse((n) => n + 1);
     };
     tick();
     const id = window.setInterval(tick, 1000);
@@ -87,13 +132,44 @@ export default function EventsExplorer() {
   const events = useMemo(() => {
     let list = feed;
     if (area !== 'all') list = list.filter((e) => e.venue.areaId === area);
-    if (when === 'tonight') list = list.filter(isTonight);
-    if (when === 'weekend') list = list.filter(isThisWeekend);
+    if (date) {
+      list = list.filter((e) => dayKey(e.startsAt) === date);
+    } else if (when === 'tonight') {
+      list = list.filter(isTonight);
+    } else if (when === 'weekend') {
+      list = list.filter(isThisWeekend);
+    }
+    list = [...list].sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
     if (here) {
-      list = [...list].sort((a, b) => haversineKm(here, a.venue) - haversineKm(here, b.venue));
+      list = [...list].sort((a, b) => {
+        const day = dayKey(a.startsAt).localeCompare(dayKey(b.startsAt));
+        if (day !== 0) return day;
+        return haversineKm(here, a.venue) - haversineKm(here, b.venue);
+      });
     }
     return list;
-  }, [feed, area, when, here]);
+  }, [feed, area, when, date, here]);
+
+  const eventDays = useMemo(() => {
+    const keys = new Set<string>();
+    for (const e of feed) keys.add(dayKey(e.startsAt));
+    return [...keys].sort();
+  }, [feed]);
+
+  const eventGroups = useMemo(() => {
+    const map = new Map<string, ResolvedEvent[]>();
+    for (const e of events) {
+      const key = dayKey(e.startsAt);
+      const rows = map.get(key) || [];
+      rows.push(e);
+      map.set(key, rows);
+    }
+    return [...map.entries()].map(([key, items]) => ({
+      key,
+      label: dayHeading(items[0].startsAt),
+      items,
+    }));
+  }, [events]);
 
   const venues = useMemo(() => {
     let list: (Venue & { km?: number })[] =
@@ -108,53 +184,56 @@ export default function EventsExplorer() {
 
   const tonightCount = useMemo(() => feed.filter(isTonight).length, [feed]);
   const activeFilterCount =
-    (area !== 'all' ? 1 : 0) + (tab === 'events' && when !== 'all' ? 1 : 0) + (here ? 1 : 0);
+    (area !== 'all' ? 1 : 0) +
+    (tab === 'events' && when !== 'all' ? 1 : 0) +
+    (tab === 'events' && date ? 1 : 0) +
+    (here ? 1 : 0);
 
   const areaLabel = area === 'all' ? 'All Lagos' : LAGOS_AREAS.find((a) => a.id === area)?.name || area;
-  const whenLabel = when === 'all' ? 'Any time' : when === 'tonight' ? 'Tonight' : 'This weekend';
+  const whenLabel = date
+    ? formatChipDate(date)
+    : when === 'all'
+      ? 'Any time'
+      : when === 'tonight'
+        ? 'Tonight'
+        : 'This weekend';
 
   function clearFilters() {
     setArea('all');
     setWhen('all');
+    setDate('');
     setHere(null);
     setGeoMsg('');
+  }
+
+  function pickWhen(next: WhenFilter) {
+    setWhen(next);
+    setDate('');
+  }
+
+  function pickDate(next: string) {
+    setDate(next);
+    setWhen('all');
   }
 
   return (
     <div className="bg-paper min-h-[70vh]">
       <div className="relative overflow-hidden border-b border-obsidian/8">
-        <div className="absolute inset-0 brand-gradient opacity-[0.07]" />
-        <div className="absolute -right-16 -top-20 w-72 h-72 rounded-full bg-ember/10 blur-3xl" />
-        <div className="absolute -left-10 bottom-0 w-56 h-56 rounded-full bg-obsidian/5 blur-2xl" />
+        <div className="absolute inset-0 brand-gradient opacity-[0.05]" />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-8 lg:px-10 pt-10 pb-8 sm:pt-14 sm:pb-12 live-sweep">
-          <div className="flex flex-wrap items-center gap-3 mb-6">
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-obsidian text-white text-[10px] font-black uppercase tracking-[0.2em]">
-              <span className="w-2 h-2 rounded-full bg-ember live-beep" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-8 lg:px-10 py-4 sm:py-5">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <h1 className="font-logo font-black tracking-tight uppercase text-xl sm:text-2xl text-obsidian leading-none">
+              What&apos;s on <span className="brand-text">tonight</span>
+            </h1>
+            <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-obsidian text-white text-[9px] font-black uppercase tracking-[0.16em]">
+              <span className="w-1.5 h-1.5 rounded-full bg-ember live-beep" />
               Live
             </span>
-            <span className="text-sm font-mono text-obsidian/45 live-tick tabular-nums">{nowLabel}</span>
-            <span className="hidden sm:inline text-sm text-obsidian/30">· Lagos board</span>
-          </div>
-
-          <h1 className="font-logo font-black tracking-tight uppercase text-3xl sm:text-5xl lg:text-6xl text-obsidian leading-none mb-4 whitespace-nowrap overflow-hidden text-ellipsis">
-            What&apos;s on <span className="brand-text">tonight</span>
-          </h1>
-          <p className="text-base sm:text-lg text-obsidian/55 max-w-2xl leading-relaxed mb-6">
-            Doors, rooms, and drops updating across the city. Pick a night, then order to the table.
-          </p>
-
-          <div className="flex flex-wrap items-center gap-x-8 gap-y-2 text-xs sm:text-sm font-black uppercase tracking-[0.14em] text-obsidian/50">
-            <span className="inline-flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-ember live-beep" style={{ animationDelay: '0.4s' }} />
-              {tonightCount} tonight
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-obsidian/40 live-tick" />
-              {VENUES.length} rooms
-            </span>
-            <span className="text-obsidian/30 tabular-nums" aria-hidden>
-              · {String(pulse % 60).padStart(2, '0')}
+            <span className="text-xs font-mono text-obsidian/40 tabular-nums">{nowLabel}</span>
+            <span className="ml-auto hidden sm:flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/45">
+              <span>{tonightCount} tonight</span>
+              <span>{VENUES.length} rooms</span>
             </span>
           </div>
         </div>
@@ -162,19 +241,20 @@ export default function EventsExplorer() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-10 py-7 sm:py-10">
         <div className="flex flex-wrap items-center gap-2 mb-5">
-          {(['events', 'venues'] as const).map((t) => (
+          {(['events', 'venues', 'circles'] as const).map((t) => (
             <button
               key={t}
               type="button"
-              onClick={() => setTab(t)}
+              onClick={() => selectTab(t)}
               className={`px-5 py-2.5 text-xs font-black uppercase tracking-[0.14em] transition-colors ${
                 tab === t ? 'badge-brand' : 'bg-white border border-obsidian/10 text-obsidian/50'
               }`}
             >
-              {t === 'events' ? 'Events' : 'Venues'}
+              {t === 'events' ? 'Events' : t === 'venues' ? 'Venues' : 'Circles'}
             </button>
           ))}
 
+          {tab !== 'circles' && (
           <button
             type="button"
             onClick={() => setFiltersOpen((v) => !v)}
@@ -194,9 +274,10 @@ export default function EventsExplorer() {
             )}
             <ChevronDown size={14} className={`transition-transform ${filtersOpen ? 'rotate-180' : ''}`} />
           </button>
+          )}
         </div>
 
-        {!filtersOpen && activeFilterCount > 0 && (
+        {tab !== 'circles' && !filtersOpen && activeFilterCount > 0 && (
           <div className="flex flex-wrap items-center gap-2 mb-5 text-sm text-obsidian/45">
             <span>
               {areaLabel}
@@ -213,6 +294,7 @@ export default function EventsExplorer() {
           </div>
         )}
 
+        {tab !== 'circles' && (
         <AnimatePresence initial={false}>
           {filtersOpen && (
             <motion.div
@@ -243,20 +325,37 @@ export default function EventsExplorer() {
                 {tab === 'events' && (
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/35 mb-2.5">
-                      When
+                      Date
                     </p>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2 mb-3">
                       {(
                         [
-                          ['all', 'Any time'],
+                          ['all', 'Any day'],
                           ['tonight', 'Tonight'],
                           ['weekend', 'This weekend'],
                         ] as const
                       ).map(([id, label]) => (
-                        <Chip key={id} active={when === id} onClick={() => setWhen(id)}>
+                        <Chip key={id} active={!date && when === id} onClick={() => pickWhen(id)}>
                           {label}
                         </Chip>
                       ))}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {eventDays.map((key) => (
+                        <Chip key={key} active={date === key} onClick={() => pickDate(key)}>
+                          {formatChipDate(key)}
+                        </Chip>
+                      ))}
+                      <label className="inline-flex items-center gap-2 px-3 py-2 bg-paper border border-obsidian/10 text-xs font-black uppercase tracking-[0.12em] text-obsidian/50">
+                        Pick date
+                        <input
+                          type="date"
+                          value={date}
+                          min={eventDays[0] || todayKey()}
+                          onChange={(e) => (e.target.value ? pickDate(e.target.value) : pickWhen('all'))}
+                          className="border-0 bg-transparent p-0 text-obsidian/70 font-medium uppercase tracking-normal text-xs focus:ring-0"
+                        />
+                      </label>
                     </div>
                   </div>
                 )}
@@ -284,16 +383,33 @@ export default function EventsExplorer() {
             </motion.div>
           )}
         </AnimatePresence>
+        )}
 
-        {tab === 'events' ? (
+        {tab === 'circles' ? (
+          <CirclesPanel />
+        ) : tab === 'events' ? (
           events.length === 0 ? (
             <p className="text-base text-obsidian/45 py-12">
               No events in this window. Open filters and try another cut.
             </p>
           ) : (
-            <div className="space-y-5 sm:space-y-6">
-              {events.map((event, i) => (
-                <EventRow key={event.id} event={event} here={here} index={i} />
+            <div className="space-y-8 sm:space-y-10">
+              {eventGroups.map((group) => (
+                <section key={group.key}>
+                  <div className="flex items-baseline justify-between gap-3 mb-3 sm:mb-4">
+                    <h2 className="font-logo font-extrabold uppercase tracking-tight text-sm sm:text-base text-obsidian">
+                      {group.label}
+                    </h2>
+                    <span className="text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/35">
+                      {group.items.length} {group.items.length === 1 ? 'night' : 'nights'}
+                    </span>
+                  </div>
+                  <div className="space-y-4 sm:space-y-5">
+                    {group.items.map((event, i) => (
+                      <EventRow key={event.id} event={event} here={here} index={i} />
+                    ))}
+                  </div>
+                </section>
               ))}
             </div>
           )

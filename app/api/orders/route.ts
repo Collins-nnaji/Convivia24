@@ -101,12 +101,10 @@ export async function POST(req: NextRequest) {
     const addressLine2 = typeof body.addressLine2 === 'string' ? body.addressLine2.trim() : null;
     const area = typeof body.area === 'string' ? body.area.trim() : null;
     const notesRaw = typeof body.notes === 'string' ? body.notes.trim() : '';
-    const crewId = typeof body.crewId === 'string' ? body.crewId.trim() : '';
     const eventId = typeof body.eventId === 'string' ? body.eventId.trim() : '';
     const notesParts = [
       deliveryMode === 'venue' ? `Delivery: venue — ${venueName || addressLine1}` : 'Delivery: address',
       eventId ? `Event: ${eventId}` : '',
-      crewId ? `Crew: ${crewId}` : '',
       notesRaw,
     ].filter(Boolean);
     const notes = notesParts.join(' · ') || null;

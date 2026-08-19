@@ -2,17 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import sql, { apiErrorResponse } from '@/lib/db';
 import { awardOrderPoints } from '@/lib/loyalty/members';
 import { notifyOrderStatus } from '@/lib/commerce/notify';
+import {
+  flutterwavePaid,
+  flutterwaveSecret,
+  verifyFlutterwavePayment,
+} from '@/lib/payments/flutterwave';
 
-/** Verify Paystack payment (or confirm manual/awaiting status) for an order. */
+/** Verify Flutterwave payment (or confirm manual/awaiting status) for an order. */
 export async function GET(req: NextRequest) {
   try {
     const orderId = req.nextUrl.searchParams.get('orderId')?.trim() || '';
     const reference =
       req.nextUrl.searchParams.get('reference')?.trim() ||
+      req.nextUrl.searchParams.get('tx_ref')?.trim() ||
       req.nextUrl.searchParams.get('trxref')?.trim() ||
       '';
+    const transactionId = req.nextUrl.searchParams.get('transaction_id')?.trim() || '';
 
-    if (!orderId && !reference) {
+    if (!orderId && !reference && !transactionId) {
       return NextResponse.json({ error: 'orderId or reference is required.' }, { status: 400 });
     }
 
@@ -51,29 +58,23 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const secret = process.env.PAYSTACK_SECRET_KEY;
+    const secret = flutterwaveSecret();
     const refToVerify = reference || (order.payment_ref as string | null);
+    const provider = String(order.payment_provider || '');
 
-    if (secret && refToVerify && order.payment_provider === 'paystack') {
-      const verifyRes = await fetch(
-        `https://api.paystack.co/transaction/verify/${encodeURIComponent(refToVerify)}`,
-        { headers: { Authorization: `Bearer ${secret}` } }
-      );
-      const verifyData = await verifyRes.json();
-      // Compare against the amount the order was actually charged, which is
-      // the loyalty-adjusted total when a tier discount applied.
+    if (secret && (refToVerify || transactionId) && (provider === 'flutterwave' || provider === 'paystack')) {
+      const verifyData = await verifyFlutterwavePayment({
+        txRef: refToVerify,
+        transactionId,
+      });
       const chargedNgn = Number(order.total_ngn ?? order.subtotal_ngn);
-      const paid =
-        verifyRes.ok &&
-        verifyData?.data?.status === 'success' &&
-        Number(verifyData?.data?.amount) === chargedNgn * 100;
+      const paid = flutterwavePaid(verifyData, chargedNgn);
 
       if (paid) {
-        // NOT IN ('paid','fulfilled') dedupes against the webhook racing this same
-        // transition — only whichever request actually flips the row sends the email.
+        const storedRef = verifyData?.tx_ref || refToVerify;
         const [flipped] = await sql`
           UPDATE ritual_orders
-          SET status = 'paid', payment_ref = ${refToVerify}, updated_at = NOW()
+          SET status = 'paid', payment_provider = 'flutterwave', payment_ref = ${storedRef}, updated_at = NOW()
           WHERE id = ${order.id as string} AND status NOT IN ('paid', 'fulfilled')
           RETURNING id
         `;
@@ -97,11 +98,10 @@ export async function GET(req: NextRequest) {
         status: order.status,
         subtotalNgn: order.subtotal_ngn,
         verified: false,
-        paystackStatus: verifyData?.data?.status || 'unknown',
+        flutterwaveStatus: verifyData?.status || 'unknown',
       });
     }
 
-    // Manual / concierge path — order is saved, payment pending confirmation
     if (order.payment_provider === 'manual' || order.status === 'awaiting_payment' || order.status === 'pending') {
       return NextResponse.json({
         ok: true,

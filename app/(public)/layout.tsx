@@ -1,5 +1,4 @@
 import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
 import MobileTabBar from '@/components/MobileTabBar';
 import { CartProvider } from '@/components/cart/CartProvider';
 
@@ -20,7 +19,6 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch] md:overflow-visible md:min-h-fit md:flex-none"
         >
           <main className="relative z-0">{children}</main>
-          <Footer />
         </div>
       </div>
       <MobileTabBar />

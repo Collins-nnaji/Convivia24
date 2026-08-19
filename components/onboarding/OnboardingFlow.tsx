@@ -102,7 +102,7 @@ export default function OnboardingFlow({
                   {firstName ? `Hi ${firstName},` : 'Welcome,'}
                 </h1>
                 <p className="text-obsidian/60 text-lg sm:text-xl mt-5 leading-relaxed max-w-xl mx-auto">
-                  Let&rsquo;s spend a minute getting to know you, so your companion can plan days that actually fit your life. A few quick taps — no typing.
+                  Let&rsquo;s spend a minute getting to know you, so nights and plans actually fit your life. A few quick taps — no typing.
                 </p>
                 <button
                   onClick={() => setStep(0)}

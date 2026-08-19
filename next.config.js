@@ -10,6 +10,14 @@ const nextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      { source: '/companion', destination: '/', permanent: true },
+      { source: '/companion/:path*', destination: '/', permanent: true },
+      { source: '/crews', destination: '/', permanent: true },
+      { source: '/crews/:path*', destination: '/', permanent: true },
+    ];
+  },
 };
 
 module.exports = nextConfig;

@@ -5,14 +5,10 @@ Lagos drink ordering and delivery for **parties, clubs, and lounges**. Age 18+.
 ## Product surfaces
 
 - **`/`** — Brand home (logo, shop)
-- **`/shop`** · **`/shop/[slug]`** — Catalog + PDP (search, categories, party packs); a Companion CTA sits above
-  the search bar
-- **`/cart`** · **`/checkout`** — Address or venue delivery, gift-card codes, Paystack when configured
+- **`/shop`** · **`/shop/[slug]`** — Catalog + PDP (search, categories, party packs)
+- **`/cart`** · **`/checkout`** — Address or venue delivery, gift-card codes, Flutterwave when configured
 - **`/orders`** — Order history with a live fulfillment tracker (rider/ETA) and real loyalty tier standing
-- **`/crews`** · **`/crews/[id]`** — Party Crews: start a crew, share the invite link, everyone adds to one
-  shared cart, one member checks out for the group
-- **`/circles`** — Vibe-tagged interest groups (join/leave), DB-backed
-- **`/companion`** — AI night-planning chat, now in primary nav
+- **`/events`** — Nights, venues, and Circles (follow community rooms) as tabs on one page
 - **`/venues`** — B2B inquire for clubs & lounges
 - **`/partners`** · **`/partners/portal`** — Outlet sign-up + desk (margin pricing, Premium points, wholesale
   restocking, perk → gift-card conversion). Requires the same Neon Auth sign-in customers use — no more
@@ -28,7 +24,7 @@ My 24 remains soft-parked (out of primary nav). `/rituals` redirects to `/shop`.
 
 - Next.js 16 (App Router) · TypeScript · Tailwind · Framer Motion
 - Neon Postgres · Neon Auth (member tools)
-- Paystack via `/api/stripe/checkout` + webhook
+- Flutterwave via `/api/stripe/checkout` + webhook
 
 ## Getting started
 
@@ -42,13 +38,14 @@ npm run dev
 ### Env
 
 - `DATABASE_URL` — Neon (waitlist / orders)
-- `PAYSTACK_SECRET_KEY` — optional; without it, checkout uses concierge follow-up
-- `NEXT_PUBLIC_APP_URL` — Paystack callback origin
+- `FLUTTERWAVE_SECRET_KEY` — optional; without it, checkout uses concierge follow-up
+- `FLUTTERWAVE_SECRET_HASH` — webhook `verif-hash` from the Flutterwave dashboard
+- `NEXT_PUBLIC_APP_URL` — Flutterwave redirect origin
 - `RESEND_API_KEY` — enables transactional email (order received, paid, status updates, waitlist);
   without it, `lib/email/resend.ts` no-ops and checkout/orders still work normally
 - `RESEND_FROM` — e.g. `"Convivia24 <orders@yourdomain.com>"`, required alongside `RESEND_API_KEY`
 - `RESEND_API_URL` — optional, defaults to `https://api.resend.com`
-- `ADMIN_NOTIFY_EMAIL` — optional; BCC'd on every "order received" email as an ops copy
+- `ADMIN_NOTIFY_EMAIL` — optional; comma-separated list BCC'd on every "order received" email as an ops copy
 - `ADMIN_PASSWORD` / `CONVIVIA_ADMIN_EMAILS` — admin desk access (shared password or a Neon Auth allowlist)
 - `TERMII_API_KEY` — enables SMS (and WhatsApp, via `TERMII_CHANNEL=whatsapp`) order/delivery updates;
   without it, `lib/notify/termii.ts` no-ops the same way Resend does

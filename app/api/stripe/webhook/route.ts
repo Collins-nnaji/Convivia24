@@ -2,61 +2,102 @@ import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { notifyOrderStatus } from '@/lib/commerce/notify';
 import { awardOrderPoints } from '@/lib/loyalty/members';
+import {
+  flutterwavePaid,
+  flutterwaveSecret,
+  flutterwaveWebhookHash,
+  verifyFlutterwavePayment,
+} from '@/lib/payments/flutterwave';
 
-/** Paystack webhook — marks ritual orders paid. */
+function hashesMatch(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let mismatch = 0;
+  for (let i = 0; i < a.length; i += 1) mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return mismatch === 0;
+}
+
+/** Flutterwave webhook — marks ritual orders paid. */
 export async function POST(req: NextRequest) {
   try {
-    const secret = process.env.PAYSTACK_SECRET_KEY;
-    if (!secret) {
+    if (!flutterwaveSecret()) {
       return NextResponse.json({ error: 'Not configured' }, { status: 503 });
     }
 
-    const crypto = await import('crypto');
     const raw = await req.text();
-    const signature = req.headers.get('x-paystack-signature') || '';
-    const hash = crypto.createHmac('sha512', secret).update(raw).digest('hex');
-    if (hash !== signature) {
+    const expectedHash = flutterwaveWebhookHash();
+    const incomingHash = req.headers.get('verif-hash') || '';
+    if (expectedHash && !hashesMatch(incomingHash, expectedHash)) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
     const event = JSON.parse(raw) as {
       event?: string;
-      data?: { reference?: string; metadata?: { order_id?: string }; status?: string };
+      data?: {
+        id?: number;
+        tx_ref?: string;
+        status?: string;
+        amount?: number;
+        meta?: { order_id?: string };
+      };
     };
 
-    if (event.event === 'charge.success' && event.data?.status === 'success') {
-      const orderId = event.data.metadata?.order_id;
-      const reference = event.data.reference;
-      // WHERE ... NOT IN ('paid', 'fulfilled') both marks paid once and doubles as the
-      // dedupe guard against Paystack's retried webhook deliveries — only the delivery
-      // that actually flips the row gets a RETURNING id, so only it sends the email.
-      let paidOrderId: string | null = null;
-      if (orderId) {
-        const [row] = await sql`
-          UPDATE ritual_orders
-          SET status = 'paid', payment_ref = ${reference || null}, updated_at = NOW()
-          WHERE id = ${orderId} AND status NOT IN ('paid', 'fulfilled')
-          RETURNING id
-        `;
-        paidOrderId = (row?.id as string) || null;
-      } else if (reference) {
-        const [row] = await sql`
-          UPDATE ritual_orders
-          SET status = 'paid', updated_at = NOW()
-          WHERE payment_ref = ${reference} AND status NOT IN ('paid', 'fulfilled')
-          RETURNING id
-        `;
-        paidOrderId = (row?.id as string) || null;
-      }
-      if (paidOrderId) {
-        await awardOrderPoints(paidOrderId);
-        await notifyOrderStatus(paidOrderId, 'paid');
-      }
+    const data = event.data;
+    const status = String(data?.status || '').toLowerCase();
+    const completed =
+      event.event === 'charge.completed' || !event.event;
+    if (!completed || (status !== 'successful' && status !== 'completed') || !data) {
+      return NextResponse.json({ received: true });
+    }
+
+    const txRef = data.tx_ref || null;
+    const transactionId = data.id != null ? String(data.id) : null;
+    const verified = await verifyFlutterwavePayment({ txRef, transactionId });
+    const orderId = verified?.meta?.order_id || data.meta?.order_id;
+    const reference = verified?.tx_ref || txRef;
+
+    let chargedNgn: number | null = null;
+    if (orderId) {
+      const [order] = await sql`
+        SELECT total_ngn, subtotal_ngn FROM ritual_orders WHERE id = ${orderId} LIMIT 1
+      `;
+      if (order) chargedNgn = Number(order.total_ngn ?? order.subtotal_ngn);
+    } else if (reference) {
+      const [order] = await sql`
+        SELECT total_ngn, subtotal_ngn FROM ritual_orders WHERE payment_ref = ${reference} LIMIT 1
+      `;
+      if (order) chargedNgn = Number(order.total_ngn ?? order.subtotal_ngn);
+    }
+
+    if (chargedNgn == null || !flutterwavePaid(verified, chargedNgn)) {
+      return NextResponse.json({ received: true });
+    }
+
+    let paidOrderId: string | null = null;
+    if (orderId) {
+      const [row] = await sql`
+        UPDATE ritual_orders
+        SET status = 'paid', payment_ref = ${reference || null}, updated_at = NOW()
+        WHERE id = ${orderId} AND status NOT IN ('paid', 'fulfilled')
+        RETURNING id
+      `;
+      paidOrderId = (row?.id as string) || null;
+    } else if (reference) {
+      const [row] = await sql`
+        UPDATE ritual_orders
+        SET status = 'paid', updated_at = NOW()
+        WHERE payment_ref = ${reference} AND status NOT IN ('paid', 'fulfilled')
+        RETURNING id
+      `;
+      paidOrderId = (row?.id as string) || null;
+    }
+    if (paidOrderId) {
+      await awardOrderPoints(paidOrderId);
+      await notifyOrderStatus(paidOrderId, 'paid');
     }
 
     return NextResponse.json({ received: true });
   } catch (err) {
-    console.error('paystack webhook', err);
+    console.error('flutterwave webhook', err);
     return NextResponse.json({ error: 'Webhook error' }, { status: 500 });
   }
 }

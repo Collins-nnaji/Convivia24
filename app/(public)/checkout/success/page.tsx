@@ -17,7 +17,9 @@ function SuccessBody() {
   const params = useSearchParams();
   const orderId = params.get('order');
   const mode = params.get('mode');
-  const reference = params.get('reference') || params.get('trxref');
+  const reference =
+    params.get('tx_ref') || params.get('reference') || params.get('trxref');
+  const transactionId = params.get('transaction_id');
   const { clear } = useCart();
   const [state, setState] = useState<VerifyState>({ phase: 'loading' });
 
@@ -46,6 +48,7 @@ function SuccessBody() {
         const qs = new URLSearchParams();
         if (orderId) qs.set('orderId', orderId);
         if (reference) qs.set('reference', reference);
+        if (transactionId) qs.set('transaction_id', transactionId);
         const res = await fetch(`/api/stripe/verify?${qs.toString()}`);
         const data = await res.json();
         if (cancelled) return;
@@ -110,7 +113,7 @@ function SuccessBody() {
     return () => {
       cancelled = true;
     };
-  }, [orderId, reference, mode, clear]);
+  }, [orderId, reference, transactionId, mode, clear]);
 
   if (state.phase === 'loading') {
     return (
@@ -151,7 +154,7 @@ function SuccessBody() {
         <div className="max-w-xl mx-auto px-5 sm:px-8">
           <h1 className="text-3xl font-bold text-obsidian mb-4">Payment still processing</h1>
           <p className="text-obsidian/60 leading-relaxed mb-6">
-            If you completed Paystack, refresh in a moment. Your cart is kept until we confirm payment.
+            If you completed Flutterwave, refresh in a moment. Your cart is kept until we confirm payment.
           </p>
           <button
             type="button"
