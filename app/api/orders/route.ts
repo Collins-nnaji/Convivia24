@@ -3,6 +3,8 @@ import sql, { apiErrorResponse } from '@/lib/db';
 import { getDrinkBySlug } from '@/lib/drinks/catalog';
 import { getCurrentUser } from '@/lib/auth/session';
 import { getMember, loyaltyDiscountNgn, resolveMemberOwner } from '@/lib/loyalty/members';
+import { notifyOrderReceived } from '@/lib/commerce/notify';
+import { rateLimit, clientIp } from '@/lib/redis';
 
 type IncomingItem = {
   slug: string;
@@ -68,6 +70,9 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const rl = await rateLimit(`orders:create:${clientIp(req)}`, 10, 60);
+    if (!rl.ok) return NextResponse.json({ error: 'Too many requests. Please try again shortly.' }, { status: 429 });
+
     const body = await req.json();
     const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
     const fullName = typeof body.fullName === 'string' ? body.fullName.trim() : '';
@@ -165,6 +170,8 @@ export async function POST(req: NextRequest) {
       `;
     }
 
+    await notifyOrderReceived(orderId);
+
     return NextResponse.json({
       ok: true,
       orderId,
@@ -182,6 +189,12 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
+    const user = await getCurrentUser();
+    if (!user?.email) {
+      return NextResponse.json({ error: 'Sign in required.' }, { status: 401 });
+    }
+    const email = user.email.trim().toLowerCase();
+
     const body = await req.json();
     const orderId = typeof body.orderId === 'string' ? body.orderId.trim() : '';
     if (!orderId) {
@@ -191,7 +204,7 @@ export async function PATCH(req: NextRequest) {
     const [order] = await sql`
       UPDATE ritual_orders
       SET status = 'cancelled', updated_at = NOW()
-      WHERE id = ${orderId} AND status IN ('pending', 'awaiting_payment')
+      WHERE id = ${orderId} AND LOWER(email) = ${email} AND status IN ('pending', 'awaiting_payment')
       RETURNING id, status
     `;
 

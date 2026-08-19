@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { formatNgn } from '@/lib/drinks/catalog';
+import { ORDER_STATUS_LABELS, type OrderStatus } from '@/lib/commerce/status';
 
 type Item = {
   slug: string;
@@ -58,6 +59,24 @@ type TriviaEntry = {
   createdAt: string;
 };
 
+type AdminOrder = {
+  id: string;
+  email: string;
+  fullName: string;
+  phone: string | null;
+  status: OrderStatus;
+  subtotalNgn: number;
+  loyaltyDiscountNgn: number;
+  totalNgn: number;
+  addressLine1: string;
+  addressLine2: string | null;
+  area: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+  items: { name: string; qty: number; unitPriceNgn: number }[];
+};
+
 type EventDraft = {
   id?: string;
   title: string;
@@ -111,7 +130,7 @@ function formatWhen(iso: string): string {
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
   const [password, setPassword] = useState('');
-  const [tab, setTab] = useState<'drinks' | 'events' | 'trivia'>('drinks');
+  const [tab, setTab] = useState<'drinks' | 'events' | 'trivia' | 'orders'>('drinks');
   const [items, setItems] = useState<Item[]>([]);
   const [events, setEvents] = useState<AdminEvent[]>([]);
   const [venues, setVenues] = useState<VenueOption[]>([]);
@@ -130,6 +149,10 @@ export default function AdminPage() {
   const [rounds, setRounds] = useState<RoundOption[]>([]);
   const [weekRound, setWeekRound] = useState('');
   const [weekStart, setWeekStart] = useState('');
+  const [orders, setOrders] = useState<AdminOrder[]>([]);
+  const [ordersError, setOrdersError] = useState('');
+  const [settableStatuses, setSettableStatuses] = useState<OrderStatus[]>([]);
+  const [updatingOrder, setUpdatingOrder] = useState('');
 
   const loadStock = useCallback(async () => {
     const res = await fetch('/api/admin/inventory');
@@ -206,6 +229,35 @@ export default function AdminPage() {
     setWeeks((rows) => rows.filter((r) => r.id !== week.id));
   }
 
+  const loadOrders = useCallback(async () => {
+    const res = await fetch('/api/admin/orders');
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setOrdersError(data.error || 'Could not load orders.');
+      return;
+    }
+    setOrdersError('');
+    setOrders(data.orders || []);
+    setSettableStatuses(data.statuses || []);
+  }, []);
+
+  async function updateOrderStatus(order: AdminOrder, status: OrderStatus) {
+    setOrdersError('');
+    setUpdatingOrder(order.id);
+    const res = await fetch('/api/admin/orders', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId: order.id, status }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setUpdatingOrder('');
+    if (!res.ok) {
+      setOrdersError(data.error || 'Could not update the order.');
+      return;
+    }
+    setOrders((rows) => rows.map((r) => (r.id === order.id ? { ...r, status } : r)));
+  }
+
   async function setEntryStatus(entry: TriviaEntry, status: string) {
     setTriviaError('');
     const res = await fetch('/api/admin/trivia', {
@@ -225,8 +277,9 @@ export default function AdminPage() {
     loadStock()
       .then(loadEvents)
       .then(loadTrivia)
+      .then(loadOrders)
       .catch(() => setAuthed(false));
-  }, [loadStock, loadEvents, loadTrivia]);
+  }, [loadStock, loadEvents, loadTrivia, loadOrders]);
 
   async function login(e: FormEvent) {
     e.preventDefault();
@@ -245,6 +298,7 @@ export default function AdminPage() {
     await loadStock();
     await loadEvents();
     await loadTrivia();
+    await loadOrders();
   }
 
   async function onUpload(e: FormEvent<HTMLFormElement>) {
@@ -435,7 +489,7 @@ export default function AdminPage() {
         </div>
 
         <div className="flex gap-1 mb-8 border-b border-obsidian/10">
-          {(['drinks', 'events', 'trivia'] as const).map((key) => (
+          {(['drinks', 'orders', 'events', 'trivia'] as const).map((key) => (
             <button
               key={key}
               type="button"
@@ -446,14 +500,84 @@ export default function AdminPage() {
             >
               {key === 'drinks'
                 ? `Drinks (${items.length})`
-                : key === 'events'
-                  ? `Events (${events.length})`
-                  : `Trivia (${entries.length})`}
+                : key === 'orders'
+                  ? `Orders (${orders.length})`
+                  : key === 'events'
+                    ? `Events (${events.length})`
+                    : `Trivia (${entries.length})`}
             </button>
           ))}
         </div>
 
-        {tab === 'trivia' ? (
+        {tab === 'orders' ? (
+          <>
+            {ordersError && <p className="text-sm text-ember mb-6">{ordersError}</p>}
+            <p className="text-sm text-obsidian/50 mb-5">
+              Move an order through fulfillment. Each change emails the customer automatically (once Resend is
+              configured).
+            </p>
+            <div className="space-y-3">
+              {orders.map((order) => (
+                <div key={order.id} className="bg-white p-4 shadow-sm">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-medium">
+                        {order.fullName}{' '}
+                        <span className="text-[11px] text-obsidian/40 font-mono font-normal">
+                          {order.id.slice(0, 8).toUpperCase()}
+                        </span>
+                      </p>
+                      <p className="text-[12px] text-obsidian/50 truncate">
+                        {order.email}
+                        {order.phone ? ` · ${order.phone}` : ''}
+                      </p>
+                      <p className="text-[12px] text-obsidian/50">
+                        {order.addressLine1}
+                        {order.area ? `, ${order.area}` : ''}
+                      </p>
+                      <p className="text-[12px] text-obsidian/45 mt-1">
+                        {order.items.map((i) => `${i.name} × ${i.qty}`).join(' · ')}
+                      </p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="font-bold">{formatNgn(order.totalNgn)}</p>
+                      <p className="text-[11px] text-obsidian/40">{formatWhen(order.createdAt)}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-obsidian/10">
+                    <span className="text-[10px] font-black uppercase tracking-[0.12em] px-2 py-1 bg-paper text-obsidian/60">
+                      {ORDER_STATUS_LABELS[order.status] || order.status}
+                    </span>
+                    <select
+                      value=""
+                      disabled={updatingOrder === order.id}
+                      onChange={(e) => {
+                        const next = e.target.value as OrderStatus;
+                        if (next) updateOrderStatus(order, next);
+                        e.target.value = '';
+                      }}
+                      className="ml-auto text-[11px] font-black uppercase tracking-[0.1em] border border-obsidian/15 px-3 py-2 disabled:opacity-40"
+                    >
+                      <option value="">
+                        {updatingOrder === order.id ? 'Updating…' : 'Set status…'}
+                      </option>
+                      {settableStatuses
+                        .filter((s) => s !== order.status)
+                        .map((s) => (
+                          <option key={s} value={s}>
+                            {ORDER_STATUS_LABELS[s] || s}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+              ))}
+              {orders.length === 0 && !ordersError && (
+                <p className="text-sm text-obsidian/45">No paid orders yet.</p>
+              )}
+            </div>
+          </>
+        ) : tab === 'trivia' ? (
           <>
             {triviaError && <p className="text-sm text-ember mb-6">{triviaError}</p>}
 

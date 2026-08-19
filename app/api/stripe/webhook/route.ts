@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db';
+import { notifyOrderStatus } from '@/lib/commerce/notify';
+import { awardOrderPoints } from '@/lib/loyalty/members';
 
 /** Paystack webhook — marks ritual orders paid. */
 export async function POST(req: NextRequest) {
@@ -25,18 +27,30 @@ export async function POST(req: NextRequest) {
     if (event.event === 'charge.success' && event.data?.status === 'success') {
       const orderId = event.data.metadata?.order_id;
       const reference = event.data.reference;
+      // WHERE ... NOT IN ('paid', 'fulfilled') both marks paid once and doubles as the
+      // dedupe guard against Paystack's retried webhook deliveries — only the delivery
+      // that actually flips the row gets a RETURNING id, so only it sends the email.
+      let paidOrderId: string | null = null;
       if (orderId) {
-        await sql`
+        const [row] = await sql`
           UPDATE ritual_orders
           SET status = 'paid', payment_ref = ${reference || null}, updated_at = NOW()
-          WHERE id = ${orderId}
+          WHERE id = ${orderId} AND status NOT IN ('paid', 'fulfilled')
+          RETURNING id
         `;
+        paidOrderId = (row?.id as string) || null;
       } else if (reference) {
-        await sql`
+        const [row] = await sql`
           UPDATE ritual_orders
           SET status = 'paid', updated_at = NOW()
-          WHERE payment_ref = ${reference}
+          WHERE payment_ref = ${reference} AND status NOT IN ('paid', 'fulfilled')
+          RETURNING id
         `;
+        paidOrderId = (row?.id as string) || null;
+      }
+      if (paidOrderId) {
+        await awardOrderPoints(paidOrderId);
+        await notifyOrderStatus(paidOrderId, 'paid');
       }
     }
 

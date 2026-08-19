@@ -94,4 +94,33 @@ export function loyaltyDiscountNgn(subtotalNgn: number, member: Member | null): 
   return { pct, ngn: Math.round(Math.max(0, subtotalNgn) * (pct / 100)) };
 }
 
+/**
+ * Award loyalty points for a paid order, once. loyalty_points_awarded doubles
+ * as the guard so a repeated payment callback (webhook retry + verify racing
+ * each other) can never bank the same points twice.
+ */
+export async function awardOrderPoints(orderId: string): Promise<void> {
+  const [order] = await sql`
+    SELECT id, loyalty_owner_id, loyalty_points_awarded, subtotal_ngn, total_ngn
+    FROM ritual_orders WHERE id = ${orderId} LIMIT 1
+  `;
+  if (!order) return;
+  const ownerId = (order.loyalty_owner_id as string) || '';
+  if (!ownerId || Number(order.loyalty_points_awarded ?? 0) > 0) return;
+  const chargedNgn = Number(order.total_ngn ?? order.subtotal_ngn);
+  const points = pointsFromSpend(chargedNgn);
+  if (points <= 0) return;
+  try {
+    const claimed = await sql`
+      UPDATE ritual_orders SET loyalty_points_awarded = ${points}
+      WHERE id = ${orderId} AND loyalty_points_awarded = 0
+      RETURNING id
+    `;
+    if (claimed.length === 0) return;
+    await awardPoints(ownerId, points);
+  } catch {
+    /* points are a bonus — never fail a verified payment over them */
+  }
+}
+
 export { pointsFromSpend };

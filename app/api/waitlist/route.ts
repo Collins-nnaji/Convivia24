@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql, { apiErrorResponse } from '@/lib/db';
+import { sendEmail } from '@/lib/email/resend';
+import { waitlistEmail } from '@/lib/email/templates';
 
 export async function POST(req: NextRequest) {
   try {
@@ -37,6 +39,13 @@ export async function POST(req: NextRequest) {
           tier = EXCLUDED.tier,
           updated_at = NOW()
       `;
+    }
+
+    try {
+      const { subject, html } = waitlistEmail(email);
+      await sendEmail({ to: email, subject, html });
+    } catch (err) {
+      console.error('waitlist email failed', err);
     }
 
     return NextResponse.json({ ok: true, message: "You're on the list." });

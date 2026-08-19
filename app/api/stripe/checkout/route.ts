@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql, { apiErrorResponse } from '@/lib/db';
+import { rateLimit, clientIp } from '@/lib/redis';
 
 /**
  * Lagos-first checkout via Paystack.
@@ -8,6 +9,9 @@ import sql, { apiErrorResponse } from '@/lib/db';
  */
 export async function POST(req: NextRequest) {
   try {
+    const rl = await rateLimit(`checkout:${clientIp(req)}`, 15, 60);
+    if (!rl.ok) return NextResponse.json({ error: 'Too many requests. Please try again shortly.' }, { status: 429 });
+
     const body = await req.json();
     const orderId = typeof body.orderId === 'string' ? body.orderId.trim() : '';
     if (!orderId) {

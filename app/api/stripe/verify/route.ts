@@ -1,28 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql, { apiErrorResponse } from '@/lib/db';
-import { awardPoints, pointsFromSpend } from '@/lib/loyalty/members';
-
-/**
- * Award loyalty points for a paid order, once. The column doubles as the guard
- * so a repeated verify callback cannot bank the same points twice.
- */
-async function awardOrderPoints(order: Record<string, unknown>, chargedNgn: number) {
-  const ownerId = (order.loyalty_owner_id as string) || '';
-  if (!ownerId || Number(order.loyalty_points_awarded ?? 0) > 0) return;
-  const points = pointsFromSpend(chargedNgn);
-  if (points <= 0) return;
-  try {
-    const claimed = await sql`
-      UPDATE ritual_orders SET loyalty_points_awarded = ${points}
-      WHERE id = ${order.id as string} AND loyalty_points_awarded = 0
-      RETURNING id
-    `;
-    if (claimed.length === 0) return;
-    await awardPoints(ownerId, points);
-  } catch {
-    /* points are a bonus — never fail a verified payment over them */
-  }
-}
+import { awardOrderPoints } from '@/lib/loyalty/members';
+import { notifyOrderStatus } from '@/lib/commerce/notify';
 
 /** Verify Paystack payment (or confirm manual/awaiting status) for an order. */
 export async function GET(req: NextRequest) {
@@ -90,12 +69,18 @@ export async function GET(req: NextRequest) {
         Number(verifyData?.data?.amount) === chargedNgn * 100;
 
       if (paid) {
-        await sql`
+        // NOT IN ('paid','fulfilled') dedupes against the webhook racing this same
+        // transition — only whichever request actually flips the row sends the email.
+        const [flipped] = await sql`
           UPDATE ritual_orders
           SET status = 'paid', payment_ref = ${refToVerify}, updated_at = NOW()
-          WHERE id = ${order.id as string}
+          WHERE id = ${order.id as string} AND status NOT IN ('paid', 'fulfilled')
+          RETURNING id
         `;
-        await awardOrderPoints(order, chargedNgn);
+        await awardOrderPoints(order.id as string);
+        if (flipped) {
+          await notifyOrderStatus(order.id as string, 'paid');
+        }
         return NextResponse.json({
           ok: true,
           orderId: order.id,
