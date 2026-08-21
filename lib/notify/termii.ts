@@ -1,12 +1,14 @@
 /**
- * Termii SMS/WhatsApp sender. Sends nothing until env is complete, so you
- * can add TERMII_API_KEY later without breaking checkout or order updates —
- * the same no-op-until-configured pattern as lib/email/resend.ts.
+ * Termii SMS/WhatsApp sender — parked for now.
+ * Order notifications use Resend email only until this is wired back.
+ *
+ * When ready: set TERMII_API_KEY (+ optional TERMII_SENDER_ID / TERMII_CHANNEL)
+ * and call sendSms from lib/commerce/notify.ts again.
  *
  * TERMII_API_URL — optional; defaults to https://api.ng.termii.com/api
  * TERMII_API_KEY
- * TERMII_SENDER_ID — a registered Termii sender ID (e.g. "Convivia24");
- *   falls back to "N-Alert" (Termii's shared generic ID) if unset
+ * TERMII_SENDER_ID — registered Termii sender ID (e.g. "Convivia24");
+ *   falls back to "N-Alert" if unset
  * TERMII_CHANNEL — "generic" (SMS, default) or "whatsapp"
  */
 

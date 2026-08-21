@@ -42,8 +42,8 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      const { subject, html } = waitlistEmail(email);
-      await sendEmail({ to: email, subject, html });
+      const { subject, html, text } = waitlistEmail(email);
+      await sendEmail({ to: email, subject, html, text });
     } catch (err) {
       console.error('waitlist email failed', err);
     }

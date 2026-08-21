@@ -1,8 +1,13 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
+import { absoluteUrl } from '@/lib/seo';
 
-export const metadata = {
-  title: 'Privacy Policy | Convivia24',
-  description: 'How Convivia24 collects, uses, and protects your information. Age 18+.',
+export const metadata: Metadata = {
+  title: 'Privacy Policy',
+  description:
+    'How Convivia24 collects and uses data for drinks orders, events, Guest Card, and partner tools. Adults 18+.',
+  alternates: { canonical: absoluteUrl('/privacy') },
+  robots: { index: true, follow: true },
 };
 
 export default function PrivacyPage() {

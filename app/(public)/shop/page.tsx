@@ -1,9 +1,18 @@
+import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import ShopCatalog from '@/components/shop/ShopCatalog';
+import { absoluteUrl } from '@/lib/seo';
 
-export const metadata = {
-  title: 'Shop | Convivia24',
-  description: 'Order drinks for parties, clubs, and lounges — Lagos delivery.',
+export const metadata: Metadata = {
+  title: 'Shop drinks',
+  description:
+    'Order spirits, Champagne, tequila, vodka, and Party Packs for Lagos parties, clubs, and lounges. Delivery across Lagos. Adults 18+.',
+  alternates: { canonical: absoluteUrl('/shop') },
+  openGraph: {
+    title: 'Shop drinks | Convivia24',
+    description: 'Bottles and Party Packs delivered to the table in Lagos.',
+    url: absoluteUrl('/shop'),
+  },
 };
 
 export default function ShopPage() {

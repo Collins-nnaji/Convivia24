@@ -1,8 +1,13 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
+import { absoluteUrl } from '@/lib/seo';
 
-export const metadata = {
-  title: 'Terms of Use | Convivia24',
-  description: 'Terms of use for Convivia24. Alcohol delivery and nightlife services for adults 18+.',
+export const metadata: Metadata = {
+  title: 'Terms of Use',
+  description:
+    'Terms for Convivia24 — Lagos alcohol delivery, events, venues, Guest Card, and partner services. Adults 18+ only.',
+  alternates: { canonical: absoluteUrl('/terms') },
+  robots: { index: true, follow: true },
 };
 
 export default function TermsPage() {

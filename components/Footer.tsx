@@ -26,7 +26,7 @@ export default function Footer() {
               />
             </Link>
             <p className="hidden sm:block text-[10px] text-white/40 truncate">
-              Lagos drinks · parties, clubs & lounges · 18+
+              Lagos drinks · events & venues · Guest Card · 18+
             </p>
           </div>
 

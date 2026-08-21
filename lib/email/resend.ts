@@ -4,7 +4,8 @@
  *
  * RESEND_API_URL — optional; defaults to https://api.resend.com
  * RESEND_API_KEY
- * RESEND_FROM — e.g. "Convivia24 <orders@yourdomain.com>"
+ * RESEND_FROM — e.g. "Convivia24 <no-reply@convivia24.com>"
+ * RESEND_REPLY_TO / SUPPORT_EMAIL — reply destination (support@…)
  * ADMIN_NOTIFY_EMAIL — optional BCC/ops copy for new paid orders
  */
 
@@ -14,18 +15,27 @@ export type SendEmailInput = {
   html: string;
   text?: string;
   bcc?: string | string[];
+  replyTo?: string;
 };
 
-function configured(): { url: string; key: string; from: string } | null {
+function configured(): { url: string; key: string; from: string; replyTo?: string } | null {
   const key = process.env.RESEND_API_KEY?.trim();
   const from = process.env.RESEND_FROM?.trim();
   const url = (process.env.RESEND_API_URL?.trim() || 'https://api.resend.com').replace(/\/$/, '');
   if (!key || !from) return null;
-  return { url, key, from };
+  const replyTo =
+    process.env.RESEND_REPLY_TO?.trim() ||
+    process.env.SUPPORT_EMAIL?.trim() ||
+    undefined;
+  return { url, key, from, replyTo };
 }
 
 export function resendConfigured(): boolean {
   return configured() !== null;
+}
+
+export function supportEmail(): string {
+  return process.env.SUPPORT_EMAIL?.trim() || 'support@convivia24.com';
 }
 
 export async function sendEmail(input: SendEmailInput): Promise<{ sent: boolean; id?: string; error?: string }> {
@@ -36,6 +46,7 @@ export async function sendEmail(input: SendEmailInput): Promise<{ sent: boolean;
 
   const to = Array.isArray(input.to) ? input.to : [input.to];
   const bcc = input.bcc ? (Array.isArray(input.bcc) ? input.bcc : [input.bcc]) : undefined;
+  const reply_to = input.replyTo || cfg.replyTo;
 
   try {
     const res = await fetch(`${cfg.url}/emails`, {
@@ -48,6 +59,7 @@ export async function sendEmail(input: SendEmailInput): Promise<{ sent: boolean;
         from: cfg.from,
         to,
         bcc,
+        reply_to,
         subject: input.subject,
         html: input.html,
         text: input.text,

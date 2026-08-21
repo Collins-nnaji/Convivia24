@@ -1,7 +1,8 @@
 {
-  "name": "convivia24-landing",
+  "name": "convivia24",
   "version": "0.1.0",
   "private": true,
+  "description": "Lagos nightlife commerce — drinks delivery, events, venues, Guest Card, and partner wholesale. Adults 18+.",
   "dependencies": {
     "@azure/storage-blob": "^12.33.0",
     "@neondatabase/auth": "^0.4.2-beta",

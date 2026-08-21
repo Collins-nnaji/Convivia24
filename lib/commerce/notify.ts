@@ -1,9 +1,12 @@
 import sql from '@/lib/db';
 import { sendEmail, adminNotifyEmail } from '@/lib/email/resend';
-import { orderReceivedEmail, orderStatusEmail, type EmailLine } from '@/lib/email/templates';
-import { sendSms } from '@/lib/notify/termii';
-import { ORDER_STATUS_LABELS, type OrderStatus } from '@/lib/commerce/status';
-import { formatNgn } from '@/lib/drinks/catalog';
+import {
+  orderReceivedEmail,
+  orderStatusEmail,
+  adminSuccessfulOrderEmail,
+  type EmailLine,
+} from '@/lib/email/templates';
+import type { OrderStatus } from '@/lib/commerce/status';
 
 async function loadOrderForNotify(orderId: string) {
   const [order] = await sql`
@@ -18,14 +21,29 @@ async function loadOrderForNotify(orderId: string) {
   return { order, lines: items as unknown as EmailLine[] };
 }
 
-/** Best-effort — never throws, so a mail/SMS hiccup can't fail an order or a webhook. */
+async function notifyAdminsOfSuccessfulOrder(opts: {
+  fullName: string;
+  email: string;
+  phone?: string | null;
+  orderId: string;
+  lines: EmailLine[];
+  totalNgn: number;
+  status: string;
+}): Promise<void> {
+  const admins = adminNotifyEmail();
+  if (!admins) return;
+  const { subject, html, text } = adminSuccessfulOrderEmail(opts);
+  await sendEmail({ to: admins, subject, html, text });
+}
+
+/** Best-effort — never throws, so a mail hiccup can't fail an order or a webhook. */
 export async function notifyOrderReceived(orderId: string): Promise<void> {
   try {
     const data = await loadOrderForNotify(orderId);
     if (!data) return;
     const { order, lines } = data;
     const totalNgn = Number(order.total_ngn ?? order.subtotal_ngn);
-    const { subject, html } = orderReceivedEmail({
+    const { subject, html, text } = orderReceivedEmail({
       fullName: order.full_name as string,
       orderId: order.id as string,
       lines,
@@ -35,14 +53,19 @@ export async function notifyOrderReceived(orderId: string): Promise<void> {
       to: order.email as string,
       subject,
       html,
-      bcc: adminNotifyEmail() ?? undefined,
+      text,
     });
-    if (order.phone) {
-      await sendSms(
-        order.phone as string,
-        `Convivia24: we have your order (${formatNgn(totalNgn)}). We'll text you when it's on the way.`,
-        orderId
-      );
+    // If the order is already paid at create-time, ping ops immediately.
+    if (String(order.status) === 'paid') {
+      await notifyAdminsOfSuccessfulOrder({
+        fullName: order.full_name as string,
+        email: order.email as string,
+        phone: (order.phone as string) || null,
+        orderId: order.id as string,
+        lines,
+        totalNgn,
+        status: 'paid',
+      });
     }
   } catch (err) {
     console.error('notifyOrderReceived failed', err);
@@ -55,7 +78,7 @@ export async function notifyOrderStatus(orderId: string, status: OrderStatus, no
     if (!data) return;
     const { order, lines } = data;
     const totalNgn = Number(order.total_ngn ?? order.subtotal_ngn);
-    const { subject, html } = orderStatusEmail({
+    const { subject, html, text } = orderStatusEmail({
       fullName: order.full_name as string,
       orderId: order.id as string,
       status,
@@ -63,11 +86,18 @@ export async function notifyOrderStatus(orderId: string, status: OrderStatus, no
       subtotalNgn: totalNgn,
       note,
     });
-    await sendEmail({ to: order.email as string, subject, html });
-    if (order.phone) {
-      const label = ORDER_STATUS_LABELS[status] || status;
-      const text = note ? `Convivia24: ${label}. ${note}` : `Convivia24: your order is now "${label}".`;
-      await sendSms(order.phone as string, text, orderId);
+    await sendEmail({ to: order.email as string, subject, html, text });
+
+    if (status === 'paid') {
+      await notifyAdminsOfSuccessfulOrder({
+        fullName: order.full_name as string,
+        email: order.email as string,
+        phone: (order.phone as string) || null,
+        orderId: order.id as string,
+        lines,
+        totalNgn,
+        status: 'paid',
+      });
     }
   } catch (err) {
     console.error('notifyOrderStatus failed', err);

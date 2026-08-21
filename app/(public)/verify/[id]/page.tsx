@@ -1,11 +1,15 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { ShieldCheck, ShieldAlert, ShieldQuestion } from 'lucide-react';
 import sql, { DatabaseUnavailableError } from '@/lib/db';
 import { isValidOrderId, verifyCode } from '@/lib/verify';
+import { absoluteUrl } from '@/lib/seo';
 
-export const metadata = {
-  title: 'Verify authenticity | Convivia24',
-  description: 'Confirm a bottle or order was genuinely supplied by Convivia24.',
+export const metadata: Metadata = {
+  title: 'Verify authenticity',
+  description:
+    'Confirm a bottle or order was genuinely supplied through Convivia24. Lagos nightlife commerce · 18+.',
+  robots: { index: false, follow: true },
 };
 
 type VerifyRow = {
