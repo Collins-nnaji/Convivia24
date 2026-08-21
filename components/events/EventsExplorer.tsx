@@ -236,7 +236,7 @@ export default function EventsExplorer() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={tab === 'venues' ? 'Search venues...' : 'Search events...'}
-                className="w-full pl-9 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition"
+                className="w-full pl-9 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-ember/20 focus:border-ember transition"
               />
             </div>
 
@@ -258,7 +258,7 @@ export default function EventsExplorer() {
                 onClick={() => selectTab(t)}
                 className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   tab === t
-                    ? 'border-indigo-600 text-indigo-600'
+                    ? 'border-ember text-ember'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
@@ -306,7 +306,7 @@ export default function EventsExplorer() {
                         type="date"
                         value={date}
                         onChange={(e) => { setDate(e.target.value); setWhen('all'); }}
-                        className="w-full text-xs border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                        className="w-full text-xs border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ember/20"
                       />
                     </div>
                   </FilterSection>
@@ -328,7 +328,7 @@ export default function EventsExplorer() {
                   <button
                     type="button"
                     onClick={nearMe}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-ember bg-ember/8 rounded-lg hover:bg-ember/15 transition"
                   >
                     <NavIcon size={14} /> Near me
                   </button>
@@ -355,7 +355,7 @@ export default function EventsExplorer() {
                   <div className="text-center py-20">
                     <Calendar size={40} className="mx-auto text-gray-300 mb-4" />
                     <p className="text-gray-500">No events match your filters.</p>
-                    <button type="button" onClick={clearFilters} className="mt-3 text-sm text-indigo-600 font-medium">
+                    <button type="button" onClick={clearFilters} className="mt-3 text-sm text-ember font-medium">
                       Clear filters
                     </button>
                   </div>
@@ -364,7 +364,7 @@ export default function EventsExplorer() {
                     {eventGroups.map((group) => (
                       <section key={group.key}>
                         <h2 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                          <Calendar size={14} className="text-indigo-500" />
+                          <Calendar size={14} className="text-ember" />
                           {group.label}
                           <span className="text-xs font-normal text-gray-400 ml-auto">
                             {group.items.length} {group.items.length === 1 ? 'event' : 'events'}
@@ -419,8 +419,8 @@ function FilterChip({ active, onClick, children }: { active: boolean; onClick: (
       onClick={onClick}
       className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
         active
-          ? 'bg-indigo-600 text-white shadow-sm'
-          : 'bg-white text-gray-600 border border-gray-200 hover:border-indigo-300 hover:text-indigo-600'
+          ? 'btn-brand shadow-sm'
+          : 'bg-white text-gray-600 border border-gray-200 hover:border-ember hover:text-ember'
       }`}
     >
       {children}
@@ -436,7 +436,7 @@ function EventCard({ event, here }: { event: ResolvedEvent; here: { lat: number;
   return (
     <Link
       href={`/events/${event.id}`}
-      className={`group block bg-white rounded-xl overflow-hidden border border-gray-100 hover:border-indigo-200 hover:shadow-lg transition-all duration-300 ${past ? 'opacity-60' : ''}`}
+      className={`group block bg-white rounded-xl overflow-hidden border border-gray-100 hover:border-ember hover:shadow-lg transition-all duration-300 ${past ? 'opacity-60' : ''}`}
     >
       {/* Photo placeholder */}
       <div className="relative aspect-[16/10] bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden">
@@ -464,10 +464,10 @@ function EventCard({ event, here }: { event: ResolvedEvent; here: { lat: number;
       </div>
 
       <div className="p-4">
-        <p className="text-[11px] font-semibold text-indigo-600 mb-1">
+        <p className="text-[11px] font-semibold text-ember mb-1">
           {formatEventWhen(event)}
         </p>
-        <h3 className="font-bold text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-1">
+        <h3 className="font-bold text-gray-900 group-hover:text-ember transition-colors line-clamp-1">
           {event.title}
         </h3>
         <p className="text-sm text-gray-500 mt-1.5 line-clamp-2 leading-relaxed">
@@ -494,7 +494,7 @@ function VenueCard({ venue }: { venue: APIVenue }) {
   return (
     <Link
       href={`/events/venues/${venue.slug}`}
-      className="group block bg-white rounded-xl overflow-hidden border border-gray-100 hover:border-indigo-200 hover:shadow-lg transition-all duration-300"
+      className="group block bg-white rounded-xl overflow-hidden border-2 border-ember/25 hover:border-ember hover:shadow-lg transition-all duration-300"
     >
       {/* Photo */}
       <div className="relative aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
@@ -515,7 +515,7 @@ function VenueCard({ venue }: { venue: APIVenue }) {
       <div className="p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <h3 className="font-bold text-gray-900 group-hover:text-indigo-600 transition-colors truncate">
+            <h3 className="font-bold text-gray-900 group-hover:text-ember transition-colors truncate">
               {venue.name}
             </h3>
             <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">

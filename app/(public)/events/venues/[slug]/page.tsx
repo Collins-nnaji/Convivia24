@@ -138,7 +138,7 @@ export default function VenueDetailPage() {
       <section className="bg-[#FAFAFA] min-h-[60vh] px-5 py-20">
         <div className="max-w-lg mx-auto text-center">
           <h1 className="text-2xl font-bold mb-3 text-gray-900">Venue not found</h1>
-          <Link href="/events?tab=venues" className="text-indigo-600 text-sm font-medium">
+          <Link href="/events?tab=venues" className="text-ember text-sm font-medium">
             ← Back to venues
           </Link>
         </div>
@@ -174,7 +174,7 @@ export default function VenueDetailPage() {
       <div className="max-w-6xl mx-auto px-5 sm:px-8 py-6">
         <Link
           href="/events?tab=venues"
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-indigo-600 mb-6 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-ember mb-6 transition-colors"
         >
           <ArrowLeft size={14} /> Back to venues
         </Link>
@@ -189,22 +189,22 @@ export default function VenueDetailPage() {
             <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-500">
               {venue.hours && (
                 <span className="inline-flex items-center gap-1.5">
-                  <Clock size={14} className="text-indigo-500" /> {venue.hours}
+                  <Clock size={14} className="text-ember" /> {venue.hours}
                 </span>
               )}
               {venue.phone && (
                 <span className="inline-flex items-center gap-1.5">
-                  <Phone size={14} className="text-indigo-500" /> {venue.phone}
+                  <Phone size={14} className="text-ember" /> {venue.phone}
                 </span>
               )}
               {venue.instagram && (
-                <a href={`https://instagram.com/${venue.instagram}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 hover:text-indigo-600">
-                  <Instagram size={14} className="text-indigo-500" /> @{venue.instagram}
+                <a href={`https://instagram.com/${venue.instagram}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 hover:text-ember">
+                  <Instagram size={14} className="text-ember" /> @{venue.instagram}
                 </a>
               )}
               {venue.website && (
-                <a href={venue.website} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 hover:text-indigo-600">
-                  <Globe size={14} className="text-indigo-500" /> Website
+                <a href={venue.website} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 hover:text-ember">
+                  <Globe size={14} className="text-ember" /> Website
                 </a>
               )}
             </div>
@@ -233,7 +233,7 @@ export default function VenueDetailPage() {
           {/* Upcoming events */}
           <div className="bg-white rounded-xl p-6 border border-gray-100">
             <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Users size={16} className="text-indigo-500" />
+              <Users size={16} className="text-ember" />
               Upcoming Events
             </h2>
             {upcoming.length === 0 ? (
@@ -250,7 +250,7 @@ export default function VenueDetailPage() {
                         <p className="text-sm font-medium text-gray-900">{ev.title}</p>
                         <p className="text-xs text-gray-400">{formatEventWhen(ev)}</p>
                       </div>
-                      <span className="text-xs font-semibold text-indigo-600">View</span>
+                      <span className="text-xs font-semibold text-ember">View</span>
                     </Link>
                   </li>
                 ))}
@@ -261,7 +261,7 @@ export default function VenueDetailPage() {
           {/* Reviews */}
           <div className="bg-white rounded-xl p-6 border border-gray-100">
             <h2 className="font-bold text-gray-900 mb-1 flex items-center gap-2">
-              <MessageCircle size={16} className="text-indigo-500" />
+              <MessageCircle size={16} className="text-ember" />
               Reviews
               <span className="text-sm font-normal text-gray-400 flex items-center gap-1 ml-2">
                 <Star size={12} className="text-amber-400" fill="currentColor" />
@@ -274,7 +274,7 @@ export default function VenueDetailPage() {
                 {reviews.map((r) => (
                   <li key={r.id} className="p-4 rounded-lg bg-gray-50">
                     <div className="flex items-center gap-2 mb-1">
-                      <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-600">
+                      <div className="w-7 h-7 rounded-full bg-ember/10 flex items-center justify-center text-xs font-bold text-ember">
                         {r.authorName[0]?.toUpperCase()}
                       </div>
                       <span className="text-sm font-medium text-gray-900">{r.authorName}</span>
@@ -306,21 +306,21 @@ export default function VenueDetailPage() {
                   onChange={(e) => setBody(e.target.value)}
                   rows={3}
                   placeholder="How was your experience?"
-                  className="w-full border border-gray-200 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 resize-none"
+                  className="w-full border border-gray-200 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-ember/20 focus:border-ember resize-none"
                 />
                 <button
                   type="submit"
                   disabled={submittingReview}
-                  className="px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
+                  className="px-5 py-2.5 btn-brand text-sm font-medium rounded-lg disabled:opacity-50"
                 >
                   {submittingReview ? 'Posting...' : 'Post review'}
                 </button>
-                {reviewMsg && <p className="text-xs text-indigo-600">{reviewMsg}</p>}
+                {reviewMsg && <p className="text-xs text-ember">{reviewMsg}</p>}
               </form>
             ) : (
               <div className="mt-4 p-4 bg-gray-50 rounded-lg text-center">
                 <p className="text-sm text-gray-500">
-                  <Link href={`/signin?next=/events/venues/${slug}`} className="text-indigo-600 font-medium">
+                  <Link href={`/signin?next=/events/venues/${slug}`} className="text-ember font-medium">
                     Sign in
                   </Link>{' '}
                   to leave a review.
@@ -352,7 +352,7 @@ export default function VenueDetailPage() {
               className={`w-full py-3 text-sm font-semibold rounded-lg transition mb-3 ${
                 following
                   ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                  : 'btn-brand'
               } disabled:opacity-50`}
             >
               {followBusy ? '...' : following ? 'Following' : 'Follow this venue'}
@@ -367,22 +367,22 @@ export default function VenueDetailPage() {
             )}
 
             {venue.cardPerk && (
-              <div className="p-3 bg-indigo-50 rounded-lg mb-4">
-                <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-1">Card perk</p>
+              <div className="p-3 bg-ember/6 rounded-lg mb-4">
+                <p className="text-xs font-semibold text-ember uppercase tracking-wider mb-1">Card perk</p>
                 <p className="text-sm text-gray-700">{venue.cardPerk}</p>
               </div>
             )}
 
             <Link
               href={`/checkout?venue=${encodeURIComponent(venue.name)}&area=${encodeURIComponent(venue.area)}`}
-              className="w-full inline-flex items-center justify-center py-3 border border-gray-200 text-sm font-medium rounded-lg hover:border-indigo-400 hover:text-indigo-600 transition"
+              className="w-full inline-flex items-center justify-center py-3 border border-gray-200 text-sm font-medium rounded-lg hover:border-ember hover:text-ember transition"
             >
               Order drinks here
             </Link>
 
             {!user && (
               <p className="text-xs text-gray-400 mt-3 text-center">
-                <Link href="/signin" className="text-indigo-600">Sign in</Link> to follow and review.
+                <Link href="/signin" className="text-ember">Sign in</Link> to follow and review.
               </p>
             )}
           </div>

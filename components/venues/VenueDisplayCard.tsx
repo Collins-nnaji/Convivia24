@@ -21,7 +21,7 @@ export default function VenueDisplayCard({ venue, km }: VenueCardProps) {
   return (
     <Link
       href={`/events/venues/${venue.slug}`}
-      className="group block bg-white rounded-xl overflow-hidden border border-gray-100 hover:border-indigo-200 hover:shadow-lg transition-all duration-300"
+      className="group block bg-white rounded-xl overflow-hidden border-2 border-ember/25 hover:border-ember hover:shadow-lg transition-all duration-300"
     >
       <div className="relative aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
         {venue.photoUrl ? (
@@ -41,7 +41,7 @@ export default function VenueDisplayCard({ venue, km }: VenueCardProps) {
       <div className="p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <h3 className="font-bold text-gray-900 group-hover:text-indigo-600 transition-colors truncate">
+            <h3 className="font-bold text-gray-900 group-hover:text-ember transition-colors truncate">
               {venue.name}
             </h3>
             <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">

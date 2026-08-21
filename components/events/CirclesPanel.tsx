@@ -54,7 +54,7 @@ export default function CirclesPanel() {
     <div>
       <div className="mb-8 max-w-xl">
         <h2 className="font-bold text-2xl text-gray-900 mb-2 flex items-center gap-2">
-          <MessageCircle size={22} className="text-indigo-500" />
+          <MessageCircle size={22} className="text-ember" />
           Circles
         </h2>
         <p className="text-sm text-gray-500 leading-relaxed">
@@ -68,7 +68,7 @@ export default function CirclesPanel() {
           <p className="text-sm text-gray-500">Sign in to follow circles and join discussions.</p>
           <Link
             href={`/signin?next=${encodeURIComponent('/events?tab=circles')}`}
-            className="px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition"
+            className="px-5 py-2.5 btn-brand text-sm font-medium rounded-lg"
           >
             Sign in
           </Link>
@@ -83,14 +83,14 @@ export default function CirclesPanel() {
           {circles.map((c) => (
             <div
               key={c.id}
-              className="bg-white rounded-xl p-5 flex flex-col border border-gray-100 hover:border-indigo-200 transition-colors"
+              className="bg-white rounded-xl p-5 flex flex-col border-2 border-ember/25 hover:border-ember transition-colors"
             >
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-sm font-bold text-indigo-600">
+                <div className="w-9 h-9 rounded-full bg-ember/10 flex items-center justify-center text-sm font-bold text-ember">
                   {c.name[0]}
                 </div>
                 <div>
-                  <span className="text-[10px] font-semibold text-indigo-600 uppercase tracking-wider">{c.vibeTag}</span>
+                  <span className="text-[10px] font-semibold text-ember uppercase tracking-wider">{c.vibeTag}</span>
                 </div>
               </div>
               <h3 className="font-bold text-gray-900 mb-1">{c.name}</h3>
@@ -107,7 +107,7 @@ export default function CirclesPanel() {
                   className={`px-4 py-2 text-xs font-semibold rounded-lg transition disabled:opacity-40 ${
                     c.joined
                       ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                      : 'btn-brand'
                   }`}
                 >
                   {busy === c.id ? '...' : c.joined ? 'Following' : 'Follow'}

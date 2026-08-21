@@ -113,7 +113,7 @@ export default function EventDetailPage() {
       <section className="bg-[#FAFAFA] min-h-[60vh] px-5 py-20">
         <div className="max-w-lg mx-auto text-center">
           <h1 className="text-2xl font-bold mb-3 text-gray-900">Event not found</h1>
-          <Link href="/events" className="text-indigo-600 text-sm font-medium">
+          <Link href="/events" className="text-ember text-sm font-medium">
             ← Back to events
           </Link>
         </div>
@@ -134,7 +134,7 @@ export default function EventDetailPage() {
   return (
     <section className="bg-[#FAFAFA] min-h-screen">
       {/* Hero */}
-      <div className="relative h-52 sm:h-64 lg:h-72 bg-gradient-to-br from-indigo-100 via-slate-100 to-purple-100 overflow-hidden">
+      <div className="relative h-52 sm:h-64 lg:h-72 bg-gradient-to-br from-ember/15 via-slate-100 to-obsidian/10 overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="w-16 h-16 rounded-full bg-white/60 flex items-center justify-center">
             <Calendar size={28} className="text-slate-400" />
@@ -152,7 +152,7 @@ export default function EventDetailPage() {
       <div className="max-w-6xl mx-auto px-5 sm:px-8 py-6">
         <Link
           href="/events"
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-indigo-600 mb-6 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-ember mb-6 transition-colors"
         >
           <ArrowLeft size={14} /> Events
         </Link>
@@ -165,14 +165,14 @@ export default function EventDetailPage() {
             <p className="text-gray-700 leading-relaxed mb-5">{event.blurb}</p>
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-sm">
-                <Calendar size={16} className="text-indigo-500 shrink-0" />
+                <Calendar size={16} className="text-ember shrink-0" />
                 <div>
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">When</p>
                   <p className="text-gray-900">{formatEventWhen(event)}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 text-sm">
-                <MapPin size={16} className="text-indigo-500 shrink-0" />
+                <MapPin size={16} className="text-ember shrink-0" />
                 <div>
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Where</p>
                   <p className="text-gray-900">{event.venue.name} · {event.venue.address}</p>
@@ -184,18 +184,18 @@ export default function EventDetailPage() {
           {/* Venue card */}
           <Link
             href={`/events/venues/${event.venue.slug}`}
-            className="block bg-white rounded-xl p-5 border border-gray-100 hover:border-indigo-200 transition-colors"
+            className="block bg-white rounded-xl p-5 border-2 border-ember/25 hover:border-ember transition-colors"
           >
             <div className="flex items-start gap-4">
               <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shrink-0">
                 <ImageIcon size={20} className="text-gray-400" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-0.5">Venue</p>
+                <p className="text-xs font-semibold text-ember uppercase tracking-wider mb-0.5">Venue</p>
                 <p className="font-bold text-gray-900">{event.venue.name}</p>
                 <p className="text-sm text-gray-500 mt-0.5">{event.venue.tagline}</p>
                 {event.venue.cardPerk && (
-                  <p className="text-xs text-indigo-600 mt-2">{event.venue.cardPerk}</p>
+                  <p className="text-xs text-ember mt-2">{event.venue.cardPerk}</p>
                 )}
               </div>
             </div>
@@ -205,14 +205,14 @@ export default function EventDetailPage() {
           <div className="bg-white rounded-xl p-6 border border-gray-100">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-bold text-gray-900 flex items-center gap-2">
-                <Users size={16} className="text-indigo-500" />
+                <Users size={16} className="text-ember" />
                 Circles discussing this
               </h2>
               {user && (
                 <button
                   type="button"
                   onClick={() => setShowLinkPanel(!showLinkPanel)}
-                  className="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition"
+                  className="text-xs font-medium text-ember hover:text-ember-dark transition"
                 >
                   + Link a circle
                 </button>
@@ -227,7 +227,7 @@ export default function EventDetailPage() {
               <div className="space-y-2 mb-4">
                 {linkedCircles.map((lc) => (
                   <div key={lc.id} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
-                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-600">
+                    <div className="w-8 h-8 rounded-full bg-ember/10 flex items-center justify-center text-xs font-bold text-ember">
                       {lc.circleName[0]}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -241,12 +241,12 @@ export default function EventDetailPage() {
             )}
 
             {showLinkPanel && (
-              <div className="space-y-3 p-4 bg-indigo-50 rounded-lg">
+              <div className="space-y-3 p-4 bg-ember/6 rounded-lg">
                 <p className="text-xs font-semibold text-gray-600">Share this event with a circle</p>
                 <select
                   value={selectedCircle}
                   onChange={(e) => setSelectedCircle(e.target.value)}
-                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-ember/20"
                 >
                   {circles.map((c) => (
                     <option key={c.id} value={c.id}>{c.name} ({c.vibeTag})</option>
@@ -256,14 +256,14 @@ export default function EventDetailPage() {
                   value={linkNote}
                   onChange={(e) => setLinkNote(e.target.value)}
                   placeholder="Add a note (e.g. 'Let's go together!')"
-                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-ember/20"
                 />
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={linkCircle}
                     disabled={linkBusy || !selectedCircle}
-                    className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
+                    className="px-4 py-2 btn-brand text-sm font-medium rounded-lg disabled:opacity-50"
                   >
                     {linkBusy ? 'Linking...' : 'Link circle'}
                   </button>
@@ -280,7 +280,7 @@ export default function EventDetailPage() {
 
             {!user && (
               <p className="text-xs text-gray-400 mt-2">
-                <Link href={`/signin?next=/events/${id}`} className="text-indigo-600">Sign in</Link> to link a circle.
+                <Link href={`/signin?next=/events/${id}`} className="text-ember">Sign in</Link> to link a circle.
               </p>
             )}
           </div>
@@ -321,7 +321,7 @@ export default function EventDetailPage() {
                   className={`w-full py-3.5 text-sm font-semibold rounded-lg transition mb-3 ${
                     going
                       ? 'bg-green-50 text-green-700 border border-green-200'
-                      : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                      : 'btn-brand'
                   } disabled:cursor-default`}
                 >
                   {going ? '✓ You are on the list' : 'RSVP · earn 200 pts'}
@@ -329,21 +329,21 @@ export default function EventDetailPage() {
 
                 {!enrolled && (
                   <p className="text-xs text-gray-400 mb-3">
-                    <Link href="/card" className="text-indigo-600">Activate your Guest Card</Link>{' '}
+                    <Link href="/card" className="text-ember">Activate your Guest Card</Link>{' '}
                     to bank the points.
                   </p>
                 )}
 
                 <Link
                   href={`/checkout?event=${event.id}&venue=${encodeURIComponent(event.venue.name)}&area=${encodeURIComponent(event.venue.area)}`}
-                  className="w-full inline-flex items-center justify-center gap-2 py-3.5 border border-gray-200 text-sm font-medium rounded-lg hover:border-indigo-400 hover:text-indigo-600 transition"
+                  className="w-full inline-flex items-center justify-center gap-2 py-3.5 border border-gray-200 text-sm font-medium rounded-lg hover:border-ember hover:text-ember transition"
                 >
                   <ShoppingBag size={14} /> Order drinks to this venue
                 </Link>
               </>
             )}
 
-            {msg && <p className="text-sm text-indigo-600 mt-3 font-medium">{msg}</p>}
+            {msg && <p className="text-sm text-ember mt-3 font-medium">{msg}</p>}
           </div>
         </aside>
       </div>
