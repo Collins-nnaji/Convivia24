@@ -17,6 +17,10 @@ Lagos drink ordering and delivery for **parties, clubs, and lounges**. Age 18+.
   trivia scheduling (signed admin session, or Neon Auth allowlist)
 - **`/age-check`** — Server-enforced 18+ gate (see `proxy.ts`); a request without a valid signed cookie never
   reaches a gated page at all
+- **`/verify/[orderId]`** — Public authenticity check: confirms an order was genuinely supplied by
+  Convivia24 (see [`lib/verify.ts`](lib/verify.ts)). `/admin/label/[orderId]` (admin-only) prints a
+  QR-code label — including a `AuthenticityQr` component built on `qrcode` — for staff to stick on a
+  bottle or carton at packing so customers can scan it to verify authenticity
 
 My 24 remains soft-parked (out of primary nav). `/rituals` redirects to `/shop`.
 

@@ -694,6 +694,14 @@ export default function AdminPage() {
                       <span className="text-[10px] font-black uppercase tracking-[0.12em] px-2 py-1 bg-paper text-obsidian/60">
                         {ORDER_STATUS_LABELS[order.status] || order.status}
                       </span>
+                      <a
+                        href={`/admin/label/${order.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] font-black uppercase tracking-[0.1em] px-3 py-2 border border-obsidian/15 text-obsidian/60 hover:border-ember hover:text-ember"
+                      >
+                        Print label
+                      </a>
                       {refundable && (
                         <button
                           type="button"

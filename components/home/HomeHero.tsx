@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import HeroGuestCard from '@/components/loyalty/HeroGuestCard';
+import TrustBadges from '@/components/shop/TrustBadges';
 
 /** One cycle of distinct lines — duplicated only so the marquee loops seamlessly. */
 const LINES = [
@@ -80,6 +81,7 @@ export default function HomeHero() {
               Tonight&apos;s events
             </Link>
           </div>
+          <TrustBadges className="justify-center md:justify-start" />
         </div>
 
         <HeroGuestCard />

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, CalendarDays, Minus, Plus } from 'lucide-react';
 import { useCart } from '@/components/cart/CartProvider';
 import DrinkPhoto from '@/components/shop/DrinkPhoto';
+import TrustBadges from '@/components/shop/TrustBadges';
 import { formatNgn, CATEGORY_LABELS, type DrinkProduct } from '@/lib/drinks/catalog';
 
 export default function ProductDetail({ product }: { product: DrinkProduct }) {
@@ -100,6 +101,12 @@ export default function ProductDetail({ product }: { product: DrinkProduct }) {
                 <CalendarDays size={14} /> Drop to an event
               </Link>
             </div>
+
+            <TrustBadges className="mt-6 pt-6 border-t border-obsidian/8" />
+            <p className="text-[11px] text-obsidian/40 mt-3">
+              Every order ships with a Convivia24 authenticity stamp — scan the code on your bottle or
+              receipt to confirm it came from us.
+            </p>
           </div>
         </div>
       </div>

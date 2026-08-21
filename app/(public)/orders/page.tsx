@@ -6,6 +6,7 @@ import { useUser } from '@/components/auth/AuthProvider';
 import { formatNgn } from '@/lib/drinks/catalog';
 import { ORDER_STATUS_LABELS, type OrderStatus } from '@/lib/commerce/status';
 import OrderTrackingStepper from '@/components/orders/OrderTrackingStepper';
+import { ShieldCheck } from 'lucide-react';
 import StandingCard from '@/components/loyalty/StandingCard';
 
 type OrderItem = {
@@ -127,6 +128,12 @@ export default function OrdersPage() {
                     </li>
                   ))}
                 </ul>
+                <Link
+                  href={`/verify/${order.id}`}
+                  className="inline-flex items-center gap-1.5 mt-3 text-[11px] text-obsidian/45 hover:text-ember"
+                >
+                  <ShieldCheck size={13} /> Verify this order&apos;s authenticity
+                </Link>
               </li>
             ))}
           </ul>
