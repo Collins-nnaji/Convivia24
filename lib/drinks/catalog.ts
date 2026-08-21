@@ -135,6 +135,7 @@ export const DRINKS: DrinkProduct[] = [
     priceNgn: 185000,
     tagline: 'The club table classic.',
     description: 'Bright citrus and brioche — the bottle that opens the night on VI dancefloors and rooftop lounges.',
+    image: pics('Moet-Champagne.jpg'),
     featured: true,
   },
   {
@@ -148,8 +149,23 @@ export const DRINKS: DrinkProduct[] = [
     priceNgn: 210000,
     tagline: 'Orange label energy.',
     description: 'Full-bodied Champagne for birthday tables and lounge bottle service.',
+    image: pics('Veuve-Clicquot-Yellow-Label.png'),
     featured: true,
     deal: true,
+  },
+  {
+    slug: 'gh-mumm-cordon-rouge',
+    name: 'G.H. Mumm Cordon Rouge',
+    brand: 'G.H. Mumm',
+    origin: 'France',
+    category: 'champagne',
+    abv: 12,
+    volume: '75CL',
+    priceNgn: 175000,
+    tagline: 'Red sash on the table.',
+    description: 'Pinot Noir–led Champagne — crisp apple, brioche, and that unmistakable red cordon.',
+    image: pics('GH-Mumm-Champagne.jpeg'),
+    featured: true,
   },
   {
     slug: 'jameson-black-barrel',
@@ -176,6 +192,7 @@ export const DRINKS: DrinkProduct[] = [
     priceNgn: 72000,
     tagline: 'Single malt for late sets.',
     description: 'Floral Highland malt — soft enough for first-timers, serious enough for the host.',
+    image: pics('glenmorangie-12-yr-70cl.jpeg'),
   },
   {
     slug: 'glenmorangie-lasanta',
@@ -438,6 +455,7 @@ export const DRINKS: DrinkProduct[] = [
     priceNgn: 38000,
     tagline: 'Blended Scotch staple.',
     description: 'Approachable Scotch for big crews and long nights.',
+    image: pics('Ballantines.avif'),
   },
   {
     slug: 'martell-vs',
@@ -464,6 +482,7 @@ export const DRINKS: DrinkProduct[] = [
     priceNgn: 95000,
     tagline: 'Bourbon-finished flex.',
     description: 'Cognac finished in bourbon casks — smooth, modern, club-ready.',
+    image: pics('Martell-Blue-Swift.jpg'),
     deal: true,
   },
   {

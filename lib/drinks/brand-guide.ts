@@ -11,6 +11,7 @@ export const TASTE_NOTES: Record<string, string> = {
   "ciroc-snap-frost": "Grape-distilled, so it drinks softer than grain vodka — citrus zest, faint pear, clean exit.",
   "moet-imperial": "Green apple and brioche with a fine, fast mousse — bright rather than heavy.",
   "veuve-yellow-label": "Fuller-bodied than Moët — toasted bread, ripe stone fruit, a rounder finish.",
+  "gh-mumm-cordon-rouge": "Pinot-led and crisp — green apple, brioche, fine bubbles under the red cordon.",
   "jameson-black-barrel": "Double-charred casks push it toward vanilla, dark toffee, and a warmer spice finish.",
   "glenmorangie-original": "Floral and citrus-led — lemon, peach, a light honey finish. The gentlest single malt on the list.",
   "glenmorangie-lasanta": "Sherry cask sweetness — raisin, orange peel, and dark chocolate over the Highland base.",
@@ -111,6 +112,13 @@ export const BRAND_INFO: Record<string, BrandInfo> = {
     history:
       "Barbe-Nicole Clicquot took over the house as a young widow (\"veuve\") in 1805 and pioneered the riddling process still used to clarify Champagne today — one of the first women to run a major business of her era.",
     style: "Champagne — the Yellow Label is a fuller, riper house style than most.",
+  },
+  "G.H. Mumm": {
+    origin: "Reims, France",
+    founded: "1827",
+    history:
+      "Named for the Mumm family of German merchants who settled in Champagne. The red cordon sash became the house signature — Cordon Rouge is the bottle most people recognise first.",
+    style: "Champagne — Pinot Noir–led, crisp apple and brioche, built for celebration.",
   },
   "Glenmorangie": {
     origin: "Tain, Scottish Highlands",
