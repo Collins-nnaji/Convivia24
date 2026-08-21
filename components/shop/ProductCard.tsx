@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Minus, Plus } from 'lucide-react';
 import { useCart } from '@/components/cart/CartProvider';
 import DrinkPhoto from '@/components/shop/DrinkPhoto';
+import TasteInfoTooltip from '@/components/shop/TasteInfoTooltip';
 import { formatNgn, type DrinkProduct } from '@/lib/drinks/catalog';
 
 export function ProductCard({ product }: { product: DrinkProduct }) {
@@ -39,6 +40,10 @@ export function ProductCard({ product }: { product: DrinkProduct }) {
         </p>
         <p className="text-sm font-semibold text-obsidian mt-1">{formatNgn(product.priceNgn)}</p>
       </Link>
+
+      <div className="mt-1.5">
+        <TasteInfoTooltip slug={product.slug} />
+      </div>
 
       <div className="mt-2 flex items-center gap-2">
         <div className="flex items-center border border-obsidian/15 shrink-0">

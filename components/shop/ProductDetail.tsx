@@ -6,6 +6,7 @@ import { ArrowLeft, CalendarDays, Minus, Plus } from 'lucide-react';
 import { useCart } from '@/components/cart/CartProvider';
 import DrinkPhoto from '@/components/shop/DrinkPhoto';
 import TrustBadges from '@/components/shop/TrustBadges';
+import TasteInfoTooltip from '@/components/shop/TasteInfoTooltip';
 import { formatNgn, CATEGORY_LABELS, type DrinkProduct } from '@/lib/drinks/catalog';
 
 export default function ProductDetail({ product }: { product: DrinkProduct }) {
@@ -43,7 +44,10 @@ export default function ProductDetail({ product }: { product: DrinkProduct }) {
             <p className="text-[9px] font-black uppercase tracking-[0.28em] text-ember mb-2">
               {CATEGORY_LABELS[product.category]}
             </p>
-            <h1 className="text-3xl sm:text-4xl font-bold text-obsidian mb-2">{product.name}</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold text-obsidian mb-2 inline-flex items-center gap-2">
+              {product.name}
+              <TasteInfoTooltip slug={product.slug} />
+            </h1>
             <p className="text-sm text-obsidian/45 mb-4">
               {[product.brand, product.origin, `${product.abv}% ABV`, product.volume, product.servesHint]
                 .filter(Boolean)
