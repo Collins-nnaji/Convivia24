@@ -10,7 +10,7 @@ import { useUser } from '@/components/auth/AuthProvider';
 
 const PERKS = [
   { icon: CalendarHeart, text: 'Plan parties and send personal RSVP invite links.' },
-  { icon: Wind, text: 'Order drinks to homes, clubs, and lounges across Lagos.' },
+  { icon: Wind, text: 'Order drinks to homes, clubs, and lounges nationwide.' },
   { icon: MessageCircle, text: 'Guest Card perks and partner desks on one account.' },
 ];
 

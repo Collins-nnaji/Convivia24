@@ -1,7 +1,7 @@
 {
   "name": "Convivia24",
   "short_name": "Convivia24",
-  "description": "Lagos drinks to the party, club & lounge. Discover events and venues. Guest Card perks. Adults 18+.",
+  "description": "Drink supplies for events. Plan your party, shop bottles and party packs, nationwide delivery across Nigeria. Adults 18+.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#fafaf8",
@@ -9,15 +9,9 @@
   "lang": "en-NG",
   "icons": [
     {
-      "src": "/Logo2.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/convivia-mark.svg",
+      "src": "/favicon.ico",
       "sizes": "any",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any"
     }
   ]

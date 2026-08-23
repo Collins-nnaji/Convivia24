@@ -6,6 +6,8 @@ import ConviviumCard from '@/components/ConviviumCard';
 import { enroll, getWallet, isEnrolled, redeemPerk } from '@/lib/loyalty/store';
 import { LOYALTY_PERKS, LOYALTY_TIERS, nextTier, tierForPoints } from '@/lib/loyalty/program';
 import { formatNgn } from '@/lib/drinks/catalog';
+import { eventsEnabled } from '@/lib/features';
+import { eventsFallbackHref } from '@/lib/nav';
 
 export default function GuestCardPanel() {
   const [wallet, setWallet] = useState(getWallet);
@@ -141,11 +143,22 @@ export default function GuestCardPanel() {
               <h2 className="font-bold mb-3">Activity</h2>
               {wallet.activity.length === 0 ? (
                 <p className="text-sm text-obsidian/45">
-                  RSVP an{' '}
-                  <Link href="/events" className="text-ember">
-                    event
-                  </Link>
-                  , check in at a venue, or place a drop.
+                  {eventsEnabled ? (
+                    <>
+                      RSVP an{' '}
+                      <Link href={eventsFallbackHref()} className="text-ember">
+                        event
+                      </Link>
+                      , check in at a venue, or place a drop.
+                    </>
+                  ) : (
+                    <>
+                      <Link href={eventsFallbackHref()} className="text-ember">
+                        Plan a party
+                      </Link>
+                      , place a drop, or shop bottles to earn points.
+                    </>
+                  )}
                 </p>
               ) : (
                 <ul className="space-y-2">

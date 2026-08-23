@@ -4,8 +4,11 @@ import Link from 'next/link';
 import { ArrowRight, Minus, Plus, Trash2 } from 'lucide-react';
 import { useCart } from '@/components/cart/CartProvider';
 import DrinkPhoto from '@/components/shop/DrinkPhoto';
+import DrinkInfoButton from '@/components/shop/DrinkInfoButton';
 import GuestCardStrip from '@/components/loyalty/GuestCardStrip';
 import { formatNgn, getDrinkBySlug } from '@/lib/drinks/catalog';
+import { eventsEnabled } from '@/lib/features';
+import { eventsFallbackHref } from '@/lib/nav';
 
 export default function CartPage() {
   const { lines, subtotalNgn, setQty, remove } = useCart();
@@ -18,7 +21,7 @@ export default function CartPage() {
           <h1 className="text-3xl sm:text-4xl font-bold">
             <span className="brand-text">Your order</span>
           </h1>
-          <p className="mt-2 text-obsidian/45 text-sm">Lagos delivery · address or venue</p>
+          <p className="mt-2 text-obsidian/45 text-sm">Nationwide delivery · address or venue</p>
         </div>
       </section>
 
@@ -52,12 +55,15 @@ export default function CartPage() {
                           />
                         </Link>
                         <div className="min-w-0">
-                        <Link
-                          href={`/shop/${line.slug}`}
-                          className="text-lg font-semibold text-obsidian hover:text-ember"
-                        >
-                          {line.name}
-                        </Link>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Link
+                            href={`/shop/${line.slug}`}
+                            className="text-lg font-semibold text-obsidian hover:text-ember"
+                          >
+                            {line.name}
+                          </Link>
+                          <DrinkInfoButton slug={line.slug} />
+                        </div>
                         <p className="text-sm text-obsidian/45 mt-0.5">{formatNgn(line.priceNgn)} each</p>
                         </div>
                       </div>
@@ -106,7 +112,7 @@ export default function CartPage() {
                     <span className="text-xl font-bold">{formatNgn(subtotalNgn)}</span>
                   </div>
                   <p className="text-xs text-obsidian/40 leading-relaxed">
-                    Delivery within Lagos — home, party, club, or lounge. Age 18+ for alcohol.
+                    Delivery nationwide across Nigeria — home, party, club, or lounge. Age 18+ for alcohol.
                   </p>
                   <Link
                     href="/checkout"
@@ -115,10 +121,10 @@ export default function CartPage() {
                     Checkout <ArrowRight size={14} />
                   </Link>
                   <Link
-                    href="/events"
+                    href={eventsFallbackHref()}
                     className="block text-center text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40 hover:text-ember"
                   >
-                    Or drop to an event →
+                    {eventsEnabled ? 'Or drop to an event →' : 'Or plan your party →'}
                   </Link>
                 </div>
               </aside>

@@ -6,8 +6,10 @@ import { ArrowLeft, CalendarDays, Minus, Plus } from 'lucide-react';
 import { useCart } from '@/components/cart/CartProvider';
 import DrinkPhoto from '@/components/shop/DrinkPhoto';
 import TrustBadges from '@/components/shop/TrustBadges';
-import TasteInfoTooltip from '@/components/shop/TasteInfoTooltip';
+import DrinkInfoButton from '@/components/shop/DrinkInfoButton';
 import { formatNgn, CATEGORY_LABELS, type DrinkProduct } from '@/lib/drinks/catalog';
+import { eventsEnabled } from '@/lib/features';
+import { eventsFallbackHref } from '@/lib/nav';
 
 export default function ProductDetail({ product }: { product: DrinkProduct }) {
   const { addProduct } = useCart();
@@ -38,15 +40,18 @@ export default function ProductDetail({ product }: { product: DrinkProduct }) {
                 Hot deal
               </span>
             )}
+            <span className="absolute bottom-4 right-4 z-10">
+              <DrinkInfoButton slug={product.slug} brand={product.brand} size="md" />
+            </span>
           </div>
 
           <div>
             <p className="text-[9px] font-black uppercase tracking-[0.28em] text-ember mb-2">
               {CATEGORY_LABELS[product.category]}
             </p>
-            <h1 className="text-3xl sm:text-4xl font-bold text-obsidian mb-2 inline-flex items-center gap-2">
+            <h1 className="text-3xl sm:text-4xl font-bold text-obsidian mb-2 inline-flex items-center gap-2 flex-wrap">
               {product.name}
-              <TasteInfoTooltip slug={product.slug} />
+              <DrinkInfoButton slug={product.slug} brand={product.brand} size="md" />
             </h1>
             <p className="text-sm text-obsidian/45 mb-4">
               {[product.brand, product.origin, `${product.abv}% ABV`, product.volume, product.servesHint]
@@ -99,10 +104,10 @@ export default function ProductDetail({ product }: { product: DrinkProduct }) {
                 {added ? 'Added ✓' : 'Add to cart'}
               </button>
               <Link
-                href="/events"
+                href={eventsFallbackHref()}
                 className="flex-1 inline-flex items-center justify-center gap-2 py-3.5 border border-obsidian/15 text-obsidian text-[11px] font-black uppercase tracking-[0.14em] hover:border-ember hover:text-ember transition-colors"
               >
-                <CalendarDays size={14} /> Drop to an event
+                <CalendarDays size={14} /> {eventsEnabled ? 'Drop to an event' : 'Plan your party'}
               </Link>
             </div>
 

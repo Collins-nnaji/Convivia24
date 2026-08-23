@@ -32,7 +32,7 @@ function AgeCheckInner() {
     <div className="min-h-[100dvh] flex items-center justify-center bg-obsidian px-5 py-10">
       <div className="w-full max-w-md bg-white p-8 sm:p-10 shadow-2xl">
         <img src="/convivia24.png" alt="Convivia24" className="h-10 w-auto rounded-sm mb-6" />
-        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ember mb-3">Lagos delivery · 18+</p>
+        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ember mb-3">Nationwide delivery · 18+</p>
         <h1 className="text-2xl sm:text-3xl font-bold text-obsidian leading-tight mb-3">
           Are you of legal drinking age?
         </h1>

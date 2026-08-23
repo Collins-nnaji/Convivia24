@@ -5,6 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { useCart } from '@/components/cart/CartProvider';
 import { formatNgn } from '@/lib/drinks/catalog';
+import { eventsEnabled } from '@/lib/features';
+import { eventsFallbackHref } from '@/lib/nav';
 
 type VerifyState =
   | { phase: 'loading' }
@@ -181,8 +183,8 @@ function SuccessBody() {
         </h1>
         <p className="text-obsidian/60 leading-relaxed mb-6">
           {isManual
-            ? 'Order saved. Our Lagos team will confirm payment and a delivery window shortly.'
-            : 'Payment confirmed. We’ll follow up with delivery timing for Lagos.'}
+            ? 'Order saved. Our team will confirm payment and a delivery window shortly.'
+            : 'Payment confirmed. We’ll follow up with nationwide delivery timing.'}
         </p>
         {typeof state.subtotalNgn === 'number' && (
           <p className="text-2xl font-bold text-obsidian mb-2">{formatNgn(state.subtotalNgn)}</p>
@@ -195,10 +197,10 @@ function SuccessBody() {
             Shop more
           </Link>
           <Link
-            href="/events"
+            href={eventsFallbackHref()}
             className="px-6 py-3 border border-obsidian/15 text-[11px] font-black uppercase tracking-[0.14em]"
           >
-            Tonight&apos;s events
+            {eventsEnabled ? "Tonight's events" : 'Plan your party'}
           </Link>
         </div>
       </div>

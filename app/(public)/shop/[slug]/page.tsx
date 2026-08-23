@@ -21,7 +21,7 @@ export async function generateMetadata({
   const description =
     product.description ||
     product.tagline ||
-    `Order ${product.name} for Lagos parties, clubs, and lounges on Convivia24. 18+.`;
+    `Order ${product.name} for parties, clubs, and lounges on Convivia24. Nationwide delivery. 18+.`;
   return {
     title: product.name,
     description,

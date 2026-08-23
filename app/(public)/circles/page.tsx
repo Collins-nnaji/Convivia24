@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
+import { eventsEnabled } from '@/lib/features';
 
 export default function CirclesRedirect() {
-  redirect('/events?tab=circles');
+  redirect(eventsEnabled ? '/events?tab=circles' : '/plan');
 }

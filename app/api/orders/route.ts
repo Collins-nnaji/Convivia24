@@ -99,6 +99,7 @@ export async function POST(req: NextRequest) {
           ? body.addressLine1.trim()
           : '';
     const addressLine2 = typeof body.addressLine2 === 'string' ? body.addressLine2.trim() : null;
+    const city = typeof body.city === 'string' ? body.city.trim() : '';
     const area = typeof body.area === 'string' ? body.area.trim() : null;
     const notesRaw = typeof body.notes === 'string' ? body.notes.trim() : '';
     const eventId = typeof body.eventId === 'string' ? body.eventId.trim() : '';
@@ -118,7 +119,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Full name is required.' }, { status: 400 });
     }
     if (!phone || phone.length < 8) {
-      return NextResponse.json({ error: 'A phone number is required for Lagos delivery.' }, { status: 400 });
+      return NextResponse.json({ error: 'A phone number is required for delivery.' }, { status: 400 });
+    }
+    if (!city) {
+      return NextResponse.json({ error: 'City is required for nationwide delivery.' }, { status: 400 });
     }
     if (!addressLine1) {
       return NextResponse.json(
@@ -167,7 +171,7 @@ export async function POST(req: NextRequest) {
         subtotal_ngn, loyalty_discount_ngn, total_ngn, loyalty_owner_id, status
       ) VALUES (
         ${email}, ${fullName}, ${phone}, ${addressLine1}, ${addressLine2},
-        'Lagos', ${area}, ${notes},
+        ${city}, ${area}, ${notes},
         ${subtotal}, ${discount.ngn}, ${total}, ${member ? loyaltyOwnerId : null}, 'pending'
       )
       RETURNING id, subtotal_ngn, status

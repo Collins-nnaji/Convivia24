@@ -85,6 +85,59 @@ export async function POST(req: NextRequest) {
         await redis()?.del('shop:catalog:v1');
         return NextResponse.json({ ok: true });
       }
+      if (body.action === 'ai-product-copy') {
+        const gate = await requireAdmin();
+        if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
+        if (!aiConfigured()) return NextResponse.json({ error: 'Azure OpenAI not configured' }, { status: 503 });
+        const name = String(body.name || '').trim();
+        if (!name) return NextResponse.json({ error: 'Product name is required.' }, { status: 400 });
+        const brand = String(body.brand || '').trim();
+        const category = String(body.category || 'spirits');
+        const abv = body.abv != null ? Number(body.abv) : undefined;
+        const volume = String(body.volume || '').trim();
+        const raw = await chat({
+          messages: [
+            {
+              role: 'system',
+              content:
+                'You write Convivia24 shop copy for drinks in Nigeria — concise, nightlife-aware, never encouraging excess or underage drinking. Reply with JSON only.',
+            },
+            {
+              role: 'user',
+              content: `Product: ${name}
+Brand: ${brand || 'unknown'}
+Category: ${category}
+${abv ? `ABV: ${abv}%` : ''}
+${volume ? `Volume: ${volume}` : ''}
+
+Return JSON:
+{
+  "tagline": "short hook under 12 words",
+  "description": "1-2 sentences for the product page",
+  "tasteNote": "1 sentence tasting note — what it tastes like",
+  "brandOrigin": "city/region, country",
+  "brandFounded": "year or decade",
+  "brandHistory": "2-3 sentences brand story",
+  "brandStyle": "one sentence on house style"
+}`,
+            },
+          ],
+          temperature: 0.6,
+          maxTokens: 700,
+        });
+        const jsonMatch = raw.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) return NextResponse.json({ error: 'AI returned invalid JSON.' }, { status: 502 });
+        const copy = JSON.parse(jsonMatch[0]) as {
+          tagline?: string;
+          description?: string;
+          tasteNote?: string;
+          brandOrigin?: string;
+          brandFounded?: string;
+          brandHistory?: string;
+          brandStyle?: string;
+        };
+        return NextResponse.json({ copy });
+      }
       if (body.action === 'ai-list') {
         const gate = await requireAdmin();
         if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
@@ -127,6 +180,11 @@ export async function POST(req: NextRequest) {
     const abv = Number(form.get('abv') || 0);
     const tagline = String(form.get('tagline') || '');
     const description = String(form.get('description') || '');
+    const tasteNote = String(form.get('tasteNote') || '');
+    const brandOrigin = String(form.get('brandOrigin') || '');
+    const brandFounded = String(form.get('brandFounded') || '');
+    const brandHistory = String(form.get('brandHistory') || '');
+    const brandStyle = String(form.get('brandStyle') || '');
     const slugInput = String(form.get('slug') || name);
     const file = form.get('image');
 
@@ -161,6 +219,11 @@ export async function POST(req: NextRequest) {
       abv: abv || undefined,
       tagline: tagline || undefined,
       description: description || undefined,
+      tasteNote: tasteNote || undefined,
+      brandOrigin: brandOrigin || undefined,
+      brandFounded: brandFounded || undefined,
+      brandHistory: brandHistory || undefined,
+      brandStyle: brandStyle || undefined,
       imageUrl,
     });
 

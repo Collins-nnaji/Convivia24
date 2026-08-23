@@ -469,6 +469,50 @@ export default function AdminPage() {
     }
   }
 
+  async function askProductCopy() {
+    const form = document.getElementById('admin-product-form') as HTMLFormElement | null;
+    if (!form) return;
+    const fd = new FormData(form);
+    const name = String(fd.get('name') || '').trim();
+    if (!name) {
+      setMsg('Enter a product name first.');
+      return;
+    }
+    setLoading(true);
+    setMsg('');
+    const res = await fetch('/api/admin/inventory', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'ai-product-copy',
+        name,
+        brand: String(fd.get('brand') || ''),
+        category: String(fd.get('category') || 'spirits'),
+        abv: fd.get('abv') ? Number(fd.get('abv')) : undefined,
+        volume: String(fd.get('volume') || ''),
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setLoading(false);
+    if (!res.ok) {
+      setMsg(data.error || 'AI unavailable');
+      return;
+    }
+    const copy = data.copy || {};
+    const set = (field: string, value: string) => {
+      const el = form.elements.namedItem(field) as HTMLInputElement | HTMLTextAreaElement | null;
+      if (el) el.value = value || '';
+    };
+    set('tagline', copy.tagline);
+    set('description', copy.description);
+    set('tasteNote', copy.tasteNote);
+    set('brandOrigin', copy.brandOrigin);
+    set('brandFounded', copy.brandFounded);
+    set('brandHistory', copy.brandHistory);
+    set('brandStyle', copy.brandStyle);
+    setMsg('AI copy filled — review and save.');
+  }
+
   async function askAi() {
     setLoading(true);
     const res = await fetch('/api/admin/inventory', {
@@ -952,10 +996,10 @@ export default function AdminPage() {
               </div>
             )}
 
-            <form onSubmit={onUpload} className="bg-white p-6 sm:p-8 mb-12 space-y-4 shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)]">
+            <form id="admin-product-form" onSubmit={onUpload} className="bg-white p-6 sm:p-8 mb-12 space-y-4 shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)]">
               <h2 className="font-bold">Add / update stock</h2>
               <p className="text-sm text-obsidian/50">
-                Upload a bottle image to Azure Storage. New SKUs appear in the shop with live on-hand counts.
+                Upload a bottle image to Azure Storage. Add taste notes and brand story for the ⓘ bottle guide in shop and cart.
               </p>
               <div className="grid sm:grid-cols-2 gap-4">
                 <Field name="name" label="Name" required />
@@ -969,6 +1013,26 @@ export default function AdminPage() {
               </div>
               <Field name="tagline" label="Tagline" />
               <Field name="description" label="Description" />
+              <Field name="tasteNote" label="Taste note (bottle guide)" placeholder="What it tastes like — one sentence" />
+              <div className="border-t border-obsidian/8 pt-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 mb-3">
+                  Brand story (optional — shared across same brand)
+                </p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Field name="brandOrigin" label="Brand origin" placeholder="Cognac, France" />
+                  <Field name="brandFounded" label="Founded" placeholder="1765" />
+                </div>
+                <Field name="brandHistory" label="Brand history (short)" placeholder="2–3 sentences" />
+                <Field name="brandStyle" label="Brand style" />
+              </div>
+              <button
+                type="button"
+                onClick={askProductCopy}
+                disabled={loading}
+                className="px-4 py-2 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/60 hover:text-ember"
+              >
+                {loading ? 'Generating…' : 'Generate copy with AI'}
+              </button>
               <div>
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 block mb-1.5">
                   Product image

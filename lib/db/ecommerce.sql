@@ -47,6 +47,17 @@ ALTER TABLE inventory ADD COLUMN IF NOT EXISTS tagline TEXT;
 ALTER TABLE inventory ADD COLUMN IF NOT EXISTS description TEXT;
 ALTER TABLE inventory ADD COLUMN IF NOT EXISTS source TEXT DEFAULT 'seed';
 
+ALTER TABLE inventory ADD COLUMN IF NOT EXISTS taste_note TEXT;
+
+CREATE TABLE IF NOT EXISTS drink_brands (
+  name       TEXT PRIMARY KEY,
+  origin     TEXT,
+  founded    TEXT,
+  history    TEXT,
+  style      TEXT,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS inventory_movements (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   slug          TEXT NOT NULL,

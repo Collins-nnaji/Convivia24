@@ -11,6 +11,7 @@ import {
   absoluteUrl,
   pageTitle,
 } from '@/lib/seo';
+import { eventsEnabled } from '@/lib/features';
 
 const outfit = Outfit({
   subsets: ['latin'],
@@ -38,7 +39,9 @@ export const metadata: Metadata = {
   creator: SITE_NAME,
   publisher: SITE_NAME,
   category: 'nightlife',
-  classification: 'Alcohol delivery and nightlife discovery — adults 18+',
+  classification: eventsEnabled
+    ? 'Alcohol delivery and nightlife discovery — adults 18+'
+    : 'Drink supplies and party planning for events — adults 18+',
   referrer: 'origin-when-cross-origin',
   formatDetection: {
     telephone: false,
@@ -46,8 +49,9 @@ export const metadata: Metadata = {
     address: false,
   },
   icons: {
-    icon: [{ url: '/Logo2.png' }, { url: '/convivia-mark.svg', type: 'image/svg+xml' }],
-    apple: '/Logo2.png',
+    icon: '/favicon.ico',
+    apple: '/favicon.ico',
+    shortcut: '/favicon.ico',
   },
   manifest: '/site.webmanifest',
   alternates: {
@@ -114,8 +118,8 @@ export default function RootLayout({
         email: 'support@convivia24.com',
         description: SITE_DESCRIPTION,
         areaServed: {
-          '@type': 'City',
-          name: 'Lagos',
+          '@type': 'Country',
+          name: 'Nigeria',
         },
         sameAs: [],
       },

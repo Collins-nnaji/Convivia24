@@ -2,10 +2,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { ProductCard } from '@/components/shop/ProductCard';
-import PartyPlanner from '@/components/shop/PartyPlanner';
 import GuestCardStrip from '@/components/loyalty/GuestCardStrip';
 import { CategoryIcon } from '@/components/icons/ShopIcons';
 import {
@@ -23,16 +22,22 @@ type ShopProduct = DrinkProduct & {
 };
 
 export default function ShopCatalog() {
+  const router = useRouter();
   const params = useSearchParams();
   const initialCat = params.get('category') as DrinkCategory | null;
   const initialQ = params.get('q') || '';
-  const plannerOpen = params.get('plan') === '1';
 
   const [query, setQuery] = useState(initialQ);
   const [category, setCategory] = useState<DrinkCategory | 'all'>(
     initialCat && CATEGORIES.includes(initialCat) ? initialCat : 'all'
   );
   const [products, setProducts] = useState<ShopProduct[]>(DRINKS);
+
+  useEffect(() => {
+    if (params.get('plan') === '1') {
+      router.replace('/plan');
+    }
+  }, [params, router]);
 
   useEffect(() => {
     fetch('/api/shop/catalog')
@@ -106,7 +111,17 @@ export default function ShopCatalog() {
 
       <GuestCardStrip className="mb-4" />
 
-      <PartyPlanner defaultOpen={plannerOpen} />
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-3 rounded border border-ember/20 bg-ember/[0.04] px-4 py-3">
+        <p className="text-sm text-obsidian/70">
+          Planning a party? Build a drink basket from your guest count and budget.
+        </p>
+        <Link
+          href="/plan"
+          className="shrink-0 px-4 py-2 btn-brand text-[10px] font-wordmark-sm"
+        >
+          Plan my party
+        </Link>
+      </div>
 
       {showRails && (
         <>

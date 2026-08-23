@@ -5,18 +5,30 @@ import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import HeroGuestCard from '@/components/loyalty/HeroGuestCard';
 import TrustBadges from '@/components/shop/TrustBadges';
+import { eventsEnabled } from '@/lib/features';
 
 /** One cycle of distinct lines — duplicated only so the marquee loops seamlessly. */
-const LINES = [
-  'Drinks to the party.',
-  'Events around you.',
-  'Bottles to the table.',
-  'Guest Card perks.',
-  'Clubs & lounges.',
-  'Partner wholesale.',
-  'Lagos · ~90 mins.',
-  "Tonight's drop.",
-];
+const LINES = eventsEnabled
+  ? [
+      'Drinks to the party.',
+      'Events around you.',
+      'Bottles to the table.',
+      'Guest Card perks.',
+      'Clubs & lounges.',
+      'Partner wholesale.',
+      'Nationwide delivery.',
+      "Tonight's drop.",
+    ]
+  : [
+      'Drinks for your event.',
+      'Plan the guest list.',
+      'Bottles to the table.',
+      'Party packs delivered.',
+      'Guest Card perks.',
+      'Build your basket.',
+      'Nationwide delivery.',
+      'Spirits & Champagne.',
+    ];
 
 function Age18Badge() {
   return (
@@ -47,7 +59,11 @@ export default function HomeHero() {
             </span>
           ))}
         </div>
-        <h1 className="sr-only">Drinks to the party. Events around you.</h1>
+        <h1 className="sr-only">
+          {eventsEnabled
+            ? 'Drinks to the party. Events around you.'
+            : 'Drinks for your event. Plan it. Order it.'}
+        </h1>
       </div>
 
       <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-10 border-b border-ember/10 grid md:grid-cols-2 gap-10 md:gap-8 items-center">
@@ -65,7 +81,7 @@ export default function HomeHero() {
             </span>
           </div>
           <p className="font-wordmark-md text-sm sm:text-base text-obsidian/55 text-center md:text-left tracking-[0.12em]">
-            Your premium beverage partner
+            {eventsEnabled ? 'Your premium beverage partner' : 'Drink supplies for events'}
           </p>
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
             <Link
@@ -74,12 +90,21 @@ export default function HomeHero() {
             >
               Shop drinks <ArrowRight size={12} />
             </Link>
-            <Link
-              href="/events"
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 border border-obsidian/15 text-obsidian hover:border-ember hover:text-ember text-[10px] font-wordmark-sm transition-colors"
-            >
-              Tonight&apos;s events
-            </Link>
+            {eventsEnabled ? (
+              <Link
+                href="/events"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 border border-obsidian/15 text-obsidian hover:border-ember hover:text-ember text-[10px] font-wordmark-sm transition-colors"
+              >
+                Tonight&apos;s events
+              </Link>
+            ) : (
+              <Link
+                href="/plan"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 border border-obsidian/15 text-obsidian hover:border-ember hover:text-ember text-[10px] font-wordmark-sm transition-colors"
+              >
+                Plan my party
+              </Link>
+            )}
           </div>
           <TrustBadges className="justify-center md:justify-start" />
         </div>

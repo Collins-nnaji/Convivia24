@@ -1,5 +1,6 @@
 import sql from '@/lib/db';
 import { DRINKS, type DrinkCategory, type DrinkProduct } from '@/lib/drinks/catalog';
+import { upsertBrand } from '@/lib/drinks/product-info';
 
 export type InventoryRow = {
   slug: string;
@@ -17,6 +18,7 @@ export type InventoryRow = {
   price_ngn: number | null;
   tagline: string | null;
   description: string | null;
+  taste_note: string | null;
   source: string;
   available: number;
 };
@@ -52,6 +54,7 @@ function mapRow(r: Record<string, unknown>): InventoryRow {
     price_ngn: r.price_ngn != null ? Number(r.price_ngn) : null,
     tagline: (r.tagline as string) || null,
     description: (r.description as string) || null,
+    taste_note: (r.taste_note as string) || null,
     source: String(r.source || 'seed'),
     available: Math.max(0, onHand - reserved),
   };
@@ -68,6 +71,11 @@ export async function upsertAdminProduct(input: {
   abv?: number;
   tagline?: string;
   description?: string;
+  tasteNote?: string;
+  brandOrigin?: string;
+  brandFounded?: string;
+  brandHistory?: string;
+  brandStyle?: string;
   imageUrl?: string | null;
 }): Promise<InventoryRow> {
   const slug = input.slug
@@ -75,10 +83,20 @@ export async function upsertAdminProduct(input: {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
     .slice(0, 64);
+
+  if (input.brand && (input.brandHistory || input.brandStyle || input.brandOrigin)) {
+    await upsertBrand(input.brand, {
+      origin: input.brandOrigin || '',
+      founded: input.brandFounded || '',
+      history: input.brandHistory || '',
+      style: input.brandStyle || '',
+    });
+  }
+
   const rows = await sql`
     INSERT INTO inventory (
       slug, name, on_hand, reserved, low_stock_threshold, track_stock, active,
-      image_url, category, brand, volume, abv, price_ngn, tagline, description, source, updated_at
+      image_url, category, brand, volume, abv, price_ngn, tagline, description, taste_note, source, updated_at
     ) VALUES (
       ${slug},
       ${input.name},
@@ -95,6 +113,7 @@ export async function upsertAdminProduct(input: {
       ${Math.max(0, Math.floor(input.priceNgn))},
       ${input.tagline || null},
       ${input.description || null},
+      ${input.tasteNote || null},
       'admin',
       NOW()
     )
@@ -109,6 +128,7 @@ export async function upsertAdminProduct(input: {
       price_ngn = EXCLUDED.price_ngn,
       tagline = EXCLUDED.tagline,
       description = EXCLUDED.description,
+      taste_note = COALESCE(EXCLUDED.taste_note, inventory.taste_note),
       active = true,
       source = 'admin',
       updated_at = NOW()
@@ -155,6 +175,7 @@ export async function adminStockList(): Promise<AdminStockRow[]> {
     price_ngn: d.priceNgn ?? null,
     tagline: d.tagline || null,
     description: d.description || null,
+    taste_note: null,
     source: 'catalog',
     available: 0,
     tracked: false,

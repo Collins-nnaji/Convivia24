@@ -62,7 +62,7 @@ export async function listParties(ownerId: string): Promise<SavedParty[]> {
 }
 
 export async function saveParty(input: SavePartyInput): Promise<SavedParty> {
-  const guests = Math.max(1, Math.min(800, Math.floor(input.guests)));
+  const guests = Math.max(1, Math.min(50_000, Math.floor(input.guests)));
   const hours = Math.max(1, Math.min(24, Math.floor(input.hours)));
   const budget = input.budgetNgn != null && input.budgetNgn > 0 ? Math.floor(input.budgetNgn) : null;
   const planJson = input.plan ? JSON.stringify(input.plan) : null;

@@ -11,14 +11,14 @@ export async function POST(req: NextRequest) {
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
 
     const body = await req.json().catch(() => ({}));
-    const guests = Number(body.guests) || 40;
+    const guests = Number(body.guests) || 25;
     const hours = Number(body.hours) || 5;
     const vibe = (body.vibe || 'balanced') as PartyVibe;
     const budgetNgn = body.budgetNgn ? Number(body.budgetNgn) : undefined;
     const question = String(body.question || '').trim().slice(0, 500);
     const occasion = String(body.occasion || '').trim().slice(0, 60);
 
-    const plan = recommendDrinks({ guests, hours, vibe, budgetNgn });
+    const plan = recommendDrinks({ guests, hours, vibe, budgetNgn, occasion });
     const planText = plan.lines
       .map((l) => `${l.qty}× ${l.name} (${formatNgn(l.priceNgn * l.qty)}) — ${l.reason}`)
       .join('\n');
@@ -26,7 +26,10 @@ export async function POST(req: NextRequest) {
     if (!aiConfigured()) {
       return NextResponse.json({
         plan,
-        advice: `For ${guests} guests over ~${hours}h${occasion ? ` (${occasion})` : ''}: aim for about ${plan.drinksPerGuest} pours each. This basket totals ${formatNgn(plan.totalNgn)}.`,
+        advice:
+          plan.tips?.length
+            ? plan.tips.join(' ')
+            : `For ${guests} guests over ~${hours}h${occasion ? ` (${occasion})` : ''}: this list totals ${formatNgn(plan.totalNgn)}.`,
         ai: false,
       });
     }
@@ -36,11 +39,11 @@ export async function POST(req: NextRequest) {
         {
           role: 'system',
           content:
-            'You are the Convivia24 party planner for Lagos. Be practical, concise, and nightlife-aware. Recommend drinks, quantities and hosting tips for the occasion. Never encourage underage or excessive drinking.',
+            'You are the Convivia24 drink-supply planner for Nigeria (nationwide delivery). Be practical and concise. Advise on quantities, ice, stations, and what usually runs out first for this event size. Never encourage underage or excessive drinking.',
         },
         {
           role: 'user',
-          content: `Party: ${guests} guests, ${hours} hours, vibe=${vibe}${occasion ? `, occasion=${occasion}` : ''}${budgetNgn ? `, budget ${budgetNgn}` : ''}.\nSuggested basket:\n${planText}\n\n${question || 'Give a short hosting plan and any tweaks to the basket.'}`,
+          content: `Event: ${guests} guests (${plan.sizeLabel}), ${hours} hours, vibe=${vibe}${occasion ? `, occasion=${occasion}` : ''}${budgetNgn ? `, budget ${budgetNgn}` : ''}.\nSuggested supplies:\n${planText}\nHosting notes:\n${plan.tips.join('\n')}\n\n${question || 'Give a short hosting plan and any tweaks to this supply list.'}`,
         },
       ],
       temperature: 0.6,

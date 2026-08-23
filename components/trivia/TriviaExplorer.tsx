@@ -6,7 +6,6 @@ import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeft, Check, GraduationCap, Lock, Trophy, X } from 'lucide-react';
 import { HeroHalo, HouseGlyph } from '@/components/trivia/TriviaIcons';
-import BrandGuide from '@/components/trivia/BrandGuide';
 import { TRIVIA_ROUNDS, getRound, isPass, type TriviaRound } from '@/lib/trivia/catalog';
 import { DRINKS } from '@/lib/drinks/catalog';
 
@@ -134,7 +133,6 @@ export default function TriviaExplorer() {
                 ))}
               </div>
             </div>
-            <BrandGuide />
           </motion.div>
         )}
 

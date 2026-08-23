@@ -9,12 +9,9 @@ import { ChevronDown, LogOut, Menu, ShoppingBag, UserRound, X } from 'lucide-rea
 import { useCart } from '@/components/cart/CartProvider';
 import { useUser } from '@/components/auth/AuthProvider';
 import { formatNgn } from '@/lib/drinks/catalog';
+import { isNavActive, primaryNavLinks } from '@/lib/nav';
 
-const LINKS = [
-  { label: 'Shop', href: '/shop' },
-  { label: 'Events', href: '/events' },
-  { label: 'Trivia', href: '/trivia' },
-];
+const LINKS = primaryNavLinks();
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -44,14 +41,7 @@ export default function Navigation() {
     setAccountOpen(false);
   }, [pathname]);
 
-  const isActive = (href: string) => {
-    if (href === '/shop') return pathname === '/shop' || pathname.startsWith('/shop/');
-    if (href === '/events') return pathname === '/events' || pathname.startsWith('/events/');
-    if (href === '/trivia') return pathname === '/trivia' || pathname.startsWith('/trivia/');
-    if (href === '/partners') return pathname === '/partners' || pathname.startsWith('/partners/');
-    if (href === '/cart') return pathname === '/cart' || pathname.startsWith('/checkout');
-    return pathname === href || pathname.startsWith(`${href}/`);
-  };
+  const isActive = (href: string) => isNavActive(pathname, href);
 
   const firstName = user?.name?.split(' ')[0] || user?.email?.split('@')[0] || 'Account';
 
@@ -142,7 +132,7 @@ export default function Navigation() {
                       <p className="px-4 py-2 text-[11px] text-obsidian/45 truncate border-b border-obsidian/6 mb-1">
                         {user.email}
                       </p>
-                      <Link href="/shop?plan=1" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
+                      <Link href="/plan" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
                         My parties
                       </Link>
                       <Link href="/orders" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>

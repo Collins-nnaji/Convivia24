@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Minus, Plus } from 'lucide-react';
 import { useCart } from '@/components/cart/CartProvider';
 import DrinkPhoto from '@/components/shop/DrinkPhoto';
-import TasteInfoTooltip from '@/components/shop/TasteInfoTooltip';
+import DrinkInfoButton from '@/components/shop/DrinkInfoButton';
 import { formatNgn, type DrinkProduct } from '@/lib/drinks/catalog';
 
 export function ProductCard({ product }: { product: DrinkProduct }) {
@@ -34,16 +34,15 @@ export function ProductCard({ product }: { product: DrinkProduct }) {
               Pack
             </span>
           )}
+          <span className="absolute bottom-2 right-2 z-10" onClick={(e) => e.preventDefault()}>
+            <DrinkInfoButton slug={product.slug} brand={product.brand} />
+          </span>
         </div>
         <p className="text-xs text-obsidian/75 leading-snug line-clamp-2 min-h-[2.5rem]">
           {product.name} · {product.abv}% · {product.volume}
         </p>
         <p className="text-sm font-semibold text-obsidian mt-1">{formatNgn(product.priceNgn)}</p>
       </Link>
-
-      <div className="mt-1.5">
-        <TasteInfoTooltip slug={product.slug} />
-      </div>
 
       <div className="mt-2 flex items-center gap-2">
         <div className="flex items-center border border-obsidian/15 shrink-0">

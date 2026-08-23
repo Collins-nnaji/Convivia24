@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
+import { eventsEnabled } from '@/lib/features';
 
 export default function VenuesRedirect() {
-  redirect('/events?tab=venues');
+  redirect(eventsEnabled ? '/events?tab=venues' : '/plan');
 }

@@ -2,12 +2,16 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CalendarDays, ShoppingBag, Store, Trophy } from 'lucide-react';
+import { CalendarDays, PartyPopper, ShoppingBag, Store, Trophy } from 'lucide-react';
 import { useCart } from '@/components/cart/CartProvider';
+import { eventsEnabled } from '@/lib/features';
+import { isNavActive } from '@/lib/nav';
 
 const TABS = [
   { href: '/shop', label: 'Shop', icon: Store },
-  { href: '/events', label: 'Events', icon: CalendarDays },
+  eventsEnabled
+    ? { href: '/events', label: 'Events', icon: CalendarDays }
+    : { href: '/plan', label: 'Plan', icon: PartyPopper },
   { href: '/trivia', label: 'Trivia', icon: Trophy },
   { href: '/cart', label: 'Cart', icon: ShoppingBag },
 ];
@@ -23,7 +27,7 @@ export default function MobileTabBar() {
     >
       <div className="grid grid-cols-4 h-16">
         {TABS.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || pathname.startsWith(`${href}/`);
+          const active = isNavActive(pathname, href);
           return (
             <Link
               key={href}

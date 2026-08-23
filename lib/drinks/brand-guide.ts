@@ -1,7 +1,6 @@
 /**
- * Taste notes (per product) + brand history (per house) shown in the info
- * tooltip on product cards/PDP and the Brand Guide on /trivia. Written to
- * read like tasting-room copy — not lifted from any single source.
+ * Taste notes (per product) + brand history (per house) shown via the info
+ * icon on shop cards, product pages, and cart lines.
  */
 
 export const TASTE_NOTES: Record<string, string> = {

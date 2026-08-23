@@ -61,7 +61,7 @@ export async function initializeFlutterwavePayment(input: {
         },
         customizations: {
           title: 'Convivia24',
-          description: 'Lagos drinks order',
+          description: 'Convivia24 drinks order',
         },
         meta: { order_id: input.orderId },
       }),

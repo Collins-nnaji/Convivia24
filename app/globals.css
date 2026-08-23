@@ -24,6 +24,13 @@ body {
   to { transform: rotate(360deg); }
 }
 
+/* Hide stray hover tooltips while the bottle guide modal is open */
+body.drink-info-modal-open [role='tooltip'] {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
@@ -89,6 +96,34 @@ body {
 ::selection {
   background: #5c1814;
   color: #fff;
+}
+
+input[type='range'].plan-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 2px;
+  background: #e5e0da;
+  border-radius: 999px;
+  outline: none;
+}
+input[type='range'].plan-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #8B2A22;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px #8B2A22;
+}
+input[type='range'].plan-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #8B2A22;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px #8B2A22;
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }

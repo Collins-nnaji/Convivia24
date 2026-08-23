@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { eventsEnabled } from '@/lib/features';
 
 const footerLinks = [
   { label: 'Shop', href: '/shop' },
-  { label: 'Events', href: '/events' },
+  ...(eventsEnabled ? [{ label: 'Events', href: '/events' }] : [{ label: 'Plan', href: '/plan' }]),
+  { label: 'Trivia', href: '/trivia' },
   { label: 'Partners', href: '/partners' },
   { label: 'Privacy', href: '/privacy' },
   { label: 'Terms', href: '/terms' },
@@ -26,7 +28,9 @@ export default function Footer() {
               />
             </Link>
             <p className="hidden sm:block text-[10px] text-white/40 truncate">
-              Lagos drinks · events & venues · Guest Card · 18+
+              {eventsEnabled
+                ? 'Drinks · events & venues · Guest Card · nationwide · 18+'
+                : 'Drink supplies for events · party planner · nationwide delivery · 18+'}
             </p>
           </div>
 

@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
         mode: 'manual',
         orderId,
         message:
-          'Order saved. Our Lagos concierge will confirm payment and delivery shortly.',
+          'Order saved. Our team will confirm payment and delivery shortly.',
         redirectUrl: `${origin}/checkout/success?order=${orderId}&mode=manual`,
       });
     }

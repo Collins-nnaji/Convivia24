@@ -55,6 +55,7 @@ function CheckoutForm() {
       venueName: String(fd.get('venueName') || ''),
       addressLine1: String(fd.get('addressLine1') || ''),
       addressLine2: String(fd.get('addressLine2') || ''),
+      city: String(fd.get('city') || ''),
       area: String(fd.get('area') || ''),
       notes: String(fd.get('notes') || ''),
       eventId: eventId || undefined,
@@ -143,7 +144,7 @@ function CheckoutForm() {
     <>
       <section className="bg-white border-b border-obsidian/5 -mt-16 pt-28 pb-12">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
-          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ember mb-2">Lagos delivery</p>
+          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ember mb-2">Nationwide delivery</p>
           <h1 className="text-3xl sm:text-4xl font-bold brand-text">Checkout</h1>
           {eventId && (
             <p className="mt-2 text-xs text-obsidian/45">
@@ -221,16 +222,33 @@ function CheckoutForm() {
             <div className="grid sm:grid-cols-2 gap-6">
               <div>
                 <label className="text-[9px] font-black uppercase tracking-[0.25em] text-obsidian/40 block mb-1">
-                  Area
+                  City
                 </label>
-                <input name="area" required defaultValue={areaPrefill} className={inputClass} placeholder="Victoria Island, Lekki…" />
+                <input
+                  name="city"
+                  required
+                  className={inputClass}
+                  placeholder="Lagos, Abuja, Port Harcourt…"
+                />
               </div>
               <div>
                 <label className="text-[9px] font-black uppercase tracking-[0.25em] text-obsidian/40 block mb-1">
-                  Landmark / table note
+                  Area / neighbourhood
                 </label>
-                <input name="addressLine2" className={inputClass} placeholder="Optional" />
+                <input
+                  name="area"
+                  required
+                  defaultValue={areaPrefill}
+                  className={inputClass}
+                  placeholder="e.g. VI, Maitama, GRA…"
+                />
               </div>
+            </div>
+            <div>
+              <label className="text-[9px] font-black uppercase tracking-[0.25em] text-obsidian/40 block mb-1">
+                Landmark / table note
+              </label>
+              <input name="addressLine2" className={inputClass} placeholder="Optional" />
             </div>
             <div>
               <label className="text-[9px] font-black uppercase tracking-[0.25em] text-obsidian/40 block mb-1">

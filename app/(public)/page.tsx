@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import DrinkPlaceholder from '@/components/shop/DrinkPlaceholder';
 import DrinkPhoto from '@/components/shop/DrinkPhoto';
 import HomeHero from '@/components/home/HomeHero';
 import Footer from '@/components/Footer';
-import { formatEventWhen, isTonight, type ResolvedEvent } from '@/lib/events/catalog';
+import { formatEventWhen, isTonight } from '@/lib/events/catalog';
 import { useEventFeed } from '@/lib/events/use-feed';
+import { eventsEnabled } from '@/lib/features';
 import {
   DRINKS,
   CATEGORIES,
@@ -16,13 +16,12 @@ import {
   type DrinkCategory,
 } from '@/lib/drinks/catalog';
 
-const featured = (
-  DRINKS.filter((d) => d.featured && (d.image || d.packImages?.length))
-).slice(0, 4);
+const featured = DRINKS.filter((d) => d.featured && (d.image || d.packImages?.length)).slice(0, 4);
 
 export default function HomePage() {
   const feed = useEventFeed();
-  const tonight = feed.filter(isTonight).slice(0, 3);
+  const tonight = eventsEnabled ? feed.filter(isTonight).slice(0, 3) : [];
+
   return (
     <>
       <HomeHero />
@@ -32,7 +31,9 @@ export default function HomePage() {
           <div className="flex items-end justify-between gap-4 mb-8">
             <div>
               <p className="text-[9px] font-wordmark-sm text-ember mb-2">Recommended</p>
-              <h2 className="font-wordmark text-2xl sm:text-3xl text-obsidian">Tonight&apos;s picks</h2>
+              <h2 className="font-wordmark text-2xl sm:text-3xl text-obsidian">
+                {eventsEnabled ? "Tonight's picks" : 'Popular bottles'}
+              </h2>
             </div>
             <Link
               href="/shop"
@@ -56,9 +57,7 @@ export default function HomePage() {
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-obsidian leading-snug line-clamp-2 font-medium">
-                  {p.name}
-                </p>
+                <p className="text-xs text-obsidian leading-snug line-clamp-2 font-medium">{p.name}</p>
                 <p className="text-[11px] text-obsidian/50 mt-0.5">
                   {p.abv}% · {p.volume}
                 </p>
@@ -104,7 +103,28 @@ export default function HomePage() {
         </div>
       </section>
 
-      {tonight.length > 0 && (
+      {!eventsEnabled && (
+        <section className="bg-white py-16 sm:py-20 border-t border-obsidian/5">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+            <div className="max-w-xl">
+              <p className="text-[9px] font-wordmark-sm text-ember mb-2">Party planner</p>
+              <h2 className="font-wordmark text-2xl sm:text-3xl text-obsidian mb-3">Plan drinks for your event</h2>
+              <p className="text-sm text-obsidian/60 leading-relaxed">
+                Guest count, budget, and vibe — we recommend bottles and party packs, then drop them
+                straight into your cart. Nationwide delivery across Nigeria.
+              </p>
+            </div>
+            <Link
+              href="/plan"
+              className="inline-flex items-center justify-center px-6 py-3 btn-brand text-[11px] font-wordmark-sm shrink-0"
+            >
+              Plan my party
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {eventsEnabled && tonight.length > 0 && (
         <section className="bg-white py-16 sm:py-20 border-t border-obsidian/5">
           <div className="max-w-6xl mx-auto px-5 sm:px-8">
             <div className="flex items-end justify-between gap-4 mb-8">
@@ -125,9 +145,7 @@ export default function HomePage() {
                 >
                   <span className="mt-2 w-2 h-2 rounded-full bg-ember live-beep shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <p className="text-[10px] font-wordmark-sm text-ember mb-1">
-                      {formatEventWhen(event)}
-                    </p>
+                    <p className="text-[10px] font-wordmark-sm text-ember mb-1">{formatEventWhen(event)}</p>
                     <p className="font-wordmark-md text-obsidian group-hover:text-ember transition-colors">
                       {event.title}
                     </p>
