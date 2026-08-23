@@ -3,7 +3,6 @@ import sql, { apiErrorResponse } from '@/lib/db';
 import { preferTrackForCategory } from '@/lib/drinks/catalog';
 import { getCurrentUser } from '@/lib/auth/session';
 import { getMember, loyaltyDiscountNgn, resolveMemberOwner } from '@/lib/loyalty/members';
-import { notifyOrderReceived } from '@/lib/commerce/notify';
 import { rateLimit, clientIp } from '@/lib/redis';
 import { reserveStockForOrder, releaseStockForOrder, resolveSellableProduct } from '@/lib/inventory';
 import { redeemGiftCardForOrder } from '@/lib/commerce/gift-cards';
@@ -219,7 +218,7 @@ export async function POST(req: NextRequest) {
       `;
     }
 
-    await notifyOrderReceived(orderId);
+    // Confirmation email is sent only after payment succeeds (Flutterwave webhook / verify).
 
     return NextResponse.json({
       ok: true,

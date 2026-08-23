@@ -36,12 +36,17 @@ async function notifyAdminsOfSuccessfulOrder(opts: {
   await sendEmail({ to: admins, subject, html, text });
 }
 
-/** Best-effort — never throws, so a mail hiccup can't fail an order or a webhook. */
+/**
+ * Customer order confirmation — only call after payment is confirmed (paid).
+ * Best-effort — never throws, so a mail hiccup can't fail a webhook.
+ */
 export async function notifyOrderReceived(orderId: string): Promise<void> {
   try {
     const data = await loadOrderForNotify(orderId);
     if (!data) return;
     const { order, lines } = data;
+    if (String(order.status) !== 'paid') return;
+
     const totalNgn = Number(order.total_ngn ?? order.subtotal_ngn);
     const { subject, html, text } = orderReceivedEmail({
       fullName: order.full_name as string,
@@ -55,18 +60,15 @@ export async function notifyOrderReceived(orderId: string): Promise<void> {
       html,
       text,
     });
-    // If the order is already paid at create-time, ping ops immediately.
-    if (String(order.status) === 'paid') {
-      await notifyAdminsOfSuccessfulOrder({
-        fullName: order.full_name as string,
-        email: order.email as string,
-        phone: (order.phone as string) || null,
-        orderId: order.id as string,
-        lines,
-        totalNgn,
-        status: 'paid',
-      });
-    }
+    await notifyAdminsOfSuccessfulOrder({
+      fullName: order.full_name as string,
+      email: order.email as string,
+      phone: (order.phone as string) || null,
+      orderId: order.id as string,
+      lines,
+      totalNgn,
+      status: 'paid',
+    });
   } catch (err) {
     console.error('notifyOrderReceived failed', err);
   }
@@ -78,6 +80,13 @@ export async function notifyOrderStatus(orderId: string, status: OrderStatus, no
     if (!data) return;
     const { order, lines } = data;
     const totalNgn = Number(order.total_ngn ?? order.subtotal_ngn);
+
+    // Paid → confirmation mail (not a separate "awaiting payment" style notice).
+    if (status === 'paid') {
+      await notifyOrderReceived(orderId);
+      return;
+    }
+
     const { subject, html, text } = orderStatusEmail({
       fullName: order.full_name as string,
       orderId: order.id as string,
@@ -87,18 +96,6 @@ export async function notifyOrderStatus(orderId: string, status: OrderStatus, no
       note,
     });
     await sendEmail({ to: order.email as string, subject, html, text });
-
-    if (status === 'paid') {
-      await notifyAdminsOfSuccessfulOrder({
-        fullName: order.full_name as string,
-        email: order.email as string,
-        phone: (order.phone as string) || null,
-        orderId: order.id as string,
-        lines,
-        totalNgn,
-        status: 'paid',
-      });
-    }
   } catch (err) {
     console.error('notifyOrderStatus failed', err);
   }
