@@ -13,7 +13,7 @@ const DEMO_LINES = [
 ];
 
 /**
- * Collapsed sample of the image / PDF you can download from a finished plan.
+ * Collapsed sample of the plan image you can download or share.
  */
 export default function PlanShareDemo() {
   const [open, setOpen] = useState(false);
@@ -27,10 +27,10 @@ export default function PlanShareDemo() {
         className="w-full flex items-center justify-between gap-4 px-5 py-3.5 text-left"
       >
         <span>
-          <span className="block text-[10px] font-black uppercase tracking-[0.2em] text-ember">
+          <span className="block text-[11px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-ember">
             Sample download
           </span>
-          <span className="block text-sm text-obsidian/55 mt-0.5">
+          <span className="block text-base sm:text-sm text-obsidian/55 mt-0.5">
             This is the plan image you can save or share — Tolu’s birthday, 25 guests.
           </span>
         </span>
@@ -48,16 +48,16 @@ export default function PlanShareDemo() {
           >
             <div className="bg-white px-6 pt-5 pb-4 border-b-[3px] border-ember">
               <p className="font-wordmark text-[13px] text-obsidian tracking-[0.18em]">Convivia24</p>
-              <p className="text-[10px] text-obsidian/40 mt-1">Party drink plan · nationwide delivery · 18+</p>
+              <p className="text-[10px] text-obsidian/40 mt-1">Drink supply plan · nationwide delivery · 18+</p>
             </div>
             <div className="px-6 py-5">
-              <p className="font-serif text-xl text-obsidian">Tolu’s birthday</p>
-              <p className="text-[12px] text-obsidian/45 mt-1 leading-relaxed">
+              <p className="font-serif text-2xl sm:text-3xl text-obsidian leading-tight">Tolu’s birthday</p>
+              <p className="text-sm sm:text-[12px] text-obsidian/45 mt-2 leading-relaxed">
                 House party · Sat 12 Sep 2026 · Lekki rooftop
                 <br />
                 25 guests · 5h · Balanced bar
               </p>
-              <p className="mt-4 text-lg font-bold text-ember">₦338,500</p>
+              <p className="mt-4 text-xl font-bold text-ember">₦338,500</p>
 
               <ul className="mt-5 pt-1 border-t border-obsidian/10">
                 {DEMO_LINES.map((line) => (
@@ -66,13 +66,13 @@ export default function PlanShareDemo() {
                     className="flex items-start justify-between gap-3 py-3 border-b border-obsidian/10 last:border-b-0"
                   >
                     <div className="min-w-0">
-                      <p className="text-[13px] font-medium text-obsidian">
+                      <p className="text-sm font-medium text-obsidian">
                         {line.name}{' '}
                         <span className="text-obsidian/40 font-normal">×{line.qty}</span>
                       </p>
-                      <p className="text-[11px] text-obsidian/40">{line.unit} / bottle</p>
+                      <p className="text-xs text-obsidian/40">{line.unit} / bottle</p>
                     </div>
-                    <p className="text-[13px] font-semibold text-ember shrink-0">{line.total}</p>
+                    <p className="text-sm font-semibold text-ember shrink-0">{line.total}</p>
                   </li>
                 ))}
               </ul>

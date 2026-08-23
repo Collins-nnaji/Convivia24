@@ -1,14 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Download, FileText, Share2 } from 'lucide-react';
-import {
-  canSharePlanPdf,
-  planShareFilename,
-  printPlanSharePdf,
-  renderPlanSharePng,
-  type PlanShareInput,
-} from '@/lib/party/render-plan-share';
+import { Download, Share2 } from 'lucide-react';
+import { planShareFilename, renderPlanSharePng, type PlanShareInput } from '@/lib/party/render-plan-share';
 
 export default function PlanShareActions({ input, disabled }: { input: PlanShareInput; disabled?: boolean }) {
   const [busy, setBusy] = useState<'image' | 'share' | null>(null);
@@ -26,7 +20,7 @@ export default function PlanShareActions({ input, disabled }: { input: PlanShare
       a.download = planShareFilename(input.partyName);
       a.click();
       URL.revokeObjectURL(url);
-      setMsg('Image saved.');
+      setMsg('Image saved — full plan included.');
     } catch {
       setMsg('Could not create the image. Try again.');
     } finally {
@@ -60,14 +54,6 @@ export default function PlanShareActions({ input, disabled }: { input: PlanShare
     }
   }
 
-  function savePdf() {
-    if (disabled || !canSharePlanPdf(input.plan)) return;
-    printPlanSharePdf(input);
-    setMsg('Print dialog opened — choose Save as PDF.');
-  }
-
-  const pdfOk = canSharePlanPdf(input.plan);
-
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
@@ -75,7 +61,7 @@ export default function PlanShareActions({ input, disabled }: { input: PlanShare
           type="button"
           onClick={shareImage}
           disabled={disabled || busy !== null}
-          className="inline-flex items-center gap-2 px-4 py-2.5 btn-brand text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-4 py-3 sm:py-2.5 btn-brand text-[11px] sm:text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-50"
         >
           <Share2 size={14} /> {busy === 'share' ? 'Preparing…' : 'Share plan'}
         </button>
@@ -83,27 +69,15 @@ export default function PlanShareActions({ input, disabled }: { input: PlanShare
           type="button"
           onClick={downloadImage}
           disabled={disabled || busy !== null}
-          className="inline-flex items-center gap-2 px-4 py-2.5 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-4 py-3 sm:py-2.5 border border-obsidian/15 text-[11px] sm:text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-50"
         >
           <Download size={14} /> {busy === 'image' ? 'Saving…' : 'Download image'}
         </button>
-        {pdfOk && (
-          <button
-            type="button"
-            onClick={savePdf}
-            disabled={disabled}
-            className="inline-flex items-center gap-2 px-4 py-2.5 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-50"
-          >
-            <FileText size={14} /> Save PDF
-          </button>
-        )}
       </div>
-      {!pdfOk && input.plan.lines.length > 0 && (
-        <p className="text-[11px] text-obsidian/45">
-          PDF is available for plans with up to 24 items — download the image for longer baskets.
-        </p>
-      )}
-      {msg && <p className="text-[11px] text-obsidian/55">{msg}</p>}
+      <p className="text-xs sm:text-[11px] text-obsidian/45">
+        Downloads a PNG with every bottle on the list — no PDF needed.
+      </p>
+      {msg && <p className="text-xs sm:text-[11px] text-obsidian/55">{msg}</p>}
     </div>
   );
 }
