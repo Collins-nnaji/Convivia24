@@ -27,6 +27,13 @@ describe('catalog integrity', () => {
     expect(getDrinkBySlug('not-a-real-product')).toBeUndefined();
   });
 
+  it('includes the ₦500 Convivia Cocktail sample for payment tests', () => {
+    const sample = getDrinkBySlug('convivia-cocktail');
+    expect(sample?.name).toBe('Convivia Cocktail');
+    expect(sample?.priceNgn).toBe(500);
+    expect(sample?.sample).toBe(true);
+  });
+
   it('searchDrinks matches by name case-insensitively', () => {
     const target = DRINKS[0];
     const term = target.name.slice(0, 4).toLowerCase();

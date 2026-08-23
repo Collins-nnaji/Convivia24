@@ -25,8 +25,12 @@ export type DrinkProduct = {
   featured?: boolean;
   deal?: boolean;
   partyPack?: boolean;
+  /** Cheap SKU for checkout tests — hidden from party auto-plans. */
+  sample?: boolean;
   servesHint?: string;
 };
+
+export const SAMPLE_PAYMENT_SLUG = 'convivia-cocktail';
 
 /** Prefer Azure when `NEXT_PUBLIC_AZURE_DRINK_BASE` is set (private containers need SAS). */
 const AZURE_DRINK_BASE = (process.env.NEXT_PUBLIC_AZURE_DRINK_BASE || '').replace(/\/$/, '');
@@ -682,6 +686,19 @@ export const DRINKS: DrinkProduct[] = [
     tagline: 'Sparkle without the wait.',
     description: 'Italian bubbles for day parties, rooftops, and brunch-to-night transitions.',
     featured: true,
+  },
+  {
+    slug: SAMPLE_PAYMENT_SLUG,
+    name: 'Convivia Cocktail',
+    brand: 'Convivia',
+    origin: 'Nigeria',
+    category: 'cocktails',
+    abv: 5,
+    volume: '33CL',
+    priceNgn: 500,
+    tagline: 'House pour for a ₦500 checkout.',
+    description: 'A Convivia house cocktail at ₦500 — use this sample to test payment without a full bottle tab.',
+    sample: true,
   },
   {
     slug: 'smirnoff-ice-pack',

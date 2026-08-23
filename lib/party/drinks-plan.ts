@@ -162,7 +162,7 @@ function maxSkuCount(guests: number): number {
 }
 
 function pickProducts(category: DrinkCategory, variety: number): DrinkProduct[] {
-  const list = DRINKS.filter((d) => d.category === category);
+  const list = DRINKS.filter((d) => d.category === category && !d.sample);
   if (!list.length) return [];
   const featured = list.filter((d) => d.featured || d.deal);
   const rest = list

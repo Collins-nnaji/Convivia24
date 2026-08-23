@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql, { apiErrorResponse } from '@/lib/db';
-import { getDrinkBySlug } from '@/lib/drinks/catalog';
 import { getCurrentUser } from '@/lib/auth/session';
 import { getMember, loyaltyDiscountNgn, resolveMemberOwner } from '@/lib/loyalty/members';
 import { notifyOrderReceived } from '@/lib/commerce/notify';
 import { rateLimit, clientIp } from '@/lib/redis';
-import { reserveStockForOrder, releaseStockForOrder } from '@/lib/inventory';
+import { reserveStockForOrder, releaseStockForOrder, resolveSellableProduct } from '@/lib/inventory';
 import { redeemGiftCardForOrder } from '@/lib/commerce/gift-cards';
 import { releaseOrderResources } from '@/lib/commerce/fulfillment';
 
@@ -143,7 +142,7 @@ export async function POST(req: NextRequest) {
     }[] = [];
 
     for (const item of items) {
-      const product = getDrinkBySlug(item.slug);
+      const product = await resolveSellableProduct(item.slug);
       if (!product) {
         return NextResponse.json({ error: `Unknown product: ${item.slug}` }, { status: 400 });
       }

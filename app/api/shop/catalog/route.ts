@@ -9,12 +9,12 @@ export async function GET(req: NextRequest) {
     const rl = await rateLimit(`shop-catalog:${clientIp(req)}`, 60, 60);
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
 
-    const cached = await cacheGet<{ products: unknown[] }>('shop:catalog:v1');
+    const cached = await cacheGet<{ products: unknown[] }>('shop:catalog:v2');
     if (cached) return NextResponse.json(cached);
 
     const products = await shopCatalog();
     const payload = { products };
-    await cacheSet('shop:catalog:v1', payload, 30);
+    await cacheSet('shop:catalog:v2', payload, 30);
     return NextResponse.json(payload);
   } catch (err) {
     captureApiError(err, { route: 'shop/catalog' });

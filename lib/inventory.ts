@@ -1,5 +1,5 @@
 import sql from '@/lib/db';
-import { DRINKS, type DrinkCategory, type DrinkProduct } from '@/lib/drinks/catalog';
+import { DRINKS, getDrinkBySlug, type DrinkCategory, type DrinkProduct } from '@/lib/drinks/catalog';
 import { TASTE_NOTES } from '@/lib/drinks/brand-guide';
 import { upsertBrand } from '@/lib/drinks/product-info';
 
@@ -34,6 +34,37 @@ export async function listInventory(activeOnly = false): Promise<InventoryRow[]>
 export async function getInventory(slug: string): Promise<InventoryRow | null> {
   const rows = await sql`SELECT * FROM inventory WHERE slug = ${slug} LIMIT 1`;
   return rows[0] ? mapRow(rows[0]) : null;
+}
+
+export type SellableProduct = {
+  slug: string;
+  name: string;
+  category: string;
+  priceNgn: number;
+};
+
+/** Live inventory first (price, name, listing), then the static catalog. Inactive SKUs are not sellable. */
+export async function resolveSellableProduct(slug: string): Promise<SellableProduct | null> {
+  const inv = await getInventory(slug).catch(() => null);
+  const catalog = getDrinkBySlug(slug);
+  if (inv) {
+    if (!inv.active) return null;
+    const priceNgn = inv.price_ngn && inv.price_ngn > 0 ? inv.price_ngn : catalog?.priceNgn ?? 0;
+    if (priceNgn <= 0) return null;
+    return {
+      slug: inv.slug,
+      name: inv.name,
+      category: inv.category || catalog?.category || 'spirits',
+      priceNgn,
+    };
+  }
+  if (!catalog) return null;
+  return {
+    slug: catalog.slug,
+    name: catalog.name,
+    category: catalog.category,
+    priceNgn: catalog.priceNgn,
+  };
 }
 
 function mapRow(r: Record<string, unknown>): InventoryRow {
