@@ -63,6 +63,15 @@ export const CATEGORIES: DrinkCategory[] = [
   'party-packs',
 ];
 
+/** Order-line `prefer_track` only accepts spirit | zero | mixed. Shop categories map onto that. */
+export type PreferTrack = 'spirit' | 'zero' | 'mixed';
+
+export function preferTrackForCategory(category: string): PreferTrack {
+  if (category === 'mixers') return 'zero';
+  if (category === 'cocktails' || category === 'party-packs') return 'mixed';
+  return 'spirit';
+}
+
 export function formatNgn(amount: number): string {
   return new Intl.NumberFormat('en-NG', {
     style: 'currency',

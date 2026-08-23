@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ShieldCheck, CalendarHeart, Wind, MessageCircle } from 'lucide-react';
+import { CalendarHeart, Wind, MessageCircle } from 'lucide-react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { signInWithGoogle, signInWithEmail, signUpWithEmail } from '@/lib/auth/client';
 import { useUser } from '@/components/auth/AuthProvider';
@@ -70,14 +70,13 @@ function SignInInner() {
           {mode === 'signup' ? 'Create your account.' : 'Sign in to Convivia24.'}
         </h1>
         <p className="text-obsidian/55 mb-8 leading-relaxed">
-          One Neon Auth account for shop orders, party invites, and your Guest Card — synced everywhere you sign in.
+          One account for shop orders, party invites, and your Guest Card — synced everywhere you sign in.
         </p>
 
         <div className="bg-white border border-obsidian/12 shadow-sm p-6 sm:p-8">
           {!authConfigured && (
             <p className="mb-5 text-amber-700 text-xs bg-amber-50 border border-amber-200 p-3">
-              Authentication isn&apos;t configured on this environment yet. Set <span className="font-mono">NEON_AUTH_BASE_URL</span> and{' '}
-              <span className="font-mono">NEON_AUTH_COOKIE_SECRET</span>, and enable Google in the Neon Auth dashboard.
+              Authentication isn&apos;t configured on this environment yet.
             </p>
           )}
 
@@ -154,9 +153,6 @@ function SignInInner() {
             </button>
           </p>
 
-          <p className="flex items-center justify-center gap-1.5 text-obsidian/40 text-[10px] uppercase tracking-wider mt-5">
-            <ShieldCheck size={12} className="text-gold-dark" /> Secured by Neon Auth
-          </p>
         </div>
 
         <ul className="mt-8 space-y-3">

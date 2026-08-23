@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DRINKS, formatNgn, getDrinkBySlug, searchDrinks } from './catalog';
+import { CATEGORIES, DRINKS, formatNgn, getDrinkBySlug, preferTrackForCategory, searchDrinks } from './catalog';
 
 describe('formatNgn', () => {
   it('formats whole naira with the currency symbol and thousands separators', () => {
@@ -25,6 +25,16 @@ describe('catalog integrity', () => {
   it('getDrinkBySlug finds a real product and misses a bogus one', () => {
     expect(getDrinkBySlug(DRINKS[0].slug)?.slug).toBe(DRINKS[0].slug);
     expect(getDrinkBySlug('not-a-real-product')).toBeUndefined();
+  });
+
+  it('maps every shop category onto an allowed order prefer_track', () => {
+    const allowed = new Set(['spirit', 'zero', 'mixed']);
+    for (const category of CATEGORIES) {
+      expect(allowed.has(preferTrackForCategory(category))).toBe(true);
+    }
+    expect(preferTrackForCategory('cocktails')).toBe('mixed');
+    expect(preferTrackForCategory('mixers')).toBe('zero');
+    expect(preferTrackForCategory('whisky')).toBe('spirit');
   });
 
   it('includes the ₦500 Convivia Cocktail sample for payment tests', () => {

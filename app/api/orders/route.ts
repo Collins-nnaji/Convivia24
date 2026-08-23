@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql, { apiErrorResponse } from '@/lib/db';
+import { preferTrackForCategory } from '@/lib/drinks/catalog';
 import { getCurrentUser } from '@/lib/auth/session';
 import { getMember, loyaltyDiscountNgn, resolveMemberOwner } from '@/lib/loyalty/members';
 import { notifyOrderReceived } from '@/lib/commerce/notify';
@@ -150,7 +151,7 @@ export async function POST(req: NextRequest) {
       resolved.push({
         slug: product.slug,
         name: product.name,
-        preferTrack: product.category,
+        preferTrack: preferTrackForCategory(product.category),
         unitPrice: product.priceNgn,
         qty,
       });
@@ -178,11 +179,16 @@ export async function POST(req: NextRequest) {
 
     const orderId = order.id as string;
 
-    for (const r of resolved) {
-      await sql`
-        INSERT INTO ritual_order_items (order_id, kit_slug, kit_name, prefer_track, unit_price_ngn, qty)
-        VALUES (${orderId}, ${r.slug}, ${r.name}, ${r.preferTrack}, ${r.unitPrice}, ${r.qty})
-      `;
+    try {
+      for (const r of resolved) {
+        await sql`
+          INSERT INTO ritual_order_items (order_id, kit_slug, kit_name, prefer_track, unit_price_ngn, qty)
+          VALUES (${orderId}, ${r.slug}, ${r.name}, ${r.preferTrack}, ${r.unitPrice}, ${r.qty})
+        `;
+      }
+    } catch (err) {
+      await sql`DELETE FROM ritual_orders WHERE id = ${orderId}`;
+      throw err;
     }
 
     // Reserve stock before this order can be paid for — two shoppers can't
