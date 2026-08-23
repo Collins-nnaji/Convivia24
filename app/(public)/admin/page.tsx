@@ -18,6 +18,13 @@ type Item = {
   source: string;
   active: boolean;
   tracked?: boolean;
+  brand?: string | null;
+  category?: string | null;
+  volume?: string | null;
+  abv?: number | null;
+  tagline?: string | null;
+  description?: string | null;
+  taste_note?: string | null;
 };
 
 type AdminEvent = {
@@ -429,6 +436,28 @@ export default function AdminPage() {
     setMsg(`Saved ${data.item?.name}`);
     form.reset();
     await loadStock();
+  }
+
+  function loadItemIntoForm(item: Item) {
+    const form = document.getElementById('admin-product-form') as HTMLFormElement | null;
+    if (!form) return;
+    const set = (field: string, value: string) => {
+      const el = form.elements.namedItem(field) as HTMLInputElement | HTMLTextAreaElement | null;
+      if (el) el.value = value || '';
+    };
+    set('name', item.name);
+    set('slug', item.slug);
+    set('priceNgn', item.price_ngn != null ? String(item.price_ngn) : '');
+    set('onHand', String(item.on_hand));
+    set('brand', item.brand || '');
+    set('category', item.category || '');
+    set('volume', item.volume || '');
+    set('abv', item.abv != null ? String(item.abv) : '');
+    set('tagline', item.tagline || '');
+    set('description', item.description || '');
+    set('tasteNote', item.taste_note || '');
+    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setMsg(`Loaded “${item.name}” into the form — edit taste/brand and save.`);
   }
 
   async function saveStock(slug: string, patch: Record<string, unknown>) {
@@ -1012,8 +1041,13 @@ export default function AdminPage() {
                 <Field name="abv" label="ABV %" type="number" />
               </div>
               <Field name="tagline" label="Tagline" />
-              <Field name="description" label="Description" />
-              <Field name="tasteNote" label="Taste note (bottle guide)" placeholder="What it tastes like — one sentence" />
+              <TextAreaField name="description" label="Description" rows={2} />
+              <TextAreaField
+                name="tasteNote"
+                label="Taste note (bottle guide)"
+                placeholder="What it tastes like — one sentence"
+                rows={2}
+              />
               <div className="border-t border-obsidian/8 pt-4">
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 mb-3">
                   Brand story (optional — shared across same brand)
@@ -1022,7 +1056,7 @@ export default function AdminPage() {
                   <Field name="brandOrigin" label="Brand origin" placeholder="Cognac, France" />
                   <Field name="brandFounded" label="Founded" placeholder="1765" />
                 </div>
-                <Field name="brandHistory" label="Brand history (short)" placeholder="2–3 sentences" />
+                <TextAreaField name="brandHistory" label="Brand history (short)" placeholder="2–3 sentences" rows={3} />
                 <Field name="brandStyle" label="Brand style" />
               </div>
               <button
@@ -1046,7 +1080,7 @@ export default function AdminPage() {
 
             <h2 className="font-bold mb-1">Live stock</h2>
             <p className="text-sm text-obsidian/50 mb-5">
-              Edit on-hand counts, price and listing state per SKU. Changes hit the shop straight away.
+              Edit counts, price, listing state, and bottle-guide taste notes. Changes hit the shop and ⓘ panels straight away.
             </p>
             <div className="space-y-3">
               {items.map((item) => (
@@ -1056,6 +1090,7 @@ export default function AdminPage() {
                   saving={savingSlug === item.slug}
                   onSave={(patch) => saveStock(item.slug, patch)}
                   onDelete={() => deleteStock(item.slug, item.name)}
+                  onLoadForm={() => loadItemIntoForm(item)}
                 />
               ))}
               {items.length === 0 && <p className="text-sm text-obsidian/45">No SKUs yet.</p>}
@@ -1335,117 +1370,164 @@ function StockRow({
   saving,
   onSave,
   onDelete,
+  onLoadForm,
 }: {
   item: Item;
   saving: boolean;
   onSave: (patch: Record<string, unknown>) => void;
   onDelete: () => void;
+  onLoadForm: () => void;
 }) {
   const [onHand, setOnHand] = useState(String(item.on_hand));
   const [price, setPrice] = useState(item.price_ngn != null ? String(item.price_ngn) : '');
   const [threshold, setThreshold] = useState(String(item.low_stock_threshold));
+  const [tasteNote, setTasteNote] = useState(item.taste_note || '');
+  const [guideOpen, setGuideOpen] = useState(false);
 
   useEffect(() => {
     setOnHand(String(item.on_hand));
     setPrice(item.price_ngn != null ? String(item.price_ngn) : '');
     setThreshold(String(item.low_stock_threshold));
-  }, [item.on_hand, item.price_ngn, item.low_stock_threshold]);
+    setTasteNote(item.taste_note || '');
+  }, [item.on_hand, item.price_ngn, item.low_stock_threshold, item.taste_note]);
 
   const dirty =
     onHand !== String(item.on_hand) ||
     price !== (item.price_ngn != null ? String(item.price_ngn) : '') ||
-    threshold !== String(item.low_stock_threshold);
+    threshold !== String(item.low_stock_threshold) ||
+    tasteNote !== (item.taste_note || '');
 
   const lowStock = item.tracked !== false && item.available <= item.low_stock_threshold;
 
   return (
-    <div className="bg-white p-4 shadow-sm flex flex-col lg:flex-row lg:items-center gap-4">
-      <div className="flex items-center gap-3 min-w-0 lg:w-64">
-        {item.image_url ? (
-          <Image src={item.image_url} alt="" width={40} height={48} className="w-10 h-12 object-cover shrink-0" />
-        ) : (
-          <div className="w-10 h-12 bg-paper border border-obsidian/10 shrink-0" />
-        )}
-        <div className="min-w-0">
-          <p className="font-medium truncate">{item.name}</p>
-          <p className="text-[11px] text-obsidian/40 font-mono truncate">{item.slug}</p>
-          <p className="text-[10px] font-black uppercase tracking-[0.1em] mt-0.5 text-obsidian/35">
-            {item.source}
-            {item.reserved > 0 ? ` · ${item.reserved} reserved` : ''}
-            {lowStock ? ' · low' : ''}
-            {!item.active ? ' · off shop' : ''}
+    <div className="bg-white p-4 shadow-sm space-y-3">
+      <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+        <div className="flex items-center gap-3 min-w-0 lg:w-64">
+          {item.image_url ? (
+            <Image src={item.image_url} alt="" width={40} height={48} className="w-10 h-12 object-cover shrink-0" />
+          ) : (
+            <div className="w-10 h-12 bg-paper border border-obsidian/10 shrink-0" />
+          )}
+          <div className="min-w-0">
+            <p className="font-medium truncate">{item.name}</p>
+            <p className="text-[11px] text-obsidian/40 font-mono truncate">{item.slug}</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.1em] mt-0.5 text-obsidian/35">
+              {item.source}
+              {item.brand ? ` · ${item.brand}` : ''}
+              {item.reserved > 0 ? ` · ${item.reserved} reserved` : ''}
+              {lowStock ? ' · low' : ''}
+              {!item.active ? ' · off shop' : ''}
+              {item.taste_note ? ' · guide ✓' : ' · no guide'}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-3 flex-1">
+          <div>
+            <FieldLabel>On hand</FieldLabel>
+            <input
+              type="number"
+              min={0}
+              inputMode="numeric"
+              value={onHand}
+              onChange={(e) => setOnHand(e.target.value)}
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <FieldLabel>Price (NGN)</FieldLabel>
+            <input
+              type="number"
+              min={0}
+              inputMode="numeric"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <FieldLabel>Low at</FieldLabel>
+            <input
+              type="number"
+              min={0}
+              inputMode="numeric"
+              value={threshold}
+              onChange={(e) => setThreshold(e.target.value)}
+              className={inputClass}
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0 flex-wrap">
+          <button
+            type="button"
+            disabled={saving || !dirty}
+            onClick={() =>
+              onSave({
+                onHand,
+                priceNgn: price === '' ? undefined : price,
+                lowStockThreshold: threshold,
+                tasteNote,
+              })
+            }
+            className="px-4 py-2.5 btn-brand text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-35"
+          >
+            {saving ? '…' : 'Save'}
+          </button>
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() => onSave({ active: !item.active })}
+            className="px-3 py-2.5 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-40"
+          >
+            {item.active ? 'Unlist' : 'List'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setGuideOpen((v) => !v)}
+            className="px-3 py-2.5 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em]"
+          >
+            {guideOpen ? 'Hide guide' : 'Guide'}
+          </button>
+          <button
+            type="button"
+            onClick={onLoadForm}
+            className="px-3 py-2.5 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em]"
+          >
+            Edit form
+          </button>
+          <button
+            type="button"
+            disabled={saving}
+            onClick={onDelete}
+            className="px-3 py-2.5 border border-ember/40 text-ember text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-40"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+
+      {guideOpen && (
+        <div className="pt-3 border-t border-obsidian/10 space-y-3">
+          <div>
+            <FieldLabel>Taste note (bottle guide ⓘ)</FieldLabel>
+            <textarea
+              value={tasteNote}
+              onChange={(e) => setTasteNote(e.target.value)}
+              rows={2}
+              placeholder="What it tastes like — one sentence"
+              className={`${inputClass} resize-y`}
+            />
+          </div>
+          <p className="text-[11px] text-obsidian/45">
+            Save updates the taste note on this SKU. For full brand story (origin, history, style), use{' '}
+            <button type="button" onClick={onLoadForm} className="text-ember underline">
+              Edit form
+            </button>{' '}
+            at the top, then Generate / Save.
           </p>
         </div>
-      </div>
-
-      <div className="grid grid-cols-3 gap-3 flex-1">
-        <div>
-          <FieldLabel>On hand</FieldLabel>
-          <input
-            type="number"
-            min={0}
-            inputMode="numeric"
-            value={onHand}
-            onChange={(e) => setOnHand(e.target.value)}
-            className={inputClass}
-          />
-        </div>
-        <div>
-          <FieldLabel>Price (NGN)</FieldLabel>
-          <input
-            type="number"
-            min={0}
-            inputMode="numeric"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            className={inputClass}
-          />
-        </div>
-        <div>
-          <FieldLabel>Low at</FieldLabel>
-          <input
-            type="number"
-            min={0}
-            inputMode="numeric"
-            value={threshold}
-            onChange={(e) => setThreshold(e.target.value)}
-            className={inputClass}
-          />
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2 shrink-0">
-        <button
-          type="button"
-          disabled={saving || !dirty}
-          onClick={() =>
-            onSave({
-              onHand,
-              priceNgn: price === '' ? undefined : price,
-              lowStockThreshold: threshold,
-            })
-          }
-          className="px-4 py-2.5 btn-brand text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-35"
-        >
-          {saving ? '…' : 'Save'}
-        </button>
-        <button
-          type="button"
-          disabled={saving}
-          onClick={() => onSave({ active: !item.active })}
-          className="px-3 py-2.5 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-40"
-        >
-          {item.active ? 'Unlist' : 'List'}
-        </button>
-        <button
-          type="button"
-          disabled={saving}
-          onClick={onDelete}
-          className="px-3 py-2.5 border border-ember/40 text-ember text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-40"
-        >
-          Delete
-        </button>
-      </div>
+      )}
     </div>
   );
 }
@@ -1467,6 +1549,30 @@ function Field({
     <div>
       <FieldLabel>{label}</FieldLabel>
       <input name={name} type={type} required={required} placeholder={placeholder} className={inputClass} />
+    </div>
+  );
+}
+
+function TextAreaField({
+  name,
+  label,
+  placeholder,
+  rows = 2,
+}: {
+  name: string;
+  label: string;
+  placeholder?: string;
+  rows?: number;
+}) {
+  return (
+    <div>
+      <FieldLabel>{label}</FieldLabel>
+      <textarea
+        name={name}
+        rows={rows}
+        placeholder={placeholder}
+        className={`${inputClass} resize-y`}
+      />
     </div>
   );
 }

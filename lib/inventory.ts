@@ -1,5 +1,6 @@
 import sql from '@/lib/db';
 import { DRINKS, type DrinkCategory, type DrinkProduct } from '@/lib/drinks/catalog';
+import { TASTE_NOTES } from '@/lib/drinks/brand-guide';
 import { upsertBrand } from '@/lib/drinks/product-info';
 
 export type InventoryRow = {
@@ -175,7 +176,7 @@ export async function adminStockList(): Promise<AdminStockRow[]> {
     price_ngn: d.priceNgn ?? null,
     tagline: d.tagline || null,
     description: d.description || null,
-    taste_note: null,
+    taste_note: TASTE_NOTES[d.slug] || null,
     source: 'catalog',
     available: 0,
     tracked: false,
@@ -197,17 +198,31 @@ export class StockEditError extends Error {
  */
 export async function editStockRow(
   slug: string,
-  patch: { onHand?: number; priceNgn?: number | null; lowStockThreshold?: number; active?: boolean }
+  patch: {
+    onHand?: number;
+    priceNgn?: number | null;
+    lowStockThreshold?: number;
+    active?: boolean;
+    tasteNote?: string | null;
+    tagline?: string | null;
+    description?: string | null;
+    brand?: string | null;
+    brandOrigin?: string;
+    brandFounded?: string;
+    brandHistory?: string;
+    brandStyle?: string;
+  }
 ): Promise<InventoryRow | null> {
   const existing = await getInventory(slug);
   if (!existing) {
     const seed = DRINKS.find((d) => d.slug === slug);
     if (!seed) return null;
     await sql`
-      INSERT INTO inventory (slug, name, on_hand, category, brand, volume, abv, price_ngn, tagline, description, source)
+      INSERT INTO inventory (slug, name, on_hand, category, brand, volume, abv, price_ngn, tagline, description, taste_note, source)
       VALUES (
         ${seed.slug}, ${seed.name}, 0, ${seed.category}, ${seed.brand || null}, ${seed.volume || null},
-        ${seed.abv ?? null}, ${seed.priceNgn ?? null}, ${seed.tagline || null}, ${seed.description || null}, 'seed'
+        ${seed.abv ?? null}, ${seed.priceNgn ?? null}, ${seed.tagline || null}, ${seed.description || null},
+        ${TASTE_NOTES[seed.slug] || null}, 'seed'
       )
       ON CONFLICT (slug) DO NOTHING
     `;
@@ -222,6 +237,24 @@ export async function editStockRow(
   const priceNgn = patch.priceNgn != null ? Math.max(0, Math.floor(patch.priceNgn)) : null;
   const threshold = patch.lowStockThreshold != null ? Math.max(0, Math.floor(patch.lowStockThreshold)) : null;
   const active = patch.active != null ? patch.active : null;
+  const tasteNote = patch.tasteNote !== undefined ? (patch.tasteNote?.trim() || null) : null;
+  const tagline = patch.tagline !== undefined ? (patch.tagline?.trim() || null) : null;
+  const description = patch.description !== undefined ? (patch.description?.trim() || null) : null;
+  const brand = patch.brand !== undefined ? (patch.brand?.trim() || null) : null;
+  const setTaste = patch.tasteNote !== undefined;
+  const setTagline = patch.tagline !== undefined;
+  const setDescription = patch.description !== undefined;
+  const setBrand = patch.brand !== undefined;
+
+  const brandName = brand ?? existing?.brand ?? null;
+  if (brandName && (patch.brandHistory || patch.brandStyle || patch.brandOrigin || patch.brandFounded)) {
+    await upsertBrand(brandName, {
+      origin: patch.brandOrigin || '',
+      founded: patch.brandFounded || '',
+      history: patch.brandHistory || '',
+      style: patch.brandStyle || '',
+    });
+  }
 
   const rows = await sql`
     UPDATE inventory SET
@@ -229,6 +262,10 @@ export async function editStockRow(
       price_ngn = COALESCE(${priceNgn}, price_ngn),
       low_stock_threshold = COALESCE(${threshold}, low_stock_threshold),
       active = COALESCE(${active}, active),
+      taste_note = CASE WHEN ${setTaste} THEN ${tasteNote} ELSE taste_note END,
+      tagline = CASE WHEN ${setTagline} THEN ${tagline} ELSE tagline END,
+      description = CASE WHEN ${setDescription} THEN ${description} ELSE description END,
+      brand = CASE WHEN ${setBrand} THEN ${brand} ELSE brand END,
       updated_at = NOW()
     WHERE slug = ${slug}
     RETURNING *

@@ -57,6 +57,16 @@ export async function POST(req: NextRequest) {
           patch.lowStockThreshold = Number(body.lowStockThreshold);
         }
         if (typeof body.active === 'boolean') patch.active = body.active;
+        if (body.tasteNote !== undefined) patch.tasteNote = body.tasteNote == null ? null : String(body.tasteNote);
+        if (body.tagline !== undefined) patch.tagline = body.tagline == null ? null : String(body.tagline);
+        if (body.description !== undefined) {
+          patch.description = body.description == null ? null : String(body.description);
+        }
+        if (body.brand !== undefined) patch.brand = body.brand == null ? null : String(body.brand);
+        if (body.brandOrigin !== undefined) patch.brandOrigin = String(body.brandOrigin || '');
+        if (body.brandFounded !== undefined) patch.brandFounded = String(body.brandFounded || '');
+        if (body.brandHistory !== undefined) patch.brandHistory = String(body.brandHistory || '');
+        if (body.brandStyle !== undefined) patch.brandStyle = String(body.brandStyle || '');
         if (Object.values(patch).some((v) => typeof v === 'number' && !Number.isFinite(v))) {
           return NextResponse.json({ error: 'Numbers must be valid.' }, { status: 400 });
         }
