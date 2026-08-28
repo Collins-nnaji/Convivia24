@@ -15,7 +15,7 @@ export function SectionLabel({ children, variant = 'dark' }: SectionLabelProps) 
       }`}
     >
       <div className={`w-4 h-px ${variant === 'dark' ? 'bg-ember' : 'bg-obsidian'}`} />
-      <span className="text-[9px] font-sans font-black uppercase tracking-[0.3em]">{children}</span>
+      <span className="text-xs sm:text-sm font-sans font-black uppercase tracking-[0.2em]">{children}</span>
     </div>
   );
 }

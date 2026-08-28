@@ -198,6 +198,51 @@ export function waitlistEmail(email: string): { subject: string; html: string; t
 }
 
 /** Ops alert — new successful / paid drinks order. */
+export function adminPartnerApplicationEmail(opts: {
+  applicationId: string;
+  kind: 'outlet' | 'brand';
+  contactName: string;
+  email: string;
+  phone: string | null;
+  companyName: string;
+  notes: string | null;
+  payload: Record<string, unknown>;
+}): { subject: string; html: string; text: string } {
+  const kindLabel = opts.kind === 'outlet' ? 'Outlet partner' : 'Brand distribution';
+  const shortId = opts.applicationId.slice(0, 8).toUpperCase();
+  const payloadRows = Object.entries(opts.payload)
+    .filter(([, v]) => v != null && v !== '' && !(Array.isArray(v) && v.length === 0))
+    .map(
+      ([k, v]) =>
+        `<tr><td style="padding:4px 0;color:#6b6560;text-transform:capitalize;">${escapeHtml(k.replace(/([A-Z])/g, ' $1'))}</td><td style="padding:4px 0;text-align:right;">${escapeHtml(Array.isArray(v) ? v.join(', ') : String(v))}</td></tr>`
+    )
+    .join('');
+
+  return {
+    subject: `[Partner] ${kindLabel} · ${opts.companyName}`,
+    text: `New ${kindLabel} application (${shortId}). ${opts.companyName} — ${opts.contactName} <${opts.email}>${opts.phone ? ` · ${opts.phone}` : ''}. Notes: ${opts.notes || '—'}.`,
+    html: wrap(
+      `New ${kindLabel} application`,
+      `<p style="margin:0 0 12px;line-height:1.55;font-size:15px;color:#3a3532;">
+         Someone applied to partner with Convivia24. Review and follow up when ready.
+       </p>
+       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 16px;font-size:14px;color:#3a3532;">
+         <tr><td style="padding:4px 0;color:#6b6560;">Type</td><td style="padding:4px 0;text-align:right;font-weight:700;">${escapeHtml(kindLabel)}</td></tr>
+         <tr><td style="padding:4px 0;color:#6b6560;">Ref</td><td style="padding:4px 0;text-align:right;font-family:monospace;">${escapeHtml(shortId)}</td></tr>
+         <tr><td style="padding:4px 0;color:#6b6560;">${opts.kind === 'outlet' ? 'Venue' : 'Brand'}</td><td style="padding:4px 0;text-align:right;">${escapeHtml(opts.companyName)}</td></tr>
+         <tr><td style="padding:4px 0;color:#6b6560;">Contact</td><td style="padding:4px 0;text-align:right;">${escapeHtml(opts.contactName)}</td></tr>
+         <tr><td style="padding:4px 0;color:#6b6560;">Email</td><td style="padding:4px 0;text-align:right;"><a href="mailto:${escapeHtml(opts.email)}" style="color:#8B2A22;text-decoration:none;">${escapeHtml(opts.email)}</a></td></tr>
+         ${opts.phone ? `<tr><td style="padding:4px 0;color:#6b6560;">Phone</td><td style="padding:4px 0;text-align:right;">${escapeHtml(opts.phone)}</td></tr>` : ''}
+         ${payloadRows}
+       </table>
+       ${opts.notes ? `<p style="margin:0 0 16px;font-size:14px;color:#3a3532;line-height:1.5;"><strong>Notes —</strong> ${escapeHtml(opts.notes)}</p>` : ''}
+       <p style="margin:16px 0 0;">
+         <a href="${appUrl()}/admin" style="display:inline-block;padding:12px 18px;background:#8B2A22;color:#fff;text-decoration:none;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">Open admin</a>
+       </p>`
+    ),
+  };
+}
+
 export function adminSuccessfulOrderEmail(opts: {
   fullName: string;
   email: string;

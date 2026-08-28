@@ -24,9 +24,9 @@ export default function CartPage() {
 
   return (
     <>
-      <section className="bg-white border-b border-obsidian/5 -mt-16 pt-28 pb-12">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8">
-          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ember mb-2">Cart</p>
+      <section className="bg-white border-b border-obsidian/5 pt-8 pb-10">
+        <div className="max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-5">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-ember mb-2">Cart</p>
           <h1 className="text-3xl sm:text-4xl font-bold">
             <span className="brand-text">Your order</span>
           </h1>
@@ -34,8 +34,8 @@ export default function CartPage() {
         </div>
       </section>
 
-      <section className="bg-paper py-12 sm:py-16">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8">
+      <section className="bg-paper py-10 sm:py-14 pb-24 md:pb-14">
+        <div className="max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-5">
           {lines.length === 0 ? (
             <div className="max-w-md">
               <p className="text-xl font-semibold text-obsidian mb-4">Nothing in the cart yet.</p>
@@ -113,9 +113,9 @@ export default function CartPage() {
                 ))}
               </ul>
 
-              <aside className="lg:col-span-4">
+              <aside className="lg:col-span-4 lg:sticky lg:top-[5.5rem] lg:self-start">
                 <GuestCardStrip className="mb-6" />
-                <div className="bg-white border border-obsidian/8 p-6 space-y-4">
+                <div className="bg-white border border-obsidian/8 rounded-2xl p-6 space-y-4 shadow-sm">
                   <div className="flex justify-between text-sm">
                     <span className="text-obsidian/50">Subtotal</span>
                     <span className="text-xl font-bold">{formatNgn(subtotalNgn)}</span>
@@ -146,7 +146,7 @@ export default function CartPage() {
                           Keep shopping
                         </Link>
                         , or take an{' '}
-                        <Link href="/packages" className="underline hover:no-underline">
+                        <Link href="/shop?section=packages" className="underline hover:no-underline">
                           event package
                         </Link>
                         .

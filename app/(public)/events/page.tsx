@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 };
 
 export default function EventsPage() {
-  if (!eventsEnabled) redirect('/plan');
+  if (!eventsEnabled) redirect('/shop?section=plan');
 
   return (
     <Suspense fallback={<div className="bg-paper min-h-[50vh] flex items-center justify-center text-sm text-obsidian/40">Loading nights…</div>}>

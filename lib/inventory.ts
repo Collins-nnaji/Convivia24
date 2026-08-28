@@ -398,7 +398,9 @@ export async function fulfillStockForOrder(lines: StockLine[], orderId: string):
 }
 
 /** Merge static catalog + admin inventory into shop products with live stock. */
-export async function shopCatalog(): Promise<(DrinkProduct & { onHand?: number; available?: number; lowStock?: boolean })[]> {
+export async function shopCatalog(): Promise<
+  (DrinkProduct & { tasteNote?: string | null; onHand?: number; available?: number; lowStock?: boolean })[]
+> {
   let stock: InventoryRow[] = [];
   try {
     stock = await listInventory(true);
@@ -417,6 +419,7 @@ export async function shopCatalog(): Promise<(DrinkProduct & { onHand?: number; 
       lowStock: inv ? inv.available <= inv.low_stock_threshold : false,
       image: inv?.image_url || d.image,
       priceNgn: inv?.price_ngn && inv.price_ngn > 0 ? inv.price_ngn : d.priceNgn,
+      tasteNote: inv?.taste_note || TASTE_NOTES[d.slug] || null,
     };
   });
 
@@ -438,6 +441,7 @@ export async function shopCatalog(): Promise<(DrinkProduct & { onHand?: number; 
       onHand: s.on_hand,
       available: s.available,
       lowStock: s.available <= s.low_stock_threshold,
+      tasteNote: s.taste_note || TASTE_NOTES[s.slug] || null,
     }));
 
   return [...adminOnly, ...fromCatalog];

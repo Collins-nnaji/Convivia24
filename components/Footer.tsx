@@ -4,9 +4,9 @@ import { eventsEnabled } from '@/lib/features';
 
 const footerLinks = [
   { label: 'Shop', href: '/shop' },
-  ...(eventsEnabled ? [{ label: 'Events', href: '/events' }] : [{ label: 'Plan', href: '/plan' }]),
+  ...(eventsEnabled ? [{ label: 'Events', href: '/events' }] : [{ label: 'Plan', href: '/shop?section=plan' }]),
   { label: 'Trivia', href: '/trivia' },
-  { label: 'Partners', href: '/partners' },
+  { label: 'Contact', href: '/contact' },
   { label: 'Privacy', href: '/privacy' },
   { label: 'Terms', href: '/terms' },
 ];

@@ -2,37 +2,84 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { usePathname } from 'next/navigation';
 import { Info, MapPin, X } from 'lucide-react';
 import { getDrinkBySlug } from '@/lib/drinks/catalog';
+import { tasteNoteForSlug } from '@/lib/drinks/taste-note';
 import type { ProductInfoPayload } from '@/lib/drinks/product-info';
 
 type Props = {
   slug: string;
   brand?: string;
+  tasteNote?: string | null;
   className?: string;
   size?: 'sm' | 'md';
 };
 
-export default function DrinkInfoButton({ slug, brand, className = '', size = 'sm' }: Props) {
+const infoCache = new Map<string, ProductInfoPayload>();
+
+function prefetchProductInfo(slug: string) {
+  if (infoCache.has(slug)) return;
+  fetch(`/api/shop/product-info?slug=${encodeURIComponent(slug)}`)
+    .then(async (r) => {
+      const data = await r.json().catch(() => ({}));
+      if (r.ok) infoCache.set(slug, data as ProductInfoPayload);
+    })
+    .catch(() => {});
+}
+
+export default function DrinkInfoButton({ slug, brand, tasteNote, className = '', size = 'sm' }: Props) {
+  const pathname = usePathname();
   const product = getDrinkBySlug(slug);
+  const instantTaste = tasteNoteForSlug(slug, tasteNote);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [info, setInfo] = useState<ProductInfoPayload | null>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
+    prefetchProductInfo(slug);
+  }, [slug]);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
     if (!open) return;
-    setLoading(true);
-    setError('');
+
+    const cached = infoCache.get(slug);
+    if (cached) {
+      setInfo(cached);
+      setLoading(false);
+      setError('');
+    } else if (instantTaste) {
+      setInfo({
+        slug,
+        name: product?.name || slug,
+        brand: brand || product?.brand || null,
+        tasteNote: instantTaste,
+        brandGuide: null,
+      });
+      setLoading(true);
+      setError('');
+    } else {
+      setLoading(true);
+      setError('');
+    }
+
     fetch(`/api/shop/product-info?slug=${encodeURIComponent(slug)}`)
       .then(async (r) => {
         const data = await r.json().catch(() => ({}));
         if (!r.ok) throw new Error(data.error || 'No guide yet');
+        infoCache.set(slug, data as ProductInfoPayload);
         setInfo(data as ProductInfoPayload);
       })
       .catch((e) => {
-        setInfo(null);
-        setError(e instanceof Error ? e.message : 'Could not load guide');
+        if (!instantTaste) {
+          setInfo(null);
+          setError(e instanceof Error ? e.message : 'Could not load guide');
+        }
       })
       .finally(() => setLoading(false));
 
@@ -47,7 +94,7 @@ export default function DrinkInfoButton({ slug, brand, className = '', size = 's
       document.body.classList.remove('drink-info-modal-open');
       document.body.style.overflow = '';
     };
-  }, [open, slug]);
+  }, [open, slug, instantTaste, brand, product?.name, product?.brand]);
 
   const iconSize = size === 'md' ? 18 : 14;
   const btnClass =
@@ -57,6 +104,7 @@ export default function DrinkInfoButton({ slug, brand, className = '', size = 's
 
   const displayName = info?.name || product?.name || slug;
   const brandName = info?.brand || brand || product?.brand;
+  const shownTaste = info?.tasteNote || instantTaste;
 
   const modal =
     open &&
@@ -94,15 +142,18 @@ export default function DrinkInfoButton({ slug, brand, className = '', size = 's
           </div>
 
           <div className="overflow-y-auto px-5 py-4 space-y-5 flex-1" style={{ backgroundColor: '#ffffff' }}>
-            {loading && <p className="text-sm text-obsidian/50">Loading…</p>}
-            {!loading && error && <p className="text-sm text-obsidian/55">{error}</p>}
-            {!loading && info?.tasteNote && (
+            {loading && !shownTaste && <p className="text-sm text-obsidian/50">Loading…</p>}
+            {!loading && error && !shownTaste && <p className="text-sm text-obsidian/55">{error}</p>}
+            {shownTaste && (
               <section>
                 <p className="text-[10px] font-black uppercase tracking-[0.18em] text-obsidian/35 mb-2">
                   Tastes like
                 </p>
-                <p className="text-sm text-obsidian/75 leading-relaxed">{info.tasteNote}</p>
+                <p className="text-sm text-obsidian/75 leading-relaxed">{shownTaste}</p>
               </section>
+            )}
+            {loading && shownTaste && !info?.brandGuide && (
+              <p className="text-xs text-obsidian/40">Loading brand story…</p>
             )}
             {!loading && info?.brandGuide && (
               <section>
@@ -141,6 +192,8 @@ export default function DrinkInfoButton({ slug, brand, className = '', size = 's
         aria-label="Bottle details — taste and brand story"
         aria-haspopup="dialog"
         aria-expanded={open}
+        onMouseEnter={() => prefetchProductInfo(slug)}
+        onFocus={() => prefetchProductInfo(slug)}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();

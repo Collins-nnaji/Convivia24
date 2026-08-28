@@ -2,74 +2,116 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Minus, Plus } from 'lucide-react';
+import { Minus, Plus, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/components/cart/CartProvider';
 import DrinkPhoto from '@/components/shop/DrinkPhoto';
 import DrinkInfoButton from '@/components/shop/DrinkInfoButton';
 import { formatNgn, type DrinkProduct } from '@/lib/drinks/catalog';
+import { tasteNoteForSlug } from '@/lib/drinks/taste-note';
 
-export function ProductCard({ product }: { product: DrinkProduct }) {
+export type ProductCardData = DrinkProduct & {
+  tasteNote?: string | null;
+  onHand?: number;
+  available?: number;
+  lowStock?: boolean;
+};
+
+export function ProductCard({ product }: { product: ProductCardData }) {
   const { addProduct } = useCart();
   const [qty, setQty] = useState(1);
-  const [added, setAdded] = useState(false);
+  const tasteNote = tasteNoteForSlug(product.slug, product.tasteNote);
 
   function handleAdd() {
     addProduct(product.slug, qty);
-    setAdded(true);
-    setTimeout(() => setAdded(false), 1400);
   }
 
+  const stockLabel =
+    typeof product.available === 'number'
+      ? product.available <= 0
+        ? 'Out of stock'
+        : product.lowStock
+          ? `Low · ${product.available} left`
+          : `${product.available} in stock`
+      : null;
+
   return (
-    <article className="group flex flex-col">
-      <Link href={`/shop/${product.slug}`} className="block">
-        <div className="relative aspect-[3/4] overflow-hidden mb-3 border border-obsidian/10 bg-paper">
-          <DrinkPhoto product={product} className="absolute inset-0 w-full h-full" />
+    <article className="group/card flex h-full flex-col overflow-hidden rounded-2xl border border-obsidian/[0.07] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-1.5 hover:border-ember/30 hover:shadow-[0_12px_32px_rgba(139,42,34,0.12)] active:scale-[0.99]">
+      <Link href={`/shop/${product.slug}`} className="block flex-1 p-3 pb-2">
+        <div className="relative mb-3 aspect-[3/4] overflow-hidden rounded-xl bg-gradient-to-b from-[#f7f3ee] to-white ring-1 ring-inset ring-obsidian/[0.06]">
+          <DrinkPhoto
+            product={product}
+            className="absolute inset-0 h-full w-full transition-transform duration-500 ease-out group-hover/card:scale-[1.06]"
+          />
           {product.deal && (
-            <span className="absolute top-2 left-2 badge-brand text-[8px] font-black uppercase tracking-wider px-2 py-0.5 z-10">
+            <span className="absolute left-2 top-2 z-10 badge-brand px-2 py-0.5 text-[8px] font-black uppercase tracking-wider">
               Deal
             </span>
           )}
           {product.partyPack && (
-            <span className="absolute top-2 right-2 bg-obsidian text-white text-[8px] font-black uppercase tracking-wider px-2 py-0.5 z-10">
+            <span className="absolute right-2 top-2 z-10 bg-obsidian px-2 py-0.5 text-[8px] font-black uppercase tracking-wider text-white">
               Pack
             </span>
           )}
-          <span className="absolute bottom-2 right-2 z-10" onClick={(e) => e.preventDefault()}>
-            <DrinkInfoButton slug={product.slug} brand={product.brand} />
+          {stockLabel && (
+            <span
+              className={`absolute left-2 bottom-2 z-10 rounded-md px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide ${
+                product.available! <= 0
+                  ? 'bg-obsidian/70 text-white'
+                  : product.lowStock
+                    ? 'bg-ember text-white'
+                    : 'bg-white/90 text-obsidian/60'
+              }`}
+            >
+              {stockLabel}
+            </span>
+          )}
+          <span
+            className="absolute bottom-2 right-2 z-10"
+            onClick={(e) => e.preventDefault()}
+          >
+            <DrinkInfoButton slug={product.slug} brand={product.brand} tasteNote={tasteNote} />
           </span>
         </div>
-        <p className="text-xs text-obsidian/75 leading-snug line-clamp-2 min-h-[2.5rem]">
-          {product.name} · {product.abv}% · {product.volume}
+        <p className="line-clamp-2 text-sm font-semibold leading-snug text-obsidian sm:text-[15px]">
+          {product.name}
         </p>
-        <p className="text-sm font-semibold text-obsidian mt-1">{formatNgn(product.priceNgn)}</p>
+        {tasteNote && (
+          <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-obsidian/55">{tasteNote}</p>
+        )}
+        <p className="mt-1 text-xs text-obsidian/45">
+          {product.abv}% · {product.volume}
+        </p>
+        <p className="mt-1.5 text-base font-bold text-obsidian">{formatNgn(product.priceNgn)}</p>
       </Link>
 
-      <div className="mt-2 flex items-center gap-2">
-        <div className="flex items-center border border-obsidian/15 shrink-0">
+      <div className="mt-auto flex items-center gap-2 border-t border-obsidian/[0.06] bg-paper/30 px-3 py-2.5">
+        <div className="flex shrink-0 items-center overflow-hidden rounded-lg border border-obsidian/10 bg-white">
           <button
             type="button"
             aria-label="Decrease quantity"
-            className="p-2 text-obsidian/50 hover:text-obsidian"
+            className="p-2 text-obsidian/45 transition-colors hover:bg-obsidian/[0.04] hover:text-obsidian active:scale-95"
             onClick={() => setQty((q) => Math.max(1, q - 1))}
           >
-            <Minus size={12} />
+            <Minus size={13} />
           </button>
-          <span className="w-7 text-center text-xs font-semibold tabular-nums">{qty}</span>
+          <span className="w-8 text-center text-sm font-semibold tabular-nums">{qty}</span>
           <button
             type="button"
             aria-label="Increase quantity"
-            className="p-2 text-obsidian/50 hover:text-obsidian"
+            className="p-2 text-obsidian/45 transition-colors hover:bg-obsidian/[0.04] hover:text-obsidian active:scale-95"
             onClick={() => setQty((q) => Math.min(24, q + 1))}
           >
-            <Plus size={12} />
+            <Plus size={13} />
           </button>
         </div>
         <button
           type="button"
           onClick={handleAdd}
-          className="flex-1 py-2 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian hover:border-ember hover:text-ember transition-colors"
+          disabled={product.available === 0}
+          className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-obsidian/12 bg-white py-2.5 text-[11px] font-black uppercase tracking-[0.1em] text-obsidian transition-all duration-200 hover:border-ember hover:bg-ember hover:text-white hover:shadow-md hover:shadow-ember/20 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-obsidian/12 disabled:hover:bg-white disabled:hover:text-obsidian disabled:hover:shadow-none"
         >
-          {added ? 'Added' : 'Add'}
+          <ShoppingBag size={13} className="opacity-60" />
+          Add
         </button>
       </div>
     </article>

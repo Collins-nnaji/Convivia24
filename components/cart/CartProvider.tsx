@@ -13,6 +13,7 @@ import {
 import { SAMPLE_PAYMENT_SLUG } from '@/lib/drinks/catalog';
 import { findSellable } from '@/lib/catalog/sellable';
 import { useUser } from '@/components/auth/AuthProvider';
+import CartToast from '@/components/cart/CartToast';
 
 export type CartLine = {
   slug: string;
@@ -25,11 +26,13 @@ type CartContextValue = {
   lines: CartLine[];
   count: number;
   subtotalNgn: number;
+  toast: { name: string } | null;
   addProduct: (slug: string, qty?: number) => void;
   setQty: (slug: string, qty: number) => void;
   remove: (slug: string) => void;
   clear: () => void;
   refreshPrices: () => void;
+  dismissToast: () => void;
 };
 
 const STORAGE_KEY = 'convivia_drinks_cart';
@@ -82,8 +85,15 @@ function loadCart(): CartLine[] {
 export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  const [toast, setToast] = useState<{ name: string } | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { user, loading: authLoading } = useUser();
   const syncedForUser = useRef<string | null>(null);
+
+  const dismissToast = useCallback(() => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setToast(null);
+  }, []);
 
   useEffect(() => {
     setLines(loadCart());
@@ -163,6 +173,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         },
       ];
     });
+    setToast({ name: product.name });
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 3200);
   }, []);
 
   const setQty = useCallback((slug: string, qty: number) => {
@@ -189,15 +202,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
       lines,
       count,
       subtotalNgn,
+      toast,
       addProduct,
       setQty,
       remove,
       clear,
       refreshPrices,
+      dismissToast,
     };
-  }, [lines, addProduct, setQty, remove, clear, refreshPrices]);
+  }, [lines, toast, addProduct, setQty, remove, clear, refreshPrices, dismissToast]);
 
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+  return (
+    <CartContext.Provider value={value}>
+      {children}
+      <CartToast />
+    </CartContext.Provider>
+  );
 }
 
 export function useCart() {

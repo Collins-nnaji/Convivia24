@@ -88,8 +88,18 @@ body.drink-info-modal-open [role='tooltip'] {
   .font-wordmark-sm {
     font-family: var(--font-montserrat), sans-serif;
     font-weight: 500;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
+  }
+  /* Legible UI copy — prefer these over raw text-[9–11px] utilities. */
+  .text-label {
+    @apply text-xs sm:text-sm font-black uppercase tracking-[0.12em];
+  }
+  .text-caption {
+    @apply text-sm sm:text-base text-obsidian/55 leading-relaxed;
+  }
+  .text-body {
+    @apply text-base sm:text-lg text-obsidian/80 leading-relaxed;
   }
 }
 

@@ -4,7 +4,7 @@ import { EVENT_PACKAGES } from '@/lib/packages/catalog';
 import { eventsEnabled } from '@/lib/features';
 import { absoluteUrl } from '@/lib/seo';
 
-const MVP_PATHS = ['/', '/shop', '/packages', '/plan', '/trivia', '/partners', '/refer', '/card', '/convivium', '/privacy', '/terms'];
+const MVP_PATHS = ['/', '/shop', '/trivia', '/contact', '/refer', '/card', '/convivium', '/privacy', '/terms'];
 
 const FULL_PATHS = [...MVP_PATHS, '/events', '/venues', '/circles'];
 
@@ -16,13 +16,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: absoluteUrl(path),
     lastModified: now,
     changeFrequency:
-      path === '/' || path === '/shop' || path === '/packages' || path === '/plan' || path === '/events'
+      path === '/' || path === '/shop' || path === '/events'
       ? 'daily'
       : 'weekly',
     priority:
       path === '/'
         ? 1
-        : path === '/shop' || path === '/packages' || path === '/plan' || path === '/events'
+        : path === '/shop' || path === '/events'
           ? 0.9
           : 0.6,
   }));
@@ -35,7 +35,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }));
 
   const packages: MetadataRoute.Sitemap = EVENT_PACKAGES.map((p) => ({
-    url: absoluteUrl(`/packages/${p.slug}`),
+    url: absoluteUrl(`/shop?section=packages&pkg=${p.slug}`),
     lastModified: now,
     changeFrequency: 'weekly' as const,
     priority: 0.8,

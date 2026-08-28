@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { CalendarDays, Gift, PartyPopper, ShoppingBag, Store } from 'lucide-react';
 import { useCart } from '@/components/cart/CartProvider';
 import { eventsEnabled } from '@/lib/features';
@@ -11,7 +11,7 @@ const TABS = [
   { href: '/shop', label: 'Shop', icon: Store },
   eventsEnabled
     ? { href: '/events', label: 'Events', icon: CalendarDays }
-    : { href: '/plan', label: 'Plan', icon: PartyPopper },
+    : { href: '/shop?section=plan', label: 'Plan', icon: PartyPopper },
   // Accented: a prize draw, not a shopping step.
   { href: '/trivia', label: 'Trivia', icon: Gift, accent: true },
   { href: '/cart', label: 'Cart', icon: ShoppingBag },
@@ -19,7 +19,15 @@ const TABS = [
 
 export default function MobileTabBar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const section = searchParams.get('section');
   const { count } = useCart();
+
+  function tabActive(href: string): boolean {
+    if (href === '/shop') return pathname === '/shop' && section !== 'plan';
+    if (href === '/shop?section=plan') return pathname === '/shop' && section === 'plan';
+    return isNavActive(pathname, href);
+  }
 
   return (
     <nav
@@ -30,11 +38,12 @@ export default function MobileTabBar() {
         {TABS.map((tab) => {
           const { href, label, icon: Icon } = tab;
           const accent = 'accent' in tab && tab.accent === true;
-          const active = isNavActive(pathname, href);
+          const active = tabActive(href);
           return (
             <Link
               key={href}
               href={href}
+              scroll
               className="relative flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform"
             >
               <Icon
@@ -43,7 +52,7 @@ export default function MobileTabBar() {
                 className={active ? 'text-ember' : accent ? 'text-ember/60' : 'text-obsidian/40'}
               />
               <span
-                className={`text-[9px] font-black uppercase tracking-[0.1em] ${
+                className={`text-[10px] sm:text-xs font-black uppercase tracking-[0.08em] ${
                   active ? 'text-ember' : accent ? 'text-ember/55' : 'text-obsidian/35'
                 }`}
               >

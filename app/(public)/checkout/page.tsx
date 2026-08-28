@@ -138,7 +138,7 @@ function CheckoutForm() {
 
   if (lines.length === 0) {
     return (
-      <section className="bg-paper min-h-[60vh] -mt-16 pt-28 px-5">
+      <section className="bg-paper min-h-[60vh] pt-8 px-3 sm:px-4 lg:px-5">
         <div className="max-w-lg mx-auto">
           <h1 className="text-3xl font-bold mb-4">Your cart is empty</h1>
           <Link href="/shop" className="text-[11px] font-black uppercase tracking-[0.2em] text-ember">
@@ -151,7 +151,7 @@ function CheckoutForm() {
 
   if (short > 0) {
     return (
-      <section className="bg-paper min-h-[60vh] -mt-16 pt-28 px-5">
+      <section className="bg-paper min-h-[60vh] pt-8 px-3 sm:px-4 lg:px-5">
         <div className="max-w-lg mx-auto">
           <h1 className="text-3xl font-bold mb-3">Add {short} more bottle{short === 1 ? '' : 's'}</h1>
           <p className="text-sm text-obsidian/55 mb-6 leading-relaxed">
@@ -162,7 +162,7 @@ function CheckoutForm() {
             <Link href="/shop" className="text-[11px] font-black uppercase tracking-[0.2em] text-ember">
               Shop drinks →
             </Link>
-            <Link href="/packages" className="text-[11px] font-black uppercase tracking-[0.2em] text-ember">
+            <Link href="/shop?section=packages" className="text-sm font-black uppercase tracking-[0.14em] text-ember">
               Event packages →
             </Link>
             <Link href="/cart" className="text-[11px] font-black uppercase tracking-[0.2em] text-obsidian/40">
@@ -179,9 +179,9 @@ function CheckoutForm() {
 
   return (
     <>
-      <section className="bg-white border-b border-obsidian/5 -mt-16 pt-28 pb-12">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8">
-          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ember mb-2">Nationwide delivery</p>
+      <section className="bg-white border-b border-obsidian/5 pt-8 pb-10">
+        <div className="max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-5">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-ember mb-2">Nationwide delivery</p>
           <h1 className="text-3xl sm:text-4xl font-bold brand-text">Checkout</h1>
           {eventId && (
             <p className="mt-2 text-xs text-obsidian/45">
@@ -191,9 +191,9 @@ function CheckoutForm() {
         </div>
       </section>
 
-      <section className="bg-paper py-12 sm:py-14">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 grid lg:grid-cols-12 gap-12">
-          <form onSubmit={onSubmit} className="lg:col-span-7 space-y-6">
+      <section className="bg-paper py-10 sm:py-14 pb-32 lg:pb-14">
+        <div className="max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-5 grid lg:grid-cols-12 gap-10 lg:gap-12">
+          <form id="checkout-form" onSubmit={onSubmit} className="lg:col-span-7 space-y-6">
             <div className="flex gap-2 mb-2">
               {(['address', 'venue'] as const).map((mode) => (
                 <button
@@ -314,14 +314,14 @@ function CheckoutForm() {
             <button
               type="submit"
               disabled={loading}
-              className="px-8 py-4 btn-brand text-[11px] font-black uppercase tracking-[0.14em] disabled:opacity-60"
+              className="hidden lg:inline-flex px-8 py-4 btn-brand text-[11px] font-black uppercase tracking-[0.14em] disabled:opacity-60"
             >
               {loading ? 'Placing order…' : `Pay ${formatNgn(payableNgn)}`}
             </button>
           </form>
 
-          <aside className="lg:col-span-5">
-            <div className="border border-obsidian/8 p-6 space-y-4 bg-white">
+          <aside className="lg:col-span-5 lg:sticky lg:top-[5.5rem] lg:self-start">
+            <div className="border border-obsidian/8 rounded-2xl p-6 space-y-4 bg-white shadow-sm">
               <p className="text-[9px] font-black uppercase tracking-[0.25em] text-obsidian/40">Order</p>
               <ul className="space-y-3">
                 {lines.map((l) => (
@@ -354,6 +354,19 @@ function CheckoutForm() {
           </aside>
         </div>
       </section>
+
+      <div className="fixed bottom-16 lg:bottom-0 inset-x-0 z-30 lg:hidden pointer-events-none">
+        <div className="max-w-[1600px] mx-auto px-3 sm:px-4 pointer-events-auto pb-2">
+          <button
+            type="submit"
+            form="checkout-form"
+            disabled={loading}
+            className="w-full py-4 btn-brand text-sm font-bold disabled:opacity-60 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
+          >
+            {loading ? 'Placing order…' : `Pay ${formatNgn(payableNgn)}`}
+          </button>
+        </div>
+      </div>
     </>
   );
 }

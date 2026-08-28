@@ -58,8 +58,7 @@ const inputClass =
   'w-full border-0 border-b border-obsidian/15 focus:border-ember focus:ring-0 text-sm py-2.5 bg-transparent';
 
 /**
- * Drink-supply planner for any event size. On /plan it renders as a full page tool
- * (no accordion). Live basket from guest count, hours, vibe, and optional budget.
+ * Drink-supply planner — embedded in the shop under ?section=plan.
  */
 export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: boolean }) {
   const router = useRouter();
@@ -284,7 +283,7 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
               className="w-full border-0 border-b-2 border-obsidian/20 focus:border-ember focus:ring-0 text-2xl sm:text-3xl font-semibold text-obsidian py-3 bg-transparent placeholder:text-obsidian/25"
             />
           </label>
-          <p className="text-sm sm:text-[13px] text-obsidian/45 mt-3 leading-relaxed">
+          <p className="text-base text-obsidian/50 mt-3 leading-relaxed">
             This name leads the plan image when you share or download.
           </p>
         </section>
@@ -306,8 +305,8 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
                     on ? 'border-ember bg-ember/5' : 'border-obsidian/10 hover:border-obsidian/25 bg-white'
                   }`}
                 >
-                  <span className="block text-[10px] sm:text-[11px] font-medium text-obsidian/80">{preset.label}</span>
-                  <span className="block text-[10px] text-obsidian/35 mt-0.5">{preset.guests.toLocaleString()}</span>
+                  <span className="block text-xs sm:text-sm font-medium text-obsidian/80">{preset.label}</span>
+                  <span className="block text-xs sm:text-sm text-obsidian/35 mt-0.5">{preset.guests.toLocaleString()}</span>
                 </button>
               );
             })}
@@ -329,7 +328,7 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
                     key={h}
                     type="button"
                     onClick={() => setHours(h)}
-                    className={`px-3 py-1.5 text-xs sm:text-[11px] border ${
+                    className={`px-3 py-1.5 text-xs sm:text-xs sm:text-sm border ${
                       hours === h ? 'border-ember text-ember' : 'border-obsidian/10 text-obsidian/50'
                     }`}
                   >
@@ -364,13 +363,13 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
                   }`}
                 >
                   <span className="block text-base sm:text-sm font-medium text-obsidian">{VIBE_LABELS[id]}</span>
-                  <span className="block text-sm sm:text-[12px] text-obsidian/45 mt-1 leading-snug">{VIBE_HELP[id]}</span>
+                  <span className="block text-sm text-obsidian/45 mt-1 leading-snug">{VIBE_HELP[id]}</span>
                 </button>
               );
             })}
           </div>
           <div className="mt-5">
-            <span className="text-[11px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 block mb-2">
+            <span className="text-xs sm:text-sm font-black uppercase tracking-[0.2em] text-obsidian/40 block mb-2">
               Occasion
             </span>
             <div className="flex flex-wrap gap-1.5">
@@ -379,7 +378,7 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
                   key={o}
                   type="button"
                   onClick={() => setOccasion(o)}
-                  className={`px-3 py-2 sm:py-1.5 text-xs sm:text-[11px] border ${
+                  className={`px-3 py-2 sm:py-1.5 text-xs sm:text-xs sm:text-sm border ${
                     occasion === o ? 'border-ember text-ember' : 'border-obsidian/10 text-obsidian/50 hover:border-obsidian/25'
                   }`}
                 >
@@ -433,13 +432,13 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
             <div className="mt-5 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label className="block">
-                  <span className="text-[11px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 block mb-1">
+                  <span className="text-xs sm:text-sm font-black uppercase tracking-[0.2em] text-obsidian/40 block mb-1">
                     Date
                   </span>
                   <input type="date" value={eventDate} onChange={(e) => setEventDate(e.target.value)} className={`${inputClass} text-base sm:text-sm`} />
                 </label>
                 <label className="block">
-                  <span className="text-[11px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 block mb-1">
+                  <span className="text-xs sm:text-sm font-black uppercase tracking-[0.2em] text-obsidian/40 block mb-1">
                     Venue
                   </span>
                   <input
@@ -451,7 +450,7 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
                 </label>
               </div>
               <label className="block">
-                <span className="text-[11px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 block mb-1">
+                <span className="text-xs sm:text-sm font-black uppercase tracking-[0.2em] text-obsidian/40 block mb-1">
                   Notes for AI advice
                 </span>
                 <textarea
@@ -467,7 +466,7 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
                   type="button"
                   onClick={askAi}
                   disabled={thinking}
-                  className="inline-flex items-center gap-2 px-4 py-3 sm:py-2.5 border border-obsidian/15 text-xs sm:text-[11px] font-black uppercase tracking-[0.12em] disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-4 py-3 sm:py-2.5 border border-obsidian/15 text-xs sm:text-xs sm:text-sm font-black uppercase tracking-[0.12em] disabled:opacity-50"
                 >
                   <Sparkles size={14} /> {thinking ? 'Thinking…' : 'Hosting advice'}
                 </button>
@@ -475,7 +474,7 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
                   type="button"
                   onClick={saveParty}
                   disabled={saving}
-                  className="inline-flex items-center gap-2 px-4 py-3 sm:py-2.5 border border-obsidian/15 text-xs sm:text-[11px] font-black uppercase tracking-[0.12em] disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-4 py-3 sm:py-2.5 border border-obsidian/15 text-xs sm:text-xs sm:text-sm font-black uppercase tracking-[0.12em] disabled:opacity-50"
                 >
                   <Save size={14} /> {saving ? 'Saving…' : partyId ? 'Update' : 'Save plan'}
                 </button>
@@ -483,7 +482,7 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
                   <button
                     type="button"
                     onClick={newParty}
-                    className="px-3 py-3 sm:py-2.5 text-xs sm:text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/45 hover:text-obsidian"
+                    className="px-3 py-3 sm:py-2.5 text-xs sm:text-xs sm:text-sm font-black uppercase tracking-[0.12em] text-obsidian/45 hover:text-obsidian"
                   >
                     New
                   </button>
@@ -500,7 +499,7 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
               onClick={() => setShowSaved((v) => !v)}
               className="w-full flex items-center justify-between text-left"
             >
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40">
+              <p className="text-xs sm:text-sm font-black uppercase tracking-[0.2em] text-obsidian/40">
                 Saved plans ({parties.length})
               </p>
               <ChevronDown size={16} className={`text-obsidian/35 transition-transform ${showSaved ? 'rotate-180' : ''}`} />
@@ -517,7 +516,7 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
                       }`}
                     >
                       <span className="block truncate font-medium">{party.name}</span>
-                      <span className="block text-[11px] text-obsidian/40 truncate">
+                      <span className="block text-xs sm:text-sm text-obsidian/40 truncate">
                         {party.guests} guests{party.eventDate ? ` · ${party.eventDate}` : ''}
                         {party.venue ? ` · ${party.venue}` : ''}
                       </span>
@@ -544,21 +543,21 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
         <div className="lg:sticky lg:top-24 bg-white border border-obsidian/10 px-5 sm:px-7 py-6 sm:py-8">
           <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] sm:text-[10px] font-black uppercase tracking-[0.22em] text-ember">Suggested supplies</p>
+              <p className="text-xs sm:text-sm font-black uppercase tracking-[0.22em] text-ember">Suggested supplies</p>
               <h2 className="text-2xl sm:text-3xl font-semibold text-obsidian mt-2 leading-tight text-balance">
                 {partyName.trim() || 'Your event'}
               </h2>
               <p className="text-base sm:text-sm text-obsidian/45 mt-2">
                 {size.label} · {guests.toLocaleString()} guests · {hours}h · {VIBE_LABELS[vibe]}
               </p>
-              <p className="text-sm sm:text-[11px] text-obsidian/40 mt-1.5">{occasion}</p>
-              <p className="text-sm sm:text-[11px] text-obsidian/40 mt-3">
+              <p className="text-sm sm:text-xs sm:text-sm text-obsidian/40 mt-1.5">{occasion}</p>
+              <p className="text-sm sm:text-xs sm:text-sm text-obsidian/40 mt-3">
                 Swap any bottle with something else from the shop — keep the quantity.
               </p>
             </div>
             <div className="text-right shrink-0">
               <p className="text-3xl sm:text-4xl font-bold brand-text leading-none">{plan ? formatNgn(plan.totalNgn) : '—'}</p>
-              <p className="text-xs sm:text-[11px] text-obsidian/40 mt-1.5">
+              <p className="text-xs sm:text-xs sm:text-sm text-obsidian/40 mt-1.5">
                 {plan ? `${formatNgn(plan.spendPerGuest || Math.round(plan.totalNgn / Math.max(guests, 1)))} / guest` : ''}
               </p>
             </div>
@@ -577,7 +576,7 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
           </dl>
 
           {plan && budgetOn && budget > 0 && plan.totalNgn > budget && (
-            <p className="text-[12px] text-ember mb-5">
+            <p className="text-sm text-ember mb-5">
               Still over {formatNgn(budget)} after trimming. Drop guests, hours, or switch vibe.
             </p>
           )}
@@ -594,12 +593,12 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
 
           {suggestedPackage && plan && (
             <div className="mb-7 border border-ember/25 bg-ember/[0.03] px-4 py-3.5">
-              <p className="text-[10px] uppercase tracking-wider text-ember mb-1.5">
+              <p className="text-xs sm:text-sm uppercase tracking-wider text-ember mb-1.5">
                 Or skip the picking
               </p>
               <p className="text-sm text-obsidian/75 leading-relaxed">
                 <Link
-                  href={`/packages/${suggestedPackage.slug}`}
+                  href={`/shop?section=packages&pkg=${suggestedPackage.slug}`}
                   className="font-semibold text-obsidian hover:text-ember hover:underline"
                 >
                   {suggestedPackage.name}
@@ -624,7 +623,7 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
                 <div className="flex items-start justify-between gap-4 py-3.5">
                   <div className="min-w-0">
                     <p className="font-medium text-base sm:text-sm truncate">{line.name}</p>
-                    <p className="text-sm sm:text-[11px] text-obsidian/55 mt-0.5">
+                    <p className="text-sm sm:text-xs sm:text-sm text-obsidian/55 mt-0.5">
                       {formatNgn(line.priceNgn)} / bottle
                     </p>
                     <button
@@ -633,7 +632,7 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
                         setAdding(false);
                         setSwapSlug((s) => (s === line.slug ? null : line.slug));
                       }}
-                      className={`mt-2 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.12em] ${
+                      className={`mt-2 inline-flex items-center gap-1.5 text-xs sm:text-sm font-black uppercase tracking-[0.12em] ${
                         swapSlug === line.slug ? 'text-ember' : 'text-obsidian/45 hover:text-ember'
                       }`}
                     >
@@ -706,7 +705,7 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
                   setSwapSlug(null);
                   setAdding(true);
                 }}
-                className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/50 hover:text-ember"
+                className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-black uppercase tracking-[0.12em] text-obsidian/50 hover:text-ember"
               >
                 <Plus size={14} /> Add from shop
               </button>
@@ -718,13 +717,13 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
               type="button"
               onClick={addPlanToCart}
               disabled={!plan?.lines.length}
-              className="w-full px-5 py-3.5 btn-brand text-[11px] font-black uppercase tracking-[0.14em] disabled:opacity-40"
+              className="w-full px-5 py-3.5 btn-brand text-xs sm:text-sm font-black uppercase tracking-[0.14em] disabled:opacity-40"
             >
               Add supplies to cart
             </button>
             {shareInput && (
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/35 mb-3">
+                <p className="text-xs sm:text-sm font-black uppercase tracking-[0.2em] text-obsidian/35 mb-3">
                   Share this list
                 </p>
                 <PlanShareActions input={shareInput} />
@@ -753,7 +752,7 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
           <Users size={18} />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[10px] font-black uppercase tracking-[0.22em] text-ember">Drink supply planner</span>
+          <span className="block text-xs sm:text-sm font-black uppercase tracking-[0.22em] text-ember">Drink supply planner</span>
           <span className="block text-sm text-obsidian/55 truncate">
             Size any event — we build the basket.
           </span>
@@ -806,7 +805,7 @@ function ShopPicker({
   return (
     <div className="mb-3 border border-obsidian/10 bg-paper px-3 py-3">
       <div className="flex items-center justify-between gap-2 mb-3">
-        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-obsidian/50">{title}</p>
+        <p className="text-xs sm:text-sm font-black uppercase tracking-[0.16em] text-obsidian/50">{title}</p>
         <button type="button" onClick={onClose} aria-label="Close picker" className="p-1 text-obsidian/40 hover:text-obsidian">
           <X size={14} />
         </button>
@@ -822,7 +821,7 @@ function ShopPicker({
         <button
           type="button"
           onClick={() => setCategory('all')}
-          className={`px-2 py-1 text-[10px] border ${
+          className={`px-2 py-1 text-xs sm:text-sm border ${
             category === 'all' ? 'border-ember text-ember' : 'border-obsidian/10 text-obsidian/45'
           }`}
         >
@@ -833,7 +832,7 @@ function ShopPicker({
             key={c}
             type="button"
             onClick={() => setCategory(c)}
-            className={`px-2 py-1 text-[10px] border ${
+            className={`px-2 py-1 text-xs sm:text-sm border ${
               category === c ? 'border-ember text-ember' : 'border-obsidian/10 text-obsidian/45'
             }`}
           >
@@ -851,11 +850,11 @@ function ShopPicker({
             >
               <span className="min-w-0">
                 <span className="block text-sm font-medium text-obsidian truncate">{product.name}</span>
-                <span className="block text-[11px] text-obsidian/40">
+                <span className="block text-xs sm:text-sm text-obsidian/40">
                   {CATEGORY_LABELS[product.category]} · {formatNgn(product.priceNgn)} / bottle
                 </span>
               </span>
-              <span className="shrink-0 text-[10px] font-black uppercase tracking-[0.12em] text-ember">
+              <span className="shrink-0 text-xs sm:text-sm font-black uppercase tracking-[0.12em] text-ember">
                 {actionLabel}
               </span>
             </button>
@@ -872,10 +871,10 @@ function ShopPicker({
 function StepEyebrow({ n, title }: { n: number; title: string }) {
   return (
     <p className="flex items-baseline gap-3">
-      <span className="text-[11px] sm:text-[10px] font-black uppercase tracking-[0.22em] text-ember">
+      <span className="text-xs sm:text-sm font-black uppercase tracking-[0.22em] text-ember">
         {String(n).padStart(2, '0')}
       </span>
-      <span className="text-xs sm:text-[11px] font-black uppercase tracking-[0.16em] text-obsidian">{title}</span>
+      <span className="text-xs sm:text-xs sm:text-sm font-black uppercase tracking-[0.16em] text-obsidian">{title}</span>
     </p>
   );
 }
@@ -883,7 +882,7 @@ function StepEyebrow({ n, title }: { n: number; title: string }) {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-[11px] sm:text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/35">{label}</dt>
+      <dt className="text-xs sm:text-sm font-black uppercase tracking-[0.14em] text-obsidian/35">{label}</dt>
       <dd className="text-xl sm:text-lg font-semibold text-obsidian mt-1">{value}</dd>
     </div>
   );
@@ -920,9 +919,9 @@ function SliderField({
   return (
     <label className="block">
       <span className="flex items-baseline justify-between gap-3 mb-2">
-        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40">{label}</span>
+        <span className="text-xs sm:text-sm font-black uppercase tracking-[0.2em] text-obsidian/40">{label}</span>
         {suffix && (
-          <span className="text-[11px] text-obsidian/45">
+          <span className="text-xs sm:text-sm text-obsidian/45">
             {value.toLocaleString()} {suffix}
           </span>
         )}
@@ -947,7 +946,7 @@ function SliderField({
         className={`${inputClass} mt-1`}
       />
       {sliderMax && value > sliderMax && (
-        <span className="block text-[11px] text-obsidian/40 mt-1">
+        <span className="block text-xs sm:text-sm text-obsidian/40 mt-1">
           Type any number up to {max.toLocaleString()} — the slider covers up to {sliderMax.toLocaleString()}.
         </span>
       )}

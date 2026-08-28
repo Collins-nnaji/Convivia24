@@ -144,7 +144,7 @@ export default function PartnerPortalPage() {
     return (
       <section className="bg-paper min-h-[50vh] px-5 py-20">
         <p className="text-sm text-obsidian/50">
-          No partner desk on this account yet — <Link href="/partners" className="text-ember">apply here</Link>.
+          No partner desk on this account yet — <Link href="/contact" className="text-ember">apply here</Link>.
         </p>
       </section>
     );

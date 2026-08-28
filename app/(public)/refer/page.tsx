@@ -96,7 +96,7 @@ export default function ReferPage() {
               <h3 className="font-semibold text-obsidian text-sm mb-1.5">Selling to us instead?</h3>
               <p>
                 If you run a club or lounge and want to buy wholesale, that is{' '}
-                <Link href="/partners" className="text-ember hover:underline">
+                <Link href="/contact" className="text-ember hover:underline">
                   the partners programme
                 </Link>
                 .

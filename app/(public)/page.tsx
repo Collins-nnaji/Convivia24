@@ -115,7 +115,7 @@ export default function HomePage() {
               </p>
             </div>
             <Link
-              href="/plan"
+              href="/shop?section=plan"
               className="inline-flex items-center justify-center px-6 py-3 btn-brand text-[11px] font-wordmark-sm shrink-0"
             >
               Plan my party
@@ -169,7 +169,7 @@ export default function HomePage() {
             <p className="text-sm text-white/70 mt-1 font-light">Restock the room. Convert perks into guest gift cards.</p>
           </div>
           <Link
-            href="/partners"
+            href="/contact"
             className="inline-flex items-center justify-center px-6 py-3 bg-white text-obsidian text-[11px] font-wordmark-sm shrink-0"
           >
             Partner with us

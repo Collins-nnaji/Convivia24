@@ -1143,6 +1143,18 @@ export default function AdminPage() {
         ) : (
           <>
             {eventsError && <p className="text-sm text-ember mb-6">{eventsError}</p>}
+            <p className="text-sm text-obsidian/50 mb-6">
+              Create and publish nights for <code className="text-xs">/events</code>. Pick a venue from the list
+              — add a new one under the{' '}
+              <button
+                type="button"
+                onClick={() => setTab('venues')}
+                className="text-ember font-medium hover:underline"
+              >
+                Venues
+              </button>{' '}
+              tab if you need to. Check “Published on /events” to go live.
+            </p>
 
             <form onSubmit={saveEvent} className="bg-white p-6 sm:p-8 mb-12 space-y-4 shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)]">
               <div className="flex items-center justify-between gap-4">
@@ -1174,8 +1186,9 @@ export default function AdminPage() {
                     onChange={(e) => setDraft({ ...draft, venueSlug: e.target.value })}
                     required
                     className={inputClass}
+                    disabled={venues.length === 0}
                   >
-                    <option value="">Select venue…</option>
+                    <option value="">{venues.length === 0 ? 'Loading venues…' : 'Select venue…'}</option>
                     {venues.map((v) => (
                       <option key={v.slug} value={v.slug}>
                         {v.name}
@@ -1262,9 +1275,9 @@ export default function AdminPage() {
               </button>
             </form>
 
-            <h2 className="font-bold mb-1">Events</h2>
+            <h2 className="font-bold mb-1">Saved events</h2>
             <p className="text-sm text-obsidian/50 mb-5">
-              Unpublished events stay hidden from the public feed. Seeded demo nights are not editable here.
+              Events you create here appear on /events when published. Unpublished nights stay hidden from the public feed.
             </p>
             <div className="space-y-3">
               {events.map((event) => (

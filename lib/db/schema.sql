@@ -540,3 +540,19 @@ CREATE TABLE IF NOT EXISTS brand_enquiries (
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_brand_enquiries_status ON brand_enquiries(status, created_at DESC);
+
+-- Partner page applications (outlet + brand tiers) — reviewed manually; admin desk unchanged.
+CREATE TABLE IF NOT EXISTS partner_applications (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  kind            TEXT NOT NULL CHECK (kind IN ('outlet', 'brand')),
+  contact_name    TEXT NOT NULL,
+  email           TEXT NOT NULL,
+  phone           TEXT,
+  company_name    TEXT NOT NULL,
+  payload         JSONB NOT NULL DEFAULT '{}',
+  notes           TEXT,
+  status          TEXT NOT NULL DEFAULT 'new'
+                    CHECK (status IN ('new', 'reviewed', 'approved', 'declined')),
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_partner_applications_kind ON partner_applications(kind, created_at DESC);

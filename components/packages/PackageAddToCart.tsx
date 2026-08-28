@@ -49,7 +49,7 @@ export default function PackageAddToCart({
       <button
         type="button"
         onClick={handleAdd}
-        className="btn-brand flex-1 justify-center text-[11px] py-2.5 inline-flex items-center gap-1.5"
+        className="btn-brand flex-1 justify-center text-sm py-3 inline-flex items-center gap-1.5"
       >
         {added ? (
           <>

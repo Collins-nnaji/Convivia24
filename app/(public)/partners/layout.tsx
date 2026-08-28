@@ -2,14 +2,14 @@ import type { Metadata } from 'next';
 import { absoluteUrl } from '@/lib/seo';
 
 export const metadata: Metadata = {
-  title: 'Partners',
+  title: 'Partner portal',
   description:
-    'Partner with Convivia24: wholesale cases and Party Packs for Lagos clubs and lounges, list your nights on the events board, and run menu margins. Adults 18+.',
-  alternates: { canonical: absoluteUrl('/partners') },
+    'Convivia24 partner portal — wholesale ordering, menu margin desk, and perks for approved outlets.',
+  alternates: { canonical: absoluteUrl('/partners/portal') },
   openGraph: {
-    title: 'Partners | Convivia24',
-    description: 'Wholesale drinks, event listings, and margin tools for Lagos venues.',
-    url: absoluteUrl('/partners'),
+    title: 'Partner portal | Convivia24',
+    description: 'Wholesale desk and margin tools for approved partner outlets.',
+    url: absoluteUrl('/partners/portal'),
   },
 };
 

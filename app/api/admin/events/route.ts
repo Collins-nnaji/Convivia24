@@ -3,6 +3,7 @@ import { requireAdmin } from '@/lib/admin';
 import {
   EVENTS_CACHE_KEY,
   deleteEvent,
+  listEventVenueOptions,
   listEvents,
   setEventPublished,
   upsertEvent,
@@ -10,7 +11,6 @@ import {
   type EventInput,
 } from '@/lib/events/store';
 import { EVENT_TAGS } from '@/lib/events/catalog';
-import { listVenues } from '@/lib/venues/repo';
 import { apiErrorResponse } from '@/lib/db';
 import { rateLimit, clientIp, redis } from '@/lib/redis';
 import { captureApiError } from '@/lib/sentry';
@@ -24,11 +24,7 @@ export async function GET() {
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
 
   try {
-    const [events, dbVenues] = await Promise.all([
-      listEvents(false),
-      listVenues({ status: 'active' }),
-    ]);
-    const venues = dbVenues.map((v) => ({ slug: v.slug, name: v.name }));
+    const [events, venues] = await Promise.all([listEvents(false), listEventVenueOptions()]);
     return NextResponse.json({ events, tags: EVENT_TAGS, venues });
   } catch (err) {
     captureApiError(err, { route: 'admin/events GET' });

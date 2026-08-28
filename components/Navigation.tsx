@@ -22,6 +22,11 @@ export default function Navigation() {
   const [open, setOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     // On mobile the page itself doesn't scroll — #app-scroll does (see the
@@ -43,9 +48,16 @@ export default function Navigation() {
     setAccountOpen(false);
   }, [pathname]);
 
-  const isActive = (href: string) => isNavActive(pathname, href);
+  const isActive = (href: string) => {
+    if (href === '/shop') {
+      return pathname === '/shop' || pathname.startsWith('/shop/');
+    }
+    return isNavActive(pathname, href);
+  };
 
   const firstName = user?.name?.split(' ')[0] || user?.email?.split('@')[0] || 'Account';
+  const authReady = mounted && !loading;
+  const signedIn = authReady && Boolean(user);
 
   return (
     <>
@@ -56,7 +68,7 @@ export default function Navigation() {
             : 'bg-white border-b border-obsidian/6'
         }`}
       >
-        <div className="max-w-6xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-3">
+        <div className="max-w-[1600px] w-full mx-auto px-3 sm:px-4 lg:px-5 h-[4.5rem] flex items-center justify-between gap-3">
           <Link href="/" className="shrink-0 flex items-center" aria-label="Convivia24">
             <Image
               src="/convivia24.png"
@@ -64,84 +76,53 @@ export default function Navigation() {
               width={299}
               height={55}
               priority
-              className="h-8 sm:h-10 w-auto rounded-sm"
+              className="h-9 sm:h-11 w-auto rounded-sm"
             />
           </Link>
 
-          <nav className="hidden md:flex items-center gap-0.5 ml-auto">
-            {LINKS.map(({ label, href, icon, accent }) => {
-              const active = isActive(href);
-              const Icon = icon ? NAV_ICONS[icon] : null;
+          <nav className="hidden md:flex items-center gap-1 ml-auto">
+            {LINKS.map(({ label, href, icon, accent }) => (
+              <DesktopNavLink
+                key={href}
+                href={href}
+                label={label}
+                active={isActive(href)}
+                icon={icon ? NAV_ICONS[icon] : undefined}
+                accent={accent}
+              />
+            ))}
 
-              // Accent links sit apart from the main sections — bordered pill, icon, brand colour.
-              if (accent) {
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    className={`ml-1.5 inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[12px] font-semibold tracking-wide transition-colors ${
-                      active
-                        ? 'border-ember bg-ember/10 text-ember'
-                        : 'border-ember/30 text-ember/80 hover:border-ember hover:bg-ember/5 hover:text-ember'
-                    }`}
-                  >
-                    {Icon && <Icon size={13} strokeWidth={2.2} />}
-                    {label}
-                  </Link>
-                );
-              }
+            <DesktopNavLink href="/contact" label="Contact" active={isActive('/contact')} />
 
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  className={`relative px-3.5 py-2 text-[13px] font-medium tracking-wide transition-colors ${
-                    active ? 'text-obsidian' : 'text-obsidian/45 hover:text-obsidian'
-                  }`}
-                >
-                  {label}
-                  {active && (
-                    <motion.span
-                      layoutId="nav-pill"
-                      className="absolute inset-x-2 bottom-1 h-0.5 brand-gradient"
-                      transition={{ type: 'spring', stiffness: 400, damping: 32 }}
-                    />
-                  )}
-                </Link>
-              );
-            })}
+            <CartButton
+              count={count}
+              subtotalNgn={subtotalNgn}
+              active={isActive('/cart')}
+              showCounts={mounted}
+            />
 
-            <CartButton count={count} subtotalNgn={subtotalNgn} active={isActive('/cart')} />
-
-            <Link
-              href="/partners"
-              className={`ml-2 px-5 py-2 text-[11px] font-black uppercase tracking-[0.12em] ${
-                isActive('/partners') ? 'badge-brand' : 'btn-brand'
-              }`}
-            >
-              Partners
-            </Link>
-
-            {!loading && user ? (
-              <div className="relative ml-2">
+            {!authReady ? (
+              <span
+                className="ml-2 inline-block h-10 w-24 rounded-full bg-obsidian/[0.04]"
+                aria-hidden
+              />
+            ) : signedIn && user ? (
+              <div className="relative ml-1">
                 <button
                   type="button"
                   onClick={() => setAccountOpen((v) => !v)}
-                  className="inline-flex items-center gap-2 h-10 pl-2 pr-3 border border-ember/30 bg-ember/8 text-obsidian"
+                  className="inline-flex items-center gap-2 rounded-full py-1 pl-1 pr-2.5 text-obsidian transition-colors hover:bg-obsidian/[0.04]"
                   aria-expanded={accountOpen}
                 >
                   {user.image ? (
-                    <Image src={user.image} alt="" width={24} height={24} className="w-6 h-6 rounded-full object-cover" />
+                    <Image src={user.image} alt="" width={28} height={28} className="w-7 h-7 rounded-full object-cover ring-1 ring-obsidian/10" />
                   ) : (
-                    <span className="w-6 h-6 rounded-full badge-brand flex items-center justify-center text-[10px] font-black">
+                    <span className="w-7 h-7 rounded-full bg-ember/10 text-ember flex items-center justify-center text-xs font-semibold ring-1 ring-ember/15">
                       {firstName.slice(0, 1).toUpperCase()}
                     </span>
                   )}
-                  <span className="text-[11px] font-black uppercase tracking-[0.1em] max-w-[7rem] truncate">
-                    {firstName}
-                  </span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Signed in" />
-                  <ChevronDown size={12} className={`opacity-50 transition-transform ${accountOpen ? 'rotate-180' : ''}`} />
+                  <span className="text-base font-semibold max-w-[6rem] truncate">{firstName}</span>
+                  <ChevronDown size={14} className={`text-obsidian/40 transition-transform ${accountOpen ? 'rotate-180' : ''}`} />
                 </button>
                 <AnimatePresence>
                   {accountOpen && (
@@ -154,7 +135,7 @@ export default function Navigation() {
                       <p className="px-4 py-2 text-[11px] text-obsidian/45 truncate border-b border-obsidian/6 mb-1">
                         {user.email}
                       </p>
-                      <Link href="/plan" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
+                      <Link href="/shop?section=plan" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
                         My parties
                       </Link>
                       <Link href="/orders" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
@@ -177,16 +158,22 @@ export default function Navigation() {
             ) : (
               <Link
                 href={`/signin?next=${encodeURIComponent(pathname || '/')}`}
-                className="ml-2 inline-flex items-center gap-1.5 h-10 px-4 border border-obsidian/20 text-[11px] font-black uppercase tracking-[0.1em] text-obsidian hover:border-ember hover:text-ember"
+                className="ml-2 inline-flex items-center gap-1.5 px-2 py-1.5 text-base font-semibold text-obsidian/55 transition-colors hover:text-obsidian"
               >
-                <UserRound size={14} /> Sign in
+                <UserRound size={16} /> Sign in
               </Link>
             )}
           </nav>
 
           <div className="flex items-center gap-2 md:hidden ml-auto">
-            <CartButton count={count} subtotalNgn={subtotalNgn} active={isActive('/cart')} showSubtotal={false} />
-            {!loading && user ? (
+            <CartButton
+              count={count}
+              subtotalNgn={subtotalNgn}
+              active={isActive('/cart')}
+              showSubtotal={false}
+              showCounts={mounted}
+            />
+            {signedIn && user ? (
               <span className="w-8 h-8 rounded-full badge-brand flex items-center justify-center text-[10px] font-black shrink-0">
                 {firstName.slice(0, 1).toUpperCase()}
               </span>
@@ -203,7 +190,7 @@ export default function Navigation() {
         </div>
       </header>
 
-      <div className="h-16" />
+      <div className="h-[4.5rem]" />
 
       <AnimatePresence>
         {open && (
@@ -221,10 +208,10 @@ export default function Navigation() {
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
-              className="fixed top-16 inset-x-0 z-50 bg-white border-b border-obsidian/10 shadow-lg md:hidden max-h-[calc(100dvh-4rem)] overflow-y-auto"
+              className="fixed top-[4.5rem] inset-x-0 z-50 bg-white border-b border-obsidian/10 shadow-lg md:hidden max-h-[calc(100dvh-4.5rem)] overflow-y-auto"
             >
               <nav className="px-5 py-3 divide-y divide-obsidian/8">
-                {user && (
+                {signedIn && user && (
                   <div className="py-3.5 flex items-center gap-3">
                     <span className="w-9 h-9 rounded-full badge-brand flex items-center justify-center text-xs font-black">
                       {firstName.slice(0, 1).toUpperCase()}
@@ -242,7 +229,8 @@ export default function Navigation() {
                     <Link
                       key={href}
                       href={href}
-                      className={`flex items-center justify-between py-3.5 text-[15px] font-medium ${
+                      scroll
+                      className={`flex items-center justify-between py-3.5 text-base font-semibold ${
                         isActive(href) || accent ? 'text-ember' : 'text-obsidian/70'
                       }`}
                     >
@@ -255,33 +243,34 @@ export default function Navigation() {
                   );
                 })}
                 <Link
-                  href="/partners"
-                  className={`flex items-center justify-between py-3.5 text-[15px] font-medium ${
-                    isActive('/partners') ? 'text-ember' : 'text-obsidian/70'
+                  href="/contact"
+                  scroll
+                  className={`flex items-center justify-between py-3.5 text-base font-semibold ${
+                    isActive('/contact') ? 'text-ember' : 'text-obsidian/70'
                   }`}
                 >
-                  Partners
+                  Contact
                   <span className="text-ember/40 text-lg">&rsaquo;</span>
                 </Link>
                 <Link
                   href="/refer"
-                  className={`flex items-center justify-between py-3.5 text-[15px] font-medium ${
+                  className={`flex items-center justify-between py-3.5 text-base font-semibold ${
                     isActive('/refer') ? 'text-ember' : 'text-obsidian/70'
                   }`}
                 >
                   Refer &amp; earn
                   <span className="text-ember/40 text-lg">&rsaquo;</span>
                 </Link>
-                {user ? (
+                {signedIn && user ? (
                   <>
-                    <Link href="/orders" className="flex items-center justify-between py-3.5 text-[15px] font-medium text-obsidian/70">
+                    <Link href="/orders" className="flex items-center justify-between py-3.5 text-base font-semibold text-obsidian/70">
                       Order history
                       <span className="text-ember/40 text-lg">&rsaquo;</span>
                     </Link>
                     <button
                       type="button"
                       onClick={() => signOut()}
-                      className="flex w-full items-center justify-between py-3.5 text-[15px] font-medium text-ember"
+                      className="flex w-full items-center justify-between py-3.5 text-base font-semibold text-ember"
                     >
                       Sign out
                       <LogOut size={16} />
@@ -306,34 +295,77 @@ export default function Navigation() {
   );
 }
 
+function DesktopNavLink({
+  href,
+  label,
+  active,
+  icon: Icon,
+  accent,
+}: {
+  href: string;
+  label: string;
+  active: boolean;
+  icon?: typeof Gift;
+  accent?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      scroll
+      className={`relative inline-flex items-center gap-2 px-3.5 py-2.5 text-base transition-colors ${
+        active
+          ? accent
+            ? 'font-bold text-ember'
+            : 'font-bold text-obsidian'
+          : accent
+            ? 'font-semibold text-ember/65 hover:text-ember'
+            : 'font-semibold text-obsidian/55 hover:text-obsidian'
+      }`}
+    >
+      {Icon && <Icon size={16} strokeWidth={2.2} />}
+      {label}
+      {active && (
+        <motion.span
+          layoutId="nav-underline"
+          className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-ember"
+          transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+        />
+      )}
+    </Link>
+  );
+}
+
 function CartButton({
   count,
   subtotalNgn,
   active,
   showSubtotal = true,
+  showCounts = true,
 }: {
   count: number;
   subtotalNgn: number;
   active: boolean;
   showSubtotal?: boolean;
+  showCounts?: boolean;
 }) {
   return (
     <Link
       href="/cart"
+      scroll
       aria-label={`Cart, ${count} items`}
-      className={`ml-1 sm:ml-2 inline-flex items-center gap-1.5 sm:gap-2 h-10 px-2 sm:px-3 border transition-colors ${
-        active
-          ? 'border-ember bg-ember/8 text-obsidian'
-          : 'border-obsidian/20 bg-white text-obsidian hover:border-ember'
+      className={`relative ml-2 inline-flex items-center gap-2 px-2.5 py-2 text-base transition-colors ${
+        active ? 'font-bold text-obsidian' : 'font-semibold text-obsidian/55 hover:text-obsidian'
       }`}
     >
-      <ShoppingBag size={16} strokeWidth={2.2} />
-      <span className="hidden sm:inline text-[11px] font-black uppercase tracking-[0.12em]">Cart</span>
-      <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-obsidian text-white text-[10px] font-black flex items-center justify-center">
-        {count}
-      </span>
-      {showSubtotal && count > 0 && (
-        <span className="hidden lg:inline text-[11px] font-semibold text-obsidian/70">
+      <ShoppingBag size={20} strokeWidth={2.2} />
+      <span className="hidden sm:inline">Cart</span>
+      {showCounts && count > 0 && (
+        <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-ember text-white text-[10px] font-bold flex items-center justify-center leading-none">
+          {count}
+        </span>
+      )}
+      {showCounts && showSubtotal && count > 0 && (
+        <span className="hidden lg:inline text-xs text-obsidian/45 tabular-nums">
           {formatNgn(subtotalNgn)}
         </span>
       )}
