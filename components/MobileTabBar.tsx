@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CalendarDays, PartyPopper, ShoppingBag, Store, Trophy } from 'lucide-react';
+import { CalendarDays, Gift, PartyPopper, ShoppingBag, Store } from 'lucide-react';
 import { useCart } from '@/components/cart/CartProvider';
 import { eventsEnabled } from '@/lib/features';
 import { isNavActive } from '@/lib/nav';
@@ -12,7 +12,8 @@ const TABS = [
   eventsEnabled
     ? { href: '/events', label: 'Events', icon: CalendarDays }
     : { href: '/plan', label: 'Plan', icon: PartyPopper },
-  { href: '/trivia', label: 'Trivia', icon: Trophy },
+  // Accented: a prize draw, not a shopping step.
+  { href: '/trivia', label: 'Trivia', icon: Gift, accent: true },
   { href: '/cart', label: 'Cart', icon: ShoppingBag },
 ];
 
@@ -26,7 +27,9 @@ export default function MobileTabBar() {
       aria-label="Primary"
     >
       <div className="grid grid-cols-4 h-16">
-        {TABS.map(({ href, label, icon: Icon }) => {
+        {TABS.map((tab) => {
+          const { href, label, icon: Icon } = tab;
+          const accent = 'accent' in tab && tab.accent === true;
           const active = isNavActive(pathname, href);
           return (
             <Link
@@ -37,11 +40,11 @@ export default function MobileTabBar() {
               <Icon
                 size={20}
                 strokeWidth={active ? 2.4 : 1.8}
-                className={active ? 'text-ember' : 'text-obsidian/40'}
+                className={active ? 'text-ember' : accent ? 'text-ember/60' : 'text-obsidian/40'}
               />
               <span
                 className={`text-[9px] font-black uppercase tracking-[0.1em] ${
-                  active ? 'text-ember' : 'text-obsidian/35'
+                  active ? 'text-ember' : accent ? 'text-ember/55' : 'text-obsidian/35'
                 }`}
               >
                 {label}

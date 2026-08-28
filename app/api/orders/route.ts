@@ -7,6 +7,13 @@ import { rateLimit, clientIp } from '@/lib/redis';
 import { reserveStockForOrder, releaseStockForOrder, resolveSellableProduct } from '@/lib/inventory';
 import { redeemGiftCardForOrder } from '@/lib/commerce/gift-cards';
 import { releaseOrderResources } from '@/lib/commerce/fulfillment';
+import { readReferralCookie } from '@/lib/referrals/cookie';
+import { attributeOrder } from '@/lib/referrals/repo';
+import {
+  MIN_ORDER_BOTTLES,
+  minimumOrderError,
+  orderBottleCount,
+} from '@/lib/commerce/minimum-order';
 
 type IncomingItem = {
   slug: string;
@@ -133,6 +140,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Your cart is empty.' }, { status: 400 });
     }
 
+    // Authoritative check — the cart and checkout show this too, but the server decides.
+    const belowMinimum = minimumOrderError(items);
+    if (belowMinimum) {
+      return NextResponse.json(
+        { error: belowMinimum, minBottles: MIN_ORDER_BOTTLES, bottles: orderBottleCount(items) },
+        { status: 400 }
+      );
+    }
+
     const resolved: {
       slug: string;
       name: string;
@@ -177,6 +193,11 @@ export async function POST(req: NextRequest) {
     `;
 
     const orderId = order.id as string;
+
+    // Referral attribution is best-effort — attributeOrder swallows its own errors so a referral
+    // problem can never stop someone buying drinks. Commission stays at zero until the order is paid.
+    const refCode = await readReferralCookie();
+    if (refCode) await attributeOrder(orderId, refCode);
 
     try {
       for (const r of resolved) {

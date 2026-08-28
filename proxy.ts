@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AGE_GATE_COOKIE, verifyAgeToken } from '@/lib/age-gate';
+import { REFERRAL_COOKIE, REFERRAL_COOKIE_MAX_AGE } from '@/lib/referrals/cookie';
+import { normaliseCode } from '@/lib/referrals/codes';
 
 /**
  * Enforces the 18+ gate server-side — a request without a valid signed
@@ -20,6 +22,18 @@ export async function proxy(req: NextRequest) {
     res = NextResponse.redirect(url);
   } else {
     res = NextResponse.next();
+  }
+
+  // Capture ?ref=CODE on any landing page, before the age gate can redirect it away. Last link
+  // wins, which is the convention partners expect.
+  const ref = normaliseCode(req.nextUrl.searchParams.get('ref') || '');
+  if (ref && ref !== req.cookies.get(REFERRAL_COOKIE)?.value) {
+    res.cookies.set(REFERRAL_COOKIE, ref, {
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: REFERRAL_COOKIE_MAX_AGE,
+    });
   }
 
   res.headers.set('X-Content-Type-Options', 'nosniff');

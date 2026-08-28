@@ -448,3 +448,95 @@ CREATE TABLE IF NOT EXISTS sms_log (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_sms_log_order ON sms_log(order_id);
+
+-- ═══════════════════════════════════════════════
+-- SUPPLIER SOURCING DESK
+-- We do not hold every SKU we sell. A supplier fulfils the order and we keep the spread, so an
+-- order records who sourced it and what they charged. Manual routing — suppliers have no logins.
+-- ═══════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS suppliers (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name          TEXT NOT NULL,
+  contact_name  TEXT,
+  phone         TEXT,
+  email         TEXT,
+  city          TEXT NOT NULL DEFAULT 'Lagos',
+  areas         TEXT[] NOT NULL DEFAULT '{}',
+  categories    TEXT[] NOT NULL DEFAULT '{}',
+  same_day      BOOLEAN NOT NULL DEFAULT false,
+  notes         TEXT,
+  active        BOOLEAN NOT NULL DEFAULT true,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_suppliers_active ON suppliers(active, name);
+
+ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS supplier_id UUID REFERENCES suppliers(id);
+ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS supplier_cost_ngn INTEGER
+  CHECK (supplier_cost_ngn IS NULL OR supplier_cost_ngn >= 0);
+ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS sourced_at TIMESTAMPTZ;
+ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS sourcing_note TEXT;
+CREATE INDEX IF NOT EXISTS idx_ritual_orders_supplier ON ritual_orders(supplier_id);
+
+-- ═══════════════════════════════════════════════
+-- REFERRAL PARTNERS (planners, venues, caterers, DJs)
+-- They send customers and earn a cut of what those customers actually pay. Commission is only
+-- ever earned on collected money: attributed at order creation, approved when the order is paid,
+-- voided on cancel or refund.
+-- ═══════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS referral_partners (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id        TEXT UNIQUE,
+  code            TEXT NOT NULL UNIQUE,
+  name            TEXT NOT NULL,
+  email           TEXT NOT NULL,
+  phone           TEXT,
+  company         TEXT,
+  kind            TEXT NOT NULL DEFAULT 'planner'
+                    CHECK (kind IN ('planner','venue','caterer','dj','decorator','photographer','mc','other')),
+  commission_pct  NUMERIC NOT NULL DEFAULT 2.5 CHECK (commission_pct BETWEEN 0 AND 25),
+  status          TEXT NOT NULL DEFAULT 'pending'
+                    CHECK (status IN ('pending','active','suspended')),
+  notes           TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_referral_partners_status ON referral_partners(status, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS referral_attributions (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id        UUID NOT NULL UNIQUE REFERENCES ritual_orders(id) ON DELETE CASCADE,
+  partner_id      UUID NOT NULL REFERENCES referral_partners(id),
+  code            TEXT NOT NULL,
+  commission_pct  NUMERIC NOT NULL,
+  order_total_ngn INTEGER NOT NULL DEFAULT 0 CHECK (order_total_ngn >= 0),
+  commission_ngn  INTEGER NOT NULL DEFAULT 0 CHECK (commission_ngn >= 0),
+  status          TEXT NOT NULL DEFAULT 'pending'
+                    CHECK (status IN ('pending','approved','paid','void')),
+  payout_ref      TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  approved_at     TIMESTAMPTZ,
+  paid_at         TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_referral_attr_partner ON referral_attributions(partner_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_referral_attr_status ON referral_attributions(status);
+
+-- ═══════════════════════════════════════════════
+-- BRAND PROMOTION ENQUIRIES (from /trivia)
+-- ═══════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS brand_enquiries (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  brand         TEXT NOT NULL,
+  contact_name  TEXT NOT NULL,
+  email         TEXT NOT NULL,
+  phone         TEXT,
+  goal          TEXT NOT NULL DEFAULT 'trivia-round'
+                  CHECK (goal IN ('trivia-round','sampling','event-pouring','bundle','listing','other')),
+  budget_band   TEXT CHECK (budget_band IN ('under-500k','500k-2m','2m-5m','5m-plus','unsure')),
+  message       TEXT,
+  status        TEXT NOT NULL DEFAULT 'new'
+                  CHECK (status IN ('new','contacted','won','closed')),
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_brand_enquiries_status ON brand_enquiries(status, created_at DESC);

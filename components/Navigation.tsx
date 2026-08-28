@@ -5,13 +5,15 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown, LogOut, Menu, ShoppingBag, UserRound, X } from 'lucide-react';
+import { ChevronDown, Gift, LogOut, Menu, ShoppingBag, UserRound, X } from 'lucide-react';
 import { useCart } from '@/components/cart/CartProvider';
 import { useUser } from '@/components/auth/AuthProvider';
 import { formatNgn } from '@/lib/drinks/catalog';
 import { isNavActive, primaryNavLinks } from '@/lib/nav';
 
 const LINKS = primaryNavLinks();
+
+const NAV_ICONS = { gift: Gift } as const;
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -67,8 +69,28 @@ export default function Navigation() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-0.5 ml-auto">
-            {LINKS.map(({ label, href }) => {
+            {LINKS.map(({ label, href, icon, accent }) => {
               const active = isActive(href);
+              const Icon = icon ? NAV_ICONS[icon] : null;
+
+              // Accent links sit apart from the main sections — bordered pill, icon, brand colour.
+              if (accent) {
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={`ml-1.5 inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[12px] font-semibold tracking-wide transition-colors ${
+                      active
+                        ? 'border-ember bg-ember/10 text-ember'
+                        : 'border-ember/30 text-ember/80 hover:border-ember hover:bg-ember/5 hover:text-ember'
+                    }`}
+                  >
+                    {Icon && <Icon size={13} strokeWidth={2.2} />}
+                    {label}
+                  </Link>
+                );
+              }
+
               return (
                 <Link
                   key={href}
@@ -214,18 +236,24 @@ export default function Navigation() {
                     <span className="ml-auto text-[9px] font-black uppercase tracking-wider text-emerald-600">Signed in</span>
                   </div>
                 )}
-                {LINKS.map(({ label, href }) => (
-                  <Link
-                    key={href}
-                    href={href}
-                    className={`flex items-center justify-between py-3.5 text-[15px] font-medium ${
-                      isActive(href) ? 'text-ember' : 'text-obsidian/70'
-                    }`}
-                  >
-                    {label}
-                    <span className="text-ember/40 text-lg">&rsaquo;</span>
-                  </Link>
-                ))}
+                {LINKS.map(({ label, href, icon, accent }) => {
+                  const Icon = icon ? NAV_ICONS[icon] : null;
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      className={`flex items-center justify-between py-3.5 text-[15px] font-medium ${
+                        isActive(href) || accent ? 'text-ember' : 'text-obsidian/70'
+                      }`}
+                    >
+                      <span className="inline-flex items-center gap-2">
+                        {Icon && <Icon size={15} strokeWidth={2.2} />}
+                        {label}
+                      </span>
+                      <span className="text-ember/40 text-lg">&rsaquo;</span>
+                    </Link>
+                  );
+                })}
                 <Link
                   href="/partners"
                   className={`flex items-center justify-between py-3.5 text-[15px] font-medium ${
@@ -233,6 +261,15 @@ export default function Navigation() {
                   }`}
                 >
                   Partners
+                  <span className="text-ember/40 text-lg">&rsaquo;</span>
+                </Link>
+                <Link
+                  href="/refer"
+                  className={`flex items-center justify-between py-3.5 text-[15px] font-medium ${
+                    isActive('/refer') ? 'text-ember' : 'text-obsidian/70'
+                  }`}
+                >
+                  Refer &amp; earn
                   <span className="text-ember/40 text-lg">&rsaquo;</span>
                 </Link>
                 {user ? (

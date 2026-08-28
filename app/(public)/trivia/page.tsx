@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import TriviaExplorer from '@/components/trivia/TriviaExplorer';
+import BrandEnquiryForm from '@/components/trivia/BrandEnquiryForm';
 import { absoluteUrl } from '@/lib/seo';
 
 export const metadata: Metadata = {
@@ -15,5 +16,10 @@ export const metadata: Metadata = {
 };
 
 export default function TriviaPage() {
-  return <TriviaExplorer />;
+  return (
+    <>
+      <TriviaExplorer />
+      <BrandEnquiryForm />
+    </>
+  );
 }

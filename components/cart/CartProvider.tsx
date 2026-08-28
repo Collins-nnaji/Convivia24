@@ -10,7 +10,8 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { getDrinkBySlug, SAMPLE_PAYMENT_SLUG } from '@/lib/drinks/catalog';
+import { SAMPLE_PAYMENT_SLUG } from '@/lib/drinks/catalog';
+import { findSellable } from '@/lib/catalog/sellable';
 import { useUser } from '@/components/auth/AuthProvider';
 
 export type CartLine = {
@@ -37,7 +38,8 @@ const CartContext = createContext<CartContextValue | null>(null);
 function normalizeLines(raw: CartLine[]): CartLine[] {
   return raw
     .map((line) => {
-      const product = getDrinkBySlug(line.slug);
+      // Resolves shop bottles and event packages alike — packages are not in DRINKS.
+      const product = findSellable(line.slug);
       if (!product) return null;
       return {
         slug: product.slug,
@@ -50,7 +52,7 @@ function normalizeLines(raw: CartLine[]): CartLine[] {
 }
 
 function withSampleDrink(lines: CartLine[]): CartLine[] {
-  const product = getDrinkBySlug(SAMPLE_PAYMENT_SLUG);
+  const product = findSellable(SAMPLE_PAYMENT_SLUG);
   if (!product) return lines;
   if (lines.some((l) => l.slug === SAMPLE_PAYMENT_SLUG)) return lines;
   return [
@@ -134,7 +136,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [lines, hydrated, authLoading, user]);
 
   const addProduct = useCallback((slug: string, qty = 1) => {
-    const product = getDrinkBySlug(slug);
+    const product = findSellable(slug);
     if (!product) return;
     const addQty = Math.max(1, Math.min(24, qty));
     setLines((prev) => {

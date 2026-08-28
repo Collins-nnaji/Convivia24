@@ -1,5 +1,6 @@
 import sql from '@/lib/db';
-import { DRINKS, getDrinkBySlug, type DrinkCategory, type DrinkProduct } from '@/lib/drinks/catalog';
+import { DRINKS, type DrinkCategory, type DrinkProduct } from '@/lib/drinks/catalog';
+import { findSellable } from '@/lib/catalog/sellable';
 import { TASTE_NOTES } from '@/lib/drinks/brand-guide';
 import { upsertBrand } from '@/lib/drinks/product-info';
 
@@ -43,10 +44,15 @@ export type SellableProduct = {
   priceNgn: number;
 };
 
-/** Live inventory first (price, name, listing), then the static catalog. Inactive SKUs are not sellable. */
+/**
+ * Live inventory first (price, name, listing), then the static catalog. Inactive SKUs are not sellable.
+ *
+ * `findSellable` covers shop bottles and event packages alike, so a package is orderable whether or
+ * not `lib/db/seed-packages.ts` has been run against this database.
+ */
 export async function resolveSellableProduct(slug: string): Promise<SellableProduct | null> {
   const inv = await getInventory(slug).catch(() => null);
-  const catalog = getDrinkBySlug(slug);
+  const catalog = findSellable(slug);
   if (inv) {
     if (!inv.active) return null;
     const priceNgn = inv.price_ngn && inv.price_ngn > 0 ? inv.price_ngn : catalog?.priceNgn ?? 0;

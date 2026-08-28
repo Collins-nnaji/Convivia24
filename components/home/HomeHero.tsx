@@ -105,6 +105,12 @@ export default function HomeHero() {
                 Plan my party
               </Link>
             )}
+            <Link
+              href="/packages"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 border border-obsidian/15 text-obsidian hover:border-ember hover:text-ember text-[10px] font-wordmark-sm transition-colors"
+            >
+              Event packages
+            </Link>
           </div>
           <TrustBadges className="justify-center md:justify-start" />
         </div>

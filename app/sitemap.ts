@@ -1,9 +1,10 @@
 import type { MetadataRoute } from 'next';
 import { DRINKS } from '@/lib/drinks/catalog';
+import { EVENT_PACKAGES } from '@/lib/packages/catalog';
 import { eventsEnabled } from '@/lib/features';
 import { absoluteUrl } from '@/lib/seo';
 
-const MVP_PATHS = ['/', '/shop', '/plan', '/trivia', '/partners', '/card', '/convivium', '/privacy', '/terms'];
+const MVP_PATHS = ['/', '/shop', '/packages', '/plan', '/trivia', '/partners', '/refer', '/card', '/convivium', '/privacy', '/terms'];
 
 const FULL_PATHS = [...MVP_PATHS, '/events', '/venues', '/circles'];
 
@@ -15,11 +16,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: absoluteUrl(path),
     lastModified: now,
     changeFrequency:
-      path === '/' || path === '/shop' || path === '/plan' || path === '/events' ? 'daily' : 'weekly',
+      path === '/' || path === '/shop' || path === '/packages' || path === '/plan' || path === '/events'
+      ? 'daily'
+      : 'weekly',
     priority:
       path === '/'
         ? 1
-        : path === '/shop' || path === '/plan' || path === '/events'
+        : path === '/shop' || path === '/packages' || path === '/plan' || path === '/events'
           ? 0.9
           : 0.6,
   }));
@@ -31,5 +34,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  return [...pages, ...products];
+  const packages: MetadataRoute.Sitemap = EVENT_PACKAGES.map((p) => ({
+    url: absoluteUrl(`/packages/${p.slug}`),
+    lastModified: now,
+    changeFrequency: 'weekly' as const,
+    priority: 0.8,
+  }));
+
+  return [...pages, ...products, ...packages];
 }

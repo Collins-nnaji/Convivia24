@@ -1,17 +1,22 @@
 import sql from '@/lib/db';
 import { releaseStockForOrder, fulfillStockForOrder, type StockLine } from '@/lib/inventory';
 import { releaseGiftCard } from '@/lib/commerce/gift-cards';
+import { voidReferralForOrder } from '@/lib/referrals/repo';
 
 async function orderLines(orderId: string): Promise<StockLine[]> {
   const rows = await sql`SELECT kit_slug AS slug, qty FROM ritual_order_items WHERE order_id = ${orderId}`;
   return rows.map((r) => ({ slug: String(r.slug), qty: Number(r.qty) }));
 }
 
-/** Order cancelled or refunded — give the reserved stock and any gift card back. */
+/**
+ * Order cancelled or refunded — give the reserved stock and any gift card back, and drop any
+ * referral commission. Every cancel and refund path already funnels through here.
+ */
 export async function releaseOrderResources(orderId: string): Promise<void> {
   const lines = await orderLines(orderId);
   if (lines.length > 0) await releaseStockForOrder(lines, orderId);
   await releaseGiftCard(orderId);
+  await voidReferralForOrder(orderId);
 }
 
 /** Order actually delivered — consume the reserved stock for good, once. */

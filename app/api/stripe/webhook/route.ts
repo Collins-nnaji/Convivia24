@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { notifyOrderStatus } from '@/lib/commerce/notify';
 import { awardOrderPoints } from '@/lib/loyalty/members';
+import { approveReferralForOrder } from '@/lib/referrals/repo';
 import {
   flutterwavePaid,
   flutterwaveSecret,
@@ -92,6 +93,7 @@ export async function POST(req: NextRequest) {
     }
     if (paidOrderId) {
       await awardOrderPoints(paidOrderId);
+      await approveReferralForOrder(paidOrderId);
       await notifyOrderStatus(paidOrderId, 'paid');
     }
 

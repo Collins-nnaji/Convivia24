@@ -1,6 +1,15 @@
 // Thin Azure OpenAI chat client used across the platform's AI features.
 
-type ChatMessage = { role: 'system' | 'user' | 'assistant'; content: string };
+/** A text part, or an image the model should read (data: URI or https URL). */
+export type ContentPart =
+  | { type: 'text'; text: string }
+  | { type: 'image_url'; image_url: { url: string; detail?: 'low' | 'high' | 'auto' } };
+
+type ChatMessage = {
+  role: 'system' | 'user' | 'assistant';
+  /** A plain string, or content parts when an image is attached (vision-capable deployments only). */
+  content: string | ContentPart[];
+};
 
 export function aiConfigured(): boolean {
   return !!(process.env.AZURE_OPENAI_ENDPOINT && process.env.AZURE_OPENAI_KEY);

@@ -23,6 +23,8 @@ import {
   type DrinkPlan,
   type PartyVibe,
 } from '@/lib/party/drinks-plan';
+import Link from 'next/link';
+import { packageForGuests, savingsNgn } from '@/lib/packages/catalog';
 import type { PlanShareInput } from '@/lib/party/render-plan-share';
 import {
   CATEGORIES,
@@ -216,6 +218,9 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
       setThinking(false);
     }
   }
+
+  // The nearest ready-made package, offered as a shortcut out of the basket we just generated.
+  const suggestedPackage = useMemo(() => packageForGuests(guests, occasion), [guests, occasion]);
 
   function addPlanToCart() {
     if (!plan?.lines.length) return;
@@ -586,6 +591,26 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
               ))}
             </ul>
           ) : null}
+
+          {suggestedPackage && plan && (
+            <div className="mb-7 border border-ember/25 bg-ember/[0.03] px-4 py-3.5">
+              <p className="text-[10px] uppercase tracking-wider text-ember mb-1.5">
+                Or skip the picking
+              </p>
+              <p className="text-sm text-obsidian/75 leading-relaxed">
+                <Link
+                  href={`/packages/${suggestedPackage.slug}`}
+                  className="font-semibold text-obsidian hover:text-ember hover:underline"
+                >
+                  {suggestedPackage.name}
+                </Link>{' '}
+                covers about {suggestedPackage.guests} guests for{' '}
+                {formatNgn(suggestedPackage.priceNgn)} — one line, already sized, and{' '}
+                {formatNgn(savingsNgn(suggestedPackage))} cheaper than buying those bottles
+                separately.
+              </p>
+            </div>
+          )}
 
           {advice && (
             <p className="text-sm text-obsidian/60 leading-relaxed mb-7 whitespace-pre-wrap border border-obsidian/10 px-4 py-3 bg-paper">

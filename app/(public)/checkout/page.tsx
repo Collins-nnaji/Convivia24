@@ -5,6 +5,11 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { useCart } from '@/components/cart/CartProvider';
+import {
+  MIN_ORDER_BOTTLES,
+  bottlesShort,
+  orderBottleCount,
+} from '@/lib/commerce/minimum-order';
 import { formatNgn } from '@/lib/drinks/catalog';
 import { isEnrolled } from '@/lib/loyalty/store';
 
@@ -12,6 +17,9 @@ const PENDING_ORDER_KEY = 'convivia_pending_order';
 
 function CheckoutForm() {
   const { lines, subtotalNgn, refreshPrices } = useCart();
+
+  const bottles = orderBottleCount(lines);
+  const short = bottlesShort(lines);
   const router = useRouter();
   const searchParams = useSearchParams();
   const eventId = searchParams.get('event') || '';
@@ -43,6 +51,10 @@ function CheckoutForm() {
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (lines.length === 0) return;
+    if (short > 0) {
+      setError(`Minimum order is ${MIN_ORDER_BOTTLES} bottles. You have ${bottles} — add ${short} more.`);
+      return;
+    }
     setLoading(true);
     setError('');
 
@@ -132,6 +144,31 @@ function CheckoutForm() {
           <Link href="/shop" className="text-[11px] font-black uppercase tracking-[0.2em] text-ember">
             Shop drinks →
           </Link>
+        </div>
+      </section>
+    );
+  }
+
+  if (short > 0) {
+    return (
+      <section className="bg-paper min-h-[60vh] -mt-16 pt-28 px-5">
+        <div className="max-w-lg mx-auto">
+          <h1 className="text-3xl font-bold mb-3">Add {short} more bottle{short === 1 ? '' : 's'}</h1>
+          <p className="text-sm text-obsidian/55 mb-6 leading-relaxed">
+            Minimum order is {MIN_ORDER_BOTTLES} bottles and your cart has {bottles}. Mix anything you
+            like — bottles, packs and mixers all count.
+          </p>
+          <div className="flex flex-wrap gap-4">
+            <Link href="/shop" className="text-[11px] font-black uppercase tracking-[0.2em] text-ember">
+              Shop drinks →
+            </Link>
+            <Link href="/packages" className="text-[11px] font-black uppercase tracking-[0.2em] text-ember">
+              Event packages →
+            </Link>
+            <Link href="/cart" className="text-[11px] font-black uppercase tracking-[0.2em] text-obsidian/40">
+              Back to cart
+            </Link>
+          </div>
         </div>
       </section>
     );

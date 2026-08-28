@@ -8,6 +8,8 @@ import { releaseOrderResources, fulfillOrderStock } from '@/lib/commerce/fulfill
 import { rateLimit, clientIp } from '@/lib/redis';
 import { refundFlutterwave } from '@/lib/payments/flutterwave';
 import { captureApiError } from '@/lib/sentry';
+import { orderMargin } from '@/lib/suppliers/margin';
+import { getSupplier } from '@/lib/suppliers/repo';
 
 /** Statuses the desk can hand-set. System-only statuses (pending, awaiting_payment) are excluded. */
 const ADMIN_SETTABLE_STATUSES: OrderStatus[] = ORDER_STATUSES.filter(
@@ -41,19 +43,25 @@ export async function GET() {
         o.payment_ref,
         o.refund_ref,
         o.refunded_ngn,
+        o.supplier_id,
+        o.supplier_cost_ngn,
+        o.sourced_at,
+        o.sourcing_note,
+        s.name AS supplier_name,
         o.created_at,
         o.updated_at,
         COALESCE(
           json_agg(
-            json_build_object('name', i.kit_name, 'qty', i.qty, 'unitPriceNgn', i.unit_price_ngn)
+            json_build_object('slug', i.kit_slug, 'name', i.kit_name, 'qty', i.qty, 'unitPriceNgn', i.unit_price_ngn)
             ORDER BY i.created_at
           ) FILTER (WHERE i.id IS NOT NULL),
           '[]'::json
         ) AS items
       FROM ritual_orders o
       LEFT JOIN ritual_order_items i ON i.order_id = o.id
+      LEFT JOIN suppliers s ON s.id = o.supplier_id
       WHERE o.status != 'pending'
-      GROUP BY o.id
+      GROUP BY o.id, s.name
       ORDER BY o.created_at DESC
       LIMIT 200
     `;
@@ -81,6 +89,16 @@ export async function GET() {
         paymentRef: o.payment_ref,
         refundRef: o.refund_ref,
         refundedNgn: Number(o.refunded_ngn ?? 0),
+        supplierId: o.supplier_id,
+        supplierName: o.supplier_name,
+        supplierCostNgn: o.supplier_cost_ngn == null ? null : Number(o.supplier_cost_ngn),
+        sourcedAt: o.sourced_at,
+        sourcingNote: o.sourcing_note,
+        margin: orderMargin({
+          totalNgn: Number(o.total_ngn ?? o.subtotal_ngn),
+          supplierCostNgn: o.supplier_cost_ngn == null ? null : Number(o.supplier_cost_ngn),
+          refundedNgn: Number(o.refunded_ngn ?? 0),
+        }),
         createdAt: o.created_at,
         updatedAt: o.updated_at,
         items: o.items,
@@ -133,6 +151,63 @@ export async function PATCH(req: NextRequest) {
       await releaseOrderResources(orderId);
       await notifyOrderStatus(orderId, 'refunded', `Refunded ${formatNgn(amountNgn)}.`);
       return NextResponse.json({ ok: true, orderId, status: 'refunded', refundedNgn: amountNgn });
+    }
+
+    // Sourcing is its own action — it records who filled the order and what they charged, and
+    // never touches order status. Assigning a supplier is not a promise the order has shipped.
+    if (body.action === 'source') {
+      const supplierId = typeof body.supplierId === 'string' ? body.supplierId.trim() : '';
+      const clearing = supplierId === '';
+
+      const rawCost = body.supplierCostNgn;
+      let supplierCostNgn: number | null = null;
+      if (!clearing) {
+        if (rawCost === null || rawCost === undefined || rawCost === '') {
+          return NextResponse.json({ error: 'Enter what the supplier charged.' }, { status: 400 });
+        }
+        const cost = Number(rawCost);
+        if (!Number.isFinite(cost) || cost < 0) {
+          return NextResponse.json({ error: 'Supplier cost must be zero or more.' }, { status: 400 });
+        }
+        supplierCostNgn = Math.round(cost);
+
+        const supplier = await getSupplier(supplierId);
+        if (!supplier) return NextResponse.json({ error: 'Supplier not found.' }, { status: 404 });
+        if (!supplier.active) {
+          return NextResponse.json({ error: 'That supplier is not active.' }, { status: 400 });
+        }
+      }
+
+      const sourcingNote =
+        typeof body.sourcingNote === 'string' ? body.sourcingNote.trim().slice(0, 500) || null : null;
+
+      const [sourced] = await sql`
+        UPDATE ritual_orders
+        SET
+          supplier_id = ${clearing ? null : supplierId}::uuid,
+          supplier_cost_ngn = ${supplierCostNgn},
+          sourcing_note = ${sourcingNote},
+          sourced_at = ${clearing ? null : new Date().toISOString()}::timestamptz,
+          updated_at = NOW()
+        WHERE id = ${orderId}
+        RETURNING id, total_ngn, subtotal_ngn, refunded_ngn, supplier_id, supplier_cost_ngn, sourced_at
+      `;
+      if (!sourced) return NextResponse.json({ error: 'Order not found.' }, { status: 404 });
+
+      return NextResponse.json({
+        ok: true,
+        orderId: sourced.id,
+        supplierId: sourced.supplier_id,
+        supplierCostNgn:
+          sourced.supplier_cost_ngn == null ? null : Number(sourced.supplier_cost_ngn),
+        sourcedAt: sourced.sourced_at,
+        margin: orderMargin({
+          totalNgn: Number(sourced.total_ngn ?? sourced.subtotal_ngn),
+          supplierCostNgn:
+            sourced.supplier_cost_ngn == null ? null : Number(sourced.supplier_cost_ngn),
+          refundedNgn: Number(sourced.refunded_ngn ?? 0),
+        }),
+      });
     }
 
     const status = typeof body.status === 'string' ? (body.status as OrderStatus) : null;

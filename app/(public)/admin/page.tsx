@@ -4,6 +4,10 @@ import { FormEvent, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { formatNgn } from '@/lib/drinks/catalog';
+import { getPackageBySlug, resolveComponents } from '@/lib/packages/catalog';
+import SourcingDesk from '@/components/admin/SourcingDesk';
+import PriceListImport from '@/components/admin/PriceListImport';
+import ReferralsDesk from '@/components/admin/ReferralsDesk';
 import { ORDER_STATUS_LABELS, type OrderStatus } from '@/lib/commerce/status';
 
 type Item = {
@@ -89,9 +93,15 @@ type AdminOrder = {
   paymentRef: string | null;
   refundRef: string | null;
   refundedNgn: number;
+  supplierId: string | null;
+  supplierName: string | null;
+  supplierCostNgn: number | null;
+  sourcedAt: string | null;
+  sourcingNote: string | null;
+  margin: { revenueNgn: number; costNgn: number; marginNgn: number; marginPct: number; sourced: boolean };
   createdAt: string;
   updatedAt: string;
-  items: { name: string; qty: number; unitPriceNgn: number }[];
+  items: { slug?: string; name: string; qty: number; unitPriceNgn: number }[];
 };
 
 type GiftCard = {
@@ -158,7 +168,9 @@ function formatWhen(iso: string): string {
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
   const [password, setPassword] = useState('');
-  const [tab, setTab] = useState<'drinks' | 'events' | 'trivia' | 'orders' | 'giftcards' | 'venues'>('drinks');
+  const [tab, setTab] = useState<
+    'drinks' | 'events' | 'trivia' | 'orders' | 'giftcards' | 'venues' | 'sourcing' | 'referrals'
+  >('drinks');
   const [items, setItems] = useState<Item[]>([]);
   const [events, setEvents] = useState<AdminEvent[]>([]);
   const [venues, setVenues] = useState<VenueOption[]>([]);
@@ -695,7 +707,7 @@ export default function AdminPage() {
         </div>
 
         <div className="flex gap-1 mb-8 border-b border-obsidian/10 overflow-x-auto">
-          {(['drinks', 'orders', 'giftcards', 'events', 'venues', 'trivia'] as const).map((key) => (
+          {(['drinks', 'orders', 'sourcing', 'referrals', 'giftcards', 'events', 'venues', 'trivia'] as const).map((key) => (
             <button
               key={key}
               type="button"
@@ -708,7 +720,11 @@ export default function AdminPage() {
                 ? `Drinks (${items.length})`
                 : key === 'orders'
                   ? `Orders (${orders.length})`
-                  : key === 'giftcards'
+                  : key === 'sourcing'
+                    ? `Sourcing (${orders.filter((o) => o.supplierCostNgn == null).length})`
+                    : key === 'referrals'
+                      ? 'Referrals'
+                      : key === 'giftcards'
                     ? `Gift cards (${giftCards.length})`
                     : key === 'events'
                       ? `Events (${events.length})`
@@ -750,6 +766,26 @@ export default function AdminPage() {
                         <p className="text-[12px] text-obsidian/45 mt-1">
                           {order.items.map((i) => `${i.name} × ${i.qty}`).join(' · ')}
                         </p>
+                        {order.items.flatMap((i) => {
+                          const pkg = i.slug ? getPackageBySlug(i.slug) : undefined;
+                          if (!pkg) return [];
+                          return [
+                            <div
+                              key={`${order.id}-${i.slug}`}
+                              className="mt-2 border-l-2 border-ember/30 pl-2.5"
+                            >
+                              <p className="text-[10px] uppercase tracking-wider text-ember/80">
+                                Pick list · {pkg.name}
+                                {i.qty > 1 ? ` × ${i.qty}` : ''}
+                              </p>
+                              <p className="text-[11px] text-obsidian/50 leading-relaxed">
+                                {resolveComponents(pkg)
+                                  .map((c) => `${c.qty * i.qty} × ${c.product.name}`)
+                                  .join(' · ')}
+                              </p>
+                            </div>,
+                          ];
+                        })}
                       </div>
                       <div className="text-right shrink-0">
                         <p className="font-bold">{formatNgn(order.totalNgn)}</p>
@@ -827,6 +863,10 @@ export default function AdminPage() {
               )}
             </div>
           </>
+        ) : tab === 'sourcing' ? (
+          <SourcingDesk orders={orders} onOrdersChanged={loadOrders} />
+        ) : tab === 'referrals' ? (
+          <ReferralsDesk />
         ) : tab === 'giftcards' ? (
           <>
             {giftCardError && <p className="text-sm text-ember mb-6">{giftCardError}</p>}
@@ -1077,6 +1117,10 @@ export default function AdminPage() {
                 {loading ? 'Saving…' : 'Save to shop'}
               </button>
             </form>
+
+            <div className="mb-10 pb-10 border-b border-obsidian/10">
+              <PriceListImport onApplied={loadStock} />
+            </div>
 
             <h2 className="font-bold mb-1">Live stock</h2>
             <p className="text-sm text-obsidian/50 mb-5">

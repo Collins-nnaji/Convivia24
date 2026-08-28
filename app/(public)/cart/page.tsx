@@ -6,12 +6,21 @@ import { useCart } from '@/components/cart/CartProvider';
 import DrinkPhoto from '@/components/shop/DrinkPhoto';
 import DrinkInfoButton from '@/components/shop/DrinkInfoButton';
 import GuestCardStrip from '@/components/loyalty/GuestCardStrip';
-import { formatNgn, getDrinkBySlug } from '@/lib/drinks/catalog';
+import { formatNgn } from '@/lib/drinks/catalog';
+import { findSellable } from '@/lib/catalog/sellable';
+import {
+  MIN_ORDER_BOTTLES,
+  bottlesShort,
+  orderBottleCount,
+} from '@/lib/commerce/minimum-order';
 import { eventsEnabled } from '@/lib/features';
 import { eventsFallbackHref } from '@/lib/nav';
 
 export default function CartPage() {
   const { lines, subtotalNgn, setQty, remove } = useCart();
+
+  const bottles = orderBottleCount(lines);
+  const short = bottlesShort(lines);
 
   return (
     <>
@@ -49,7 +58,7 @@ export default function CartPage() {
                           className="relative shrink-0 w-16 h-20 border border-obsidian/10 bg-white overflow-hidden"
                         >
                           <DrinkPhoto
-                            product={getDrinkBySlug(line.slug) ?? { name: line.name, category: 'spirits' }}
+                            product={findSellable(line.slug) ?? { name: line.name, category: 'spirits' }}
                             className="absolute inset-0 w-full h-full"
                             watermark={false}
                           />
@@ -111,15 +120,46 @@ export default function CartPage() {
                     <span className="text-obsidian/50">Subtotal</span>
                     <span className="text-xl font-bold">{formatNgn(subtotalNgn)}</span>
                   </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-obsidian/50">Bottles</span>
+                    <span
+                      className={`font-semibold tabular-nums ${short > 0 ? 'text-ember' : 'text-obsidian/70'}`}
+                    >
+                      {bottles} of {MIN_ORDER_BOTTLES} minimum
+                    </span>
+                  </div>
                   <p className="text-xs text-obsidian/40 leading-relaxed">
                     Delivery nationwide across Nigeria — home, party, club, or lounge. Age 18+ for alcohol.
                   </p>
-                  <Link
-                    href="/checkout"
-                    className="flex items-center justify-center gap-2 w-full py-4 btn-brand text-[11px] font-black uppercase tracking-[0.14em]"
-                  >
-                    Checkout <ArrowRight size={14} />
-                  </Link>
+
+                  {short > 0 ? (
+                    <>
+                      <span
+                        aria-disabled="true"
+                        className="flex items-center justify-center gap-2 w-full py-4 bg-obsidian/10 text-obsidian/40 text-[11px] font-black uppercase tracking-[0.14em] cursor-not-allowed"
+                      >
+                        Checkout
+                      </span>
+                      <p className="text-xs text-ember leading-relaxed">
+                        Minimum order is {MIN_ORDER_BOTTLES} bottles — add {short} more.{' '}
+                        <Link href="/shop" className="underline hover:no-underline">
+                          Keep shopping
+                        </Link>
+                        , or take an{' '}
+                        <Link href="/packages" className="underline hover:no-underline">
+                          event package
+                        </Link>
+                        .
+                      </p>
+                    </>
+                  ) : (
+                    <Link
+                      href="/checkout"
+                      className="flex items-center justify-center gap-2 w-full py-4 btn-brand text-[11px] font-black uppercase tracking-[0.14em]"
+                    >
+                      Checkout <ArrowRight size={14} />
+                    </Link>
+                  )}
                   <Link
                     href={eventsFallbackHref()}
                     className="block text-center text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40 hover:text-ember"

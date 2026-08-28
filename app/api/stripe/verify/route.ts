@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql, { apiErrorResponse } from '@/lib/db';
 import { awardOrderPoints } from '@/lib/loyalty/members';
+import { approveReferralForOrder } from '@/lib/referrals/repo';
 import { notifyOrderStatus } from '@/lib/commerce/notify';
 import {
   flutterwavePaid,
@@ -79,6 +80,7 @@ export async function GET(req: NextRequest) {
           RETURNING id
         `;
         await awardOrderPoints(order.id as string);
+        await approveReferralForOrder(order.id as string);
         if (flipped) {
           await notifyOrderStatus(order.id as string, 'paid');
         }
