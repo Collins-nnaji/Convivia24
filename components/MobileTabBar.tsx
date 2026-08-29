@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { CalendarDays, Gift, PartyPopper, ShoppingBag, Store } from 'lucide-react';
 import { useCart } from '@/components/cart/CartProvider';
@@ -13,7 +14,7 @@ const TABS = [
     ? { href: '/events', label: 'Events', icon: CalendarDays }
     : { href: '/shop?section=plan', label: 'Plan', icon: PartyPopper },
   // Accented: a prize draw, not a shopping step.
-  { href: '/trivia', label: 'Trivia', icon: Gift, accent: true },
+  { href: '/trivia', label: 'Discover', icon: Gift, accent: true },
   { href: '/cart', label: 'Cart', icon: ShoppingBag },
 ];
 
@@ -22,6 +23,16 @@ export default function MobileTabBar() {
   const searchParams = useSearchParams();
   const section = searchParams.get('section');
   const { count } = useCart();
+
+  /**
+   * This bar renders inside a Suspense boundary, so it hydrates after the cart
+   * provider's effect has already loaded localStorage — reading the count from
+   * context is not enough, because by then it no longer matches the server's
+   * empty cart. Its own mount flag is false on the hydration render whatever
+   * the context says, which is what keeps the two in step.
+   */
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   function tabActive(href: string): boolean {
     if (href === '/shop') return pathname === '/shop' && section !== 'plan';
@@ -58,7 +69,7 @@ export default function MobileTabBar() {
               >
                 {label}
               </span>
-              {href === '/cart' && (
+              {href === '/cart' && mounted && count > 0 && (
                 <span className="absolute top-1.5 right-[18%] min-w-[16px] h-4 px-1 rounded-full bg-obsidian text-white text-[8px] font-black flex items-center justify-center">
                   {count}
                 </span>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import sql, { apiErrorResponse } from '@/lib/db';
 import { requireAdmin } from '@/lib/admin';
 import { ORDER_STATUSES, type OrderStatus } from '@/lib/commerce/status';
+import { recordOrderEvent } from '@/lib/commerce/timeline';
 import { notifyOrderStatus } from '@/lib/commerce/notify';
 import { formatNgn } from '@/lib/drinks/catalog';
 import { releaseOrderResources, fulfillOrderStock } from '@/lib/commerce/fulfillment';
@@ -240,6 +241,10 @@ export async function PATCH(req: NextRequest) {
     `;
 
     if (!order) return NextResponse.json({ error: 'Order not found.' }, { status: 404 });
+
+    // Stamp the transition so the customer's tracking page can show when each
+    // step happened rather than inferring it.
+    await recordOrderEvent(orderId, status, note).catch(() => {});
 
     if (status === 'delivered' || status === 'fulfilled') {
       await fulfillOrderStock(orderId);

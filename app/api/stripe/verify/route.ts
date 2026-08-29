@@ -3,6 +3,7 @@ import sql, { apiErrorResponse } from '@/lib/db';
 import { awardOrderPoints } from '@/lib/loyalty/members';
 import { approveReferralForOrder } from '@/lib/referrals/repo';
 import { notifyOrderStatus } from '@/lib/commerce/notify';
+import { recordOrderEvent } from '@/lib/commerce/timeline';
 import {
   flutterwavePaid,
   flutterwaveSecret,
@@ -79,6 +80,7 @@ export async function GET(req: NextRequest) {
           WHERE id = ${order.id as string} AND status NOT IN ('paid', 'fulfilled')
           RETURNING id
         `;
+        await recordOrderEvent(order.id as string, 'paid').catch(() => {});
         await awardOrderPoints(order.id as string);
         await approveReferralForOrder(order.id as string);
         if (flipped) {

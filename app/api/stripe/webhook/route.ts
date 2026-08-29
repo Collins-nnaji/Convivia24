@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db';
+import { recordOrderEvent } from '@/lib/commerce/timeline';
 import { notifyOrderStatus } from '@/lib/commerce/notify';
 import { awardOrderPoints } from '@/lib/loyalty/members';
 import { approveReferralForOrder } from '@/lib/referrals/repo';
@@ -92,6 +93,7 @@ export async function POST(req: NextRequest) {
       paidOrderId = (row?.id as string) || null;
     }
     if (paidOrderId) {
+      await recordOrderEvent(paidOrderId, 'paid').catch(() => {});
       await awardOrderPoints(paidOrderId);
       await approveReferralForOrder(paidOrderId);
       await notifyOrderStatus(paidOrderId, 'paid');

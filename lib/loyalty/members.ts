@@ -63,6 +63,43 @@ export async function awardPoints(ownerId: string, points: number): Promise<Memb
   return rows[0] ? mapRow(rows[0]) : null;
 }
 
+/**
+ * Take points off a member's balance for a redemption.
+ *
+ * The balance check lives in the WHERE clause rather than in a read-then-write
+ * pair, so two redemptions racing each other cannot both pass the check and
+ * push the balance negative — the second simply matches no row. Returns null
+ * when the member cannot afford it (or does not exist); lifetime points are
+ * untouched, because spending does not undo what was earned.
+ */
+export async function spendPoints(ownerId: string, points: number): Promise<Member | null> {
+  const cost = Math.max(0, Math.floor(points));
+  const rows = await sql`
+    UPDATE loyalty_members
+    SET points = points - ${cost}, updated_at = NOW()
+    WHERE owner_id = ${ownerId} AND points >= ${cost}
+    RETURNING *
+  `;
+  return rows[0] ? mapRow(rows[0]) : null;
+}
+
+/**
+ * Put points back after a redemption fails to write its receipt. Deliberately
+ * not `awardPoints`: lifetime points were never reduced by the spend, so
+ * crediting them again would inflate the member's tier.
+ */
+export async function refundPoints(ownerId: string, points: number): Promise<Member | null> {
+  const delta = Math.max(0, Math.floor(points));
+  if (delta === 0) return getMember(ownerId);
+  const rows = await sql`
+    UPDATE loyalty_members
+    SET points = points + ${delta}, updated_at = NOW()
+    WHERE owner_id = ${ownerId}
+    RETURNING *
+  `;
+  return rows[0] ? mapRow(rows[0]) : null;
+}
+
 export type MemberStanding = {
   claimed: boolean;
   points: number;

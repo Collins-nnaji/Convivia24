@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { CATEGORIES, DRINKS, formatNgn, getDrinkBySlug, preferTrackForCategory, searchDrinks } from './catalog';
+import {
+  CATEGORIES,
+  DRINKS,
+  formatNgn,
+  galleryFor,
+  getDrinkBySlug,
+  preferTrackForCategory,
+  relatedDrinks,
+  searchDrinks,
+  sizeOptionsFor,
+} from './catalog';
 
 describe('formatNgn', () => {
   it('formats whole naira with the currency symbol and thousands separators', () => {
@@ -49,5 +59,48 @@ describe('catalog integrity', () => {
     const term = target.name.slice(0, 4).toLowerCase();
     const results = searchDrinks(term);
     expect(results.some((d) => d.slug === target.slug)).toBe(true);
+  });
+});
+
+describe('product detail helpers', () => {
+  const hennessyVsop = getDrinkBySlug('hennessy-vsop')!;
+
+  it('builds a gallery from the images a product genuinely has, main shot first', () => {
+    expect(galleryFor(hennessyVsop)).toEqual([hennessyVsop.image]);
+
+    const pack = getDrinkBySlug('party-pack-20')!;
+    const gallery = galleryFor(pack);
+    expect(gallery.length).toBeGreaterThan(1);
+    expect(new Set(gallery).size).toBe(gallery.length);
+  });
+
+  it('always offers the current size, and only ever real SKUs', () => {
+    const sizes = sizeOptionsFor(hennessyVsop);
+    expect(sizes.some((s) => s.slug === hennessyVsop.slug)).toBe(true);
+    for (const size of sizes) {
+      expect(getDrinkBySlug(size.slug)).toBeDefined();
+      expect(size.volume).toBe(getDrinkBySlug(size.slug)!.volume);
+    }
+  });
+
+  it('does not treat different bottles from one house as sizes of each other', () => {
+    const slugs = sizeOptionsFor(hennessyVsop).map((s) => s.slug);
+    expect(slugs).not.toContain('hennessy-vs');
+    expect(slugs).not.toContain('hennessy-xo');
+  });
+
+  it('recommends other bottles — never the one being viewed, packs, or samples', () => {
+    for (const product of DRINKS) {
+      for (const related of relatedDrinks(product, 3)) {
+        expect(related.slug).not.toBe(product.slug);
+        expect(related.partyPack).toBeFalsy();
+        expect(related.sample).toBeFalsy();
+      }
+    }
+  });
+
+  it('leads recommendations with the same house when it has other bottles', () => {
+    const [first] = relatedDrinks(hennessyVsop, 3);
+    expect(first.brand).toBe('Hennessy');
   });
 });

@@ -1,16 +1,16 @@
 import type { Metadata } from 'next';
-import TriviaExplorer from '@/components/trivia/TriviaExplorer';
+import TriviaHub from '@/components/trivia/TriviaHub';
 import BrandEnquiryForm from '@/components/trivia/BrandEnquiryForm';
 import { absoluteUrl } from '@/lib/seo';
 
 export const metadata: Metadata = {
-  title: 'Brand Trivia',
+  title: 'Discover your next drink',
   description:
-    'Play Convivia24 brand trivia — learn the houses behind the bottles, enter sponsored rounds, and win complimentary drops. Adults 18+.',
+    'Personalised drink recommendations, brand challenges and rewards. Play the week\u2019s sponsored round, earn points, and enter the bottle draw. Adults 18+.',
   alternates: { canonical: absoluteUrl('/trivia') },
   openGraph: {
-    title: 'Brand Trivia | Convivia24',
-    description: 'Sponsored brand rounds and bottle draws for Lagos nights.',
+    title: 'Discover your next drink | Convivia24',
+    description: 'Brand challenges, taste-matched recommendations, and rewards for Lagos nights.',
     url: absoluteUrl('/trivia'),
   },
 };
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 export default function TriviaPage() {
   return (
     <>
-      <TriviaExplorer />
+      <TriviaHub />
       <BrandEnquiryForm />
     </>
   );

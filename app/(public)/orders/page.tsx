@@ -128,12 +128,20 @@ export default function OrdersPage() {
                     </li>
                   ))}
                 </ul>
-                <Link
-                  href={`/verify/${order.id}`}
-                  className="inline-flex items-center gap-1.5 mt-3 text-[11px] text-obsidian/45 hover:text-ember"
-                >
-                  <ShieldCheck size={13} /> Verify this order&apos;s authenticity
-                </Link>
+                <div className="mt-3 flex flex-wrap items-center gap-4">
+                  <Link
+                    href={`/orders/${order.id}`}
+                    className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.12em] text-ember"
+                  >
+                    Track this order →
+                  </Link>
+                  <Link
+                    href={`/verify/${order.id}`}
+                    className="inline-flex items-center gap-1.5 text-[11px] text-obsidian/45 hover:text-ember"
+                  >
+                    <ShieldCheck size={13} /> Verify authenticity
+                  </Link>
+                </div>
               </li>
             ))}
           </ul>

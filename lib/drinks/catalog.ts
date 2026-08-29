@@ -20,6 +20,8 @@ export type DrinkProduct = {
   tagline: string;
   description: string;
   image?: string;
+  /** Extra shots of the same bottle — box, back label, serve. Feeds the PDP gallery. */
+  images?: string[];
   packImages?: string[];
   includes?: string[];
   featured?: boolean;
@@ -975,4 +977,38 @@ export function searchDrinks(query: string): DrinkProduct[] {
       CATEGORY_LABELS[d.category].toLowerCase().includes(q) ||
       d.tagline.toLowerCase().includes(q)
   );
+}
+
+/**
+ * Every shot we hold of a product, main image first. The PDP gallery renders a
+ * thumbnail rail only when there is genuinely more than one — no filler frames.
+ */
+export function galleryFor(product: DrinkProduct): string[] {
+  const shots = [product.image, ...(product.images ?? []), ...(product.packImages ?? [])];
+  return [...new Set(shots.filter((s): s is string => Boolean(s)))];
+}
+
+export type SizeOption = { slug: string; volume: string; priceNgn: number };
+
+/**
+ * Other volumes of the same bottle that are actually stocked — a 50cl next to
+ * a 70cl, say. Matched on brand plus the name with any volume suffix stripped,
+ * so it only ever returns real SKUs the shopper can add to a cart.
+ */
+export function sizeOptionsFor(product: DrinkProduct): SizeOption[] {
+  const family = (d: DrinkProduct) => `${d.brand ?? ''}|${d.name.replace(/\s*\d+\s*cl\b/i, '').trim().toLowerCase()}`;
+  const key = family(product);
+  return DRINKS.filter((d) => family(d) === key && d.category === product.category)
+    .map((d) => ({ slug: d.slug, volume: d.volume, priceNgn: d.priceNgn }))
+    .sort((a, b) => a.priceNgn - b.priceNgn);
+}
+
+/** Bottles a shopper looking at this one would plausibly consider next. */
+export function relatedDrinks(product: DrinkProduct, limit = 3): DrinkProduct[] {
+  const pool = DRINKS.filter((d) => d.slug !== product.slug && !d.partyPack && !d.sample);
+  const sameBrand = pool.filter((d) => d.brand && d.brand === product.brand);
+  const sameCategory = pool.filter((d) => d.category === product.category && d.brand !== product.brand);
+  const nearestPrice = (a: DrinkProduct, b: DrinkProduct) =>
+    Math.abs(a.priceNgn - product.priceNgn) - Math.abs(b.priceNgn - product.priceNgn);
+  return [...sameBrand.sort(nearestPrice), ...sameCategory.sort(nearestPrice)].slice(0, limit);
 }

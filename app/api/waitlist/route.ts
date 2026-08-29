@@ -9,7 +9,10 @@ export async function POST(req: NextRequest) {
     const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
     const company = typeof body.company === 'string' ? body.company.trim() : null;
     const source =
-      body.source === 'convivium' || body.source === 'checkout' || body.source === 'rituals'
+      body.source === 'convivium' ||
+      body.source === 'checkout' ||
+      body.source === 'rituals' ||
+      body.source === 'events'
         ? body.source
         : 'footer';
     const tier =

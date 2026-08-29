@@ -5,6 +5,12 @@ export type NavLink = {
   href: string;
   icon?: 'gift';
   accent?: boolean;
+  /**
+   * Sub-destinations shown under the link. Challenges and the rewards shop are
+   * tabs on /trivia rather than pages of their own, so the nav surfaces them
+   * here instead of adding two more top-level entries.
+   */
+  children?: { label: string; href: string }[];
 };
 
 /** Primary consumer nav — shop holds bottles, packages, and planner. */
@@ -13,7 +19,18 @@ export function primaryNavLinks(): NavLink[] {
   if (eventsEnabled) {
     links.push({ label: 'Events', href: '/events' });
   }
-  links.push({ label: 'Trivia', href: '/trivia', icon: 'gift', accent: true });
+  links.push({
+    label: 'Discover',
+    href: '/trivia',
+    icon: 'gift',
+    accent: true,
+    children: [
+      { label: 'Discover', href: '/trivia' },
+      { label: 'Challenges', href: '/trivia?tab=challenges' },
+      { label: 'Rewards shop', href: '/trivia?tab=rewards' },
+    ],
+  });
+  links.push({ label: 'Brands', href: '/brands' });
   return links;
 }
 
@@ -29,6 +46,8 @@ export function isNavActive(pathname: string, href: string): boolean {
   }
   if (href === '/events') return pathname === '/events' || pathname.startsWith('/events/');
   if (href === '/trivia') return pathname === '/trivia' || pathname.startsWith('/trivia/');
+  // Campaign pages belong to the brand that sponsors them.
+  if (href === '/brands') return pathname === '/brands' || pathname.startsWith('/brands/') || pathname.startsWith('/campaigns/');
   if (href === '/contact') return pathname === '/contact';
   if (href === '/partners') return pathname.startsWith('/partners/');
   if (href === '/refer') return pathname === '/refer' || pathname.startsWith('/refer/');

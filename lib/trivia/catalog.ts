@@ -14,6 +14,13 @@ export type TriviaQuestion = {
 
 export type TriviaGlyph = 'grape' | 'cask' | 'bubbles' | 'still';
 
+/** What this house offers a drinker, scored against their taste profile. */
+export type RoundTaste = {
+  spirits: string[];
+  flavours: string[];
+  occasions: string[];
+};
+
 export type TriviaRound = {
   slug: string;
   brand: string;
@@ -27,6 +34,9 @@ export type TriviaRound = {
   /** Shop slug of the bottle the sponsor is putting up. */
   prizeSlug: string;
   prizeLabel: string;
+  /** One line the featured banner leads with — why this house suits you. */
+  pitch: string;
+  taste: RoundTaste;
   questions: TriviaQuestion[];
 };
 
@@ -41,6 +51,12 @@ export const TRIVIA_ROUNDS: TriviaRound[] = [
     passScore: 4,
     prizeSlug: 'hennessy-vs',
     prizeLabel: 'Hennessy VS 70cl',
+    pitch: 'A perfect balance of strength and smoothness with rich, complex notes.',
+    taste: {
+      spirits: ['cognac'],
+      flavours: ['smooth', 'rich', 'oak'],
+      occasions: ['evening', 'celebrations'],
+    },
     questions: [
       {
         id: 'hen-1',
@@ -89,6 +105,12 @@ export const TRIVIA_ROUNDS: TriviaRound[] = [
     passScore: 4,
     prizeSlug: 'johnnie-walker-black',
     prizeLabel: 'Johnnie Walker Black Label 75cl',
+    pitch: 'Smoky dried fruit and toffee over a long finish — the benchmark blend.',
+    taste: {
+      spirits: ['whisky'],
+      flavours: ['smoky', 'rich', 'oak'],
+      occasions: ['evening', 'solo'],
+    },
     questions: [
       {
         id: 'jw-1',
@@ -142,6 +164,12 @@ export const TRIVIA_ROUNDS: TriviaRound[] = [
     passScore: 4,
     prizeSlug: 'moet-imperial',
     prizeLabel: 'Moët & Chandon Impérial Brut 75cl',
+    pitch: 'Green apple and brioche with a fine, fast mousse — bright, not heavy.',
+    taste: {
+      spirits: ['champagne'],
+      flavours: ['citrus', 'sweet'],
+      occasions: ['celebrations', 'house-party', 'dinner'],
+    },
     questions: [
       {
         id: 'moet-1',
@@ -200,6 +228,12 @@ export const TRIVIA_ROUNDS: TriviaRound[] = [
     passScore: 4,
     prizeSlug: 'jameson-original',
     prizeLabel: 'Jameson Original 70cl',
+    pitch: 'Triple-distilled and light on its feet — green apple, vanilla, barely a bite.',
+    taste: {
+      spirits: ['whisky'],
+      flavours: ['smooth', 'sweet'],
+      occasions: ['house-party', 'evening'],
+    },
     questions: [
       {
         id: 'jam-1',
@@ -256,4 +290,12 @@ export function getRound(slug: string): TriviaRound | undefined {
 
 export function isPass(round: TriviaRound, score: number): boolean {
   return score >= round.passScore;
+}
+
+/** Rounds ordered by how well they fit a drinker, best first. */
+export function rankRounds(
+  rounds: TriviaRound[],
+  score: (round: TriviaRound) => number
+): TriviaRound[] {
+  return [...rounds].sort((a, b) => score(b) - score(a));
 }

@@ -150,7 +150,7 @@ CREATE TABLE IF NOT EXISTS waitlist (
   email         TEXT NOT NULL UNIQUE,
   company       TEXT,
   source        TEXT NOT NULL DEFAULT 'footer'
-                  CHECK (source IN ('footer','convivium','checkout','rituals')),
+                  CHECK (source IN ('footer','convivium','checkout','rituals','events')),
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -556,3 +556,183 @@ CREATE TABLE IF NOT EXISTS partner_applications (
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_partner_applications_kind ON partner_applications(kind, created_at DESC);
+
+-- ═══════════════════════════════════════════════
+-- TASTE PROFILES (drives /trivia recommendations)
+-- ═══════════════════════════════════════════════
+-- Guests keep their profile in localStorage; once signed in it is mirrored here
+-- so the match percentages follow the account across devices.
+CREATE TABLE IF NOT EXISTS taste_profiles (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id      TEXT NOT NULL UNIQUE,
+  spirits       TEXT[] NOT NULL DEFAULT '{}',
+  flavours      TEXT[] NOT NULL DEFAULT '{}',
+  occasions     TEXT[] NOT NULL DEFAULT '{}',
+  price_band    TEXT,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ═══════════════════════════════════════════════
+-- CHALLENGE COMPLETIONS (points earned on /trivia)
+-- ═══════════════════════════════════════════════
+-- period_key scopes a repeatable challenge to its window ('2026-W35' for the
+-- weekly trivia round, 'once' for one-off challenges) so the unique index below
+-- stops the same challenge paying out twice in the same period.
+CREATE TABLE IF NOT EXISTS trivia_challenge_completions (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id        TEXT NOT NULL,
+  challenge_id    TEXT NOT NULL,
+  period_key      TEXT NOT NULL DEFAULT 'once',
+  ref             TEXT,
+  points_awarded  INTEGER NOT NULL DEFAULT 0 CHECK (points_awarded >= 0),
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_challenge_once
+  ON trivia_challenge_completions(owner_id, challenge_id, period_key);
+CREATE INDEX IF NOT EXISTS idx_challenge_owner
+  ON trivia_challenge_completions(owner_id, created_at DESC);
+
+-- ═══════════════════════════════════════════════
+-- PRODUCT REVIEWS (star ratings on /shop/[slug])
+-- ═══════════════════════════════════════════════
+-- One review per account per SKU. `verified_buyer` is computed at write time by
+-- checking the account's paid orders for the slug — it is a claim about the
+-- order history, so it is never accepted from the client.
+CREATE TABLE IF NOT EXISTS product_reviews (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug            TEXT NOT NULL,
+  owner_id        TEXT NOT NULL,
+  author_name     TEXT NOT NULL,
+  rating          INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  body            TEXT NOT NULL DEFAULT '',
+  verified_buyer  BOOLEAN NOT NULL DEFAULT false,
+  status          TEXT NOT NULL DEFAULT 'published'
+                    CHECK (status IN ('published','hidden')),
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_product_reviews_slug ON product_reviews(slug, created_at DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_product_reviews_once ON product_reviews(slug, owner_id);
+
+-- ═══════════════════════════════════════════════
+-- REWARD REDEMPTIONS (points spent in the rewards shop)
+-- ═══════════════════════════════════════════════
+-- The row is the receipt: points come off loyalty_members in the same request,
+-- and `code` is what the member quotes to claim the reward.
+CREATE TABLE IF NOT EXISTS reward_redemptions (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id      TEXT NOT NULL,
+  reward_id     TEXT NOT NULL,
+  reward_name   TEXT NOT NULL,
+  category      TEXT NOT NULL,
+  points_spent  INTEGER NOT NULL CHECK (points_spent >= 0),
+  value_ngn     INTEGER,
+  code          TEXT NOT NULL UNIQUE,
+  status        TEXT NOT NULL DEFAULT 'issued'
+                  CHECK (status IN ('issued','fulfilled','cancelled')),
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_reward_redemptions_owner
+  ON reward_redemptions(owner_id, created_at DESC);
+
+-- The events page has its own newsletter sign-up, so `source` gained a value.
+-- Existing databases keep the original CHECK until it is replaced here.
+ALTER TABLE waitlist DROP CONSTRAINT IF EXISTS waitlist_source_check;
+ALTER TABLE waitlist ADD CONSTRAINT waitlist_source_check
+  CHECK (source IN ('footer','convivium','checkout','rituals','events'));
+
+-- ═══════════════════════════════════════════════
+-- BRAND PAGES: follows, ownership claims, campaigns
+-- ═══════════════════════════════════════════════
+-- Brand pages are written and owned by Convivia24. A brand can claim its page
+-- to take over managing it; a claim is a request until we approve it.
+CREATE TABLE IF NOT EXISTS brand_follows (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  brand_slug    TEXT NOT NULL,
+  owner_id      TEXT NOT NULL,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_brand_follows_once ON brand_follows(brand_slug, owner_id);
+CREATE INDEX IF NOT EXISTS idx_brand_follows_brand ON brand_follows(brand_slug);
+
+CREATE TABLE IF NOT EXISTS brand_claims (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  brand_slug    TEXT NOT NULL,
+  brand_name    TEXT NOT NULL,
+  contact_name  TEXT NOT NULL,
+  email         TEXT NOT NULL,
+  phone         TEXT,
+  role          TEXT,
+  website       TEXT,
+  message       TEXT,
+  owner_id      TEXT,
+  status        TEXT NOT NULL DEFAULT 'pending'
+                  CHECK (status IN ('pending','verified','approved','rejected')),
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_brand_claims_brand ON brand_claims(brand_slug, created_at DESC);
+-- Only one approved owner per brand; pending claims may stack up.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_brand_claims_owner
+  ON brand_claims(brand_slug) WHERE status = 'approved';
+
+-- A campaign is a brand-sponsored run of tasks. Created by Convivia24 (or by an
+-- approved brand owner), and published before it appears on the site.
+CREATE TABLE IF NOT EXISTS brand_campaigns (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug            TEXT NOT NULL UNIQUE,
+  brand_slug      TEXT NOT NULL,
+  title           TEXT NOT NULL,
+  tagline         TEXT,
+  blurb           TEXT,
+  -- What it costs to enter, and what finishing it pays.
+  entry_points    INTEGER NOT NULL DEFAULT 0 CHECK (entry_points >= 0),
+  reward_points   INTEGER NOT NULL DEFAULT 0 CHECK (reward_points >= 0),
+  top_reward      TEXT,
+  -- Ordered task list: [{ id, title, detail, points }]
+  tasks           JSONB NOT NULL DEFAULT '[]'::jsonb,
+  rules           JSONB NOT NULL DEFAULT '[]'::jsonb,
+  starts_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  ends_at         TIMESTAMPTZ,
+  published       BOOLEAN NOT NULL DEFAULT false,
+  created_by      TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_brand_campaigns_brand ON brand_campaigns(brand_slug, starts_at DESC);
+CREATE INDEX IF NOT EXISTS idx_brand_campaigns_live ON brand_campaigns(published, ends_at);
+
+CREATE TABLE IF NOT EXISTS campaign_participants (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  campaign_id     UUID NOT NULL REFERENCES brand_campaigns(id) ON DELETE CASCADE,
+  owner_id        TEXT NOT NULL,
+  display_name    TEXT NOT NULL,
+  -- Task ids the participant has finished; points are derived from these.
+  completed_tasks JSONB NOT NULL DEFAULT '[]'::jsonb,
+  points          INTEGER NOT NULL DEFAULT 0 CHECK (points >= 0),
+  joined_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_campaign_participants_once
+  ON campaign_participants(campaign_id, owner_id);
+CREATE INDEX IF NOT EXISTS idx_campaign_participants_board
+  ON campaign_participants(campaign_id, points DESC, joined_at ASC);
+
+-- ═══════════════════════════════════════════════
+-- ORDER STATUS TIMELINE
+-- ═══════════════════════════════════════════════
+-- ritual_orders only keeps the current status, so a tracking page had no way to
+-- say when an order was packed. Each transition is recorded here instead of
+-- being guessed from created_at.
+CREATE TABLE IF NOT EXISTS order_events (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id      UUID NOT NULL REFERENCES ritual_orders(id) ON DELETE CASCADE,
+  status        TEXT NOT NULL,
+  note          TEXT,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_order_events_order ON order_events(order_id, created_at ASC);
+-- One row per status per order: re-setting a status must not duplicate history.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_order_events_once ON order_events(order_id, status);

@@ -81,7 +81,7 @@ export default function Navigation() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-1 ml-auto">
-            {LINKS.map(({ label, href, icon, accent }) => (
+            {LINKS.map(({ label, href, icon, accent, children }) => (
               <DesktopNavLink
                 key={href}
                 href={href}
@@ -89,6 +89,7 @@ export default function Navigation() {
                 active={isActive(href)}
                 icon={icon ? NAV_ICONS[icon] : undefined}
                 accent={accent}
+                children={children}
               />
             ))}
 
@@ -135,6 +136,9 @@ export default function Navigation() {
                       <p className="px-4 py-2 text-[11px] text-obsidian/45 truncate border-b border-obsidian/6 mb-1">
                         {user.email}
                       </p>
+                      <Link href="/account" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
+                        My profile
+                      </Link>
                       <Link href="/shop?section=plan" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
                         My parties
                       </Link>
@@ -223,23 +227,39 @@ export default function Navigation() {
                     <span className="ml-auto text-[9px] font-black uppercase tracking-wider text-emerald-600">Signed in</span>
                   </div>
                 )}
-                {LINKS.map(({ label, href, icon, accent }) => {
+                {LINKS.map(({ label, href, icon, accent, children }) => {
                   const Icon = icon ? NAV_ICONS[icon] : null;
                   return (
-                    <Link
-                      key={href}
-                      href={href}
-                      scroll
-                      className={`flex items-center justify-between py-3.5 text-base font-semibold ${
-                        isActive(href) || accent ? 'text-ember' : 'text-obsidian/70'
-                      }`}
-                    >
-                      <span className="inline-flex items-center gap-2">
-                        {Icon && <Icon size={15} strokeWidth={2.2} />}
-                        {label}
-                      </span>
-                      <span className="text-ember/40 text-lg">&rsaquo;</span>
-                    </Link>
+                    <div key={href}>
+                      <Link
+                        href={href}
+                        scroll
+                        className={`flex items-center justify-between py-3.5 text-base font-semibold ${
+                          isActive(href) || accent ? 'text-ember' : 'text-obsidian/70'
+                        }`}
+                      >
+                        <span className="inline-flex items-center gap-2">
+                          {Icon && <Icon size={15} strokeWidth={2.2} />}
+                          {label}
+                        </span>
+                        <span className="text-ember/40 text-lg">&rsaquo;</span>
+                      </Link>
+                      {/* Tabs of the same page, indented rather than promoted. */}
+                      {children && children.length > 1 && (
+                        <div className="pl-7 pb-2 -mt-1 space-y-1">
+                          {children.slice(1).map((child) => (
+                            <Link
+                              key={child.href}
+                              href={child.href}
+                              scroll
+                              className="block py-1.5 text-sm text-obsidian/50 hover:text-ember transition-colors"
+                            >
+                              {child.label}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
                 <Link
@@ -263,6 +283,10 @@ export default function Navigation() {
                 </Link>
                 {signedIn && user ? (
                   <>
+                    <Link href="/account" className="flex items-center justify-between py-3.5 text-base font-semibold text-obsidian/70">
+                      My profile
+                      <span className="text-ember/40 text-lg">&rsaquo;</span>
+                    </Link>
                     <Link href="/orders" className="flex items-center justify-between py-3.5 text-base font-semibold text-obsidian/70">
                       Order history
                       <span className="text-ember/40 text-lg">&rsaquo;</span>
@@ -301,14 +325,19 @@ function DesktopNavLink({
   active,
   icon: Icon,
   accent,
+  children,
 }: {
   href: string;
   label: string;
   active: boolean;
   icon?: typeof Gift;
   accent?: boolean;
+  /** Renders a hover menu of the link's sub-destinations. */
+  children?: { label: string; href: string }[];
 }) {
-  return (
+  const [open, setOpen] = useState(false);
+
+  const link = (
     <Link
       href={href}
       scroll
@@ -332,6 +361,43 @@ function DesktopNavLink({
         />
       )}
     </Link>
+  );
+
+  if (!children || children.length === 0) return link;
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onFocus={() => setOpen(true)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) setOpen(false);
+      }}
+    >
+      {link}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            className="absolute left-0 top-full w-48 bg-white border border-obsidian/10 shadow-lg py-2 z-50"
+          >
+            {children.map((child) => (
+              <Link
+                key={child.href}
+                href={child.href}
+                scroll
+                className="block px-4 py-2.5 text-sm text-obsidian/65 hover:bg-ember/5 hover:text-ember transition-colors"
+              >
+                {child.label}
+              </Link>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
