@@ -30,7 +30,7 @@ export default function CartToast() {
             <Link
               href="/cart"
               onClick={dismissToast}
-              className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-ember px-3 py-2 text-xs font-bold text-white hover:brightness-110"
+              className="inline-flex shrink-0 items-center gap-1 rounded-lg btn-brand px-3 py-2 text-xs font-bold text-white"
             >
               View cart <ArrowRight size={13} />
             </Link>

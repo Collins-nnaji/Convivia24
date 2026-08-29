@@ -78,7 +78,7 @@ export default function EventsNewsletter() {
             <button
               type="submit"
               disabled={sending}
-              className="px-6 py-3 bg-ember text-white text-[11px] font-black uppercase tracking-[0.12em] disabled:opacity-50 shrink-0"
+              className="px-6 py-3 bg-white/10 border-l border-white/15 text-white text-[11px] font-black uppercase tracking-[0.12em] hover:bg-white/15 disabled:opacity-50 shrink-0 transition-colors"
             >
               {sending ? 'Adding…' : 'Subscribe'}
             </button>

@@ -108,7 +108,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           type="button"
           onClick={handleAdd}
           disabled={product.available === 0}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-obsidian/12 bg-white py-2.5 text-[11px] font-black uppercase tracking-[0.1em] text-obsidian transition-all duration-200 hover:border-ember hover:bg-ember hover:text-white hover:shadow-md hover:shadow-ember/20 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-obsidian/12 disabled:hover:bg-white disabled:hover:text-obsidian disabled:hover:shadow-none"
+          className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-obsidian/12 bg-white py-2.5 text-[11px] font-black uppercase tracking-[0.1em] text-obsidian transition-all duration-200 hover:border-ember/45 hover:bg-obsidian hover:text-white hover:shadow-md hover:shadow-black/15 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-obsidian/12 disabled:hover:bg-white disabled:hover:text-obsidian disabled:hover:shadow-none"
         >
           <ShoppingBag size={13} className="opacity-60" />
           Add

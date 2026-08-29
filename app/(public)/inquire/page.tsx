@@ -13,7 +13,7 @@ const fadeUp = {
 export default function InquirePage() {
   return (
     <>
-      <section className="relative min-h-[55vh] bg-obsidian flex items-center overflow-hidden -mt-16 pt-16">
+      <section className="relative bg-obsidian flex items-center overflow-hidden -mt-16 pt-16">
         <div className="absolute inset-0">
           <div
             className="absolute inset-0"
@@ -22,7 +22,7 @@ export default function InquirePage() {
             }}
           />
         </div>
-        <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-8 py-20 w-full">
+        <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-8 py-10 sm:py-14 w-full">
           <motion.div
             initial="hidden"
             animate="visible"
@@ -34,11 +34,11 @@ export default function InquirePage() {
             </motion.div>
             <motion.h1
               variants={fadeUp}
-              className="font-display text-5xl sm:text-6xl italic text-cream leading-tight mb-5"
+              className="font-display text-4xl sm:text-5xl italic text-cream leading-tight mb-4"
             >
               How can we help?
             </motion.h1>
-            <motion.p variants={fadeUp} className="text-cream/60 leading-relaxed mb-10">
+            <motion.p variants={fadeUp} className="text-cream/60 leading-relaxed mb-6">
               Convivia is a house of drinks experts. Shop a ritual for tonight, or apply for The Convivium
               membership waitlist.
             </motion.p>

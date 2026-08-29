@@ -49,7 +49,7 @@ export default function TrendingPanel() {
             onClick={() => setFilter(f.id)}
             className={`px-3 py-1.5 text-[11px] font-medium rounded-full transition-colors ${
               filter === f.id
-                ? 'bg-ember text-white'
+                ? 'bg-ember/8 text-ember ring-1 ring-inset ring-ember/20'
                 : 'bg-obsidian/[0.04] text-obsidian/55 hover:bg-obsidian/8'
             }`}
           >

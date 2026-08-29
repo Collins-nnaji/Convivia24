@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronDown, Users } from 'lucide-react';
+import { BadgePercent, Check, ChevronDown, Users } from 'lucide-react';
 import PackageAddToCart from '@/components/packages/PackageAddToCart';
 import {
   EVENT_PACKAGES,
@@ -26,6 +26,11 @@ export const PACKAGE_OCCASION_ORDER: PackageOccasion[] = [
   'premium',
   'low-abv',
 ];
+
+function savingsPct(pkg: (typeof EVENT_PACKAGES)[number]) {
+  const total = componentsTotalNgn(pkg);
+  return total > 0 ? Math.round((savingsNgn(pkg) / total) * 100) : 0;
+}
 
 type Props = {
   selectedSlug?: string | null;
@@ -67,6 +72,12 @@ export default function PackageBrowse({
   }, [controlledOccasion]);
 
   const items = useMemo(() => EVENT_PACKAGES.filter((p) => p.occasion === occasion), [occasion]);
+  const savingRates = items.map(savingsPct).filter((rate) => rate > 0);
+  const savingRange = savingRates.length
+    ? Math.min(...savingRates) === Math.max(...savingRates)
+      ? `${savingRates[0]}%`
+      : `${Math.min(...savingRates)}–${Math.max(...savingRates)}%`
+    : null;
 
   function pickOccasion(occ: PackageOccasion) {
     if (onOccasionChange) onOccasionChange(occ);
@@ -88,33 +99,53 @@ export default function PackageBrowse({
       )}
 
       {hideSidebar && (
-        <h2 className="text-xl sm:text-2xl font-bold text-obsidian mb-4">{OCCASION_LABELS[occasion]} packages</h2>
+        <div className="mb-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-obsidian">{OCCASION_LABELS[occasion]} packages</h2>
+            <p className="mt-1 text-sm sm:text-base text-obsidian/55">
+              Compare the package price with the same bottles bought separately.
+            </p>
+          </div>
+          {savingRange && (
+            <div className="inline-flex w-fit items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800">
+              <BadgePercent size={18} aria-hidden />
+              <span className="text-sm font-semibold">Save {savingRange} on this tab</span>
+            </div>
+          )}
+        </div>
       )}
 
       {items.length === 0 ? (
         <p className="text-body text-obsidian/45">No packages in this section yet.</p>
       ) : (
-        <ul className="border-t border-obsidian/10">
+        <ul className="space-y-4">
           {items.map((pkg) => {
             const open = expanded === pkg.slug;
             const saving = savingsNgn(pkg);
+            const savingPercent = savingsPct(pkg);
+            const individualTotal = componentsTotalNgn(pkg);
             const components = resolveComponents(pkg);
 
             return (
-              <li key={pkg.slug} className="border-b border-obsidian/10">
+              <li
+                key={pkg.slug}
+                className={`overflow-hidden rounded-2xl border bg-white transition-colors ${
+                  open ? 'border-ember/25' : 'border-obsidian/10 hover:border-obsidian/20'
+                }`}
+              >
                 <button
                   type="button"
                   id={`pkg-${pkg.slug}`}
                   aria-expanded={open}
                   onClick={() => setExpanded(open ? null : pkg.slug)}
-                  className="w-full text-left py-5 sm:py-6 flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-8 hover:bg-white/60 transition-colors"
+                  className="w-full p-4 sm:p-6 text-left flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-8 hover:bg-paper/60 transition-colors"
                 >
                   <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1.5">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                       <h3 className="text-lg sm:text-xl font-semibold text-obsidian">{pkg.name}</h3>
                       {saving > 0 && (
-                        <span className="badge-brand text-xs font-bold uppercase px-2.5 py-0.5">
-                          Save {formatNgn(saving)}
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 ring-1 ring-inset ring-emerald-200">
+                          <Check size={12} aria-hidden /> Save {savingPercent}%
                         </span>
                       )}
                     </div>
@@ -129,15 +160,17 @@ export default function PackageBrowse({
                       <span>{formatNgn(spendPerGuestNgn(pkg))} / guest</span>
                     </p>
                   </div>
-                  <div className="flex items-center gap-4 shrink-0 sm:pt-1">
+                  <div className="flex w-full items-end justify-between gap-4 shrink-0 sm:w-auto sm:items-center">
                     <div className="text-left sm:text-right">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/35">Package price</p>
                       <p className="text-2xl sm:text-3xl font-semibold text-obsidian tabular-nums">
                         {formatNgn(pkg.priceNgn)}
                       </p>
                       {saving > 0 && (
-                        <p className="text-sm text-obsidian/45 line-through tabular-nums">
-                          {formatNgn(componentsTotalNgn(pkg))}
-                        </p>
+                        <div className="mt-1 flex flex-wrap items-center gap-x-2 sm:justify-end">
+                          <p className="text-sm text-obsidian/40 line-through tabular-nums">{formatNgn(individualTotal)}</p>
+                          <p className="text-sm font-semibold text-emerald-700 tabular-nums">Save {formatNgn(saving)}</p>
+                        </div>
                       )}
                     </div>
                     <ChevronDown
@@ -149,8 +182,24 @@ export default function PackageBrowse({
                 </button>
 
                 {open && (
-                  <div className="pb-6 pt-0">
+                  <div className="border-t border-obsidian/8 bg-paper/50 px-4 py-5 sm:px-6 sm:py-6">
                     <p className="text-body text-obsidian/75 mb-5 max-w-2xl">{pkg.description}</p>
+                    {saving > 0 && (
+                      <dl className="mb-6 grid grid-cols-3 overflow-hidden rounded-xl border border-obsidian/8 bg-white divide-x divide-obsidian/8">
+                        <div className="p-3 sm:p-4 min-w-0">
+                          <dt className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.1em] text-obsidian/35">Separate</dt>
+                          <dd className="mt-1 text-sm sm:text-lg text-obsidian/50 line-through tabular-nums truncate">{formatNgn(individualTotal)}</dd>
+                        </div>
+                        <div className="p-3 sm:p-4 min-w-0">
+                          <dt className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.1em] text-obsidian/35">Package</dt>
+                          <dd className="mt-1 text-sm sm:text-lg font-bold text-obsidian tabular-nums truncate">{formatNgn(pkg.priceNgn)}</dd>
+                        </div>
+                        <div className="p-3 sm:p-4 min-w-0 bg-emerald-50/70">
+                          <dt className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.1em] text-emerald-700">You save</dt>
+                          <dd className="mt-1 text-sm sm:text-lg font-bold text-emerald-700 tabular-nums truncate">{formatNgn(saving)}</dd>
+                        </div>
+                      </dl>
+                    )}
                     <p className="text-label text-obsidian/45 mb-2">What&apos;s included</p>
                     <ul className="mb-5 divide-y divide-obsidian/8 border border-obsidian/10 bg-white">
                       {components.map((c) => (

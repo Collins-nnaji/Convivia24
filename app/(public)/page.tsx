@@ -26,7 +26,7 @@ export default function HomePage() {
     <>
       <HomeHero />
 
-      <section className="bg-white py-16 sm:py-20 border-y border-obsidian/5">
+      <section className="bg-white py-10 sm:py-16 border-y border-obsidian/5">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <div className="flex items-end justify-between gap-4 mb-8">
             <div>
@@ -68,7 +68,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-paper py-16 sm:py-20">
+      <section className="bg-paper py-10 sm:py-16">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <p className="text-[9px] font-wordmark-sm text-ember mb-2">Explore</p>
           <h2 className="font-wordmark text-2xl sm:text-3xl text-obsidian mb-8">Popular categories</h2>
@@ -104,7 +104,7 @@ export default function HomePage() {
       </section>
 
       {!eventsEnabled && (
-        <section className="bg-white py-16 sm:py-20 border-t border-obsidian/5">
+        <section className="bg-white py-10 sm:py-16 border-t border-obsidian/5">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
             <div className="max-w-xl">
               <p className="text-[9px] font-wordmark-sm text-ember mb-2">Party planner</p>
@@ -125,7 +125,7 @@ export default function HomePage() {
       )}
 
       {eventsEnabled && tonight.length > 0 && (
-        <section className="bg-white py-16 sm:py-20 border-t border-obsidian/5">
+        <section className="bg-white py-10 sm:py-16 border-t border-obsidian/5">
           <div className="max-w-6xl mx-auto px-5 sm:px-8">
             <div className="flex items-end justify-between gap-4 mb-8">
               <div>

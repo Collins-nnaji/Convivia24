@@ -131,7 +131,7 @@ export default function StaysPage() {
   return (
     <>
       {/* HERO */}
-      <section className="relative min-h-[62vh] bg-obsidian flex items-center overflow-hidden -mt-16 pt-16">
+      <section className="relative bg-obsidian flex items-center overflow-hidden -mt-16 pt-16">
         <div className="absolute inset-0">
           {hero.img ? (
             <>
@@ -147,10 +147,10 @@ export default function StaysPage() {
             </>
           )}
         </div>
-        <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-8 py-20 w-full">
+        <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-8 py-10 sm:py-14 w-full">
           <motion.div key={tab} initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.1 } } }} className="max-w-2xl">
             <motion.div variants={fadeUp}><SectionLabel>{hero.label}</SectionLabel></motion.div>
-            <motion.h1 variants={fadeUp} className="font-display text-4xl sm:text-6xl md:text-7xl font-light italic tracking-tight text-cream leading-[0.9] mb-6 whitespace-pre-line">
+            <motion.h1 variants={fadeUp} className="font-display text-4xl sm:text-5xl md:text-6xl font-light italic tracking-tight text-cream leading-[0.9] mb-4 whitespace-pre-line">
               {hero.title}
             </motion.h1>
             <motion.p variants={fadeUp} className="text-base sm:text-lg text-cream/70 max-w-lg leading-relaxed">
@@ -169,7 +169,7 @@ export default function StaysPage() {
               <button
                 key={id}
                 onClick={() => selectTab(id)}
-                className={`relative inline-flex items-center gap-2 px-4 sm:px-6 py-5 text-sm sm:text-[15px] font-bold uppercase tracking-[0.18em] transition-colors whitespace-nowrap ${
+                className={`relative inline-flex items-center gap-2 px-4 sm:px-6 py-3.5 sm:py-4 text-xs sm:text-sm font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap ${
                   active ? 'text-white' : 'text-white/60 hover:text-white'
                 }`}
               >
@@ -205,7 +205,7 @@ export default function StaysPage() {
 function StaysSection() {
   return (
     <>
-      <section id="stays" className="bg-cream py-20 sm:py-28 scroll-mt-32">
+      <section id="stays" className="bg-cream py-14 sm:py-20 scroll-mt-32">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 space-y-6">
           {ROOMS.map((room, i) => (
             <motion.div
@@ -248,7 +248,7 @@ function StaysSection() {
         </div>
       </section>
 
-      <section className="bg-obsidian py-20 sm:py-28 border-t border-gold/10">
+      <section className="bg-obsidian py-14 sm:py-20 border-t border-gold/10">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }} variants={{ visible: { transition: { staggerChildren: 0.1 } } }}>
             <motion.div variants={fadeUp}><SectionLabel>Every Stay Includes</SectionLabel></motion.div>
@@ -274,7 +274,7 @@ function StaysSection() {
 function WellnessSection() {
   return (
     <>
-      <section id="wellness" className="bg-cream py-20 sm:py-28 scroll-mt-32">
+      <section id="wellness" className="bg-cream py-14 sm:py-20 scroll-mt-32">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }} variants={{ visible: { transition: { staggerChildren: 0.1 } } }}>
             <motion.div variants={fadeUp}><SectionLabel variant="light">The Thermal Circuit</SectionLabel></motion.div>
@@ -311,7 +311,7 @@ function WellnessSection() {
         </div>
       </section>
 
-      <section className="bg-obsidian py-20 sm:py-28">
+      <section className="bg-obsidian py-14 sm:py-20">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }} variants={{ visible: { transition: { staggerChildren: 0.1 } } }}>
             <motion.div variants={fadeUp}><SectionLabel>Signature Treatments</SectionLabel></motion.div>
@@ -370,7 +370,7 @@ function WellnessSection() {
 function DiningSection() {
   return (
     <>
-      <section id="dining" className="bg-obsidian py-20 sm:py-28 scroll-mt-32">
+      <section id="dining" className="bg-obsidian py-14 sm:py-20 scroll-mt-32">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }} variants={{ visible: { transition: { staggerChildren: 0.1 } } }}>
             <motion.div variants={fadeUp}><SectionLabel>The Menu</SectionLabel></motion.div>
@@ -416,7 +416,7 @@ function DiningSection() {
         </motion.div>
       </section>
 
-      <section className="bg-cream py-20 sm:py-28">
+      <section className="bg-cream py-14 sm:py-20">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }} variants={{ visible: { transition: { staggerChildren: 0.1 } } }}>
             <motion.div variants={fadeUp}><SectionLabel variant="light">Life at the Table</SectionLabel></motion.div>
@@ -438,4 +438,3 @@ function DiningSection() {
     </>
   );
 }
-

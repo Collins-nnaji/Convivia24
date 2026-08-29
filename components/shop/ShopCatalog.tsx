@@ -162,9 +162,9 @@ export default function ShopCatalog() {
         <GuestCardStrip variant="inline" className="shrink-0 w-full sm:w-auto sm:max-w-[280px]" />
       </header>
 
-      {/* Mobile section + category chips */}
-      <div className="lg:hidden mb-4 space-y-2.5">
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5">
+      {/* Shop modes are tabs. Package occasions are views, not filters. */}
+      <div className="mb-5 space-y-3">
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5" role="tablist" aria-label="Shop view">
           <ChipBtn active={section === 'bottles'} onClick={() => goSection('bottles')}>
             Bottles
           </ChipBtn>
@@ -173,7 +173,7 @@ export default function ShopCatalog() {
           </ChipBtn>
         </div>
         {section === 'bottles' && (
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5 lg:hidden" aria-label="Bottle categories">
             <ChipBtn active={category === 'all'} onClick={() => goCategory('all')}>
               All
             </ChipBtn>
@@ -185,13 +185,31 @@ export default function ShopCatalog() {
           </div>
         )}
         {section === 'packages' && (
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5">
+          <div
+            className="flex gap-1 overflow-x-auto scrollbar-hide border-b border-obsidian/10"
+            role="tablist"
+            aria-label="Package occasions"
+          >
             {PACKAGE_OCCASION_ORDER.map((occ) => {
               if (!EVENT_PACKAGES.some((p) => p.occasion === occ)) return null;
               return (
-                <ChipBtn key={occ} active={packageOccasion === occ} onClick={() => goPackageOccasion(occ)}>
+                <button
+                  key={occ}
+                  type="button"
+                  role="tab"
+                  aria-selected={packageOccasion === occ}
+                  onClick={() => goPackageOccasion(occ)}
+                  className={`relative shrink-0 px-4 py-3 text-sm sm:text-base font-semibold transition-colors ${
+                    packageOccasion === occ
+                      ? 'text-obsidian'
+                      : 'text-obsidian/45 hover:text-obsidian/75'
+                  }`}
+                >
                   {OCCASION_LABELS[occ]}
-                </ChipBtn>
+                  {packageOccasion === occ && (
+                    <span className="absolute inset-x-3 bottom-0 h-0.5 bg-ember" aria-hidden />
+                  )}
+                </button>
               );
             })}
           </div>
@@ -199,24 +217,11 @@ export default function ShopCatalog() {
       </div>
 
       <div className="flex flex-col lg:flex-row gap-4 lg:gap-5">
-        <aside
-          className="hidden lg:block lg:sticky lg:top-[4.75rem] lg:self-start shrink-0 lg:w-56 xl:w-60 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto rounded-2xl bg-ember/[0.06] border border-ember/15 p-3 sm:p-4"
-          aria-label="Shop filters"
-        >
-          <p className="mb-2.5 px-1 text-xs font-bold uppercase tracking-[0.14em] text-obsidian/70">Browse</p>
-          <div className="mb-4 rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-obsidian/[0.06]">
-            <div className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible scrollbar-hide">
-              <SidebarBtn active={section === 'bottles'} onClick={() => goSection('bottles')}>
-                Bottles
-              </SidebarBtn>
-              <SidebarBtn active={section === 'packages'} onClick={() => goSection('packages')}>
-                Packages
-              </SidebarBtn>
-            </div>
-          </div>
-
-          {section === 'bottles' && (
-            <>
+        {section === 'bottles' && (
+          <aside
+            className="hidden lg:block lg:sticky lg:top-[4.75rem] lg:self-start shrink-0 lg:w-56 xl:w-60 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto rounded-2xl bg-ember/[0.06] border border-ember/15 p-3 sm:p-4"
+            aria-label="Bottle categories"
+          >
               <p className="mb-2.5 px-1 text-xs font-bold uppercase tracking-[0.14em] text-obsidian/70">Category</p>
               <div className="rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-obsidian/[0.06]">
                 <div className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible scrollbar-hide pb-0.5 lg:pb-0">
@@ -235,31 +240,8 @@ export default function ShopCatalog() {
                   ))}
                 </div>
               </div>
-            </>
-          )}
-
-          {section === 'packages' && (
-            <>
-              <p className="mb-2.5 px-1 text-xs font-bold uppercase tracking-[0.14em] text-obsidian/70">Occasion</p>
-              <div className="rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-obsidian/[0.06]">
-                <div className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible scrollbar-hide pb-0.5 lg:pb-0">
-                  {PACKAGE_OCCASION_ORDER.map((occ) => {
-                    if (!EVENT_PACKAGES.some((p) => p.occasion === occ)) return null;
-                    return (
-                      <SidebarBtn
-                        key={occ}
-                        active={packageOccasion === occ}
-                        onClick={() => goPackageOccasion(occ)}
-                      >
-                        {OCCASION_LABELS[occ]}
-                      </SidebarBtn>
-                    );
-                  })}
-                </div>
-              </div>
-            </>
-          )}
-        </aside>
+          </aside>
+        )}
 
         <div className="flex-1 min-w-0">
           {section === 'plan' && (
@@ -349,6 +331,8 @@ function ChipBtn({
     <button
       type="button"
       onClick={onClick}
+      role="tab"
+      aria-selected={active}
       className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
         active
           ? 'bg-obsidian text-white'

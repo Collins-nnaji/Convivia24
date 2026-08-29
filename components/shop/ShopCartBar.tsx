@@ -28,7 +28,7 @@ export default function ShopCartBar() {
               {count} item{count === 1 ? '' : 's'} · {formatNgn(subtotalNgn)}
             </span>
           </span>
-          <span className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-ember px-3 py-1.5 text-xs font-bold text-white">
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-obsidian px-3 py-1.5 text-xs font-bold text-white ring-1 ring-ember/20">
             Cart <ArrowRight size={13} />
           </span>
         </Link>

@@ -552,7 +552,7 @@ function Toolbar(props: {
                 onClick={() => props.onView(mode)}
                 className={`w-9 h-9 flex items-center justify-center border transition-colors ${
                   props.view === mode
-                    ? 'border-ember bg-ember text-white'
+                    ? 'border-ember/30 bg-ember/8 text-ember'
                     : 'border-obsidian/12 text-obsidian/45 hover:border-obsidian/30'
                 }`}
               >

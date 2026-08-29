@@ -47,13 +47,13 @@ export default function HomeHero() {
 
   return (
     <section className="relative overflow-hidden bg-paper">
-      <div className="relative overflow-hidden py-5 sm:py-7">
+      <div className="relative overflow-hidden py-3 sm:py-5">
         <div className="absolute inset-0 brand-gradient opacity-70" aria-hidden />
         <div className="relative flex whitespace-nowrap animate-marquee" aria-hidden>
           {loop.map((line, i) => (
             <span
               key={`${line}-${i}`}
-              className="mx-8 sm:mx-12 font-wordmark text-3xl sm:text-5xl md:text-[3.35rem] text-white"
+              className="mx-7 sm:mx-10 font-wordmark text-2xl sm:text-4xl md:text-5xl text-white"
             >
               {line}
             </span>
@@ -66,13 +66,13 @@ export default function HomeHero() {
         </h1>
       </div>
 
-      <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-10 border-b border-ember/10 grid md:grid-cols-2 gap-10 md:gap-8 items-center">
-        <div className="flex flex-col items-center md:items-start gap-5">
+      <div className="max-w-6xl mx-auto px-5 sm:px-8 py-5 sm:py-8 border-b border-ember/10 grid md:grid-cols-2 gap-6 md:gap-8 items-center">
+        <div className="flex flex-col items-center md:items-start gap-3.5 sm:gap-5">
           <div className="relative">
             <motion.img
               src="/Logo2.png"
               alt="Convivia24"
-              className="w-28 h-28 sm:w-36 sm:h-36 object-contain"
+              className="w-20 h-20 sm:w-28 sm:h-28 object-contain"
               animate={{ rotate: 360 }}
               transition={{ duration: 14, repeat: Infinity, ease: 'linear' }}
             />
@@ -115,7 +115,9 @@ export default function HomeHero() {
           <TrustBadges className="justify-center md:justify-start" />
         </div>
 
-        <HeroGuestCard />
+        <div className="hidden md:block">
+          <HeroGuestCard />
+        </div>
       </div>
     </section>
   );

@@ -405,7 +405,7 @@ function SizeSelector({
       <div className="flex flex-wrap gap-2.5">
         {sizes.map((size) =>
           size.slug === product.slug ? (
-            <span key={size.slug} aria-current="true" className="px-5 py-2.5 bg-ember text-white text-sm font-medium">
+            <span key={size.slug} aria-current="true" className="px-5 py-2.5 bg-ember/8 border border-ember/25 text-ember text-sm font-medium">
               {size.volume}
             </span>
           ) : (

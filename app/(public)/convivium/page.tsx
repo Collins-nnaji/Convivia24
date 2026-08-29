@@ -77,7 +77,7 @@ export default function ConviviumPage() {
 
   return (
     <>
-      <section className="relative min-h-[62vh] bg-obsidian flex items-center overflow-hidden -mt-16 pt-16">
+      <section className="relative bg-obsidian flex items-center overflow-hidden -mt-16 pt-16">
         <div className="absolute inset-0">
           <div
             className="absolute inset-0"
@@ -87,7 +87,7 @@ export default function ConviviumPage() {
           />
           <div className="absolute -top-24 -right-24 w-[32rem] h-[32rem] rounded-full bg-gold/15 blur-3xl" />
         </div>
-        <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-8 py-20 w-full">
+        <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-8 py-10 sm:py-14 w-full">
           <motion.div
             initial="hidden"
             animate="visible"
@@ -99,7 +99,7 @@ export default function ConviviumPage() {
             </motion.div>
             <motion.h1
               variants={fadeUp}
-              className="font-display text-5xl sm:text-7xl md:text-8xl font-light italic tracking-tight text-cream leading-[0.9] mb-6"
+              className="font-display text-4xl sm:text-6xl md:text-7xl font-light italic tracking-tight text-cream leading-[0.9] mb-4"
             >
               The Convivium.
             </motion.h1>
@@ -112,7 +112,7 @@ export default function ConviviumPage() {
         </div>
       </section>
 
-      <section className="bg-obsidian py-20 sm:py-28 overflow-hidden border-t border-gold/10">
+      <section className="bg-obsidian py-14 sm:py-20 overflow-hidden border-t border-gold/10">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <motion.div
             initial="hidden"
@@ -164,7 +164,7 @@ export default function ConviviumPage() {
         </div>
       </section>
 
-      <section className="bg-cream py-20 sm:py-28">
+      <section className="bg-cream py-14 sm:py-20">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <motion.div
             initial="hidden"
@@ -252,7 +252,7 @@ export default function ConviviumPage() {
         </div>
       </section>
 
-      <section id={`apply-${applyTier}`} className="bg-obsidian py-20 sm:py-24 scroll-mt-20">
+      <section id={`apply-${applyTier}`} className="bg-obsidian py-14 sm:py-20 scroll-mt-20">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-12 items-start">
           <div>
             <SectionLabel>Apply</SectionLabel>
