@@ -13,6 +13,14 @@ export type SavedParty = {
   vibe: string;
   budgetNgn: number | null;
   plan: DrinkPlan | null;
+  shareToken: string;
+  createdAt: string;
+};
+
+export type PartyRsvp = {
+  id: string;
+  name: string;
+  status: 'attending' | 'maybe' | 'declined';
   createdAt: string;
 };
 
@@ -42,6 +50,7 @@ function mapRow(r: Record<string, unknown>): SavedParty {
     vibe: String(r.vibe || 'balanced'),
     budgetNgn: r.budget_ngn != null ? Number(r.budget_ngn) : null,
     plan: (r.plan as DrinkPlan) ?? null,
+    shareToken: String(r.share_token || ''),
     createdAt: new Date(r.created_at as string).toISOString(),
   };
 }
@@ -99,4 +108,45 @@ export async function saveParty(input: SavePartyInput): Promise<SavedParty> {
 export async function deleteParty(id: string, ownerId: string): Promise<boolean> {
   const rows = await sql`DELETE FROM party_plans WHERE id = ${id} AND owner_id = ${ownerId} RETURNING id`;
   return rows.length > 0;
+}
+
+/** Resolve a shared plan using the unguessable token carried by its invitation link. */
+export async function getSharedParty(token: string): Promise<SavedParty | null> {
+  const rows = await sql`SELECT * FROM party_plans WHERE share_token = ${token} LIMIT 1`;
+  return rows[0] ? mapRow(rows[0]) : null;
+}
+
+export async function listPartyRsvps(partyId: string): Promise<PartyRsvp[]> {
+  const rows = await sql`
+    SELECT id, name, status, created_at
+    FROM party_plan_rsvps
+    WHERE party_id = ${partyId}
+    ORDER BY created_at ASC
+  `;
+  return rows.map((row) => ({
+    id: String(row.id),
+    name: String(row.name),
+    status: String(row.status) as PartyRsvp['status'],
+    createdAt: new Date(row.created_at as string).toISOString(),
+  }));
+}
+
+export async function respondToParty(
+  partyId: string,
+  name: string,
+  status: PartyRsvp['status']
+): Promise<PartyRsvp> {
+  const rows = await sql`
+    INSERT INTO party_plan_rsvps (party_id, name, status)
+    VALUES (${partyId}, ${name.trim()}, ${status})
+    ON CONFLICT (party_id, name) DO UPDATE SET status = EXCLUDED.status
+    RETURNING id, name, status, created_at
+  `;
+  const row = rows[0];
+  return {
+    id: String(row.id),
+    name: String(row.name),
+    status: String(row.status) as PartyRsvp['status'],
+    createdAt: new Date(row.created_at as string).toISOString(),
+  };
 }

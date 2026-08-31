@@ -34,7 +34,7 @@ export default function TrendingPanel() {
       <div className="px-5 sm:px-6 py-4 border-b border-obsidian/8 flex items-center justify-between gap-4">
         <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50">Trending near you</h2>
         <Link
-          href="/events"
+          href="/plan"
           className="text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/40 hover:text-ember inline-flex items-center gap-1 transition-colors"
         >
           View all <ChevronRight size={13} />

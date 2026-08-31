@@ -139,8 +139,8 @@ export default function Navigation() {
                       <Link href="/account" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
                         My profile
                       </Link>
-                      <Link href="/shop?section=plan" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
-                        My parties
+                      <Link href="/plan" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
+                        My night plans
                       </Link>
                       <Link href="/orders" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
                         Order history

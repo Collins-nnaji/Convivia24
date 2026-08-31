@@ -58,7 +58,7 @@ const inputClass =
   'w-full border-0 border-b border-obsidian/15 focus:border-ember focus:ring-0 text-sm py-2.5 bg-transparent';
 
 /**
- * Drink-supply planner — embedded in the shop under ?section=plan.
+ * Advanced drink-supply planner used by the standalone Plan a Night experience.
  */
 export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: boolean }) {
   const router = useRouter();

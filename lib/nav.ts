@@ -1,5 +1,3 @@
-import { eventsEnabled } from '@/lib/features';
-
 export type NavLink = {
   label: string;
   href: string;
@@ -13,12 +11,12 @@ export type NavLink = {
   children?: { label: string; href: string }[];
 };
 
-/** Primary consumer nav — shop holds bottles, packages, and planner. */
+/** Primary consumer nav — planning is now a standalone product surface. */
 export function primaryNavLinks(): NavLink[] {
-  const links: NavLink[] = [{ label: 'Shop', href: '/shop' }];
-  if (eventsEnabled) {
-    links.push({ label: 'Events', href: '/events' });
-  }
+  const links: NavLink[] = [
+    { label: 'Shop', href: '/shop' },
+    { label: 'Party Planner', href: '/plan' },
+  ];
   links.push({
     label: 'Discover',
     href: '/trivia',
@@ -42,7 +40,7 @@ export function isNavActive(pathname: string, href: string): boolean {
     return pathname === '/shop';
   }
   if (href === '/plan' || href.startsWith('/plan')) {
-    return pathname === '/shop';
+    return pathname === '/plan' || pathname.startsWith('/plan/');
   }
   if (href === '/events') return pathname === '/events' || pathname.startsWith('/events/');
   if (href === '/trivia') return pathname === '/trivia' || pathname.startsWith('/trivia/');
@@ -57,5 +55,5 @@ export function isNavActive(pathname: string, href: string): boolean {
 
 /** Where to send users when events are hidden. */
 export function eventsFallbackHref(): string {
-  return eventsEnabled ? '/events' : '/shop?section=plan';
+  return '/plan';
 }

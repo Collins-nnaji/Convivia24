@@ -19,6 +19,24 @@ export type DrinkPlan = {
   spendPerGuest: number;
   sizeLabel: string;
   tips: string[];
+  /** Social details added by the standalone Plan a Night flow. */
+  night?: NightPlanDetails;
+};
+
+export type NightMood = 'chilled' | 'party' | 'date-night' | 'networking' | 'celebration';
+
+export type NightPlanDetails = {
+  city: string;
+  area: string;
+  date: string;
+  time: string;
+  mood: NightMood;
+  budgetPerPersonNgn: number;
+  venueChoice: string;
+  suggestedVenueName: string;
+  suggestedVenueSlug?: string;
+  meetingTime: string;
+  estimatedGroupSpendNgn: number;
 };
 
 export const MIN_GUESTS = 2;

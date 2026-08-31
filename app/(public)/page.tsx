@@ -107,15 +107,40 @@ export default function HomePage() {
         <section className="bg-white py-10 sm:py-16 border-t border-obsidian/5">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
             <div className="max-w-xl">
-              <p className="text-[9px] font-wordmark-sm text-ember mb-2">Party planner</p>
-              <h2 className="font-wordmark text-2xl sm:text-3xl text-obsidian mb-3">Plan drinks for your event</h2>
+              <p className="text-[9px] font-wordmark-sm text-ember mb-2">Party Planner</p>
+              <h2 className="font-wordmark text-2xl sm:text-3xl text-obsidian mb-3">
+                Planning something? We&apos;ll build the party.
+              </h2>
               <p className="text-sm text-obsidian/60 leading-relaxed">
-                Guest count, budget, and vibe — we recommend bottles and party packs, then drop them
-                straight into your cart. Nationwide delivery across Nigeria.
+                Tell us your guest count and budget. Convivia24 handles bottles, mixers, party games,
+                invitations, split payment and delivery — one complete package.
               </p>
             </div>
             <Link
-              href="/shop?section=plan"
+              href="/plan"
+              className="inline-flex items-center justify-center px-6 py-3 btn-brand text-[11px] font-wordmark-sm shrink-0"
+            >
+              Plan my party
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {eventsEnabled && (
+        <section className="bg-white py-10 sm:py-16 border-t border-obsidian/5">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+            <div className="max-w-xl">
+              <p className="text-[9px] font-wordmark-sm text-ember mb-2">Party Planner</p>
+              <h2 className="font-wordmark text-2xl sm:text-3xl text-obsidian mb-3">
+                Planning something? We&apos;ll build the party.
+              </h2>
+              <p className="text-sm text-obsidian/60 leading-relaxed">
+                Guest count, budget, drinks and delivery — we package the whole night so you are not
+                buying bottles one at a time.
+              </p>
+            </div>
+            <Link
+              href="/plan"
               className="inline-flex items-center justify-center px-6 py-3 btn-brand text-[11px] font-wordmark-sm shrink-0"
             >
               Plan my party

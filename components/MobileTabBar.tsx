@@ -3,16 +3,13 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { CalendarDays, Gift, PartyPopper, ShoppingBag, Store } from 'lucide-react';
+import { Gift, PartyPopper, ShoppingBag, Store } from 'lucide-react';
 import { useCart } from '@/components/cart/CartProvider';
-import { eventsEnabled } from '@/lib/features';
 import { isNavActive } from '@/lib/nav';
 
 const TABS = [
   { href: '/shop', label: 'Shop', icon: Store },
-  eventsEnabled
-    ? { href: '/events', label: 'Events', icon: CalendarDays }
-    : { href: '/shop?section=plan', label: 'Plan', icon: PartyPopper },
+  { href: '/plan', label: 'Plan', icon: PartyPopper },
   // Accented: a prize draw, not a shopping step.
   { href: '/trivia', label: 'Discover', icon: Gift, accent: true },
   { href: '/cart', label: 'Cart', icon: ShoppingBag },
@@ -35,8 +32,7 @@ export default function MobileTabBar() {
   useEffect(() => setMounted(true), []);
 
   function tabActive(href: string): boolean {
-    if (href === '/shop') return pathname === '/shop' && section !== 'plan';
-    if (href === '/shop?section=plan') return pathname === '/shop' && section === 'plan';
+    if (href === '/shop') return pathname === '/shop';
     return isNavActive(pathname, href);
   }
 

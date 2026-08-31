@@ -2,15 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, ListFilter, Search } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, ListFilter, Search } from 'lucide-react';
 import { ProductCard } from '@/components/shop/ProductCard';
 import ShopCartBar from '@/components/shop/ShopCartBar';
 import GuestCardStrip from '@/components/loyalty/GuestCardStrip';
 import { useCart } from '@/components/cart/CartProvider';
 import PackageBrowse, { PACKAGE_OCCASION_ORDER } from '@/components/packages/PackageBrowse';
-import PartyPlanner from '@/components/shop/PartyPlanner';
-import PlanShareDemo from '@/components/party/PlanShareDemo';
-import TrustBadges from '@/components/shop/TrustBadges';
 import { CategoryIcon } from '@/components/icons/ShopIcons';
 import {
   CATEGORIES,
@@ -33,10 +30,10 @@ type ShopProduct = DrinkProduct & {
   lowStock?: boolean;
 };
 
-type ShopSection = 'bottles' | 'packages' | 'plan';
+type ShopSection = 'bottles' | 'packages';
 
 function parseSection(raw: string | null): ShopSection {
-  if (raw === 'packages' || raw === 'plan') return raw;
+  if (raw === 'packages') return raw;
   return 'bottles';
 }
 
@@ -64,8 +61,8 @@ export default function ShopCatalog() {
   }, [params]);
 
   useEffect(() => {
-    if (params.get('plan') === '1') {
-      router.replace('/shop?section=plan');
+    if (params.get('plan') === '1' || params.get('section') === 'plan') {
+      router.replace('/plan');
     }
   }, [params, router]);
 
@@ -138,15 +135,7 @@ export default function ShopCatalog() {
   const deals = products.filter((d) => d.deal && !d.partyPack);
   const showRails = section === 'bottles' && !query && category === 'all';
 
-  const sectionTitle =
-    section === 'packages' ? 'Event packages' : section === 'plan' ? 'Plan your event' : 'Shop drinks';
-
-  const sectionBlurb =
-    section === 'packages'
-      ? 'Ready-made bars at one fixed price — pick an occasion, expand a package, add to cart.'
-      : section === 'plan'
-        ? 'Size the bar by headcount and vibe — or jump to a fixed package when you are ready.'
-        : 'Spirits, Champagne, RTDs, and mixers for parties, clubs, and home.';
+  const sectionTitle = section === 'packages' ? 'Event packages' : 'Shop drinks';
 
   return (
     <div
@@ -154,37 +143,21 @@ export default function ShopCatalog() {
         count > 0 ? 'pb-32 md:pb-20' : 'pb-14 sm:pb-20'
       }`}
     >
-      {section === 'plan' && (
-        <button
-          type="button"
-          onClick={() => goSection('bottles')}
-          className="mb-2 inline-flex min-h-9 items-center gap-1.5 rounded-lg px-1.5 text-sm font-semibold text-obsidian/60 transition-colors hover:bg-white hover:text-obsidian sm:mb-3"
-        >
-          <ArrowLeft size={17} /> Back to shop
-        </button>
-      )}
-
       <header className="mb-3 flex flex-col gap-2 sm:mb-7 sm:gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
-          <h1 className="font-wordmark text-xl sm:text-3xl md:text-4xl text-obsidian mb-1 sm:mb-2">{sectionTitle}</h1>
-          <p className="text-sm leading-snug text-obsidian/60 sm:text-lg sm:leading-relaxed max-w-3xl">{sectionBlurb}</p>
+          <h1 className="font-wordmark text-xl sm:text-3xl md:text-4xl text-obsidian">{sectionTitle}</h1>
         </div>
-        {section !== 'plan' && (
-          <GuestCardStrip variant="inline" className="hidden shrink-0 w-full sm:block sm:w-auto sm:max-w-[280px]" />
-        )}
+        <GuestCardStrip variant="inline" className="hidden shrink-0 w-full sm:block sm:w-auto sm:max-w-[280px]" />
       </header>
 
       {/* Shop modes are tabs. Package occasions are views, not filters. */}
       <div className="mb-3 space-y-2.5 sm:mb-5 sm:space-y-3">
-        <div className="grid grid-cols-3 gap-1.5 sm:flex sm:gap-2" role="tablist" aria-label="Shop view">
+        <div className="grid grid-cols-2 gap-1.5 sm:flex sm:gap-2" role="tablist" aria-label="Shop view">
           <ChipBtn active={section === 'bottles'} onClick={() => goSection('bottles')}>
             Bottles
           </ChipBtn>
           <ChipBtn active={section === 'packages'} onClick={() => goSection('packages')}>
             Packages
-          </ChipBtn>
-          <ChipBtn active={section === 'plan'} onClick={() => goSection('plan')}>
-            Plan event
           </ChipBtn>
         </div>
         {section === 'bottles' && (
@@ -195,7 +168,7 @@ export default function ShopCatalog() {
               value={category}
               onChange={(event) => goCategory(event.target.value as DrinkCategory | 'all')}
               aria-label="Choose a bottle category"
-              className="min-w-0 flex-1 appearance-none border-0 bg-transparent py-2 pl-0 pr-7 text-right text-sm font-semibold text-obsidian focus:ring-0"
+              className="select-clean min-w-0 flex-1 border-0 bg-transparent py-2 pl-0 pr-7 text-right text-sm font-semibold text-obsidian focus:ring-0"
             >
               <option value="all">All drinks</option>
               {CATEGORIES.filter((cat) => cat !== 'party-packs').map((cat) => (
@@ -265,13 +238,6 @@ export default function ShopCatalog() {
         )}
 
         <div className="flex-1 min-w-0">
-          {section === 'plan' && (
-            <div className="hidden lg:block mb-8">
-              <TrustBadges className="mb-6" />
-              <PlanShareDemo />
-            </div>
-          )}
-
           {section === 'packages' && (
             <PackageBrowse
               selectedSlug={selectedPkg}
@@ -280,8 +246,6 @@ export default function ShopCatalog() {
               hideSidebar
             />
           )}
-
-          {section === 'plan' && <PartyPlanner defaultOpen />}
 
           {section === 'bottles' && (
             <>
@@ -294,19 +258,6 @@ export default function ShopCatalog() {
                   placeholder="Search whisky, canned cocktails, wine…"
                   className="w-full rounded-xl pl-10 pr-3 py-2.5 sm:py-3 bg-white border border-obsidian/10 focus:border-ember focus:ring-0 text-base"
                 />
-              </div>
-
-              <div className="mb-5 flex items-center justify-between gap-2 rounded-xl border border-ember/15 bg-gradient-to-r from-ember/[0.06] to-ember/[0.02] px-3 py-2.5 sm:mb-7 sm:gap-3 sm:rounded-2xl sm:px-5 sm:py-4">
-                <p className="text-sm text-obsidian/75 leading-snug max-w-xl sm:text-base">
-                  Planning a party? Size the bar by headcount and vibe — we&apos;ll build your basket.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => goSection('plan')}
-                  className="px-3 py-2 btn-brand text-[11px] font-wordmark-sm shrink-0 sm:px-5 sm:py-2.5 sm:text-sm"
-                >
-                  Plan my party
-                </button>
               </div>
 
               {showRails && (

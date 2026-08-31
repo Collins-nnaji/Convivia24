@@ -1,6 +1,19 @@
-import { redirect } from 'next/navigation';
+import type { Metadata } from 'next';
+import PlanNightPlanner from '@/components/plan/PlanNightPlanner';
+import { absoluteUrl } from '@/lib/seo';
 
-/** Plan lives on the shop page now. */
+export const metadata: Metadata = {
+  title: 'Party Planner',
+  description:
+    'Tell us your guest count and budget. Convivia24 plans the drinks, delivery, games and invitations for your party.',
+  alternates: { canonical: absoluteUrl('/plan') },
+  openGraph: {
+    title: 'Party Planner | Convivia24',
+    description: 'Guests, budget, delivery — we put together the whole party package.',
+    url: absoluteUrl('/plan'),
+  },
+};
+
 export default function PlanPage() {
-  redirect('/shop?section=plan');
+  return <PlanNightPlanner />;
 }

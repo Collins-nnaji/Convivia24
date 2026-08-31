@@ -18,6 +18,7 @@ export type InventoryRow = {
   volume: string | null;
   abv: number | null;
   price_ngn: number | null;
+  cost_ngn: number | null;
   tagline: string | null;
   description: string | null;
   taste_note: string | null;
@@ -90,6 +91,7 @@ function mapRow(r: Record<string, unknown>): InventoryRow {
     volume: (r.volume as string) || null,
     abv: r.abv != null ? Number(r.abv) : null,
     price_ngn: r.price_ngn != null ? Number(r.price_ngn) : null,
+    cost_ngn: r.cost_ngn != null ? Number(r.cost_ngn) : null,
     tagline: (r.tagline as string) || null,
     description: (r.description as string) || null,
     taste_note: (r.taste_note as string) || null,
@@ -211,6 +213,7 @@ export async function adminStockList(): Promise<AdminStockRow[]> {
     volume: d.volume || null,
     abv: d.abv ?? null,
     price_ngn: d.priceNgn ?? null,
+    cost_ngn: null,
     tagline: d.tagline || null,
     description: d.description || null,
     taste_note: TASTE_NOTES[d.slug] || null,
@@ -238,6 +241,7 @@ export async function editStockRow(
   patch: {
     onHand?: number;
     priceNgn?: number | null;
+    costNgn?: number | null;
     lowStockThreshold?: number;
     active?: boolean;
     tasteNote?: string | null;
@@ -272,6 +276,12 @@ export async function editStockRow(
 
   const onHand = patch.onHand != null ? Math.max(0, Math.floor(patch.onHand)) : null;
   const priceNgn = patch.priceNgn != null ? Math.max(0, Math.floor(patch.priceNgn)) : null;
+  const costNgn = patch.costNgn !== undefined
+    ? patch.costNgn == null
+      ? null
+      : Math.max(0, Math.floor(patch.costNgn))
+    : undefined;
+  const setCost = patch.costNgn !== undefined;
   const threshold = patch.lowStockThreshold != null ? Math.max(0, Math.floor(patch.lowStockThreshold)) : null;
   const active = patch.active != null ? patch.active : null;
   const tasteNote = patch.tasteNote !== undefined ? (patch.tasteNote?.trim() || null) : null;
@@ -297,6 +307,7 @@ export async function editStockRow(
     UPDATE inventory SET
       on_hand = COALESCE(${onHand}, on_hand),
       price_ngn = COALESCE(${priceNgn}, price_ngn),
+      cost_ngn = CASE WHEN ${setCost} THEN ${costNgn ?? null} ELSE cost_ngn END,
       low_stock_threshold = COALESCE(${threshold}, low_stock_threshold),
       active = COALESCE(${active}, active),
       taste_note = CASE WHEN ${setTaste} THEN ${tasteNote} ELSE taste_note END,

@@ -33,6 +33,17 @@ function toAmount(value: number | null | undefined): number {
   return Number.isFinite(n) && n > 0 ? Math.round(n) : 0;
 }
 
+export function skuMargin(retailNgn: number | null | undefined, costNgn: number | null | undefined) {
+  const retail = Number(retailNgn);
+  const cost = costNgn == null ? null : Number(costNgn);
+  if (!Number.isFinite(retail) || retail <= 0 || cost == null || !Number.isFinite(cost) || cost < 0) {
+    return null;
+  }
+  const marginNgn = retail - cost;
+  const marginPct = Math.round((marginNgn / retail) * 1000) / 10;
+  return { marginNgn, marginPct, low: marginPct < 15, negative: marginNgn < 0 };
+}
+
 export function orderMargin(input: OrderMarginInput): OrderMargin {
   const revenueNgn = Math.max(0, toAmount(input.totalNgn) - toAmount(input.refundedNgn));
   const sourced = input.supplierCostNgn != null && Number.isFinite(Number(input.supplierCostNgn));

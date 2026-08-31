@@ -49,6 +49,18 @@ ALTER TABLE inventory ADD COLUMN IF NOT EXISTS source TEXT DEFAULT 'seed';
 
 ALTER TABLE inventory ADD COLUMN IF NOT EXISTS taste_note TEXT;
 
+ALTER TABLE inventory ADD COLUMN IF NOT EXISTS cost_ngn INTEGER
+  CHECK (cost_ngn IS NULL OR cost_ngn >= 0);
+
+CREATE TABLE IF NOT EXISTS supplier_sku_prices (
+  supplier_id   UUID NOT NULL REFERENCES suppliers(id) ON DELETE CASCADE,
+  slug          TEXT NOT NULL,
+  cost_ngn      INTEGER NOT NULL CHECK (cost_ngn >= 0),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (supplier_id, slug)
+);
+CREATE INDEX IF NOT EXISTS idx_supplier_sku_prices_slug ON supplier_sku_prices(slug);
+
 CREATE TABLE IF NOT EXISTS drink_brands (
   name       TEXT PRIMARY KEY,
   origin     TEXT,

@@ -240,6 +240,21 @@ CREATE TABLE IF NOT EXISTS party_plans (
 );
 CREATE INDEX IF NOT EXISTS idx_party_plans_owner ON party_plans(owner_id, created_at DESC);
 
+-- Private links and RSVPs for the standalone “Plan a Night” experience.
+ALTER TABLE party_plans ADD COLUMN IF NOT EXISTS share_token UUID NOT NULL DEFAULT gen_random_uuid();
+CREATE UNIQUE INDEX IF NOT EXISTS idx_party_plans_share_token ON party_plans(share_token);
+
+CREATE TABLE IF NOT EXISTS party_plan_rsvps (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  party_id      UUID NOT NULL REFERENCES party_plans(id) ON DELETE CASCADE,
+  name          TEXT NOT NULL,
+  status        TEXT NOT NULL DEFAULT 'attending'
+                  CHECK (status IN ('attending','maybe','declined')),
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (party_id, name)
+);
+CREATE INDEX IF NOT EXISTS idx_party_plan_rsvps_party ON party_plan_rsvps(party_id, created_at);
+
 -- ═══════════════════════════════════════════════
 -- TRIVIA DRAW ENTRIES (brand rounds on /trivia)
 -- ═══════════════════════════════════════════════
@@ -477,6 +492,18 @@ ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS supplier_cost_ngn INTEGER
 ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS sourced_at TIMESTAMPTZ;
 ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS sourcing_note TEXT;
 CREATE INDEX IF NOT EXISTS idx_ritual_orders_supplier ON ritual_orders(supplier_id);
+
+ALTER TABLE inventory ADD COLUMN IF NOT EXISTS cost_ngn INTEGER
+  CHECK (cost_ngn IS NULL OR cost_ngn >= 0);
+
+CREATE TABLE IF NOT EXISTS supplier_sku_prices (
+  supplier_id   UUID NOT NULL REFERENCES suppliers(id) ON DELETE CASCADE,
+  slug          TEXT NOT NULL,
+  cost_ngn      INTEGER NOT NULL CHECK (cost_ngn >= 0),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (supplier_id, slug)
+);
+CREATE INDEX IF NOT EXISTS idx_supplier_sku_prices_slug ON supplier_sku_prices(slug);
 
 -- ═══════════════════════════════════════════════
 -- REFERRAL PARTNERS (planners, venues, caterers, DJs)

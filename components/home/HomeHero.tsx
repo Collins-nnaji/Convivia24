@@ -92,17 +92,17 @@ export default function HomeHero() {
             </Link>
             {eventsEnabled ? (
               <Link
-                href="/events"
+                href="/plan"
                 className="inline-flex items-center gap-1.5 px-5 py-2.5 border border-obsidian/15 text-obsidian hover:border-ember hover:text-ember text-[10px] font-wordmark-sm transition-colors"
               >
-                Tonight&apos;s events
+                Party Planner
               </Link>
             ) : (
               <Link
-                href="/shop?section=plan"
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 border border-obsidian/15 text-obsidian hover:border-ember hover:text-ember text-[10px] font-wordmark-sm transition-colors"
+                href="/plan"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 btn-brand text-[10px] font-wordmark-sm"
               >
-                Plan my party
+                Party Planner <ArrowRight size={12} />
               </Link>
             )}
             <Link

@@ -6,9 +6,11 @@ import Image from 'next/image';
 import { formatNgn } from '@/lib/drinks/catalog';
 import { getPackageBySlug, resolveComponents } from '@/lib/packages/catalog';
 import SourcingDesk from '@/components/admin/SourcingDesk';
+import SuppliersDesk from '@/components/admin/SuppliersDesk';
 import PriceListImport from '@/components/admin/PriceListImport';
 import ReferralsDesk from '@/components/admin/ReferralsDesk';
 import { ORDER_STATUS_LABELS, type OrderStatus } from '@/lib/commerce/status';
+import { skuMargin } from '@/lib/suppliers/margin';
 
 type Item = {
   slug: string;
@@ -18,6 +20,7 @@ type Item = {
   low_stock_threshold: number;
   available: number;
   price_ngn: number | null;
+  cost_ngn?: number | null;
   image_url: string | null;
   source: string;
   active: boolean;
@@ -169,7 +172,7 @@ export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
   const [password, setPassword] = useState('');
   const [tab, setTab] = useState<
-    'drinks' | 'events' | 'trivia' | 'orders' | 'giftcards' | 'venues' | 'sourcing' | 'referrals'
+    'drinks' | 'suppliers' | 'events' | 'trivia' | 'orders' | 'giftcards' | 'venues' | 'sourcing' | 'referrals'
   >('drinks');
   const [items, setItems] = useState<Item[]>([]);
   const [events, setEvents] = useState<AdminEvent[]>([]);
@@ -707,7 +710,7 @@ export default function AdminPage() {
         </div>
 
         <div className="flex gap-1 mb-8 border-b border-obsidian/10 overflow-x-auto">
-          {(['drinks', 'orders', 'sourcing', 'referrals', 'giftcards', 'events', 'venues', 'trivia'] as const).map((key) => (
+          {(['drinks', 'suppliers', 'orders', 'sourcing', 'referrals', 'giftcards', 'events', 'venues', 'trivia'] as const).map((key) => (
             <button
               key={key}
               type="button"
@@ -718,10 +721,12 @@ export default function AdminPage() {
             >
               {key === 'drinks'
                 ? `Drinks (${items.length})`
+                : key === 'suppliers'
+                  ? 'Suppliers'
                 : key === 'orders'
                   ? `Orders (${orders.length})`
                   : key === 'sourcing'
-                    ? `Sourcing (${orders.filter((o) => o.supplierCostNgn == null).length})`
+                    ? `Order sourcing (${orders.filter((o) => o.supplierCostNgn == null).length})`
                     : key === 'referrals'
                       ? 'Referrals'
                       : key === 'giftcards'
@@ -863,6 +868,8 @@ export default function AdminPage() {
               )}
             </div>
           </>
+        ) : tab === 'suppliers' ? (
+          <SuppliersDesk onCatalogChanged={loadStock} />
         ) : tab === 'sourcing' ? (
           <SourcingDesk orders={orders} onOrdersChanged={loadOrders} />
         ) : tab === 'referrals' ? (
@@ -1124,8 +1131,16 @@ export default function AdminPage() {
 
             <h2 className="font-bold mb-1">Live stock</h2>
             <p className="text-sm text-obsidian/50 mb-5">
-              Edit counts, price, listing state, and bottle-guide taste notes. Changes hit the shop and ⓘ panels straight away.
+              Retail, wholesale cost and margin per SKU. Supplier-specific costs live in the Suppliers tab.
             </p>
+            <div className="hidden lg:grid grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(0,.55fr))_auto] gap-3 px-4 pb-2 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40">
+              <span>SKU</span>
+              <span className="text-right">On hand</span>
+              <span className="text-right">Cost</span>
+              <span className="text-right">Retail</span>
+              <span className="text-right">Margin</span>
+              <span className="text-right">Actions</span>
+            </div>
             <div className="space-y-3">
               {items.map((item) => (
                 <StockRow
@@ -1437,6 +1452,7 @@ function StockRow({
 }) {
   const [onHand, setOnHand] = useState(String(item.on_hand));
   const [price, setPrice] = useState(item.price_ngn != null ? String(item.price_ngn) : '');
+  const [cost, setCost] = useState(item.cost_ngn != null ? String(item.cost_ngn) : '');
   const [threshold, setThreshold] = useState(String(item.low_stock_threshold));
   const [tasteNote, setTasteNote] = useState(item.taste_note || '');
   const [guideOpen, setGuideOpen] = useState(false);
@@ -1444,15 +1460,22 @@ function StockRow({
   useEffect(() => {
     setOnHand(String(item.on_hand));
     setPrice(item.price_ngn != null ? String(item.price_ngn) : '');
+    setCost(item.cost_ngn != null ? String(item.cost_ngn) : '');
     setThreshold(String(item.low_stock_threshold));
     setTasteNote(item.taste_note || '');
-  }, [item.on_hand, item.price_ngn, item.low_stock_threshold, item.taste_note]);
+  }, [item.on_hand, item.price_ngn, item.cost_ngn, item.low_stock_threshold, item.taste_note]);
 
   const dirty =
     onHand !== String(item.on_hand) ||
     price !== (item.price_ngn != null ? String(item.price_ngn) : '') ||
+    cost !== (item.cost_ngn != null ? String(item.cost_ngn) : '') ||
     threshold !== String(item.low_stock_threshold) ||
     tasteNote !== (item.taste_note || '');
+
+  const margin = skuMargin(
+    price === '' ? null : Number(price),
+    cost === '' ? null : Number(cost)
+  );
 
   const lowStock = item.tracked !== false && item.available <= item.low_stock_threshold;
 
@@ -1479,7 +1502,7 @@ function StockRow({
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-3 flex-1">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 flex-1">
           <div>
             <FieldLabel>On hand</FieldLabel>
             <input
@@ -1492,7 +1515,19 @@ function StockRow({
             />
           </div>
           <div>
-            <FieldLabel>Price (NGN)</FieldLabel>
+            <FieldLabel>Cost (NGN)</FieldLabel>
+            <input
+              type="number"
+              min={0}
+              inputMode="numeric"
+              value={cost}
+              onChange={(e) => setCost(e.target.value)}
+              className={inputClass}
+              placeholder="Wholesale"
+            />
+          </div>
+          <div>
+            <FieldLabel>Retail (NGN)</FieldLabel>
             <input
               type="number"
               min={0}
@@ -1515,6 +1550,18 @@ function StockRow({
           </div>
         </div>
 
+        <div className="shrink-0 text-right min-w-[88px]">
+          <FieldLabel>Margin</FieldLabel>
+          {margin ? (
+            <p className={`text-sm font-bold tabular-nums ${margin.negative ? 'text-red-600' : margin.low ? 'text-amber-700' : 'text-emerald-700'}`}>
+              {formatNgn(margin.marginNgn)}
+              <span className="block text-[11px] font-normal">{margin.marginPct}%</span>
+            </p>
+          ) : (
+            <p className="text-sm text-obsidian/35">—</p>
+          )}
+        </div>
+
         <div className="flex items-center gap-2 shrink-0 flex-wrap">
           <button
             type="button"
@@ -1523,6 +1570,7 @@ function StockRow({
               onSave({
                 onHand,
                 priceNgn: price === '' ? undefined : price,
+                costNgn: cost === '' ? null : cost,
                 lowStockThreshold: threshold,
                 tasteNote,
               })

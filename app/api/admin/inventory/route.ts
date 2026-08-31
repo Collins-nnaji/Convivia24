@@ -53,6 +53,8 @@ export async function POST(req: NextRequest) {
         const patch: Parameters<typeof editStockRow>[1] = {};
         if (body.onHand != null && body.onHand !== '') patch.onHand = Number(body.onHand);
         if (body.priceNgn != null && body.priceNgn !== '') patch.priceNgn = Number(body.priceNgn);
+        if (body.costNgn != null && body.costNgn !== '') patch.costNgn = Number(body.costNgn);
+        if (body.costNgn === '') patch.costNgn = null;
         if (body.lowStockThreshold != null && body.lowStockThreshold !== '') {
           patch.lowStockThreshold = Number(body.lowStockThreshold);
         }

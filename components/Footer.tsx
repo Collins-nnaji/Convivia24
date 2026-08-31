@@ -1,10 +1,9 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { eventsEnabled } from '@/lib/features';
 
 const footerLinks = [
   { label: 'Shop', href: '/shop' },
-  ...(eventsEnabled ? [{ label: 'Events', href: '/events' }] : [{ label: 'Plan', href: '/shop?section=plan' }]),
+  { label: 'Party Planner', href: '/plan' },
   { label: 'Discover', href: '/trivia' },
   { label: 'Brands', href: '/brands' },
   { label: 'Contact', href: '/contact' },
@@ -29,9 +28,7 @@ export default function Footer() {
               />
             </Link>
             <p className="hidden sm:block text-[10px] text-white/40 truncate">
-              {eventsEnabled
-                ? 'Drinks · events & venues · Guest Card · nationwide · 18+'
-                : 'Drink supplies for events · party planner · nationwide delivery · 18+'}
+              Plan the night · invite friends · order drinks · nationwide · 18+
             </p>
           </div>
 

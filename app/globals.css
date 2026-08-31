@@ -142,6 +142,17 @@ body.drink-info-modal-open [role='tooltip'] {
   color: #fff;
 }
 
+select.select-clean {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: none;
+}
+
+select.select-clean::-ms-expand {
+  display: none;
+}
+
 input[type='range'].plan-slider {
   -webkit-appearance: none;
   appearance: none;
@@ -209,4 +220,19 @@ input[type='range'].plan-slider::-moz-range-thumb {
   background: linear-gradient(90deg, transparent, rgba(139, 42, 34, 0.08), transparent);
   animation: live-sweep 3.2s ease-in-out infinite;
   pointer-events: none;
+}
+/* Shared field treatment for the standalone night planner. */
+.night-input {
+  width: 100%;
+  border-width: 0 0 1px;
+  border-color: rgb(15 15 15 / 0.15);
+  background: transparent;
+  padding: 0.625rem 0;
+  font-size: 0.875rem;
+}
+.night-input:focus {
+  border-color: #8b2a22;
+  box-shadow: none;
+  outline: none;
+  --tw-ring-shadow: 0 0 #0000;
 }
