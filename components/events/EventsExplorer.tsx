@@ -389,7 +389,7 @@ function EventsHero({ tonightCount }: { tonightCount: number }) {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45 }}
-          className="font-logo font-black tracking-tight uppercase text-4xl sm:text-6xl leading-[0.9]"
+          className="font-wordmark text-3xl sm:text-5xl leading-tight"
         >
           <span className="brand-text">Events</span>
         </motion.h1>

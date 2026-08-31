@@ -92,7 +92,7 @@ export default function RewardsShop({
   }
 
   return (
-    <div className="space-y-10 sm:space-y-12">
+    <div className="space-y-6 sm:space-y-12">
       <BalanceCard signedIn={signedIn} points={points} tierName={standing?.tierName} pathname={pathname || '/trivia'} />
 
       <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -105,14 +105,14 @@ export default function RewardsShop({
                 key={c.id}
                 type="button"
                 onClick={() => setCategory(c.id)}
-                className={`flex flex-col items-center gap-1.5 px-4 py-3 border min-w-[86px] transition-colors ${
+                className={`flex shrink-0 items-center gap-1 px-2.5 py-2 border transition-colors sm:min-w-[86px] sm:flex-col sm:gap-1.5 sm:px-4 sm:py-3 ${
                   on
                     ? 'border-ember bg-ember/5 text-ember'
                     : 'border-obsidian/10 bg-white text-obsidian/55 hover:border-obsidian/30'
                 }`}
               >
-                <Icon size={17} />
-                <span className="text-[10px] font-black uppercase tracking-[0.08em] whitespace-nowrap">
+                <Icon size={15} className="sm:w-[17px] sm:h-[17px]" />
+                <span className="text-[9px] font-black uppercase tracking-[0.06em] whitespace-nowrap sm:text-[10px] sm:tracking-[0.08em]">
                   {c.label}
                 </span>
               </button>
@@ -138,7 +138,7 @@ export default function RewardsShop({
         <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50 mb-4">
           Featured rewards
         </h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
           {featured.map((reward, i) => (
             <RewardCard
               key={reward.id}
@@ -159,7 +159,7 @@ export default function RewardsShop({
           <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50 mb-4">
             More rewards
           </h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
             {rest.map((reward, i) => (
               <RewardCard
                 key={reward.id}
@@ -287,49 +287,49 @@ function RewardCard({
       transition={{ delay: Math.min(index, 7) * 0.04, duration: 0.3 }}
       className="bg-white border border-obsidian/8 flex flex-col hover:border-ember/35 transition-colors"
     >
-      <div className={`relative bg-paper ${large ? 'aspect-[4/3]' : 'aspect-[3/2]'} overflow-hidden`}>
+      <div className={`relative h-24 bg-paper overflow-hidden sm:h-auto ${large ? 'sm:aspect-[4/3]' : 'sm:aspect-[3/2]'}`}>
         {image ? (
-          <Image src={image} alt={reward.name} fill sizes="280px" className="object-contain p-4" />
+          <Image src={image} alt={reward.name} fill sizes="(max-width: 640px) 160px, 280px" className="object-contain p-2 sm:p-4" />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <CategoryMark category={reward.category} />
           </div>
         )}
         {reward.badge && (
-          <span className="absolute top-3 left-3 badge-brand text-[9px] font-black uppercase tracking-[0.12em] px-2.5 py-1">
+          <span className="absolute top-1.5 left-1.5 badge-brand text-[8px] font-black uppercase tracking-[0.08em] px-1.5 py-0.5 sm:top-3 sm:left-3 sm:text-[9px] sm:tracking-[0.12em] sm:px-2.5 sm:py-1">
             {BADGE_LABELS[reward.badge]}
           </span>
         )}
       </div>
 
-      <div className="p-4 flex-1 flex flex-col">
-        <p className="font-bold text-sm leading-snug">{reward.name}</p>
-        <p className="text-[12px] text-obsidian/45 mt-1 leading-relaxed">{reward.detail}</p>
+      <div className="p-2.5 flex-1 flex flex-col sm:p-4">
+        <p className="font-bold text-xs leading-snug sm:text-sm">{reward.name}</p>
+        <p className="hidden text-[12px] text-obsidian/45 mt-1 leading-relaxed sm:block">{reward.detail}</p>
 
-        <p className="mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-ember tabular-nums">
-          <Star size={13} className="fill-ember" />
+        <p className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-ember tabular-nums sm:mt-3 sm:gap-1.5 sm:text-sm">
+          <Star size={11} className="fill-ember sm:w-[13px] sm:h-[13px]" />
           {reward.costPoints.toLocaleString()} pts
           {reward.valueNgn && (
-            <span className="text-[11px] font-medium text-obsidian/35">
+            <span className="hidden text-[11px] font-medium text-obsidian/35 sm:inline">
               · worth {formatNgn(reward.valueNgn)}
             </span>
           )}
         </p>
-        <p className="text-[11px] text-obsidian/35 mt-1">{reward.availability}</p>
+        <p className="hidden text-[11px] text-obsidian/35 mt-1 sm:block">{reward.availability}</p>
 
-        <div className="mt-4 pt-1">
+        <div className="mt-auto pt-2 sm:mt-4 sm:pt-1">
           {redeemed ? (
-            <span className="w-full inline-flex items-center justify-center gap-1.5 py-3 border border-ember/30 text-ember text-[10px] font-black uppercase tracking-[0.12em]">
+            <span className="w-full min-h-9 inline-flex items-center justify-center gap-1 py-2 border border-ember/30 text-ember text-[8px] font-black uppercase tracking-[0.08em] sm:gap-1.5 sm:py-3 sm:text-[10px] sm:tracking-[0.12em]">
               <Check size={13} /> Redeemed
             </span>
           ) : tierLocked ? (
-            <span className="w-full inline-flex items-center justify-center gap-1.5 py-3 border border-obsidian/10 text-obsidian/35 text-[10px] font-black uppercase tracking-[0.12em]">
+            <span className="w-full min-h-9 inline-flex items-center justify-center gap-1 py-2 border border-obsidian/10 text-obsidian/35 text-[8px] font-black uppercase tracking-[0.08em] sm:gap-1.5 sm:py-3 sm:text-[10px] sm:tracking-[0.12em]">
               <Lock size={12} /> {tier?.name} tier
             </span>
           ) : !signedIn ? (
             <Link
               href="/signin?next=%2Ftrivia%3Ftab%3Drewards"
-              className="w-full block text-center py-3 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/60 hover:border-ember hover:text-ember transition-colors"
+              className="w-full min-h-9 flex items-center justify-center px-1 py-2 text-center border border-obsidian/15 text-[8px] font-black uppercase tracking-[0.08em] text-obsidian/60 hover:border-ember hover:text-ember transition-colors sm:block sm:py-3 sm:text-[10px] sm:tracking-[0.12em]"
             >
               Sign in to redeem
             </Link>
@@ -338,7 +338,7 @@ function RewardCard({
               type="button"
               onClick={onClaim}
               disabled={!affordable}
-              className="w-full py-3 btn-brand text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-40"
+              className="w-full min-h-9 px-1 py-2 btn-brand text-[8px] font-black uppercase tracking-[0.08em] disabled:opacity-40 sm:py-3 sm:text-[10px] sm:tracking-[0.12em]"
             >
               {affordable ? 'Redeem now' : `${(reward.costPoints - points).toLocaleString()} pts to go`}
             </button>

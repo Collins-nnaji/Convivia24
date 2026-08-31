@@ -10,8 +10,8 @@ import {
 } from '@/lib/trivia/enquiries';
 
 /**
- * Brands land on /trivia because their competitors are already there. This is the way in —
- * sponsor a round, get poured at an event, or get into a party package.
+ * Commercial enquiry form on the Brands page — sponsor a round, get poured at an event,
+ * or get into a party package.
  */
 export default function BrandEnquiryForm() {
   const [sent, setSent] = useState(false);

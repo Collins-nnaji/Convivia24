@@ -96,6 +96,24 @@ body.drink-info-modal-open [role='tooltip'] {
     letter-spacing: 0.14em;
     text-transform: uppercase;
   }
+  .package-title-accent {
+    position: relative;
+    display: inline-block;
+    padding-bottom: 5px;
+  }
+  .package-title-accent::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background-image: radial-gradient(circle, #8B2A22 1.25px, transparent 1.5px);
+    background-position: 0 50%;
+    background-repeat: repeat-x;
+    background-size: 7px 3px;
+    animation: package-title-dots 1.8s linear infinite;
+  }
   /* Legible UI copy — prefer these over raw text-[9–11px] utilities. */
   .text-label {
     @apply text-xs sm:text-sm font-black uppercase tracking-[0.12em];
@@ -105,6 +123,17 @@ body.drink-info-modal-open [role='tooltip'] {
   }
   .text-body {
     @apply text-base sm:text-lg text-obsidian/80 leading-relaxed;
+  }
+}
+
+@keyframes package-title-dots {
+  from { background-position: 0 50%; }
+  to { background-position: 14px 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .package-title-accent::after {
+    animation: none;
   }
 }
 

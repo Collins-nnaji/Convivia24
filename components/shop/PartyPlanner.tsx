@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type TouchEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeftRight, ChevronDown, Minus, Plus, Save, Sparkles, Trash2, Users, X } from 'lucide-react';
+import { ArrowLeft, ArrowLeftRight, ArrowRight, ChevronDown, Minus, Plus, Save, Sparkles, Trash2, Users, X } from 'lucide-react';
 import PlanShareActions from '@/components/party/PlanShareActions';
 import { useCart } from '@/components/cart/CartProvider';
 import {
@@ -85,6 +85,9 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
   const [showSaved, setShowSaved] = useState(false);
   const [swapSlug, setSwapSlug] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+  const [mobileStep, setMobileStep] = useState(0);
+  const [mobileReviewOpen, setMobileReviewOpen] = useState(false);
+  const mobileTouch = useRef<{ x: number; y: number; interactive: boolean } | null>(null);
 
   const size = eventSizeMeta(guests);
   const activePreset = nearestSizePreset(guests);
@@ -108,6 +111,7 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
   async function saveParty() {
     if (!partyName.trim()) {
       setShowDetails(true);
+      setMobileStep(0);
       setMsg('Give the event a name before saving.');
       return;
     }
@@ -270,8 +274,337 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
       }
     : null;
 
+  const mobileStepLabels = ['Event', 'Size', 'Style', 'Your plan'];
+
+  function goMobileStep(next: number) {
+    setMobileStep(Math.max(0, Math.min(mobileStepLabels.length - 1, next)));
+    setSwapSlug(null);
+    setAdding(false);
+  }
+
+  function startMobileSwipe(event: TouchEvent<HTMLDivElement>) {
+    const target = event.target as HTMLElement;
+    mobileTouch.current = {
+      x: event.touches[0].clientX,
+      y: event.touches[0].clientY,
+      interactive: Boolean(target.closest('input, select, textarea, button, a')),
+    };
+  }
+
+  function finishMobileSwipe(event: TouchEvent<HTMLDivElement>) {
+    const start = mobileTouch.current;
+    mobileTouch.current = null;
+    if (!start || start.interactive) return;
+    const dx = event.changedTouches[0].clientX - start.x;
+    const dy = event.changedTouches[0].clientY - start.y;
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.25) return;
+    goMobileStep(mobileStep + (dx < 0 ? 1 : -1));
+  }
+
+  const mobileBody = (
+    <div className="lg:hidden">
+      <div className="mb-3 rounded-2xl border border-obsidian/10 bg-white px-3 py-2.5 shadow-sm">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs font-black uppercase tracking-[0.14em] text-ember">
+            Step {mobileStep + 1} of {mobileStepLabels.length}
+          </p>
+          <p className="text-sm font-semibold text-obsidian">{mobileStepLabels[mobileStep]}</p>
+        </div>
+        <div className="mt-2 grid grid-cols-4 gap-1" aria-hidden>
+          {mobileStepLabels.map((label, index) => (
+            <span
+              key={label}
+              className={`h-1 rounded-full transition-colors ${index <= mobileStep ? 'bg-ember' : 'bg-obsidian/10'}`}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div onTouchStart={startMobileSwipe} onTouchEnd={finishMobileSwipe}>
+        {mobileStep === 0 && (
+          <section className="rounded-2xl border border-obsidian/10 bg-white p-4 shadow-sm">
+            <StepEyebrow n={1} title="Start with the essentials" />
+            <label className="mt-4 block">
+              <span className="mb-1.5 block text-xs font-bold text-obsidian/50">Event name</span>
+              <input
+                value={partyName}
+                onChange={(event) => setPartyName(event.target.value)}
+                placeholder="e.g. Ada's rooftop"
+                className="w-full rounded-xl border border-obsidian/10 bg-paper px-3 py-3 text-base font-semibold text-obsidian placeholder:text-obsidian/30 focus:border-ember focus:ring-0"
+              />
+            </label>
+            <label className="mt-3 block">
+              <span className="mb-1.5 block text-xs font-bold text-obsidian/50">Occasion</span>
+              <span className="relative block">
+                <select
+                  value={occasion}
+                  onChange={(event) => setOccasion(event.target.value)}
+                  className="w-full appearance-none rounded-xl border border-obsidian/10 bg-paper px-3 py-3 pr-10 text-base text-obsidian focus:border-ember focus:ring-0"
+                >
+                  {!OCCASIONS.includes(occasion) && <option value={occasion}>{occasion}</option>}
+                  {OCCASIONS.map((item) => <option key={item}>{item}</option>)}
+                </select>
+                <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-obsidian/40" />
+              </span>
+            </label>
+
+            {parties.length > 0 && (
+              <label className="mt-4 block border-t border-obsidian/8 pt-3">
+                <span className="mb-1.5 block text-xs font-bold text-obsidian/50">Or load a saved plan</span>
+                <select
+                  value={partyId || ''}
+                  onChange={(event) => {
+                    const party = parties.find((item) => item.id === event.target.value);
+                    if (party) loadParty(party);
+                  }}
+                  className="w-full rounded-xl border border-obsidian/10 bg-white px-3 py-2.5 text-sm focus:border-ember focus:ring-0"
+                >
+                  <option value="">Choose a saved plan…</option>
+                  {parties.map((party) => <option key={party.id} value={party.id}>{party.name}</option>)}
+                </select>
+              </label>
+            )}
+            {msg && <p className="mt-3 text-sm text-ember">{msg}</p>}
+          </section>
+        )}
+
+        {mobileStep === 1 && (
+          <section className="rounded-2xl border border-obsidian/10 bg-white p-4 shadow-sm">
+            <StepEyebrow n={2} title="Guests & duration" />
+            <p className="mt-2 text-sm leading-snug text-obsidian/50">{size.hint}</p>
+            <div className="mt-3 grid grid-cols-4 gap-1.5">
+              {SIZE_PRESETS.map((preset) => {
+                const on = activePreset?.id === preset.id;
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => setGuests(preset.guests)}
+                    className={`min-h-14 rounded-xl border px-1 py-1.5 text-center transition-colors ${
+                      on ? 'border-ember bg-ember/5 text-ember' : 'border-obsidian/10 bg-paper text-obsidian/60'
+                    }`}
+                  >
+                    <span className="block truncate text-[10px] font-bold">{preset.label}</span>
+                    <span className="mt-0.5 block text-xs font-semibold">{preset.guests.toLocaleString()}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <label>
+                <span className="mb-1.5 block text-xs font-bold text-obsidian/50">Guests</span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={MIN_GUESTS}
+                  max={MAX_GUESTS}
+                  value={guests}
+                  onChange={(event) => setGuests(Math.max(MIN_GUESTS, Math.min(MAX_GUESTS, Number(event.target.value) || MIN_GUESTS)))}
+                  className="w-full rounded-xl border border-obsidian/10 bg-paper px-3 py-2.5 text-lg font-semibold focus:border-ember focus:ring-0"
+                />
+              </label>
+              <label>
+                <span className="mb-1.5 block text-xs font-bold text-obsidian/50">Duration</span>
+                <span className="relative block">
+                  <select
+                    value={hours}
+                    onChange={(event) => setHours(Number(event.target.value))}
+                    className="w-full appearance-none rounded-xl border border-obsidian/10 bg-paper px-3 py-3 pr-8 text-base font-semibold focus:border-ember focus:ring-0"
+                  >
+                    {Array.from({ length: MAX_HOURS }, (_, index) => index + 1).map((item) => (
+                      <option key={item} value={item}>{item === 1 ? '1 hour' : `${item} hours`}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={15} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-obsidian/40" />
+                </span>
+              </label>
+            </div>
+            <input
+              type="range"
+              className="plan-slider mt-4 w-full"
+              min={MIN_GUESTS}
+              max={GUEST_SLIDER_MAX}
+              value={Math.min(guests, GUEST_SLIDER_MAX)}
+              onChange={(event) => setGuests(Number(event.target.value))}
+              aria-label="Guest count"
+            />
+          </section>
+        )}
+
+        {mobileStep === 2 && (
+          <section className="rounded-2xl border border-obsidian/10 bg-white p-4 shadow-sm">
+            <StepEyebrow n={3} title="Choose the style" />
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {VIBES.map((id) => {
+                const on = vibe === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setVibe(id)}
+                    className={`rounded-xl border p-2.5 text-left transition-colors ${
+                      on ? 'border-ember bg-ember/5' : 'border-obsidian/10 bg-paper'
+                    }`}
+                  >
+                    <span className={`block text-sm font-semibold ${on ? 'text-ember' : 'text-obsidian'}`}>{VIBE_LABELS[id]}</span>
+                    <span className="mt-1 block line-clamp-2 text-xs leading-snug text-obsidian/45">{VIBE_HELP[id]}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <label className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-obsidian/10 bg-paper px-3 py-2.5">
+              <span>
+                <span className="block text-sm font-semibold text-obsidian">Set a budget</span>
+                <span className="block text-xs text-obsidian/45">Keep the suggested basket under a cap</span>
+              </span>
+              <input
+                type="checkbox"
+                checked={budgetOn}
+                onChange={(event) => setBudgetOn(event.target.checked)}
+                className="h-5 w-5 rounded border-obsidian/20 text-ember focus:ring-ember"
+              />
+            </label>
+            {budgetOn && (
+              <label className="mt-3 block">
+                <span className="mb-1 block text-xs font-bold text-obsidian/50">Budget (NGN)</span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  step={10000}
+                  value={budget}
+                  onChange={(event) => setBudget(Math.max(0, Number(event.target.value) || 0))}
+                  className="w-full rounded-xl border border-obsidian/10 bg-paper px-3 py-2.5 text-base font-semibold focus:border-ember focus:ring-0"
+                />
+              </label>
+            )}
+
+            <details className="mt-3 rounded-xl border border-obsidian/10 bg-white">
+              <summary className="cursor-pointer list-none px-3 py-2.5 text-sm font-semibold text-obsidian/60">
+                Date, venue & notes <span className="font-normal text-obsidian/35">(optional)</span>
+              </summary>
+              <div className="space-y-3 border-t border-obsidian/8 p-3">
+                <div className="grid grid-cols-2 gap-2">
+                  <input type="date" value={eventDate} onChange={(event) => setEventDate(event.target.value)} className="min-w-0 rounded-lg border-obsidian/10 px-2 py-2 text-sm focus:border-ember focus:ring-0" />
+                  <input value={venue} onChange={(event) => setVenue(event.target.value)} placeholder="Venue" className="min-w-0 rounded-lg border-obsidian/10 px-2 py-2 text-sm focus:border-ember focus:ring-0" />
+                </div>
+                <textarea value={question} onChange={(event) => setQuestion(event.target.value)} rows={2} placeholder="Any preferences or notes?" className="w-full rounded-lg border-obsidian/10 px-2 py-2 text-sm focus:border-ember focus:ring-0" />
+                <div className="flex gap-2">
+                  <button type="button" onClick={askAi} disabled={thinking} className="flex-1 rounded-lg border border-obsidian/10 px-2 py-2 text-xs font-bold text-obsidian/60 disabled:opacity-50">
+                    <Sparkles size={13} className="mr-1 inline" /> {thinking ? 'Thinking…' : 'Get advice'}
+                  </button>
+                  <button type="button" onClick={saveParty} disabled={saving} className="flex-1 rounded-lg border border-obsidian/10 px-2 py-2 text-xs font-bold text-obsidian/60 disabled:opacity-50">
+                    <Save size={13} className="mr-1 inline" /> {saving ? 'Saving…' : 'Save'}
+                  </button>
+                </div>
+              </div>
+            </details>
+            {msg && <p className="mt-3 text-sm text-ember">{msg}</p>}
+          </section>
+        )}
+
+        {mobileStep === 3 && (
+          <section className="overflow-hidden rounded-2xl border border-obsidian/10 bg-white shadow-sm">
+            <div className="bg-gradient-to-br from-obsidian to-ember-dark px-4 py-4 text-white">
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/60">Suggested supplies</p>
+              <div className="mt-1 flex items-end justify-between gap-3">
+                <div className="min-w-0">
+                  <h2 className="truncate text-xl font-semibold">{partyName.trim() || 'Your event'}</h2>
+                  <p className="mt-1 text-xs text-white/60">{guests.toLocaleString()} guests · {hours}h · {VIBE_LABELS[vibe]}</p>
+                </div>
+                <p className="shrink-0 text-xl font-bold">{plan ? formatNgn(plan.totalNgn) : '—'}</p>
+              </div>
+            </div>
+
+            <div className="p-4">
+              <div className="grid grid-cols-2 gap-2 rounded-xl bg-paper p-3">
+                <Stat label="Items" value={plan ? String(plan.lines.length) : '—'} />
+                <Stat label="Per guest" value={plan ? formatNgn(plan.spendPerGuest || Math.round(plan.totalNgn / Math.max(guests, 1))) : '—'} />
+              </div>
+
+              {plan?.tips?.[0] && <p className="mt-3 border-l-2 border-ember/30 pl-3 text-xs leading-relaxed text-obsidian/60">{plan.tips[0]}</p>}
+
+              {suggestedPackage && plan && (
+                <Link href={`/shop?section=packages&pkg=${suggestedPackage.slug}`} className="mt-3 block rounded-xl border border-ember/20 bg-ember/[0.03] p-3">
+                  <span className="block text-[10px] font-black uppercase tracking-wider text-ember">Quick package option</span>
+                  <span className="mt-1 block text-sm font-semibold text-obsidian">{suggestedPackage.name} · {formatNgn(suggestedPackage.priceNgn)}</span>
+                </Link>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setMobileReviewOpen((value) => !value)}
+                className="mt-3 flex w-full items-center justify-between rounded-xl border border-obsidian/10 px-3 py-2.5 text-left text-sm font-semibold text-obsidian"
+                aria-expanded={mobileReviewOpen}
+              >
+                Review & edit {plan?.lines.length || 0} items
+                <ChevronDown size={16} className={`text-obsidian/40 transition-transform ${mobileReviewOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {mobileReviewOpen && (
+                <ul className="mt-2 max-h-[42dvh] overflow-y-auto overscroll-contain rounded-xl border border-obsidian/10 px-3">
+                  {plan?.lines.map((line) => (
+                    <li key={line.slug} className="border-b border-obsidian/8 py-2.5 last:border-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium">{line.name}</p>
+                          <button type="button" onClick={() => setSwapSlug((slug) => slug === line.slug ? null : line.slug)} className="mt-0.5 text-[10px] font-black uppercase tracking-wider text-ember">Swap</button>
+                        </div>
+                        <div className="inline-flex shrink-0 items-center rounded-lg border border-obsidian/10">
+                          <button type="button" onClick={() => setLineQty(line.slug, line.qty - 1)} aria-label={`Fewer ${line.name}`} className="p-1.5 text-obsidian/45"><Minus size={12} /></button>
+                          <span className="w-7 text-center text-xs font-semibold">{line.qty}</span>
+                          <button type="button" onClick={() => setLineQty(line.slug, line.qty + 1)} aria-label={`More ${line.name}`} className="p-1.5 text-obsidian/45"><Plus size={12} /></button>
+                        </div>
+                      </div>
+                      {swapSlug === line.slug && (
+                        <ShopPicker preferCategory={line.category as DrinkCategory} excludeSlug={line.slug} title={`Swap ${line.name}`} actionLabel="Use" onPick={(slug) => swapLine(line.slug, slug)} onClose={() => setSwapSlug(null)} />
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              <button type="button" onClick={addPlanToCart} disabled={!plan?.lines.length} className="mt-4 w-full rounded-xl px-4 py-3.5 btn-brand text-xs font-black uppercase tracking-[0.12em] disabled:opacity-40">
+                Add supplies to cart
+              </button>
+
+              {shareInput && (
+                <details className="mt-2 rounded-xl border border-obsidian/10 px-3 py-2.5">
+                  <summary className="cursor-pointer list-none text-center text-xs font-bold text-obsidian/55">Share or download plan</summary>
+                  <div className="mt-3"><PlanShareActions input={shareInput} /></div>
+                </details>
+              )}
+            </div>
+          </section>
+        )}
+      </div>
+
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => goMobileStep(mobileStep - 1)}
+          disabled={mobileStep === 0}
+          className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-obsidian/10 bg-white px-3 text-sm font-semibold text-obsidian disabled:opacity-30"
+        >
+          <ArrowLeft size={16} /> Back
+        </button>
+        {mobileStep < mobileStepLabels.length - 1 ? (
+          <button type="button" onClick={() => goMobileStep(mobileStep + 1)} className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl btn-brand px-3 text-sm font-semibold">
+            Continue <ArrowRight size={16} />
+          </button>
+        ) : (
+          <button type="button" onClick={() => goMobileStep(0)} className="inline-flex min-h-11 items-center justify-center rounded-xl border border-obsidian/10 bg-white px-3 text-sm font-semibold text-obsidian">
+            Edit event
+          </button>
+        )}
+      </div>
+      <p className="mt-2 text-center text-[11px] text-obsidian/35">Swipe left or right between steps</p>
+    </div>
+  );
+
   const body = (
-    <div className="grid lg:grid-cols-12 gap-10 lg:gap-14 lg:items-start">
+    <div className="hidden lg:grid lg:grid-cols-12 gap-10 lg:gap-14 lg:items-start">
       <div className="lg:col-span-5 space-y-10">
         <section>
           <StepEyebrow n={1} title="Name your event" />
@@ -736,7 +1069,7 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
   );
 
   if (defaultOpen) {
-    return <div id="party-planner-panel">{body}</div>;
+    return <div id="party-planner-panel">{mobileBody}{body}</div>;
   }
 
   return (
@@ -764,7 +1097,7 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
       </button>
       {open && (
         <div id="party-planner-panel" className="border-t border-obsidian/10 p-5 sm:p-8">
-          {body}
+          {mobileBody}{body}
         </div>
       )}
     </div>

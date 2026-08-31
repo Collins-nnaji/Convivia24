@@ -32,13 +32,6 @@ const ICONS = {
   Wine,
 } as const;
 
-const BADGES: Record<string, string> = {
-  featured: 'Featured',
-  new: 'New',
-  popular: 'Popular',
-  trending: 'Trending',
-};
-
 type Filter = 'all' | 'active' | 'completed';
 
 export type ChallengeState = {
@@ -112,8 +105,6 @@ export default function ChallengesHub({
   const shown = states.filter((s) =>
     filter === 'all' ? true : filter === 'completed' ? s.complete : !s.complete
   );
-  const featured = states.filter((s) => s.challenge.badge).slice(0, 4);
-
   return (
     <div className="space-y-10 sm:space-y-12">
       <SummaryPanel {...summary} signedIn={signedIn} />
@@ -145,19 +136,6 @@ export default function ChallengesHub({
           Progress is counted from rounds you pass, reviews you write, and orders you place.
         </p>
       </div>
-
-      {featured.length > 0 && filter === 'all' && (
-        <section>
-          <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50 mb-4">
-            Featured challenges
-          </h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {featured.map((state, i) => (
-              <FeaturedCard key={state.challenge.id} state={state} index={i} onPlay={onPlay} />
-            ))}
-          </div>
-        </section>
-      )}
 
       <div className="grid lg:grid-cols-[1fr_320px] gap-6 lg:gap-8 items-start">
         <section className="bg-white border border-obsidian/8">
@@ -300,50 +278,6 @@ function ChallengeCta({
     <Link href={challenge.action.href} className={`inline-flex items-center justify-center py-3 btn-brand ${base}`}>
       {state.progress > 0 ? 'Continue' : challenge.action.label}
     </Link>
-  );
-}
-
-function FeaturedCard({
-  state,
-  index,
-  onPlay,
-}: {
-  state: ChallengeState;
-  index: number;
-  onPlay: () => void;
-}) {
-  const { challenge } = state;
-  const Icon = ICONS[challenge.icon as keyof typeof ICONS] ?? HelpCircle;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05, duration: 0.3 }}
-      className="bg-white border border-obsidian/8 hover:border-ember/35 transition-colors flex flex-col"
-    >
-      <div className="relative brand-gradient aspect-[16/10] flex items-center justify-center">
-        <Icon size={34} className="text-white/40" />
-        {challenge.badge && (
-          <span className="absolute top-3 left-3 bg-white/15 text-white text-[9px] font-black uppercase tracking-[0.14em] px-2.5 py-1">
-            {BADGES[challenge.badge]}
-          </span>
-        )}
-      </div>
-
-      <div className="p-4 flex-1 flex flex-col">
-        <p className="font-bold text-sm leading-snug">{challenge.name}</p>
-        <p className="text-[12px] text-obsidian/45 mt-1 leading-relaxed">{challenge.detail}</p>
-
-        <p className="mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-ember tabular-nums">
-          <Star size={13} className="fill-ember" /> {challenge.points.toLocaleString()} pts
-        </p>
-
-        <div className="mt-auto pt-4">
-          <ChallengeCta state={state} onPlay={onPlay} className="w-full block text-center" />
-        </div>
-      </div>
-    </motion.div>
   );
 }
 

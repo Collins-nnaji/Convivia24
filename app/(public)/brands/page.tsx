@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
+import BrandEnquiryForm from '@/components/trivia/BrandEnquiryForm';
 import { BRANDS } from '@/lib/brands/catalog';
 import { formatNgn } from '@/lib/drinks/catalog';
 import { absoluteUrl } from '@/lib/seo';
@@ -24,7 +25,7 @@ export default function BrandsPage() {
       <div className="relative overflow-hidden border-b border-obsidian/8">
         <div className="absolute inset-0 brand-gradient opacity-[0.05]" />
         <div className="relative max-w-6xl mx-auto px-5 sm:px-8 pt-10 pb-10 sm:pt-14 sm:pb-12">
-          <h1 className="font-logo font-black tracking-tight uppercase text-4xl sm:text-6xl leading-[0.9]">
+          <h1 className="font-wordmark text-3xl sm:text-5xl leading-tight">
             <span className="brand-text">Brands</span>
           </h1>
           <p className="text-lg font-semibold text-obsidian/70 mt-3">The houses behind the bottles.</p>
@@ -84,6 +85,8 @@ export default function BrandsPage() {
           })}
         </ul>
       </div>
+
+      <BrandEnquiryForm />
     </section>
   );
 }

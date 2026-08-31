@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import TriviaHub from '@/components/trivia/TriviaHub';
-import BrandEnquiryForm from '@/components/trivia/BrandEnquiryForm';
 import { absoluteUrl } from '@/lib/seo';
 
 export const metadata: Metadata = {
@@ -16,10 +15,5 @@ export const metadata: Metadata = {
 };
 
 export default function TriviaPage() {
-  return (
-    <>
-      <TriviaHub />
-      <BrandEnquiryForm />
-    </>
-  );
+  return <TriviaHub />;
 }

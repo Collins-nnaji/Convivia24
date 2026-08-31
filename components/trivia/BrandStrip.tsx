@@ -22,17 +22,18 @@ const HOUSES = [
 export default function BrandStrip() {
   return (
     <section className="bg-obsidian text-white p-6 sm:p-8">
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-white/70">
+      <Link
+        href="/brands"
+        className="group mb-6 flex items-center justify-between gap-4"
+        aria-label="View all brands"
+      >
+        <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-white/70 transition-colors group-hover:text-white">
           Top brands. Exclusive offers.
         </h2>
-        <Link
-          href="/shop"
-          className="text-[11px] font-black uppercase tracking-[0.12em] text-white/45 hover:text-white inline-flex items-center gap-1 transition-colors"
-        >
+        <span className="text-[11px] font-black uppercase tracking-[0.12em] text-white/45 group-hover:text-white inline-flex items-center gap-1 transition-colors">
           View all brands <ChevronRight size={13} />
-        </Link>
-      </div>
+        </span>
+      </Link>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-x-4 gap-y-6">
         {HOUSES.map((house, i) => (

@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { BadgePercent, Check, ChevronDown, Users } from 'lucide-react';
+import Image from 'next/image';
+import { Check, ChevronDown } from 'lucide-react';
 import PackageAddToCart from '@/components/packages/PackageAddToCart';
 import {
   EVENT_PACKAGES,
@@ -30,6 +31,10 @@ export const PACKAGE_OCCASION_ORDER: PackageOccasion[] = [
 function savingsPct(pkg: (typeof EVENT_PACKAGES)[number]) {
   const total = componentsTotalNgn(pkg);
   return total > 0 ? Math.round((savingsNgn(pkg) / total) * 100) : 0;
+}
+
+function packageTitle(name: string) {
+  return name.replace(/^CONVIVIA24\s*/i, '').trim() || name;
 }
 
 type Props = {
@@ -72,12 +77,6 @@ export default function PackageBrowse({
   }, [controlledOccasion]);
 
   const items = useMemo(() => EVENT_PACKAGES.filter((p) => p.occasion === occasion), [occasion]);
-  const savingRates = items.map(savingsPct).filter((rate) => rate > 0);
-  const savingRange = savingRates.length
-    ? Math.min(...savingRates) === Math.max(...savingRates)
-      ? `${savingRates[0]}%`
-      : `${Math.min(...savingRates)}–${Math.max(...savingRates)}%`
-    : null;
 
   function pickOccasion(occ: PackageOccasion) {
     if (onOccasionChange) onOccasionChange(occ);
@@ -89,7 +88,7 @@ export default function PackageBrowse({
     <div className="flex-1 min-w-0">
       {!hideSidebar && (
         <>
-          <h2 className={`font-bold text-obsidian mb-2 ${compact ? 'text-xl sm:text-2xl' : 'text-2xl sm:text-3xl'}`}>
+          <h2 className={`font-wordmark text-obsidian mb-2 ${compact ? 'text-lg sm:text-xl' : 'text-xl sm:text-2xl'}`}>
             {OCCASION_LABELS[occasion]} packages
           </h2>
           <p className="text-body text-obsidian/60 mb-6 max-w-2xl">
@@ -99,19 +98,13 @@ export default function PackageBrowse({
       )}
 
       {hideSidebar && (
-        <div className="mb-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+        <div className="mb-5">
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-obsidian">{OCCASION_LABELS[occasion]} packages</h2>
+            <h2 className="font-wordmark text-lg sm:text-xl text-obsidian">{OCCASION_LABELS[occasion]} packages</h2>
             <p className="mt-1 text-sm sm:text-base text-obsidian/55">
               Compare the package price with the same bottles bought separately.
             </p>
           </div>
-          {savingRange && (
-            <div className="inline-flex w-fit items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800">
-              <BadgePercent size={18} aria-hidden />
-              <span className="text-sm font-semibold">Save {savingRange} on this tab</span>
-            </div>
-          )}
         </div>
       )}
 
@@ -129,8 +122,10 @@ export default function PackageBrowse({
             return (
               <li
                 key={pkg.slug}
-                className={`overflow-hidden rounded-2xl border bg-white transition-colors ${
-                  open ? 'border-ember/25' : 'border-obsidian/10 hover:border-obsidian/20'
+                className={`overflow-hidden rounded-2xl border bg-gradient-to-br from-ember/[0.06] via-white to-obsidian/[0.04] shadow-[0_6px_24px_rgba(34,11,10,0.05)] transition-all ${
+                  open
+                    ? 'border-ember/30 shadow-[0_10px_30px_rgba(78,19,15,0.09)]'
+                    : 'border-obsidian/10 hover:border-ember/20 hover:shadow-[0_10px_28px_rgba(34,11,10,0.08)]'
                 }`}
               >
                 <button
@@ -138,27 +133,37 @@ export default function PackageBrowse({
                   id={`pkg-${pkg.slug}`}
                   aria-expanded={open}
                   onClick={() => setExpanded(open ? null : pkg.slug)}
-                  className="w-full p-4 sm:p-6 text-left flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-8 hover:bg-paper/60 transition-colors"
+                  className="w-full p-4 sm:p-6 text-left flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-8 hover:bg-white/35 transition-colors"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                      <h3 className="text-lg sm:text-xl font-semibold text-obsidian">{pkg.name}</h3>
-                      {saving > 0 && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 ring-1 ring-inset ring-emerald-200">
-                          <Check size={12} aria-hidden /> Save {savingPercent}%
+                      <h3 className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <Image
+                          src="/convivia24.png"
+                          alt="Convivia24"
+                          width={299}
+                          height={55}
+                          className="h-[17px] w-auto sm:h-5"
+                        />
+                        <span className="package-title-accent brand-text font-wordmark-sm text-[13px] leading-none sm:text-[15px]">
+                          {packageTitle(pkg.name)}
                         </span>
-                      )}
+                      </h3>
                     </div>
-                    <p className="text-base text-obsidian/70 mt-1.5 leading-snug">{pkg.tagline}</p>
-                    <p className="text-sm sm:text-base text-obsidian/50 mt-2.5 inline-flex flex-wrap items-center gap-x-3 gap-y-1">
-                      <span className="inline-flex items-center gap-1.5">
-                        <Users size={15} aria-hidden /> ~{pkg.guests} guests
-                      </span>
-                      <span aria-hidden>·</span>
-                      <span>{bottleCount(pkg)} bottles</span>
-                      <span aria-hidden>·</span>
-                      <span>{formatNgn(spendPerGuestNgn(pkg))} / guest</span>
-                    </p>
+                    <dl className="mt-3 grid max-w-xl grid-cols-3 divide-x divide-obsidian/10">
+                      <div className="min-w-0 py-1 pr-2.5 sm:pr-3">
+                        <dt className="text-[9px] font-black uppercase tracking-[0.1em] text-obsidian/35 sm:text-[10px]">Guests</dt>
+                        <dd className="mt-0.5 truncate text-sm font-semibold tabular-nums text-obsidian sm:text-base">~{pkg.guests}</dd>
+                      </div>
+                      <div className="min-w-0 px-2.5 py-1 sm:px-3">
+                        <dt className="text-[9px] font-black uppercase tracking-[0.1em] text-obsidian/35 sm:text-[10px]">Bottles</dt>
+                        <dd className="mt-0.5 truncate text-sm font-semibold tabular-nums text-obsidian sm:text-base">{bottleCount(pkg)}</dd>
+                      </div>
+                      <div className="min-w-0 py-1 pl-2.5 sm:pl-3">
+                        <dt className="text-[9px] font-black uppercase tracking-[0.1em] text-obsidian/35 sm:text-[10px]">Per guest</dt>
+                        <dd className="mt-0.5 truncate text-sm font-semibold tabular-nums text-obsidian sm:text-base">{formatNgn(spendPerGuestNgn(pkg))}</dd>
+                      </div>
+                    </dl>
                   </div>
                   <div className="flex w-full items-end justify-between gap-4 shrink-0 sm:w-auto sm:items-center">
                     <div className="text-left sm:text-right">
@@ -167,7 +172,10 @@ export default function PackageBrowse({
                         {formatNgn(pkg.priceNgn)}
                       </p>
                       {saving > 0 && (
-                        <div className="mt-1 flex flex-wrap items-center gap-x-2 sm:justify-end">
+                        <div className="mt-1.5 flex flex-wrap items-center gap-1.5 sm:justify-end">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700 ring-1 ring-inset ring-emerald-200">
+                            <Check size={11} aria-hidden /> Save {savingPercent}%
+                          </span>
                           <p className="text-sm text-obsidian/40 line-through tabular-nums">{formatNgn(individualTotal)}</p>
                           <p className="text-sm font-semibold text-emerald-700 tabular-nums">Save {formatNgn(saving)}</p>
                         </div>
@@ -182,7 +190,7 @@ export default function PackageBrowse({
                 </button>
 
                 {open && (
-                  <div className="border-t border-obsidian/8 bg-paper/50 px-4 py-5 sm:px-6 sm:py-6">
+                  <div className="border-t border-obsidian/8 bg-white/55 px-4 py-5 sm:px-6 sm:py-6">
                     <p className="text-body text-obsidian/75 mb-5 max-w-2xl">{pkg.description}</p>
                     {saving > 0 && (
                       <dl className="mb-6 grid grid-cols-3 overflow-hidden rounded-xl border border-obsidian/8 bg-white divide-x divide-obsidian/8">

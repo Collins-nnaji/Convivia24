@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, ListFilter, Search } from 'lucide-react';
 import { ProductCard } from '@/components/shop/ProductCard';
 import ShopCartBar from '@/components/shop/ShopCartBar';
 import GuestCardStrip from '@/components/loyalty/GuestCardStrip';
@@ -150,39 +150,60 @@ export default function ShopCatalog() {
 
   return (
     <div
-      className={`w-full max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-5 pt-5 sm:pt-6 ${
+      className={`w-full max-w-[1600px] mx-auto px-2.5 sm:px-4 lg:px-5 pt-3 sm:pt-6 ${
         count > 0 ? 'pb-32 md:pb-20' : 'pb-14 sm:pb-20'
       }`}
     >
-      <header className="mb-5 sm:mb-7 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      {section === 'plan' && (
+        <button
+          type="button"
+          onClick={() => goSection('bottles')}
+          className="mb-2 inline-flex min-h-9 items-center gap-1.5 rounded-lg px-1.5 text-sm font-semibold text-obsidian/60 transition-colors hover:bg-white hover:text-obsidian sm:mb-3"
+        >
+          <ArrowLeft size={17} /> Back to shop
+        </button>
+      )}
+
+      <header className="mb-3 flex flex-col gap-2 sm:mb-7 sm:gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
-          <h1 className="font-wordmark text-2xl sm:text-3xl md:text-4xl text-obsidian mb-2">{sectionTitle}</h1>
-          <p className="text-body text-obsidian/60 max-w-3xl">{sectionBlurb}</p>
+          <h1 className="font-wordmark text-xl sm:text-3xl md:text-4xl text-obsidian mb-1 sm:mb-2">{sectionTitle}</h1>
+          <p className="text-sm leading-snug text-obsidian/60 sm:text-lg sm:leading-relaxed max-w-3xl">{sectionBlurb}</p>
         </div>
-        <GuestCardStrip variant="inline" className="shrink-0 w-full sm:w-auto sm:max-w-[280px]" />
+        {section !== 'plan' && (
+          <GuestCardStrip variant="inline" className="hidden shrink-0 w-full sm:block sm:w-auto sm:max-w-[280px]" />
+        )}
       </header>
 
       {/* Shop modes are tabs. Package occasions are views, not filters. */}
-      <div className="mb-5 space-y-3">
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5" role="tablist" aria-label="Shop view">
+      <div className="mb-3 space-y-2.5 sm:mb-5 sm:space-y-3">
+        <div className="grid grid-cols-3 gap-1.5 sm:flex sm:gap-2" role="tablist" aria-label="Shop view">
           <ChipBtn active={section === 'bottles'} onClick={() => goSection('bottles')}>
             Bottles
           </ChipBtn>
           <ChipBtn active={section === 'packages'} onClick={() => goSection('packages')}>
             Packages
           </ChipBtn>
+          <ChipBtn active={section === 'plan'} onClick={() => goSection('plan')}>
+            Plan event
+          </ChipBtn>
         </div>
         {section === 'bottles' && (
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5 lg:hidden" aria-label="Bottle categories">
-            <ChipBtn active={category === 'all'} onClick={() => goCategory('all')}>
-              All
-            </ChipBtn>
-            {CATEGORIES.filter((c) => c !== 'party-packs').map((cat) => (
-              <ChipBtn key={cat} active={category === cat} onClick={() => goCategory(cat)}>
-                {CATEGORY_LABELS[cat]}
-              </ChipBtn>
-            ))}
-          </div>
+          <label className="relative flex min-h-11 items-center rounded-xl border border-obsidian/10 bg-white px-3 shadow-sm lg:hidden">
+            <ListFilter size={17} className="mr-2.5 shrink-0 text-ember" />
+            <span className="mr-2 text-xs font-black uppercase tracking-[0.12em] text-obsidian/40">Category</span>
+            <select
+              value={category}
+              onChange={(event) => goCategory(event.target.value as DrinkCategory | 'all')}
+              aria-label="Choose a bottle category"
+              className="min-w-0 flex-1 appearance-none border-0 bg-transparent py-2 pl-0 pr-7 text-right text-sm font-semibold text-obsidian focus:ring-0"
+            >
+              <option value="all">All drinks</option>
+              {CATEGORIES.filter((cat) => cat !== 'party-packs').map((cat) => (
+                <option key={cat} value={cat}>{CATEGORY_LABELS[cat]}</option>
+              ))}
+            </select>
+            <ChevronDown size={15} className="pointer-events-none absolute right-3 text-obsidian/45" />
+          </label>
         )}
         {section === 'packages' && (
           <div
@@ -199,7 +220,7 @@ export default function ShopCatalog() {
                   role="tab"
                   aria-selected={packageOccasion === occ}
                   onClick={() => goPackageOccasion(occ)}
-                  className={`relative shrink-0 px-4 py-3 text-sm sm:text-base font-semibold transition-colors ${
+                  className={`relative shrink-0 px-4 py-3 font-wordmark text-xs sm:text-sm transition-colors ${
                     packageOccasion === occ
                       ? 'text-obsidian'
                       : 'text-obsidian/45 hover:text-obsidian/75'
@@ -245,7 +266,7 @@ export default function ShopCatalog() {
 
         <div className="flex-1 min-w-0">
           {section === 'plan' && (
-            <div className="mb-8">
+            <div className="hidden lg:block mb-8">
               <TrustBadges className="mb-6" />
               <PlanShareDemo />
             </div>
@@ -264,25 +285,25 @@ export default function ShopCatalog() {
 
           {section === 'bottles' && (
             <>
-              <div className="relative mb-5">
+              <div className="relative mb-3 sm:mb-5">
                 <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-obsidian/35" />
                 <input
                   type="search"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search whisky, canned cocktails, wine…"
-                  className="w-full pl-10 pr-3 py-3 bg-white border border-obsidian/10 focus:border-ember focus:ring-0 text-base"
+                  className="w-full rounded-xl pl-10 pr-3 py-2.5 sm:py-3 bg-white border border-obsidian/10 focus:border-ember focus:ring-0 text-base"
                 />
               </div>
 
-              <div className="mb-7 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-ember/15 bg-gradient-to-r from-ember/[0.06] to-ember/[0.02] px-4 py-4 sm:px-5">
-                <p className="text-base text-obsidian/75 leading-snug max-w-xl">
+              <div className="mb-5 flex items-center justify-between gap-2 rounded-xl border border-ember/15 bg-gradient-to-r from-ember/[0.06] to-ember/[0.02] px-3 py-2.5 sm:mb-7 sm:gap-3 sm:rounded-2xl sm:px-5 sm:py-4">
+                <p className="text-sm text-obsidian/75 leading-snug max-w-xl sm:text-base">
                   Planning a party? Size the bar by headcount and vibe — we&apos;ll build your basket.
                 </p>
                 <button
                   type="button"
                   onClick={() => goSection('plan')}
-                  className="px-5 py-2.5 btn-brand text-sm font-wordmark-sm shrink-0"
+                  className="px-3 py-2 btn-brand text-[11px] font-wordmark-sm shrink-0 sm:px-5 sm:py-2.5 sm:text-sm"
                 >
                   Plan my party
                 </button>
@@ -302,7 +323,7 @@ export default function ShopCatalog() {
                 {filtered.length === 0 ? (
                   <p className="text-body text-obsidian/45">No drinks match. Try another search or category.</p>
                 ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 py-1">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-5 py-1">
                     {filtered.map((p) => (
                       <ProductCard key={p.slug} product={p} />
                     ))}
@@ -333,7 +354,7 @@ function ChipBtn({
       onClick={onClick}
       role="tab"
       aria-selected={active}
-      className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+      className={`min-w-0 rounded-lg px-2 py-2 text-xs font-semibold transition-colors sm:shrink-0 sm:rounded-full sm:px-4 sm:text-sm ${
         active
           ? 'bg-obsidian text-white'
           : 'bg-white text-obsidian/70 ring-1 ring-obsidian/10 hover:text-obsidian'

@@ -68,7 +68,7 @@ export default function Navigation() {
             : 'bg-white border-b border-obsidian/6'
         }`}
       >
-        <div className="max-w-[1600px] w-full mx-auto px-3 sm:px-4 lg:px-5 h-[4.5rem] flex items-center justify-between gap-3">
+        <div className="max-w-[1600px] w-full mx-auto px-3 sm:px-4 lg:px-5 h-16 md:h-[4.5rem] flex items-center justify-between gap-3">
           <Link href="/" className="shrink-0 flex items-center" aria-label="Convivia24">
             <Image
               src="/convivia24.png"
@@ -76,7 +76,7 @@ export default function Navigation() {
               width={299}
               height={55}
               priority
-              className="h-9 sm:h-11 w-auto rounded-sm"
+              className="h-8 sm:h-11 w-auto rounded-sm"
             />
           </Link>
 
@@ -194,7 +194,7 @@ export default function Navigation() {
         </div>
       </header>
 
-      <div className="h-[4.5rem]" />
+      <div className="h-16 md:h-[4.5rem]" />
 
       <AnimatePresence>
         {open && (
@@ -212,7 +212,7 @@ export default function Navigation() {
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
-              className="fixed top-[4.5rem] inset-x-0 z-50 bg-white border-b border-obsidian/10 shadow-lg md:hidden max-h-[calc(100dvh-4.5rem)] overflow-y-auto"
+              className="fixed top-16 inset-x-0 z-50 bg-white border-b border-obsidian/10 shadow-lg md:hidden max-h-[calc(100dvh-4rem)] overflow-y-auto"
             >
               <nav className="px-5 py-3 divide-y divide-obsidian/8">
                 {signedIn && user && (

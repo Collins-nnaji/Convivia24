@@ -1,10 +1,10 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronRight, Lock, Star } from 'lucide-react';
+import { ChevronRight, Lock, LogIn, Star, X } from 'lucide-react';
 import { HouseGlyph } from '@/components/trivia/TriviaIcons';
 import TasteProfileCard from '@/components/trivia/TasteProfileCard';
 import TasteProfileEditor from '@/components/trivia/TasteProfileEditor';
@@ -47,6 +47,8 @@ export default function TriviaHub() {
   const [playing, setPlaying] = useState<TriviaRound | null>(null);
   const [editing, setEditing] = useState(false);
   const [points, setPoints] = useState<number | null>(null);
+  const [signInPrompt, setSignInPrompt] = useState(false);
+  const [guestPlayApproved, setGuestPlayApproved] = useState(false);
 
   // Rewards is a tab here rather than its own nav entry — points are earned and
   // spent in the same place, and the URL keeps it linkable.
@@ -78,10 +80,26 @@ export default function TriviaHub() {
   // its own copy once the server has spoken.
   const balance = points ?? hub.standing?.points ?? null;
 
-  function playLive() {
-    setPlaying(live);
-    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  function startRound(round: TriviaRound) {
+    setPlaying(round);
   }
+
+  function playLive() {
+    if (!hub.signedIn && !guestPlayApproved) {
+      setSignInPrompt(true);
+      return;
+    }
+    startRound(live);
+  }
+
+  useEffect(() => {
+    if (!playing) return;
+    const frame = requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.getElementById('app-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [playing]);
 
   function saveProfile(next: TasteProfile) {
     void hub.saveProfile(next);
@@ -95,6 +113,19 @@ export default function TriviaHub() {
             initial={hub.profile}
             onSave={saveProfile}
             onClose={() => setEditing(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {signInPrompt && (
+          <SignInToPlay
+            onClose={() => setSignInPrompt(false)}
+            onGuest={() => {
+              setGuestPlayApproved(true);
+              setSignInPrompt(false);
+              startRound(live);
+            }}
           />
         )}
       </AnimatePresence>
@@ -179,7 +210,7 @@ export default function TriviaHub() {
                     <TrendingPanel />
                   </div>
 
-                  <PracticeRounds rounds={practice} scoreOf={scoreOf} onPlay={setPlaying} />
+                  <PracticeRounds rounds={practice} scoreOf={scoreOf} onPlay={startRound} />
 
                   <BrandStrip />
                 </div>
@@ -189,6 +220,53 @@ export default function TriviaHub() {
         )}
       </AnimatePresence>
     </section>
+  );
+}
+
+function SignInToPlay({ onClose, onGuest }: { onClose: () => void; onGuest: () => void }) {
+  return (
+    <motion.div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="sign-in-to-play-title"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[80] flex items-end justify-center bg-black/50 p-3 sm:items-center"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 24, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 16, scale: 0.98 }}
+        transition={{ duration: 0.2 }}
+        className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl sm:p-7"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-ember">Before you play</p>
+            <h2 id="sign-in-to-play-title" className="font-wordmark mt-2 text-xl text-obsidian sm:text-2xl">
+              Keep your points
+            </h2>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Close sign-in prompt" className="rounded-full p-2 text-obsidian/40 hover:bg-paper hover:text-obsidian">
+            <X size={18} />
+          </button>
+        </div>
+        <p className="mt-3 text-sm leading-relaxed text-obsidian/55">
+          Sign in to save your score, collect challenge points and redeem rewards. You can also continue as a guest.
+        </p>
+        <div className="mt-5 grid gap-2 sm:grid-cols-2">
+          <Link href="/signin?next=%2Ftrivia" className="btn-brand inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
+            <LogIn size={16} /> Sign in
+          </Link>
+          <button type="button" onClick={onGuest} className="min-h-12 rounded-xl border border-obsidian/12 bg-white px-4 text-sm font-semibold text-obsidian hover:border-ember/35">
+            Continue as guest
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -236,7 +314,7 @@ function Hero({
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, delay: 0.06 }}
-            className="font-logo font-black tracking-tight uppercase text-4xl sm:text-6xl leading-[0.9]"
+            className="font-wordmark text-3xl sm:text-5xl leading-tight"
           >
             <span className="brand-text">Discover</span>
             <br />
