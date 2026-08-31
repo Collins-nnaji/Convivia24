@@ -39,11 +39,11 @@ function AgeCheckInner() {
         <p className="text-sm text-obsidian/55 leading-relaxed mb-8">
           We deliver alcohol and mixers to parties, clubs, and lounges. You must be 18 or older to enter.
           By continuing you agree to our{' '}
-          <a href="/terms" className="text-ember underline underline-offset-2">
+          <a href="/terms-of-use" className="text-ember underline underline-offset-2">
             Terms
           </a>{' '}
           and{' '}
-          <a href="/privacy" className="text-ember underline underline-offset-2">
+          <a href="/privacy-policy" className="text-ember underline underline-offset-2">
             Privacy Policy
           </a>
           .

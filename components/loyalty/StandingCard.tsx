@@ -36,7 +36,7 @@ export default function StandingCard() {
     return (
       <div className="bg-white p-5 shadow-sm mb-8 flex items-center justify-between gap-4 flex-wrap">
         <p className="text-sm text-obsidian/60">Activate your Guest Card to start earning a shop discount.</p>
-        <Link href="/card" className="px-4 py-2 btn-brand text-[10px] font-black uppercase tracking-[0.12em]">
+        <Link href="/guest-card" className="px-4 py-2 btn-brand text-[10px] font-black uppercase tracking-[0.12em]">
           Activate
         </Link>
       </div>

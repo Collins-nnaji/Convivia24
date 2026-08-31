@@ -356,7 +356,7 @@ export default function CampaignDetail({
                 ))}
               </ul>
               <Link
-                href="/terms"
+                href="/terms-of-use"
                 className="mt-4 inline-block text-[11px] font-black uppercase tracking-[0.12em] text-ember"
               >
                 View full terms →
@@ -504,7 +504,7 @@ function RewardsPanel({ campaign }: { campaign: Campaign }) {
       </div>
 
       <Link
-        href="/trivia?tab=rewards"
+        href="/discover?tab=rewards-shop"
         className="mt-5 w-full py-3 bg-white text-obsidian text-[10px] font-black uppercase tracking-[0.12em] inline-flex items-center justify-center gap-1.5"
       >
         View all rewards <ChevronRight size={13} />

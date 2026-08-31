@@ -34,9 +34,9 @@ const SECTIONS: { id: Section; label: string; icon: typeof User }[] = [
 
 const LINKS: { href: string; label: string; icon: typeof User }[] = [
   { href: '/orders', label: 'Orders', icon: Package },
-  { href: '/trivia?tab=challenges', label: 'Challenges', icon: Target },
-  { href: '/trivia?tab=rewards', label: 'Rewards shop', icon: Gift },
-  { href: '/card', label: 'Guest Card', icon: CreditCard },
+  { href: '/discover#challenges', label: 'Challenges', icon: Target },
+  { href: '/discover?tab=rewards-shop', label: 'Rewards shop', icon: Gift },
+  { href: '/guest-card', label: 'Guest Card', icon: CreditCard },
 ];
 
 export default function AccountShell() {
@@ -51,7 +51,7 @@ export default function AccountShell() {
     sectionParam === 'taste' || sectionParam === 'saved' ? sectionParam : 'overview';
 
   function selectSection(next: Section) {
-    router.replace(next === 'overview' ? '/account' : `/account?section=${next}`, { scroll: false });
+    router.replace(next === 'overview' ? '/my-account' : `/my-account?section=${next}`, { scroll: false });
   }
 
   if (!loading && !user) {
@@ -63,7 +63,7 @@ export default function AccountShell() {
             Sign in to see your points, taste profile, orders and saved bottles.
           </p>
           <Link
-            href="/signin?next=%2Faccount"
+            href="/signin?next=%2Fmy-account"
             className="mt-6 inline-block px-6 py-3.5 btn-brand text-[11px] font-black uppercase tracking-[0.14em]"
           >
             Sign in
@@ -132,7 +132,7 @@ export default function AccountShell() {
               Invite friends to Convivia24 and earn together.
             </p>
             <Link
-              href="/refer"
+              href="/refer-and-earn"
               className="mt-4 inline-flex items-center gap-1.5 px-4 py-2.5 bg-white text-obsidian text-[10px] font-black uppercase tracking-[0.12em]"
             >
               <Bookmark size={12} /> Invite friends

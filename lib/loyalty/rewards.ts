@@ -17,13 +17,12 @@ export function pointsForNgn(ngn: number): number {
   return Math.ceil(ngn / NGN_PER_POINT / 50) * 50;
 }
 
-export type RewardCategory = 'bottles' | 'experiences' | 'tickets' | 'credit' | 'merch';
+export type RewardCategory = 'bottles' | 'experiences' | 'credit' | 'merch';
 
 export const REWARD_CATEGORIES: { id: RewardCategory | 'all'; label: string; icon: string }[] = [
   { id: 'all', label: 'All rewards', icon: 'LayoutGrid' },
   { id: 'bottles', label: 'Bottles', icon: 'Wine' },
   { id: 'experiences', label: 'Experiences', icon: 'Sparkles' },
-  { id: 'tickets', label: 'Event tickets', icon: 'Ticket' },
   { id: 'credit', label: 'Shop credit', icon: 'Wallet' },
   { id: 'merch', label: 'Merchandise', icon: 'Gift' },
 ];
@@ -98,30 +97,6 @@ const PERK_REWARDS: Reward[] = LOYALTY_PERKS.filter((p) => !p.id.startsWith('sho
   availability: 'At partner venues',
 }));
 
-const TICKET_REWARDS: Reward[] = [
-  {
-    id: 'ticket-event',
-    name: 'Event ticket credit',
-    detail: 'Covers the door on one listed Convivia24 night.',
-    category: 'tickets',
-    costPoints: pointsForNgn(10_000),
-    valueNgn: 10_000,
-    minTier: 'guest',
-    badge: 'new',
-    availability: 'On listed events',
-  },
-  {
-    id: 'ticket-tasting',
-    name: 'Tasting seat',
-    detail: 'One seat at a hosted tasting or masterclass.',
-    category: 'tickets',
-    costPoints: pointsForNgn(15_000),
-    valueNgn: 15_000,
-    minTier: 'regular',
-    availability: 'Subject to seats',
-  },
-];
-
 const MERCH_REWARDS: Reward[] = [
   {
     id: 'merch-cap',
@@ -160,7 +135,6 @@ export const REWARDS: Reward[] = [
   ...CREDIT_REWARDS,
   ...BOTTLE_REWARDS,
   ...PERK_REWARDS,
-  ...TICKET_REWARDS,
   ...MERCH_REWARDS,
 ];
 

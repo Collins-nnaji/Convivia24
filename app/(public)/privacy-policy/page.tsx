@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: 'Privacy Policy',
   description:
     'How Convivia24 collects and uses data for drinks orders, events, Guest Card, and partner tools. Adults 18+.',
-  alternates: { canonical: absoluteUrl('/privacy') },
+  alternates: { canonical: absoluteUrl('/privacy-policy') },
   robots: { index: true, follow: true },
 };
 
@@ -99,7 +99,7 @@ export default function PrivacyPage() {
 
         <p className="mt-12 text-sm text-obsidian/45">
           See also our{' '}
-          <Link href="/terms" className="text-ember hover:underline">
+          <Link href="/terms-of-use" className="text-ember hover:underline">
             Terms of Use
           </Link>
           .

@@ -74,7 +74,7 @@ export default function ReferApplyForm() {
           </button>
         </div>
 
-        <Link href="/refer/portal" className="text-[11px] font-black uppercase tracking-[0.16em] text-ember">
+        <Link href="/your-referrals" className="text-[11px] font-black uppercase tracking-[0.16em] text-ember">
           Open your dashboard →
         </Link>
       </div>

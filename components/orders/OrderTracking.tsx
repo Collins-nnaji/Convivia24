@@ -328,7 +328,7 @@ export function OrderTrackingView({ order, steps }: { order: TrackedOrder; steps
                 </p>
               </div>
               <Link
-                href="/refer"
+                href="/refer-and-earn"
                 className="px-5 py-3 border border-ember/40 text-ember text-[10px] font-black uppercase tracking-[0.12em] hover:bg-ember/5 transition-colors"
               >
                 Invite friends

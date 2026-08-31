@@ -59,7 +59,7 @@ export const CHALLENGES: Challenge[] = [
     points: 500,
     icon: 'Users',
     status: 'live',
-    action: { kind: 'link', href: '/refer', label: 'Invite' },
+    action: { kind: 'link', href: '/refer-and-earn', label: 'Invite' },
     cadence: 'once',
     target: 1,
     badge: 'popular',
@@ -166,14 +166,6 @@ export type RewardTier = {
 };
 
 export const REWARD_TIERS: RewardTier[] = [
-  {
-    id: 'event-tickets',
-    name: 'Event Tickets',
-    detail: 'Door and tasting seats',
-    icon: 'Ticket',
-    category: 'tickets',
-    cta: 'Explore',
-  },
   {
     id: 'bottles',
     name: 'Bottles',

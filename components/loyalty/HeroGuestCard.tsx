@@ -30,7 +30,7 @@ export default function HeroGuestCard() {
         </span>
       </p>
       <Link
-        href="/card"
+        href="/guest-card"
         className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-wordmark-sm text-ember hover:gap-2.5 transition-all"
       >
         See the card <ArrowRight size={12} />

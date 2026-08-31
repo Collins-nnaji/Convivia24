@@ -10,8 +10,6 @@ import TasteProfileCard from '@/components/trivia/TasteProfileCard';
 import TasteProfileEditor from '@/components/trivia/TasteProfileEditor';
 import FeaturedRound from '@/components/trivia/FeaturedRound';
 import RedeemStrip from '@/components/trivia/RedeemStrip';
-import ChallengeList from '@/components/trivia/ChallengeList';
-import TrendingPanel from '@/components/trivia/TrendingPanel';
 import BrandStrip from '@/components/trivia/BrandStrip';
 import RewardsShop from '@/components/trivia/RewardsShop';
 import ChallengesHub from '@/components/trivia/ChallengesHub';
@@ -37,7 +35,7 @@ function formatWeek(weekStart: string | null): string {
   return `${fmt(start)} – ${fmt(end)}`;
 }
 
-type HubTab = 'discover' | 'challenges' | 'rewards';
+type HubTab = 'discover' | 'rewards';
 
 export default function TriviaHub() {
   const hub = useTriviaHub();
@@ -53,10 +51,10 @@ export default function TriviaHub() {
   // Rewards is a tab here rather than its own nav entry — points are earned and
   // spent in the same place, and the URL keeps it linkable.
   const tabParam = params.get('tab');
-  const tab: HubTab = tabParam === 'rewards' || tabParam === 'challenges' ? tabParam : 'discover';
+  const tab: HubTab = tabParam === 'rewards-shop' || tabParam === 'rewards' ? 'rewards' : 'discover';
 
   function selectTab(next: HubTab) {
-    router.replace(next === 'discover' ? '/trivia' : `/trivia?tab=${next}`, { scroll: false });
+    router.replace(next === 'discover' ? '/discover' : '/discover?tab=rewards-shop', { scroll: false });
   }
 
   const live = getRound(hub.roundSlug) || TRIVIA_ROUNDS[0];
@@ -91,6 +89,17 @@ export default function TriviaHub() {
     }
     startRound(live);
   }
+
+  useEffect(() => {
+    if (playing || tab !== 'discover') return;
+    if (window.location.hash !== '#challenges') return;
+    const el = document.getElementById('challenges');
+    if (!el) return;
+    const frame = requestAnimationFrame(() => {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [playing, tab]);
 
   useEffect(() => {
     if (!playing) return;
@@ -151,21 +160,7 @@ export default function TriviaHub() {
           <motion.div key="hub" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <HubTabs tab={tab} onSelect={selectTab} />
 
-            {tab === 'challenges' ? (
-              <>
-                <ChallengesHero />
-                <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
-                  <ChallengesHub
-                    meters={hub.meters}
-                    claimed={hub.claimed}
-                    weekStart={hub.weekStart}
-                    signedIn={hub.signedIn}
-                    points={balance}
-                    onPlay={playLive}
-                  />
-                </div>
-              </>
-            ) : tab === 'rewards' ? (
+            {tab === 'rewards' ? (
               <>
                 <RewardsHero />
                 <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
@@ -182,37 +177,51 @@ export default function TriviaHub() {
                   points={balance}
                   signedIn={hub.signedIn}
                   loading={hub.loading}
-                  pathname={pathname || '/trivia'}
+                  pathname={pathname || '/discover'}
                   profile={hub.profile}
                   overall={overall}
                   onEditProfile={() => setEditing(true)}
                   onViewRewards={() => selectTab('rewards')}
                 />
 
-                <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-14 sm:pb-20 space-y-10 sm:space-y-14">
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/35 mb-3">
+                <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-10 sm:pb-20">
+                  <section className="pb-6 sm:pb-10">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/35 mb-2 sm:mb-3">
                       This week · {formatWeek(hub.weekStart)}
                     </p>
                     <FeaturedRound round={live} match={scoreOf(live)} onPlay={playLive} />
-                  </div>
+                  </section>
 
-                  <RedeemStrip points={balance} onExplore={() => selectTab('rewards')} />
+                  <section className="border-t border-obsidian/10 pt-8 sm:pt-12 pb-8 sm:pb-12">
+                    <RedeemStrip points={balance} onExplore={() => selectTab('rewards')} />
+                  </section>
 
-                  <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 items-start">
-                    <ChallengeList
+                  <section id="challenges" className="scroll-mt-24 border-t border-obsidian/10 pt-8 sm:pt-12 pb-8 sm:pb-12">
+                    <header className="mb-6 sm:mb-8">
+                      <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-obsidian/50">
+                        Challenges & earn
+                      </h2>
+                      <p className="text-sm text-obsidian/45 mt-1.5 max-w-xl">
+                        Complete tasks, track your progress, and bank points toward rewards.
+                      </p>
+                    </header>
+                    <ChallengesHub
+                      meters={hub.meters}
                       claimed={hub.claimed}
                       weekStart={hub.weekStart}
                       signedIn={hub.signedIn}
+                      points={balance}
                       onPlay={playLive}
-                      onViewAll={() => selectTab('challenges')}
                     />
-                    <TrendingPanel />
-                  </div>
+                  </section>
 
-                  <PracticeRounds rounds={practice} scoreOf={scoreOf} onPlay={startRound} />
+                  <section className="border-t border-obsidian/10 pt-8 sm:pt-12 pb-8 sm:pb-12">
+                    <PracticeRounds rounds={practice} scoreOf={scoreOf} onPlay={startRound} />
+                  </section>
 
-                  <BrandStrip />
+                  <section className="border-t border-obsidian/10 pt-8 sm:pt-12 -mx-5 sm:-mx-8">
+                    <BrandStrip />
+                  </section>
                 </div>
               </>
             )}
@@ -232,7 +241,7 @@ function SignInToPlay({ onClose, onGuest }: { onClose: () => void; onGuest: () =
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[80] flex items-end justify-center bg-black/50 p-3 sm:items-center"
+      className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 p-3"
       onClick={onClose}
     >
       <motion.div
@@ -258,7 +267,7 @@ function SignInToPlay({ onClose, onGuest }: { onClose: () => void; onGuest: () =
           Sign in to save your score, collect challenge points and redeem rewards. You can also continue as a guest.
         </p>
         <div className="mt-5 grid gap-2 sm:grid-cols-2">
-          <Link href="/signin?next=%2Ftrivia" className="btn-brand inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
+          <Link href="/signin?next=%2Fdiscover" className="btn-brand inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold">
             <LogIn size={16} /> Sign in
           </Link>
           <button type="button" onClick={onGuest} className="min-h-12 rounded-xl border border-obsidian/12 bg-white px-4 text-sm font-semibold text-obsidian hover:border-ember/35">
@@ -393,14 +402,16 @@ function PracticeRounds({
 }) {
   return (
     <section>
-      <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50 mb-1">
-        More houses to learn
-      </h2>
-      <p className="text-sm text-obsidian/45 mb-5">
-        Past rounds stay open to practise on — the draw and the points only run on this week&apos;s brand.
-      </p>
+      <header className="mb-5 sm:mb-6">
+        <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-obsidian/50">
+          More houses to learn
+        </h2>
+        <p className="text-sm text-obsidian/45 mt-1.5 max-w-xl">
+          Past rounds stay open to practise on — the draw and the points only run on this week&apos;s brand.
+        </p>
+      </header>
 
-      <div className="grid sm:grid-cols-3 gap-3 sm:gap-4">
+      <div className="rounded-2xl bg-white shadow-[0_8px_40px_-24px_rgba(10,10,10,0.18)] overflow-hidden divide-y sm:divide-y-0 sm:grid sm:grid-cols-3 sm:divide-x divide-obsidian/6">
         {rounds.map((round, i) => {
           const match = scoreOf(round);
           return (
@@ -411,8 +422,8 @@ function PracticeRounds({
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05, duration: 0.3 }}
-              whileHover={{ y: -3 }}
-              className="text-left bg-white p-5 border border-obsidian/8 hover:border-ember/40 transition-colors shadow-[0_12px_40px_-30px_rgba(10,10,10,0.4)]"
+              whileHover={{ y: -2 }}
+              className="text-left p-4 sm:p-5 hover:bg-ember/[0.03] transition-colors w-full"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -442,7 +453,7 @@ function PracticeRounds({
   );
 }
 
-/** Discover and Rewards are two faces of the same points economy, so they share a page. */
+/** Discover and Rewards shop are two faces of the same points economy, so they share a page. */
 function HubTabs({ tab, onSelect }: { tab: HubTab; onSelect: (next: HubTab) => void }) {
   return (
     <div className="border-b border-obsidian/8 bg-white">
@@ -450,7 +461,6 @@ function HubTabs({ tab, onSelect }: { tab: HubTab; onSelect: (next: HubTab) => v
         {(
           [
             ['discover', 'Discover'],
-            ['challenges', 'Challenges'],
             ['rewards', 'Rewards shop'],
           ] as [HubTab, string][]
         ).map(([id, label]) => (
@@ -471,22 +481,12 @@ function HubTabs({ tab, onSelect }: { tab: HubTab; onSelect: (next: HubTab) => v
   );
 }
 
-function ChallengesHero() {
-  return (
-    <PageHero
-      title="Challenges hub"
-      lead="Play, learn and earn amazing rewards."
-      body="Complete challenges to earn points, unlock rewards, and level up your taste journey."
-    />
-  );
-}
-
 function RewardsHero() {
   return (
     <PageHero
       title="Rewards shop"
       lead="Spend your points. Enjoy exclusive rewards."
-      body="Redeem points for bottles, experiences, event tickets, shop credit and more."
+      body="Redeem points for bottles, partner perks, shop credit, merchandise and more."
     />
   );
 }

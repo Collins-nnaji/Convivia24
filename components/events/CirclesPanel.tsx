@@ -67,7 +67,7 @@ export default function CirclesPanel() {
         <div className="bg-white rounded-xl p-5 mb-6 flex items-center justify-between gap-4 flex-wrap border border-gray-100">
           <p className="text-sm text-gray-500">Sign in to follow circles and join discussions.</p>
           <Link
-            href={`/signin?next=${encodeURIComponent('/plan')}`}
+            href={`/signin?next=${encodeURIComponent('/party-planner')}`}
             className="px-5 py-2.5 btn-brand text-sm font-medium rounded-lg"
           >
             Sign in

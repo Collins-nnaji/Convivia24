@@ -11,12 +11,15 @@ import { ChevronRight } from 'lucide-react';
  */
 const HOUSES = [
   { name: 'Hennessy', kicker: 'Cognac' },
+  { name: 'Martell', kicker: 'Cognac' },
   { name: 'Johnnie Walker', kicker: 'Scotch' },
+  { name: 'The Macallan', kicker: 'Single malt' },
   { name: 'Jameson', kicker: 'Irish whiskey' },
   { name: 'Glenfiddich', kicker: 'Single malt' },
   { name: 'Moët & Chandon', kicker: 'Champagne' },
   { name: 'Cîroc', kicker: 'Vodka' },
   { name: 'Don Julio', kicker: 'Tequila' },
+  { name: 'Rémy Martin', kicker: 'Cognac' },
 ].map((h) => ({ ...h, href: `/shop?q=${encodeURIComponent(h.name)}` }));
 
 export default function BrandStrip() {
@@ -35,19 +38,20 @@ export default function BrandStrip() {
         </span>
       </Link>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-x-4 gap-y-6">
+      <div className="grid grid-cols-5 gap-x-2 gap-y-4 sm:gap-x-4 sm:gap-y-6">
         {HOUSES.map((house, i) => (
           <motion.div
             key={house.name}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.04, duration: 0.3 }}
+            className="min-w-0"
           >
-            <Link href={house.href} className="group block text-center">
-              <p className="font-logo font-light uppercase tracking-[0.08em] text-sm sm:text-[15px] text-white/85 group-hover:text-white transition-colors leading-tight">
+            <Link href={house.href} className="group block text-center px-0.5 sm:px-0">
+              <p className="font-logo font-light uppercase tracking-[0.06em] sm:tracking-[0.08em] text-[10px] sm:text-[15px] text-white/85 group-hover:text-white transition-colors leading-tight">
                 {house.name}
               </p>
-              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-white/30 mt-1.5">
+              <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.14em] sm:tracking-[0.18em] text-white/30 mt-1 sm:mt-1.5 line-clamp-1">
                 {house.kicker}
               </p>
             </Link>

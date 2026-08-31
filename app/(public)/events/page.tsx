@@ -16,5 +16,5 @@ export const metadata: Metadata = {
 };
 
 export default function EventsPage() {
-  redirect('/plan');
+  redirect('/party-planner');
 }

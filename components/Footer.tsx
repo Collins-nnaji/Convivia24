@@ -3,12 +3,12 @@ import Image from 'next/image';
 
 const footerLinks = [
   { label: 'Shop', href: '/shop' },
-  { label: 'Party Planner', href: '/plan' },
-  { label: 'Discover', href: '/trivia' },
+  { label: 'Party Planner', href: '/party-planner' },
+  { label: 'Discover', href: '/discover' },
   { label: 'Brands', href: '/brands' },
   { label: 'Contact', href: '/contact' },
-  { label: 'Privacy', href: '/privacy' },
-  { label: 'Terms', href: '/terms' },
+  { label: 'Privacy', href: '/privacy-policy' },
+  { label: 'Terms', href: '/terms-of-use' },
 ];
 
 export default function Footer() {
@@ -48,10 +48,10 @@ export default function Footer() {
         <div className="mt-4 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-2 text-[11px] text-white/30">
           <span>&copy; 2026 Convivia24 · 18+</span>
           <div className="flex items-center gap-4">
-            <Link href="/privacy" className="hover:text-white/60 transition-colors">
+            <Link href="/privacy-policy" className="hover:text-white/60 transition-colors">
               Privacy
             </Link>
-            <Link href="/terms" className="hover:text-white/60 transition-colors">
+            <Link href="/terms-of-use" className="hover:text-white/60 transition-colors">
               Terms
             </Link>
           </div>

@@ -938,7 +938,7 @@ export default function AdminPage() {
             <div className="bg-white p-6 sm:p-8 mb-12 shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)]">
               <h2 className="font-bold">Brand of the week</h2>
               <p className="text-sm text-obsidian/50 mt-1 mb-5">
-                One sponsoring house plays at a time. The week covering today is live on /trivia; every other round
+                One sponsoring house plays at a time. The week covering today is live on /discover; every other round
                 stays open as practice with no draw.
               </p>
               <div className="grid sm:grid-cols-3 gap-4 items-end">

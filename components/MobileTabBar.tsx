@@ -9,9 +9,9 @@ import { isNavActive } from '@/lib/nav';
 
 const TABS = [
   { href: '/shop', label: 'Shop', icon: Store },
-  { href: '/plan', label: 'Plan', icon: PartyPopper },
+  { href: '/party-planner', label: 'Party Planner', icon: PartyPopper },
   // Accented: a prize draw, not a shopping step.
-  { href: '/trivia', label: 'Discover', icon: Gift, accent: true },
+  { href: '/discover', label: 'Discover', icon: Gift, accent: true },
   { href: '/cart', label: 'Cart', icon: ShoppingBag },
 ];
 

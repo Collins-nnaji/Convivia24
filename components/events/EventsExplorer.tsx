@@ -845,7 +845,7 @@ function PerksPanel() {
       </ul>
       <div className="p-4 border-t border-obsidian/8">
         <Link
-          href="/trivia?tab=rewards"
+          href="/discover?tab=rewards-shop"
           className="w-full py-3 btn-brand text-[10px] font-black uppercase tracking-[0.12em] inline-flex items-center justify-center gap-1.5"
         >
           Explore rewards <ChevronRight size={13} />

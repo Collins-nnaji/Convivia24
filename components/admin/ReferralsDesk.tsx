@@ -153,7 +153,7 @@ export default function ReferralsDesk() {
           <p className="text-sm text-obsidian/45">Loading…</p>
         ) : partners.length === 0 ? (
           <p className="text-sm text-obsidian/45">
-            No applications yet. The form is at <code>/refer</code>.
+            No applications yet. The form is at <code>/refer-and-earn</code>.
           </p>
         ) : (
           <ul className="space-y-3">
@@ -293,7 +293,7 @@ export default function ReferralsDesk() {
         </h2>
         {enquiries.length === 0 ? (
           <p className="text-sm text-obsidian/45">
-            None yet. The form is at the bottom of <code>/trivia</code>.
+            None yet. The form is at the bottom of <code>/discover</code>.
           </p>
         ) : (
           <ul className="space-y-3">

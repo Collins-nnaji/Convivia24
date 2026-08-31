@@ -12,7 +12,6 @@ import {
   Lock,
   Sparkles,
   Star,
-  Ticket,
   Wallet,
   Wine,
   X,
@@ -29,7 +28,7 @@ import {
 import { LOYALTY_TIERS } from '@/lib/loyalty/program';
 import { formatNgn } from '@/lib/drinks/catalog';
 
-const ICONS = { LayoutGrid, Wine, Sparkles, Ticket, Wallet, Gift } as const;
+const ICONS = { LayoutGrid, Wine, Sparkles, Wallet, Gift } as const;
 
 type Redemption = {
   id: string;
@@ -93,7 +92,7 @@ export default function RewardsShop({
 
   return (
     <div className="space-y-6 sm:space-y-12">
-      <BalanceCard signedIn={signedIn} points={points} tierName={standing?.tierName} pathname={pathname || '/trivia'} />
+      <BalanceCard signedIn={signedIn} points={points} tierName={standing?.tierName} pathname={pathname || '/discover'} />
 
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex gap-2 overflow-x-auto scrollbar-hide">
@@ -328,7 +327,7 @@ function RewardCard({
             </span>
           ) : !signedIn ? (
             <Link
-              href="/signin?next=%2Ftrivia%3Ftab%3Drewards"
+              href="/signin?next=%2Fdiscover%3Ftab%3Drewards-shop"
               className="w-full min-h-9 flex items-center justify-center px-1 py-2 text-center border border-obsidian/15 text-[8px] font-black uppercase tracking-[0.08em] text-obsidian/60 hover:border-ember hover:text-ember transition-colors sm:block sm:py-3 sm:text-[10px] sm:tracking-[0.12em]"
             >
               Sign in to redeem
@@ -353,13 +352,11 @@ function CategoryMark({ category }: { category: RewardCategory }) {
   const Icon =
     category === 'bottles'
       ? Wine
-      : category === 'tickets'
-        ? Ticket
-        : category === 'credit'
-          ? Wallet
-          : category === 'experiences'
-            ? Sparkles
-            : Gift;
+      : category === 'credit'
+        ? Wallet
+        : category === 'experiences'
+          ? Sparkles
+          : Gift;
   return <Icon size={34} className="text-ember/25" />;
 }
 
@@ -387,7 +384,7 @@ function RedemptionHistory({ redemptions }: { redemptions: Redemption[] }) {
         ))}
       </ul>
       <p className="px-5 py-3.5 border-t border-obsidian/8 bg-paper/60 text-[12px] text-obsidian/45">
-        Quote your code at checkout, at the door, or to support — we&apos;ll apply it against the reward.
+        Quote your code at checkout or to support — we&apos;ll apply it against the reward.
       </p>
     </section>
   );

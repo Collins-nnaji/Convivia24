@@ -279,7 +279,7 @@ export default function BrandProfile({ brand, campaigns }: { brand: Brand; campa
               Play the brand round, rate what you drink, and turn the points into rewards.
             </p>
             <Link
-              href="/trivia?tab=challenges"
+              href="/discover#challenges"
               className="mt-4 inline-block w-full py-3 btn-brand text-[10px] font-black uppercase tracking-[0.12em]"
             >
               See all challenges
@@ -316,7 +316,7 @@ function BrandChallenges({ brand, campaigns }: { brand: Brand; campaigns: Campai
           Brand challenges
         </h2>
         <Link
-          href="/trivia?tab=challenges"
+          href="/discover#challenges"
           className="text-[11px] font-black uppercase tracking-[0.1em] text-white/45 hover:text-white transition-colors"
         >
           View all
@@ -349,7 +349,7 @@ function BrandChallenges({ brand, campaigns }: { brand: Brand; campaigns: Campai
 
           {brand.rounds.map((round) => (
             <li key={round.slug}>
-              <Link href="/trivia" className="block px-5 py-4 hover:bg-white/5 transition-colors">
+              <Link href="/discover" className="block px-5 py-4 hover:bg-white/5 transition-colors">
                 <p className="text-sm font-semibold leading-snug">{round.brand} trivia round</p>
                 <p className="text-[12px] text-white/50 mt-1 leading-relaxed line-clamp-2">{round.blurb}</p>
                 <p className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-bold text-ember">
@@ -363,7 +363,7 @@ function BrandChallenges({ brand, campaigns }: { brand: Brand; campaigns: Campai
 
       <div className="p-4 border-t border-white/10">
         <Link
-          href="/trivia"
+          href="/discover"
           className="w-full py-3 bg-white text-obsidian text-[10px] font-black uppercase tracking-[0.12em] inline-flex items-center justify-center"
         >
           Join challenges

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -12,12 +12,15 @@ import {
   Clock3,
   Copy,
   GlassWater,
+  History,
   Link2,
   MapPin,
   MessageCircle,
   PartyPopper,
+  Plus,
+  Save,
   Send,
-  Sparkles,
+  Trash2,
   Users,
   WalletCards,
 } from 'lucide-react';
@@ -32,6 +35,7 @@ import {
   type NightMood,
   type PartyVibe,
 } from '@/lib/party/drinks-plan';
+import type { SavedParty } from '@/lib/party/plans';
 
 const DRINK_VIBES = Object.keys(VIBE_LABELS) as PartyVibe[];
 
@@ -92,12 +96,29 @@ export default function PlanNightPlanner() {
   const [message, setMessage] = useState('');
   const [joinValue, setJoinValue] = useState('');
   const [joinOpen, setJoinOpen] = useState(false);
+  const [savedOpen, setSavedOpen] = useState(false);
+  const [savedPlans, setSavedPlans] = useState<SavedParty[]>([]);
+  const [savedLoading, setSavedLoading] = useState(true);
+  const [activePartyId, setActivePartyId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const [splitOpen, setSplitOpen] = useState(false);
   const [adjustOpen, setAdjustOpen] = useState(false);
 
   const budgetPerPerson = Math.round(totalBudget / Math.max(groupSize, 1));
   const areaLabel = LAGOS_AREAS.find((item) => item.id === area)?.name || 'Lagos';
   const planName = name.trim() || suggestedName(mood, date);
+
+  useEffect(() => {
+    fetch('/api/parties')
+      .then((response) => (response.ok ? response.json() : { parties: [] }))
+      .then((data) => setSavedPlans(data.parties || []))
+      .catch(() => {})
+      .finally(() => setSavedLoading(false));
+  }, []);
+
+  function updateSavedPlans(party: SavedParty) {
+    setSavedPlans((plans) => [party, ...plans.filter((item) => item.id !== party.id)]);
+  }
 
   function applyQuickPlan(item: (typeof QUICK_PLANS)[number]) {
     setMood(item.mood);
@@ -113,6 +134,85 @@ export default function PlanNightPlanner() {
   function openAdjustPackage() {
     setAdjustOpen(true);
     window.setTimeout(() => adjustRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  }
+
+  function loadSavedPlan(party: SavedParty) {
+    const night = party.plan?.night;
+    const savedMood = night?.mood;
+    const savedArea = LAGOS_AREAS.find((item) => item.name === night?.area);
+
+    setActivePartyId(party.id);
+    setName(party.name);
+    setDate(party.eventDate || date);
+    setTime(night?.meetingTime || night?.time || time);
+    setGroupSize(party.guests);
+    setTotalBudget(party.budgetNgn || totalBudget);
+    if (savedArea) setArea(savedArea.id);
+    if (savedMood && MOODS.some((item) => item.id === savedMood)) setMood(savedMood);
+    if (DRINK_VIBES.includes(party.vibe as PartyVibe)) setDrinkVibe(party.vibe as PartyVibe);
+    setGenerated(party.plan);
+    setShareToken(party.shareToken);
+    setMessage(`Loaded “${party.name}”.`);
+    setSavedOpen(false);
+    window.setTimeout(() => {
+      (party.plan ? document.getElementById('generated-night') : builderRef.current)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  }
+
+  function startNewPlan() {
+    setActivePartyId(null);
+    setGenerated(null);
+    setShareToken('');
+    setMessage('');
+    setName('');
+    setSavedOpen(false);
+    window.setTimeout(() => builderRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  }
+
+  async function removeSavedPlan(party: SavedParty) {
+    if (!window.confirm(`Delete “${party.name}”?`)) return;
+    const response = await fetch(`/api/parties?id=${encodeURIComponent(party.id)}`, { method: 'DELETE' });
+    if (!response.ok) {
+      setMessage('Could not delete that plan. Try again.');
+      return;
+    }
+    setSavedPlans((plans) => plans.filter((item) => item.id !== party.id));
+    if (activePartyId === party.id) {
+      setActivePartyId(null);
+      setShareToken('');
+    }
+    setMessage(`Deleted “${party.name}”.`);
+  }
+
+  async function savePlan(plan: DrinkPlan, id = activePartyId) {
+    setSaving(true);
+    try {
+      const response = await fetch('/api/parties', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id,
+          name: planName,
+          occasion: MOODS.find((item) => item.id === mood)?.label,
+          eventDate: date,
+          venue: plan.night?.suggestedVenueName,
+          guests: groupSize,
+          hours: 5,
+          vibe: drinkVibe,
+          budgetNgn: totalBudget,
+          plan,
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'Could not save the plan.');
+      const party = data.party as SavedParty;
+      setActivePartyId(party.id);
+      setShareToken(party.shareToken || '');
+      updateSavedPlans(party);
+      return party;
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function createPlan() {
@@ -145,33 +245,25 @@ export default function PlanNightPlanner() {
     setGenerated(fullPlan);
 
     try {
-      const response = await fetch('/api/parties', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: planName,
-          occasion: MOODS.find((item) => item.id === mood)?.label,
-          eventDate: date,
-          venue: fullPlan.night?.suggestedVenueName,
-          guests: groupSize,
-          hours: 5,
-          vibe: drinkVibe,
-          budgetNgn: totalBudget,
-          plan: fullPlan,
-        }),
-      });
-      const data = await response.json().catch(() => ({}));
-      if (response.ok) {
-        setShareToken(data.party?.shareToken || '');
+      const party = await savePlan(fullPlan);
+      if (party) {
         setMessage('Your night is ready. Share the private link when you are happy with it.');
-      } else {
-        setMessage(data.error || 'Your plan is ready, but the private link could not be saved yet.');
       }
-    } catch {
-      setMessage('Your plan is ready on this device. Reconnect to create its private link.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Your plan is ready on this device. Reconnect to save it.');
     } finally {
       setCreating(false);
       window.setTimeout(() => document.getElementById('generated-night')?.scrollIntoView({ behavior: 'smooth' }), 50);
+    }
+  }
+
+  async function saveGeneratedPlan() {
+    if (!generated) return;
+    try {
+      const party = await savePlan(generated);
+      setMessage(`Saved “${party.name}”.`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Could not save the plan.');
     }
   }
 
@@ -180,7 +272,7 @@ export default function PlanNightPlanner() {
       setMessage('Save the plan online before sharing its private invitation link.');
       return;
     }
-    const url = `${window.location.origin}/plan/${shareToken}`;
+    const url = `${window.location.origin}/party-planner/${shareToken}`;
     const text = `You’re invited to ${planName} — ${areaLabel}, ${date} at ${time}.`;
     try {
       if (navigator.share) await navigator.share({ title: planName, text, url });
@@ -201,7 +293,7 @@ export default function PlanNightPlanner() {
 
   function joinPlan() {
     const token = joinValue.trim().split('/').filter(Boolean).pop()?.split('?')[0] || '';
-    if (token) router.push(`/plan/${encodeURIComponent(token)}`);
+    if (token) router.push(`/party-planner/${encodeURIComponent(token)}`);
   }
 
   return (
@@ -217,16 +309,53 @@ export default function PlanNightPlanner() {
           </p>
           <div className="mt-4 flex flex-wrap gap-2 sm:mt-7 sm:gap-3">
             <button type="button" onClick={() => builderRef.current?.scrollIntoView({ behavior: 'smooth' })} className="inline-flex items-center gap-2 rounded-full bg-ember px-4 py-2 text-xs font-bold text-white transition hover:bg-ember-dark sm:px-6 sm:py-3 sm:text-sm">
-              <Sparkles size={14} className="sm:h-4 sm:w-4" /> Plan my party
+              Plan my party
             </button>
             <button type="button" onClick={() => setJoinOpen((value) => !value)} className="inline-flex items-center gap-2 rounded-full border border-obsidian/15 px-4 py-2 text-xs font-bold text-obsidian transition hover:border-ember hover:text-ember sm:px-6 sm:py-3 sm:text-sm">
               <Link2 size={14} className="sm:h-4 sm:w-4" /> Join a plan
+            </button>
+            <button type="button" onClick={() => setSavedOpen((value) => !value)} className="inline-flex items-center gap-2 rounded-full border border-obsidian/15 px-4 py-2 text-xs font-bold text-obsidian transition hover:border-ember hover:text-ember sm:px-6 sm:py-3 sm:text-sm">
+              <History size={14} className="sm:h-4 sm:w-4" /> Previous plans{savedPlans.length > 0 ? ` (${savedPlans.length})` : ''}
             </button>
           </div>
           {joinOpen && (
             <div className="mt-3 flex max-w-md gap-2 rounded-2xl border border-obsidian/10 bg-white p-2 sm:mt-4">
               <input value={joinValue} onChange={(event) => setJoinValue(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && joinPlan()} placeholder="Paste invitation link" className="min-w-0 flex-1 rounded-xl border border-obsidian/10 bg-paper px-3 py-2 text-sm text-obsidian placeholder:text-obsidian/35 focus:border-ember focus:ring-0" />
               <button type="button" onClick={joinPlan} className="rounded-xl bg-obsidian px-4 text-sm font-bold text-white">Join</button>
+            </div>
+          )}
+          {savedOpen && (
+            <div className="mt-4 max-w-2xl rounded-2xl border border-obsidian/10 bg-white p-3 shadow-[0_12px_35px_rgba(15,15,15,0.06)] sm:mt-5 sm:p-4">
+              <div className="flex items-center justify-between gap-3 px-1 pb-3">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-ember">Previous party plans</p>
+                  <p className="mt-1 text-xs text-obsidian/45">Open a saved plan to review or update it.</p>
+                </div>
+                <button type="button" onClick={startNewPlan} className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-obsidian/10 px-3 py-2 text-xs font-bold text-obsidian/60 hover:border-ember/30 hover:text-ember">
+                  <Plus size={13} /> New plan
+                </button>
+              </div>
+              {savedLoading ? (
+                <p className="rounded-xl bg-paper px-4 py-5 text-center text-sm text-obsidian/40">Loading saved plans…</p>
+              ) : savedPlans.length === 0 ? (
+                <p className="rounded-xl bg-paper px-4 py-5 text-center text-sm text-obsidian/40">Your saved plans will appear here.</p>
+              ) : (
+                <ul className="max-h-72 space-y-2 overflow-y-auto">
+                  {savedPlans.map((party) => (
+                    <li key={party.id} className="flex items-stretch gap-2">
+                      <button type="button" onClick={() => loadSavedPlan(party)} className={`min-w-0 flex-1 rounded-xl border px-3 py-3 text-left transition ${activePartyId === party.id ? 'border-ember bg-ember/[0.04]' : 'border-obsidian/8 bg-paper hover:border-ember/30'}`}>
+                        <span className="block truncate text-sm font-bold text-obsidian">{party.name}</span>
+                        <span className="mt-1 block truncate text-xs text-obsidian/45">
+                          {party.eventDate ? new Date(`${party.eventDate}T12:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Date not set'} · {party.guests} guests{party.budgetNgn ? ` · ${formatNgn(party.budgetNgn)}` : ''}
+                        </span>
+                      </button>
+                      <button type="button" onClick={() => removeSavedPlan(party)} aria-label={`Delete ${party.name}`} className="rounded-xl border border-obsidian/8 px-3 text-obsidian/35 transition hover:border-ember/30 hover:text-ember">
+                        <Trash2 size={15} />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           )}
         </div>
@@ -245,22 +374,8 @@ export default function PlanNightPlanner() {
           </section>
 
           <section ref={builderRef} className="scroll-mt-28 pb-8 sm:scroll-mt-36 sm:pb-12">
-            <div className="grid overflow-hidden rounded-2xl border border-obsidian/10 bg-white shadow-[0_12px_40px_rgba(15,15,15,0.06)] sm:rounded-3xl sm:shadow-[0_20px_70px_rgba(15,15,15,0.08)] lg:grid-cols-[1.25fr_.75fr]">
-              <aside className="order-1 border-b border-obsidian/8 lg:order-2 lg:border-b-0 lg:border-l">
-                <PlanSharePreviewCard
-                  planName={planName}
-                  city={city}
-                  areaLabel={areaLabel}
-                  date={date}
-                  time={time}
-                  groupSize={groupSize}
-                  moodLabel={MOODS.find((item) => item.id === mood)?.label || 'Party'}
-                  totalBudget={totalBudget}
-                  budgetPerPerson={budgetPerPerson}
-                />
-              </aside>
-
-              <div className="order-2 p-4 sm:p-8 lg:order-1 lg:p-10">
+            <div className="overflow-hidden rounded-2xl border border-obsidian/10 bg-white shadow-[0_12px_40px_rgba(15,15,15,0.06)] sm:rounded-3xl sm:shadow-[0_20px_70px_rgba(15,15,15,0.08)]">
+              <div className="p-4 sm:p-8 lg:p-10">
                 <div className="mb-5 flex items-start justify-between gap-4 sm:mb-8 sm:gap-5">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-ember">Your brief</p>
@@ -326,7 +441,7 @@ export default function PlanNightPlanner() {
                 </div>
 
                 <button type="button" onClick={createPlan} disabled={creating} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-obsidian px-5 py-3.5 text-xs font-black uppercase tracking-[0.12em] text-white transition hover:bg-ember disabled:opacity-60 sm:mt-8 sm:rounded-2xl sm:px-6 sm:py-4 sm:text-sm">
-                  <Sparkles size={15} className="sm:h-4 sm:w-4" /> {creating ? 'Planning your party…' : 'Plan my party'}
+                  {creating ? 'Planning your party…' : 'Plan my party'}
                 </button>
               </div>
             </div>
@@ -335,16 +450,23 @@ export default function PlanNightPlanner() {
           {generated?.night && (
             <section id="generated-night" className="scroll-mt-36 pb-14">
               <div className="overflow-hidden rounded-3xl border border-ember/20 bg-white shadow-[0_18px_60px_rgba(139,42,34,0.1)]">
-                <div className="brand-gradient p-6 text-white sm:p-8">
+                <div className="border-b-4 border-ember bg-white p-6 sm:p-8">
                   <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60">Your party package</p>
-                      <h2 className="mt-2 font-wordmark text-3xl sm:text-4xl">{planName}</h2>
-                      <p className="mt-2 text-sm text-white/70">
+                      <Image
+                        src="/convivia24.png"
+                        alt="Convivia24"
+                        width={299}
+                        height={55}
+                        className="mb-5 h-7 w-auto sm:h-9"
+                      />
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-ember">Your party package</p>
+                      <h2 className="mt-2 font-wordmark text-3xl text-obsidian sm:text-4xl">{planName}</h2>
+                      <p className="mt-2 text-sm text-obsidian/55">
                         {groupSize} guests · {formatNgn(totalBudget)} budget · Delivery by {generated.night.meetingTime}
                       </p>
                     </div>
-                    <button type="button" onClick={sharePlan} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-bold text-ember">
+                    <button type="button" onClick={sharePlan} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-ember px-5 py-3 text-sm font-bold text-white transition hover:bg-ember-dark">
                       <Send size={15} /> Invite friends
                     </button>
                   </div>
@@ -386,7 +508,7 @@ export default function PlanNightPlanner() {
                           </div>
                         )}
                       </div>
-                      <Link href="/trivia" className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-ember hover:text-ember-dark">
+                      <Link href="/discover" className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-ember hover:text-ember-dark">
                         Browse party games <ArrowRight size={13} />
                       </Link>
                     </div>
@@ -396,13 +518,14 @@ export default function PlanNightPlanner() {
                   <aside className="border-t border-obsidian/8 bg-paper p-5 sm:p-8 lg:border-l lg:border-t-0">
                     <p className="text-[10px] font-black uppercase tracking-[0.18em] text-obsidian/40">Next steps</p>
                     <div className="mt-4 space-y-2">
-                      <ActionButton icon={<Sparkles size={16} />} label="Adjust package" onClick={openAdjustPackage} />
+                      <ActionButton icon={<Save size={16} />} label={saving ? 'Saving…' : activePartyId ? 'Save changes' : 'Save plan'} onClick={saveGeneratedPlan} disabled={saving} />
+                      <ActionButton label="Adjust package" onClick={openAdjustPackage} />
                       <ActionButton icon={<Send size={16} />} label="Invite friends" onClick={sharePlan} />
                       <ActionButton icon={<CircleDollarSign size={16} />} label="Split payment" onClick={() => setSplitOpen((value) => !value)} />
                       <ActionButton icon={<GlassWater size={16} />} label="Order everything" onClick={addDrinks} />
                     </div>
                     {shareToken && (
-                      <button type="button" onClick={async () => { await navigator.clipboard.writeText(`${window.location.origin}/plan/${shareToken}`); setMessage('Shared contribution link copied.'); }} className="mt-5 flex w-full items-center gap-2 rounded-xl border border-dashed border-obsidian/15 px-3 py-3 text-left text-xs text-obsidian/45 hover:border-ember/40 hover:text-ember">
+                      <button type="button" onClick={async () => { await navigator.clipboard.writeText(`${window.location.origin}/party-planner/${shareToken}`); setMessage('Shared contribution link copied.'); }} className="mt-5 flex w-full items-center gap-2 rounded-xl border border-dashed border-obsidian/15 px-3 py-3 text-left text-xs text-obsidian/45 hover:border-ember/40 hover:text-ember">
                         <Copy size={14} /> Copy shared contribution link
                       </button>
                     )}
@@ -436,87 +559,14 @@ export default function PlanNightPlanner() {
   );
 }
 
-function PlanSharePreviewCard({
-  planName,
-  city,
-  areaLabel,
-  date,
-  time,
-  groupSize,
-  moodLabel,
-  totalBudget,
-  budgetPerPerson,
-}: {
-  planName: string;
-  city: string;
-  areaLabel: string;
-  date: string;
-  time: string;
-  groupSize: number;
-  moodLabel: string;
-  totalBudget: number;
-  budgetPerPerson: number;
-}) {
-  const dateLabel = new Date(`${date}T12:00:00`).toLocaleDateString('en-GB', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'short',
-  });
-
-  return (
-    <div className="overflow-hidden bg-[#fafaf8]">
-      <div className="border-b-4 border-ember bg-white px-4 pb-3 pt-4 sm:px-6 sm:pb-4 sm:pt-5">
-        <Image
-          src="/convivia24.png"
-          alt="Convivia24"
-          width={299}
-          height={55}
-          className="h-7 w-auto sm:h-9"
-        />
-        <p className="mt-2 text-[10px] text-obsidian/45 sm:text-[11px]">
-          Party plan · nationwide delivery · 18+
-        </p>
-      </div>
-
-      <div className="space-y-4 p-4 sm:space-y-5 sm:p-6">
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-obsidian/35">Live preview</p>
-          <h3 className="mt-2 font-wordmark text-2xl leading-tight text-obsidian sm:text-3xl">{planName}</h3>
-        </div>
-
-        <div className="space-y-2.5 text-sm text-obsidian/60">
-          <PreviewLine icon={<MapPin size={15} />} label={`${city} · ${areaLabel}`} />
-          <PreviewLine icon={<CalendarDays size={15} />} label={`${dateLabel} · ${time}`} />
-          <PreviewLine icon={<Users size={15} />} label={`${groupSize} guests · ${moodLabel}`} />
-          <PreviewLine icon={<WalletCards size={15} />} label={`${formatNgn(totalBudget)} budget · ${formatNgn(budgetPerPerson)} each`} />
-        </div>
-
-        <p className="text-xl font-bold text-ember sm:text-2xl">{formatNgn(totalBudget)}</p>
-
-        <div className="rounded-xl border border-obsidian/8 bg-white p-3.5 sm:p-4">
-          <p className="text-[10px] font-black uppercase tracking-wider text-obsidian/40">Delivery to</p>
-          <p className="mt-1.5 text-base font-semibold text-obsidian sm:text-lg">Your place</p>
-          <p className="mt-1 text-xs leading-relaxed text-obsidian/50">{areaLabel} · home setup · drinks delivered</p>
-        </div>
-
-        <p className="text-[10px] text-obsidian/40 sm:text-[11px]">convivia24.com · Drink supplies for events</p>
-      </div>
-    </div>
-  );
-}
-
 function Field({ label, icon, wide, children }: { label: string; icon: React.ReactNode; wide?: boolean; children: React.ReactNode }) {
   return <label className={wide ? 'sm:col-span-2' : ''}><span className="mb-1 flex items-center gap-1.5 text-[11px] font-bold text-obsidian/50 sm:mb-1.5 sm:text-xs">{icon}{label}</span>{children}</label>;
-}
-
-function PreviewLine({ icon, label }: { icon: React.ReactNode; label: string }) {
-  return <div className="flex items-center gap-2.5"><span className="shrink-0 text-ember">{icon}</span><span>{label}</span></div>;
 }
 
 function ResultTile({ eyebrow, title, text, icon }: { eyebrow: string; title: string; text: string; icon: React.ReactNode }) {
   return <div className="rounded-2xl border border-obsidian/8 p-4"><div className="flex items-center gap-2 text-ember">{icon}<p className="text-[10px] font-black uppercase tracking-wider">{eyebrow}</p></div><p className="mt-3 font-semibold text-obsidian">{title}</p><p className="mt-1 text-xs leading-relaxed text-obsidian/45">{text}</p></div>;
 }
 
-function ActionButton({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) {
-  return <button type="button" onClick={onClick} className="flex w-full items-center gap-3 rounded-xl border border-obsidian/8 bg-white px-4 py-3 text-left text-sm font-semibold text-obsidian/65 transition hover:border-ember/30 hover:text-ember"><span className="text-ember">{icon}</span>{label}<ArrowRight size={14} className="ml-auto" /></button>;
+function ActionButton({ icon, label, onClick, disabled = false }: { icon?: React.ReactNode; label: string; onClick: () => void; disabled?: boolean }) {
+  return <button type="button" onClick={onClick} disabled={disabled} className="flex w-full items-center gap-3 rounded-xl border border-obsidian/8 bg-white px-4 py-3 text-left text-sm font-semibold text-obsidian/65 transition hover:border-ember/30 hover:text-ember disabled:cursor-wait disabled:opacity-50">{icon && <span className="text-ember">{icon}</span>}{label}<ArrowRight size={14} className="ml-auto" /></button>;
 }

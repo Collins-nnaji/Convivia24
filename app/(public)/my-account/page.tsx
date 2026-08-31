@@ -6,7 +6,7 @@ import { absoluteUrl } from '@/lib/seo';
 export const metadata: Metadata = {
   title: 'My account',
   description: 'Your Convivia24 account — points, taste profile, saved bottles and orders. Adults 18+.',
-  alternates: { canonical: absoluteUrl('/account') },
+  alternates: { canonical: absoluteUrl('/my-account') },
   robots: { index: false },
 };
 

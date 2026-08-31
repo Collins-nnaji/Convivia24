@@ -106,48 +106,51 @@ export default function ChallengesHub({
     filter === 'all' ? true : filter === 'completed' ? s.complete : !s.complete
   );
   return (
-    <div className="space-y-10 sm:space-y-12">
+    <div className="space-y-6 sm:space-y-8">
       <SummaryPanel {...summary} signedIn={signedIn} />
 
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex gap-2">
+      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-0.5 -mx-0.5 px-0.5">
           {(
             [
-              ['all', 'All challenges'],
+              ['all', 'All'],
               ['active', 'Active'],
-              ['completed', 'Completed'],
+              ['completed', 'Done'],
             ] as [Filter, string][]
           ).map(([id, label]) => (
             <button
               key={id}
               type="button"
               onClick={() => setFilter(id)}
-              className={`px-4 py-2.5 text-[11px] font-black uppercase tracking-[0.1em] border transition-colors ${
+              className={`shrink-0 px-2.5 py-1.5 sm:px-4 sm:py-2.5 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.1em] rounded-full transition-colors ${
                 filter === id
-                  ? 'border-ember bg-ember/5 text-ember'
-                  : 'border-obsidian/10 bg-white text-obsidian/50 hover:border-obsidian/30'
+                  ? 'bg-obsidian text-white'
+                  : 'bg-white text-obsidian/50 hover:text-obsidian/70'
               }`}
             >
-              {label}
+              <span className="sm:hidden">{label}</span>
+              <span className="hidden sm:inline">
+                {id === 'all' ? 'All challenges' : id === 'active' ? 'Active' : 'Completed'}
+              </span>
             </button>
           ))}
         </div>
-        <p className="text-[12px] text-obsidian/40">
+        <p className="hidden sm:block text-[12px] text-obsidian/40">
           Progress is counted from rounds you pass, reviews you write, and orders you place.
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-[1fr_320px] gap-6 lg:gap-8 items-start">
-        <section className="bg-white border border-obsidian/8">
-          <div className="px-5 py-4 border-b border-obsidian/8 flex items-center justify-between gap-4">
-            <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50">
+      <div className="grid lg:grid-cols-[1fr_300px] gap-6 lg:gap-8 items-start">
+        <section className="rounded-2xl bg-white shadow-[0_8px_40px_-24px_rgba(10,10,10,0.18)] overflow-hidden">
+          <div className="px-4 py-3 sm:px-5 sm:py-4 border-b border-obsidian/6 flex items-center justify-between gap-3">
+            <h3 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50">
               All challenges
-            </h2>
+            </h3>
             <span className="text-[11px] text-obsidian/35 tabular-nums">{shown.length} shown</span>
           </div>
 
           {shown.length === 0 ? (
-            <p className="px-5 py-12 text-center text-sm text-obsidian/40">
+            <p className="px-3 py-8 sm:px-5 sm:py-12 text-center text-sm text-obsidian/40">
               {filter === 'completed'
                 ? 'Nothing finished yet — play a round to get started.'
                 : 'Every challenge here is done. New ones land each week.'}
@@ -161,10 +164,10 @@ export default function ChallengesHub({
           )}
         </section>
 
-        <div className="space-y-6">
+        <aside className="rounded-2xl bg-white shadow-[0_8px_40px_-24px_rgba(10,10,10,0.18)] overflow-hidden divide-y divide-obsidian/6">
           <LevelPanel points={points} signedIn={signedIn} />
           <HowItWorksPanel />
-        </div>
+        </aside>
       </div>
     </div>
   );
@@ -191,31 +194,32 @@ function SummaryPanel({
   ];
 
   return (
-    <section className="bg-white border border-obsidian/8">
-      <div className="px-5 py-4 border-b border-obsidian/8">
-        <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50">
+    <div className="rounded-2xl bg-white shadow-[0_8px_40px_-24px_rgba(10,10,10,0.18)] overflow-hidden">
+      <div className="px-4 py-3 sm:px-5 sm:py-4">
+        <h3 className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50">
           Your challenge summary
-        </h2>
+        </h3>
       </div>
-      <ul className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-obsidian/6">
+      <ul className="grid grid-cols-4 divide-x divide-obsidian/6 border-t border-obsidian/6">
         {STATS.map(({ icon: Icon, label, value }) => (
-          <li key={label} className="p-5 text-center">
-            <span className="w-10 h-10 mx-auto rounded-full bg-ember/6 flex items-center justify-center mb-2.5">
-              <Icon size={17} className="text-ember" />
+          <li key={label} className="px-1.5 py-2.5 sm:p-5 text-center">
+            <span className="w-7 h-7 sm:w-10 sm:h-10 mx-auto rounded-full bg-ember/6 flex items-center justify-center mb-1 sm:mb-2.5">
+              <Icon size={14} className="text-ember sm:hidden" />
+              <Icon size={17} className="text-ember hidden sm:block" />
             </span>
-            <p className="font-logo font-black text-2xl tabular-nums leading-none">
+            <p className="font-logo font-black text-lg sm:text-2xl tabular-nums leading-none">
               {value.toLocaleString()}
             </p>
-            <p className="text-[11px] text-obsidian/40 mt-1.5">{label}</p>
+            <p className="text-[9px] sm:text-[11px] text-obsidian/40 mt-0.5 sm:mt-1.5 leading-tight">{label}</p>
           </li>
         ))}
       </ul>
       {!signedIn && (
-        <p className="px-5 py-3.5 border-t border-obsidian/8 bg-paper/60 text-[12px] text-obsidian/50">
+        <p className="px-4 py-2.5 sm:px-5 sm:py-3 border-t border-obsidian/6 bg-paper/50 text-[11px] sm:text-[12px] text-obsidian/50 leading-snug">
           These read zero until you sign in — your progress is tied to your account, not this browser.
         </p>
       )}
-    </section>
+    </div>
   );
 }
 
@@ -223,9 +227,9 @@ function ProgressBar({ value, target }: { value: number; target: number }) {
   const pct = target > 0 ? Math.min(100, (value / target) * 100) : 0;
   return (
     <div>
-      <div className="flex items-center justify-between gap-2 mb-1.5">
-        <span className="text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/35">Progress</span>
-        <span className="text-[11px] font-semibold tabular-nums text-obsidian/55">
+      <div className="flex items-center justify-between gap-2 mb-1 sm:mb-1.5">
+        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/35">Progress</span>
+        <span className="text-[10px] sm:text-[11px] font-semibold tabular-nums text-obsidian/55">
           {value}/{target}
         </span>
       </div>
@@ -251,31 +255,31 @@ function ChallengeCta({
   className?: string;
 }) {
   const { challenge, complete } = state;
-  const base = `text-[10px] font-black uppercase tracking-[0.12em] ${className}`;
+  const base = `text-[10px] font-black uppercase tracking-[0.12em] w-full sm:w-auto ${className}`;
 
   if (challenge.status === 'soon') {
     return (
-      <span className={`inline-flex items-center justify-center py-3 border border-obsidian/10 text-obsidian/35 ${base}`}>
+      <span className={`inline-flex items-center justify-center py-2 sm:py-3 border border-obsidian/10 text-obsidian/35 ${base}`}>
         Coming soon
       </span>
     );
   }
   if (complete) {
     return (
-      <span className={`inline-flex items-center justify-center gap-1.5 py-3 border border-ember/30 text-ember ${base}`}>
+      <span className={`inline-flex items-center justify-center gap-1.5 py-2 sm:py-3 border border-ember/30 text-ember ${base}`}>
         <Check size={13} /> Complete
       </span>
     );
   }
   if (challenge.action.kind === 'play') {
     return (
-      <button type="button" onClick={onPlay} className={`py-3 btn-brand ${base}`}>
+      <button type="button" onClick={onPlay} className={`py-2 sm:py-3 btn-brand ${base}`}>
         {state.progress > 0 ? 'Continue' : 'Start challenge'}
       </button>
     );
   }
   return (
-    <Link href={challenge.action.href} className={`inline-flex items-center justify-center py-3 btn-brand ${base}`}>
+    <Link href={challenge.action.href} className={`inline-flex items-center justify-center py-2 sm:py-3 btn-brand ${base}`}>
       {state.progress > 0 ? 'Continue' : challenge.action.label}
     </Link>
   );
@@ -298,27 +302,32 @@ function ChallengeRow({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index, 6) * 0.04, duration: 0.3 }}
-      className="p-4 sm:p-5 grid sm:grid-cols-[auto_1fr_160px_auto] gap-4 items-center"
+      className="p-3 sm:p-5 sm:grid sm:grid-cols-[auto_1fr_160px_auto] gap-2.5 sm:gap-4 sm:items-center"
     >
-      <span
-        className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 ${
-          state.complete ? 'bg-ember text-white' : 'bg-ember/8 text-ember'
-        }`}
-      >
-        {state.complete ? <Check size={18} /> : <Icon size={18} />}
-      </span>
+      <div className="flex items-start gap-2.5 sm:contents">
+        <span
+          className={`w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center shrink-0 ${
+            state.complete ? 'bg-ember text-white' : 'bg-ember/8 text-ember'
+          }`}
+        >
+          {state.complete ? <Check size={16} className="sm:hidden" /> : <Icon size={16} className="sm:hidden" />}
+          {state.complete ? <Check size={18} className="hidden sm:block" /> : <Icon size={18} className="hidden sm:block" />}
+        </span>
 
-      <div className="min-w-0">
-        <p className="font-bold text-sm leading-snug">{challenge.name}</p>
-        <p className="text-[12px] text-obsidian/45 mt-0.5">{challenge.detail}</p>
-        <p className="mt-1.5 inline-flex items-center gap-1.5 text-[12px] font-bold text-ember tabular-nums">
-          <Star size={11} className="fill-ember" /> {challenge.points.toLocaleString()} pts
-        </p>
+        <div className="min-w-0 flex-1">
+          <p className="font-bold text-[13px] sm:text-sm leading-snug">{challenge.name}</p>
+          <p className="text-[11px] sm:text-[12px] text-obsidian/45 mt-0.5 line-clamp-2 sm:line-clamp-none">{challenge.detail}</p>
+          <p className="mt-1 inline-flex items-center gap-1 text-[11px] sm:text-[12px] font-bold text-ember tabular-nums">
+            <Star size={10} className="fill-ember sm:hidden" />
+            <Star size={11} className="fill-ember hidden sm:block" />
+            {challenge.points.toLocaleString()} pts
+          </p>
+        </div>
       </div>
 
       <ProgressBar value={state.progress} target={challenge.target} />
 
-      <ChallengeCta state={state} onPlay={onPlay} className="px-5 whitespace-nowrap" />
+      <ChallengeCta state={state} onPlay={onPlay} className="px-3 sm:px-5 whitespace-nowrap" />
     </motion.li>
   );
 }
@@ -331,29 +340,30 @@ function LevelPanel({ points, signedIn }: { points: number | null; signedIn: boo
   const pct = ceiling > 0 ? Math.min(100, (balance / ceiling) * 100) : 100;
 
   return (
-    <section className="bg-white border border-obsidian/8">
-      <div className="px-5 py-4 border-b border-obsidian/8">
-        <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50">
+    <section>
+      <div className="px-4 py-3 sm:px-5 sm:py-4">
+        <h3 className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50">
           Challenge level
-        </h2>
+        </h3>
       </div>
-      <div className="p-5">
+      <div className="px-4 pb-4 sm:px-5 sm:pb-5 border-t border-obsidian/6 pt-4">
         {signedIn ? (
           <>
-            <div className="flex items-center gap-3">
-              <span className="w-11 h-11 rounded-full bg-ember/8 flex items-center justify-center shrink-0">
-                <Trophy size={18} className="text-ember" />
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <span className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-ember/8 flex items-center justify-center shrink-0">
+                <Trophy size={16} className="text-ember sm:hidden" />
+                <Trophy size={18} className="text-ember hidden sm:block" />
               </span>
               <div className="min-w-0">
-                <p className="font-bold text-sm">{tier.name} member</p>
-                <p className="text-[12px] text-obsidian/45 mt-0.5">
+                <p className="font-bold text-[13px] sm:text-sm">{tier.name} member</p>
+                <p className="text-[11px] sm:text-[12px] text-obsidian/45 mt-0.5">
                   {upcoming
                     ? `${(upcoming.minPoints - balance).toLocaleString()} pts to ${upcoming.name}`
                     : 'Top tier reached'}
                 </p>
               </div>
             </div>
-            <div className="h-1.5 bg-obsidian/8 overflow-hidden mt-4">
+            <div className="h-1.5 bg-obsidian/8 overflow-hidden mt-3 sm:mt-4">
               <motion.div
                 className="h-full bg-ember"
                 initial={{ width: 0 }}
@@ -361,13 +371,13 @@ function LevelPanel({ points, signedIn }: { points: number | null; signedIn: boo
                 transition={{ duration: 0.8, ease: 'easeOut' }}
               />
             </div>
-            <p className="text-[11px] text-obsidian/40 mt-2 tabular-nums text-right">
+            <p className="text-[10px] sm:text-[11px] text-obsidian/40 mt-1.5 sm:mt-2 tabular-nums text-right">
               {balance.toLocaleString()} / {ceiling.toLocaleString()} pts
             </p>
-            <p className="text-[12px] text-obsidian/45 mt-3 leading-relaxed">{tier.blurb}</p>
+            <p className="text-[11px] sm:text-[12px] text-obsidian/45 mt-2 sm:mt-3 leading-relaxed">{tier.blurb}</p>
           </>
         ) : (
-          <p className="text-sm text-obsidian/50 leading-relaxed">
+          <p className="text-[13px] sm:text-sm text-obsidian/50 leading-relaxed">
             Sign in to see your tier and how close the next one is.
           </p>
         )}
@@ -383,27 +393,27 @@ function HowItWorksPanel() {
     { title: 'Earn points', detail: 'Points land on your Guest Card and buy rewards.' },
   ];
   return (
-    <section className="bg-white border border-obsidian/8">
-      <div className="px-5 py-4 border-b border-obsidian/8">
-        <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50">How it works</h2>
+    <section>
+      <div className="px-4 py-3 sm:px-5 sm:py-4">
+        <h3 className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50">How it works</h3>
       </div>
-      <ol className="divide-y divide-obsidian/6">
+      <ol className="divide-y divide-obsidian/6 border-t border-obsidian/6">
         {STEPS.map((step, i) => (
-          <li key={step.title} className="px-5 py-4 flex items-start gap-3">
-            <span className="w-7 h-7 rounded-full bg-ember/8 text-ember text-[11px] font-black flex items-center justify-center shrink-0">
+          <li key={step.title} className="px-3 py-2.5 sm:px-5 sm:py-4 flex items-start gap-2.5 sm:gap-3">
+            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-ember/8 text-ember text-[10px] sm:text-[11px] font-black flex items-center justify-center shrink-0">
               {i + 1}
             </span>
             <span className="min-w-0">
-              <span className="block text-sm font-semibold">{step.title}</span>
-              <span className="block text-[12px] text-obsidian/45 mt-0.5 leading-relaxed">{step.detail}</span>
+              <span className="block text-[13px] sm:text-sm font-semibold">{step.title}</span>
+              <span className="block text-[11px] sm:text-[12px] text-obsidian/45 mt-0.5 leading-snug sm:leading-relaxed">{step.detail}</span>
             </span>
           </li>
         ))}
       </ol>
-      <div className="p-4 border-t border-obsidian/8">
+      <div className="px-4 py-3 sm:px-5 sm:py-4 border-t border-obsidian/6">
         <Link
-          href="/trivia?tab=rewards"
-          className="w-full py-3 btn-brand text-[10px] font-black uppercase tracking-[0.12em] inline-flex items-center justify-center gap-1.5"
+          href="/discover?tab=rewards-shop"
+          className="w-full py-2.5 sm:py-3 btn-brand text-[10px] font-black uppercase tracking-[0.12em] inline-flex items-center justify-center gap-1.5"
         >
           Explore rewards shop <ChevronRight size={13} />
         </Link>

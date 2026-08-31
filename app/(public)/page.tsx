@@ -117,7 +117,7 @@ export default function HomePage() {
               </p>
             </div>
             <Link
-              href="/plan"
+              href="/party-planner"
               className="inline-flex items-center justify-center px-6 py-3 btn-brand text-[11px] font-wordmark-sm shrink-0"
             >
               Plan my party
@@ -140,7 +140,7 @@ export default function HomePage() {
               </p>
             </div>
             <Link
-              href="/plan"
+              href="/party-planner"
               className="inline-flex items-center justify-center px-6 py-3 btn-brand text-[11px] font-wordmark-sm shrink-0"
             >
               Plan my party

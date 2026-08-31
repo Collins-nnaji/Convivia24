@@ -136,10 +136,10 @@ export default function Navigation() {
                       <p className="px-4 py-2 text-[11px] text-obsidian/45 truncate border-b border-obsidian/6 mb-1">
                         {user.email}
                       </p>
-                      <Link href="/account" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
+                      <Link href="/my-account" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
                         My profile
                       </Link>
-                      <Link href="/plan" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
+                      <Link href="/party-planner" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
                         My night plans
                       </Link>
                       <Link href="/orders" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
@@ -273,9 +273,9 @@ export default function Navigation() {
                   <span className="text-ember/40 text-lg">&rsaquo;</span>
                 </Link>
                 <Link
-                  href="/refer"
+                  href="/refer-and-earn"
                   className={`flex items-center justify-between py-3.5 text-base font-semibold ${
-                    isActive('/refer') ? 'text-ember' : 'text-obsidian/70'
+                    isActive('/refer-and-earn') ? 'text-ember' : 'text-obsidian/70'
                   }`}
                 >
                   Refer &amp; earn
@@ -283,7 +283,7 @@ export default function Navigation() {
                 </Link>
                 {signedIn && user ? (
                   <>
-                    <Link href="/account" className="flex items-center justify-between py-3.5 text-base font-semibold text-obsidian/70">
+                    <Link href="/my-account" className="flex items-center justify-between py-3.5 text-base font-semibold text-obsidian/70">
                       My profile
                       <span className="text-ember/40 text-lg">&rsaquo;</span>
                     </Link>

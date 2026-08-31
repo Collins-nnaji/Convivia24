@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: 'Terms of Use',
   description:
     'Terms for Convivia24 — nationwide alcohol delivery, events, venues, Guest Card, and partner services. Adults 18+ only.',
-  alternates: { canonical: absoluteUrl('/terms') },
+  alternates: { canonical: absoluteUrl('/terms-of-use') },
   robots: { index: true, follow: true },
 };
 
@@ -109,7 +109,7 @@ export default function TermsPage() {
 
         <p className="mt-12 text-sm text-obsidian/45">
           See also our{' '}
-          <Link href="/privacy" className="text-ember hover:underline">
+          <Link href="/privacy-policy" className="text-ember hover:underline">
             Privacy Policy
           </Link>
           .

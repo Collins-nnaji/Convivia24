@@ -9,11 +9,11 @@ export const metadata: Metadata = {
   title: 'Refer & earn',
   description:
     'Event planners, venues, caterers and DJs: send your clients to Convivia24 for their event drinks and earn commission on every order. Adults 18+.',
-  alternates: { canonical: absoluteUrl('/refer') },
+  alternates: { canonical: absoluteUrl('/refer-and-earn') },
   openGraph: {
     title: 'Refer & earn | Convivia24',
     description: 'Send your clients for their event drinks. Earn on every order they place.',
-    url: absoluteUrl('/refer'),
+    url: absoluteUrl('/refer-and-earn'),
   },
 };
 
@@ -86,7 +86,7 @@ export default function ReferPage() {
             <div>
               <h3 className="font-semibold text-obsidian text-sm mb-1.5">Already a partner?</h3>
               <p>
-                <Link href="/refer/portal" className="text-ember hover:underline">
+                <Link href="/your-referrals" className="text-ember hover:underline">
                   Open your dashboard
                 </Link>{' '}
                 to see your code, referred orders and what you are owed.

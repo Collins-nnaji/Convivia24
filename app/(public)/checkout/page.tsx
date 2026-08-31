@@ -358,7 +358,7 @@ function CheckoutForm() {
               {!enrolled && (
                 <div className="px-5 py-3.5 border-t border-obsidian/8">
                   <Link
-                    href="/card"
+                    href="/guest-card"
                     className="text-[10px] font-black uppercase tracking-[0.14em] text-ember"
                   >
                     Activate Guest Card for perks →

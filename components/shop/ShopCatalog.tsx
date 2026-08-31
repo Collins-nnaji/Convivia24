@@ -62,7 +62,7 @@ export default function ShopCatalog() {
 
   useEffect(() => {
     if (params.get('plan') === '1' || params.get('section') === 'plan') {
-      router.replace('/plan');
+      router.replace('/party-planner');
     }
   }, [params, router]);
 

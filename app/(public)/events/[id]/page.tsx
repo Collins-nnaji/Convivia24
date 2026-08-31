@@ -329,7 +329,7 @@ export default function EventDetailPage() {
 
                 {!enrolled && (
                   <p className="text-xs text-gray-400 mb-3">
-                    <Link href="/card" className="text-ember">Activate your Guest Card</Link>{' '}
+                    <Link href="/guest-card" className="text-ember">Activate your Guest Card</Link>{' '}
                     to bank the points.
                   </p>
                 )}

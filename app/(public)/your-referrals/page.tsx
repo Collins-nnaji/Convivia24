@@ -13,7 +13,7 @@ export default function ReferPortalPage() {
     <section className="bg-paper min-h-[70vh]">
       <div className="max-w-3xl mx-auto px-5 sm:px-8 pt-6 sm:pt-8 pb-16 sm:pb-24">
         <Link
-          href="/refer"
+          href="/refer-and-earn"
           className="inline-flex items-center gap-1.5 text-[11px] font-wordmark-sm text-obsidian/45 hover:text-obsidian mb-6"
         >
           <ArrowLeft size={12} /> Partner programme

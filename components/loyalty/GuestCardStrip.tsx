@@ -220,7 +220,7 @@ function GuestCardDetails({
               : 'Top tier reached. Table credit at partner rooms is yours.'}
           </p>
           <Link
-            href="/card"
+            href="/guest-card"
             className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-ember hover:gap-2.5 transition-all"
           >
             Manage card & perks <ArrowRight size={12} />

@@ -6,11 +6,11 @@ export const metadata: Metadata = {
   title: 'Party Planner',
   description:
     'Tell us your guest count and budget. Convivia24 plans the drinks, delivery, games and invitations for your party.',
-  alternates: { canonical: absoluteUrl('/plan') },
+  alternates: { canonical: absoluteUrl('/party-planner') },
   openGraph: {
     title: 'Party Planner | Convivia24',
     description: 'Guests, budget, delivery — we put together the whole party package.',
-    url: absoluteUrl('/plan'),
+    url: absoluteUrl('/party-planner'),
   },
 };
 

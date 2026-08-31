@@ -513,7 +513,7 @@ function DeliveryPanel() {
       </div>
       <p className="text-[12px] text-obsidian/40">
         Full terms, including cancellations and returns, are in our{' '}
-        <Link href="/terms" className="text-ember underline underline-offset-2">
+        <Link href="/terms-of-use" className="text-ember underline underline-offset-2">
           terms &amp; conditions
         </Link>
         .

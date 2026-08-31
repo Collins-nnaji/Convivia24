@@ -91,7 +91,7 @@ export default function ReferPortal() {
           We could not find a referral partner under {user.email}. Apply and you will get a code
           straight away.
         </p>
-        <Link href="/refer" className="btn-brand text-[11px] px-5 py-2.5 inline-block">
+        <Link href="/refer-and-earn" className="btn-brand text-[11px] px-5 py-2.5 inline-block">
           Apply to refer
         </Link>
       </div>

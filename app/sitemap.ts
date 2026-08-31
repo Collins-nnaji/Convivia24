@@ -4,7 +4,7 @@ import { EVENT_PACKAGES } from '@/lib/packages/catalog';
 import { eventsEnabled } from '@/lib/features';
 import { absoluteUrl } from '@/lib/seo';
 
-const MVP_PATHS = ['/', '/shop', '/plan', '/trivia', '/contact', '/refer', '/card', '/convivium', '/privacy', '/terms'];
+const MVP_PATHS = ['/', '/shop', '/party-planner', '/discover', '/contact', '/refer-and-earn', '/guest-card', '/convivium', '/privacy-policy', '/terms-of-use'];
 
 const FULL_PATHS = [...MVP_PATHS, '/events', '/venues', '/circles'];
 
@@ -16,13 +16,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: absoluteUrl(path),
     lastModified: now,
     changeFrequency:
-      path === '/' || path === '/shop' || path === '/plan' || path === '/events'
+      path === '/' || path === '/shop' || path === '/party-planner' || path === '/events'
       ? 'daily'
       : 'weekly',
     priority:
       path === '/'
         ? 1
-        : path === '/shop' || path === '/plan' || path === '/events'
+        : path === '/shop' || path === '/party-planner' || path === '/events'
           ? 0.9
           : 0.6,
   }));
