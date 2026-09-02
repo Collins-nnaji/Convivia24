@@ -4,12 +4,10 @@ import { getPackageBySlug, bottleCount } from '@/lib/packages/catalog';
 /**
  * Minimum order size, in bottles.
  *
- * Counted across the whole cart rather than per line: a customer may mix two Jameson with four
- * Smirnoff Ice and clear it. Per-line would force six of every SKU, which would make a single
- * bottle of Macallan 18 impossible and break the party planner, which recommends one or two
- * bottles across many different SKUs.
+ * Set to 1 so any single bottle (or package) can checkout. Counted across the whole cart
+ * rather than per line — a customer may mix SKUs freely. Sample SKUs do not count.
  */
-export const MIN_ORDER_BOTTLES = 6;
+export const MIN_ORDER_BOTTLES = 1;
 
 export type CountableLine = { slug: string; qty: number };
 
