@@ -17,9 +17,7 @@ export type CountableLine = { slug: string; qty: number };
  * An event package is one line but many bottles, so it counts as its full contents — any package
  * clears the minimum on its own, which is the honest reading of what the customer is buying.
  *
- * Sample SKUs count for nothing. The cart auto-injects the ₦500 sample bottle, and letting it
- * count would quietly make the real minimum five. The party planner already skips samples for
- * the same reason.
+ * Sample SKUs (if any) count for nothing — they are payment-test lines only, not deliverables.
  */
 export function bottleUnitsFor(slug: string, qty: number): number {
   const units = Math.max(0, Math.floor(Number(qty) || 0));

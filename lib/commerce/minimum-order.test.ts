@@ -27,9 +27,9 @@ describe('bottleUnitsFor', () => {
     expect(bottleUnitsFor('jameson-original', Number.NaN)).toBe(0);
   });
 
-  it('does not count the auto-injected sample bottle', () => {
-    expect(bottleUnitsFor(SAMPLE_PAYMENT_SLUG, 1)).toBe(0);
-    expect(bottleUnitsFor(SAMPLE_PAYMENT_SLUG, 10)).toBe(0);
+  it('counts the Convivia Cocktail like any other bottle', () => {
+    expect(bottleUnitsFor(SAMPLE_PAYMENT_SLUG, 1)).toBe(1);
+    expect(bottleUnitsFor(SAMPLE_PAYMENT_SLUG, 3)).toBe(3);
   });
 
   it('counts an unknown slug at face value rather than dropping it', () => {
@@ -60,14 +60,11 @@ describe('the minimum', () => {
     }
   });
 
-  it('rejects a cart with only the sample bottle', () => {
-    const withSample = [{ slug: SAMPLE_PAYMENT_SLUG, qty: 1 }];
-    expect(orderBottleCount(withSample)).toBe(0);
-    expect(meetsMinimum(withSample)).toBe(false);
-    expect(bottlesShort(withSample)).toBe(1);
-    expect(minimumOrderError(withSample)).toBe(
-      `Minimum order is ${MIN_ORDER_BOTTLES} bottles. You have 0 — add 1 more.`
-    );
+  it('accepts a cart with only the Convivia Cocktail', () => {
+    const cart = [{ slug: SAMPLE_PAYMENT_SLUG, qty: 1 }];
+    expect(orderBottleCount(cart)).toBe(1);
+    expect(meetsMinimum(cart)).toBe(true);
+    expect(minimumOrderError(cart)).toBeNull();
   });
 
   it('treats an empty cart as empty, not as short', () => {

@@ -707,9 +707,8 @@ export const DRINKS: DrinkProduct[] = [
     abv: 5,
     volume: '33CL',
     priceNgn: 500,
-    tagline: 'House pour for a ₦500 checkout.',
-    description: 'A Convivia house cocktail at ₦500 — use this sample to test payment without a full bottle tab.',
-    sample: true,
+    tagline: 'House pour, cold and ready.',
+    description: 'Convivia house cocktail in a can — light, citrus-led, and easy to deliver for a small tab.',
   },
   {
     slug: 'smirnoff-ice-pack',

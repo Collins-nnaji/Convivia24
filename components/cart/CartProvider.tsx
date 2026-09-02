@@ -10,7 +10,6 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { SAMPLE_PAYMENT_SLUG } from '@/lib/drinks/catalog';
 import { findSellable } from '@/lib/catalog/sellable';
 import { useUser } from '@/components/auth/AuthProvider';
 import CartToast from '@/components/cart/CartToast';
@@ -54,31 +53,15 @@ function normalizeLines(raw: CartLine[]): CartLine[] {
     .filter(Boolean) as CartLine[];
 }
 
-function withSampleDrink(lines: CartLine[]): CartLine[] {
-  const product = findSellable(SAMPLE_PAYMENT_SLUG);
-  if (!product) return lines;
-  if (lines.some((l) => l.slug === SAMPLE_PAYMENT_SLUG)) return lines;
-  return [
-    {
-      slug: product.slug,
-      name: product.name,
-      priceNgn: product.priceNgn,
-      qty: 1,
-    },
-    ...lines,
-  ];
-}
-
 function loadCart(): CartLine[] {
   if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return withSampleDrink([]);
+    if (!raw) return [];
     const parsed = JSON.parse(raw) as CartLine[];
-    const loaded = Array.isArray(parsed) ? normalizeLines(parsed) : [];
-    return withSampleDrink(loaded);
+    return Array.isArray(parsed) ? normalizeLines(parsed) : [];
   } catch {
-    return withSampleDrink([]);
+    return [];
   }
 }
 
@@ -122,7 +105,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       .then((data) => {
         const serverItems = Array.isArray(data?.items) ? (data.items as CartLine[]) : [];
         if (serverItems.length > 0) {
-          setLines(withSampleDrink(normalizeLines(serverItems)));
+          setLines(normalizeLines(serverItems));
         } else if (lines.length > 0) {
           fetch('/api/cart', {
             method: 'PUT',

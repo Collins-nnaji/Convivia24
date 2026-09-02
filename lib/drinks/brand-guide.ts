@@ -50,7 +50,7 @@ export const TASTE_NOTES: Record<string, string> = {
   "ciroc-mango": "Tropical and juicy — mango up front over the same soft, grape-distilled base.",
   "chardonnay-house": "Crisp citrus and green apple with no oak weight — a cold-climate style built for warm evenings.",
   "prosecco-brut": "Pear and white flowers with a soft, fast fizz — lighter and less yeasty than Champagne.",
-  "convivia-cocktail": "Light, citrus-led house mix — easy, cold, and built as a ₦500 checkout sample.",
+  "convivia-cocktail": "Light, citrus-led house mix — easy, cold, and built for delivery.",
   "smirnoff-ice-pack": "Lemon-lime and vodka, lightly carbonated — sweet, cold, and built for a cooler bag.",
   "flying-fish-pack": "Citrus-forward malt cocktail — light body, low bitterness, easy across a long afternoon.",
   "brutal-fruit-pack": "Berry-forward and lightly sparkling — sweeter and softer than a standard cider.",

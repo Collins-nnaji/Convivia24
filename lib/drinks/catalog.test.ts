@@ -47,11 +47,11 @@ describe('catalog integrity', () => {
     expect(preferTrackForCategory('whisky')).toBe('spirit');
   });
 
-  it('includes the ₦500 Convivia Cocktail sample for payment tests', () => {
-    const sample = getDrinkBySlug('convivia-cocktail');
-    expect(sample?.name).toBe('Convivia Cocktail');
-    expect(sample?.priceNgn).toBe(500);
-    expect(sample?.sample).toBe(true);
+  it('includes the Convivia Cocktail as a deliverable canned cocktail', () => {
+    const cocktail = getDrinkBySlug('convivia-cocktail');
+    expect(cocktail?.name).toBe('Convivia Cocktail');
+    expect(cocktail?.priceNgn).toBe(500);
+    expect(cocktail?.sample).toBeFalsy();
   });
 
   it('searchDrinks matches by name case-insensitively', () => {
