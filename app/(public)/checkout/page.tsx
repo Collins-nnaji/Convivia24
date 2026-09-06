@@ -19,6 +19,7 @@ import {
   Wine,
 } from 'lucide-react';
 import { useCart } from '@/components/cart/CartProvider';
+import { useUser } from '@/components/auth/AuthProvider';
 import DrinkPhoto from '@/components/shop/DrinkPhoto';
 import { findSellable } from '@/lib/catalog/sellable';
 import { formatNgn } from '@/lib/drinks/catalog';
@@ -63,6 +64,7 @@ const EMPTY_DETAILS: Details = {
 
 function CheckoutForm() {
   const { lines, subtotalNgn, refreshPrices } = useCart();
+  const { user, loading: authLoading } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -77,7 +79,13 @@ function CheckoutForm() {
     venueName: venuePrefill,
     area: areaPrefill,
   });
-  const [loading, setLoading] = useState(false);
+  /**
+   * Explicit stages, because a single `loading` boolean led the button to say the payment was
+   * under way while we were still creating the order locally. Nothing here mentions processing a
+   * payment until Flutterwave has actually been handed the customer.
+   */
+  const [phase, setPhase] = useState<'idle' | 'creating' | 'starting' | 'redirecting'>('idle');
+  const loading = phase !== 'idle';
   const [error, setError] = useState('');
   const [discountPct, setDiscountPct] = useState(0);
   const [enrolled, setEnrolled] = useState(false);
@@ -89,6 +97,11 @@ function CheckoutForm() {
   const discountNgn = Math.round((subtotalNgn * discountPct) / 100);
   const payableNgn = Math.max(0, subtotalNgn - discountNgn);
   const pointsEarned = useMemo(() => pointsFromSpend(payableNgn), [payableNgn]);
+
+  // The order is filed under the session email, so the form must show that address and no other.
+  useEffect(() => {
+    if (user?.email) setDetails((d) => (d.email === user.email ? d : { ...d, email: user.email }));
+  }, [user?.email]);
 
   useEffect(() => {
     refreshPrices();
@@ -119,7 +132,7 @@ function CheckoutForm() {
       setError(`Minimum order is ${MIN_ORDER_BOTTLES} bottles. You have ${bottles} — add ${short} more.`);
       return;
     }
-    setLoading(true);
+    setPhase('creating');
     setError('');
 
     const payload = {
@@ -139,6 +152,13 @@ function CheckoutForm() {
       });
       const orderData = await orderRes.json();
       if (!orderRes.ok) {
+        // A session that lapsed between loading the page and paying — send them back to sign in
+        // rather than reporting it as a generic failure.
+        if (orderRes.status === 401 || orderData.authRequired) {
+          setPhase('redirecting');
+          window.location.href = `/signin?next=${encodeURIComponent('/checkout')}`;
+          return;
+        }
         setError(orderData.error || 'Could not create order.');
         return;
       }
@@ -150,12 +170,19 @@ function CheckoutForm() {
         JSON.stringify({ subtotalNgn, discountNgn: orderData.loyaltyDiscountNgn ?? 0 })
       );
 
+      setPhase('starting');
       const payRes = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderId }),
       });
       const payData = await payRes.json();
+
+      if (payData.alreadyPaid) {
+        setPhase('redirecting');
+        window.location.href = `/checkout/success?order=${orderId}`;
+        return;
+      }
       if (!payRes.ok) {
         await fetch('/api/orders', {
           method: 'PATCH',
@@ -168,6 +195,9 @@ function CheckoutForm() {
       }
 
       if (payData.redirectUrl) {
+        // Hold the overlay: the browser is mid-navigation to Flutterwave and `finally` must not
+        // drop us back to an enabled button behind the redirect.
+        setPhase('redirecting');
         window.location.href = payData.redirectUrl;
         return;
       }
@@ -183,8 +213,41 @@ function CheckoutForm() {
       }
       setError('Something went wrong. Please try again.');
     } finally {
-      setLoading(false);
+      // A redirect owns the page from here — leave the overlay in place.
+      setPhase((p) => (p === 'redirecting' ? p : 'idle'));
     }
+  }
+
+  // Ordering requires an account — the server enforces this too; this is the friendly version.
+  if (!authLoading && !user) {
+    return (
+      <Shell>
+        <h1 className="text-3xl font-bold mb-3">Sign in to check out</h1>
+        <p className="text-sm text-obsidian/55 mb-6 leading-relaxed max-w-lg">
+          Orders are tied to your account so you can track them from paid to delivered, see your rider
+          and ETA, and keep your delivery details for next time. Your cart is saved.
+        </p>
+        <div className="flex flex-wrap items-center gap-4">
+          <Link
+            href={`/signin?next=${encodeURIComponent('/checkout')}`}
+            className="px-6 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em]"
+          >
+            Sign in to continue
+          </Link>
+          <Link href="/cart" className="text-[11px] font-black uppercase tracking-[0.2em] text-obsidian/40">
+            Back to cart
+          </Link>
+        </div>
+      </Shell>
+    );
+  }
+
+  if (authLoading) {
+    return (
+      <Shell>
+        <p className="text-sm text-obsidian/40">Checking your session…</p>
+      </Shell>
+    );
   }
 
   if (lines.length === 0) {
@@ -222,6 +285,31 @@ function CheckoutForm() {
 
   return (
     <section className="bg-paper min-h-[70vh]">
+      {/*
+        Hand-off overlay. It only ever appears once Flutterwave has returned a link and the browser
+        is navigating there — so the customer is never told a payment is processing before the
+        payment page has actually been opened.
+      */}
+      {phase === 'redirecting' && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed inset-0 z-[100] grid place-items-center bg-paper/92 backdrop-blur-sm px-6"
+        >
+          <div className="text-center max-w-sm">
+            <div
+              aria-hidden
+              className="mx-auto mb-5 h-10 w-10 rounded-full border-2 border-ember/25 border-t-ember animate-spin"
+            />
+            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ember mb-2">Secure payment</p>
+            <h2 className="text-2xl font-bold text-obsidian mb-2">Opening Flutterwave…</h2>
+            <p className="text-sm text-obsidian/55 leading-relaxed">
+              Taking you to Flutterwave to pay. Please don&apos;t close this page — nothing has been
+              charged yet.
+            </p>
+          </div>
+        </div>
+      )}
       <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
         <div className="flex items-start justify-between gap-6 flex-wrap">
           <div>
@@ -257,6 +345,7 @@ function CheckoutForm() {
                 onEdit={() => setStep(0)}
                 onPlace={placeOrder}
                 loading={loading}
+                phase={phase}
                 payableNgn={payableNgn}
                 error={error}
               />
@@ -506,12 +595,14 @@ function DeliveryStep({
         <Field label="Email address">
           <input
             required
+            readOnly
             type="email"
             value={details.email}
-            onChange={(e) => onChange('email', e.target.value)}
-            className={inputClass}
-            placeholder="you@email.com"
+            className={`${inputClass} bg-obsidian/[0.03] text-obsidian/70`}
           />
+          <p className="mt-1 text-[11px] text-obsidian/45">
+            Your order is filed under this address so you can track it from your account.
+          </p>
         </Field>
 
         {details.deliveryMode === 'venue' ? (
@@ -608,6 +699,7 @@ function ReviewStep({
   onEdit,
   onPlace,
   loading,
+  phase,
   payableNgn,
   error,
 }: {
@@ -617,6 +709,7 @@ function ReviewStep({
   onEdit: () => void;
   onPlace: () => void;
   loading: boolean;
+  phase: 'idle' | 'creating' | 'starting' | 'redirecting';
   payableNgn: number;
   error: string;
 }) {
@@ -688,7 +781,13 @@ function ReviewStep({
           className="w-full py-4 btn-brand text-[11px] font-black uppercase tracking-[0.14em] disabled:opacity-60 inline-flex items-center justify-center gap-2"
         >
           <CreditCard size={15} />
-          {loading ? 'Placing order…' : `Continue to payment · ${formatNgn(payableNgn)}`}
+          {phase === 'creating'
+            ? 'Saving your order…'
+            : phase === 'starting'
+              ? 'Contacting Flutterwave…'
+              : phase === 'redirecting'
+                ? 'Opening Flutterwave…'
+                : `Continue to payment · ${formatNgn(payableNgn)}`}
         </button>
 
         <p className="text-[12px] text-obsidian/45 mt-3 text-center leading-relaxed">

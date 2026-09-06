@@ -86,6 +86,30 @@ export async function ratingSummary(slug: string): Promise<RatingSummary> {
   };
 }
 
+/** Average and count per slug, for the whole shop, in one query. */
+export type RatingAggregate = { average: number; count: number };
+
+/**
+ * Bulk counterpart to `ratingSummary` — the shop grid needs a rating for every card, and calling
+ * the per-slug version once per product would be one round trip per bottle.
+ */
+export async function allRatingAggregates(): Promise<Record<string, RatingAggregate>> {
+  const rows = await sql`
+    SELECT slug, AVG(rating)::float AS avg, COUNT(*)::int AS n
+    FROM product_reviews
+    WHERE status = 'published'
+    GROUP BY slug
+  `;
+  const out: Record<string, RatingAggregate> = {};
+  for (const r of rows) {
+    out[String(r.slug)] = {
+      average: Math.round(Number(r.avg ?? 0) * 10) / 10,
+      count: Number(r.n ?? 0),
+    };
+  }
+  return out;
+}
+
 /**
  * Has this account actually bought the bottle? Drives the "Verified buyer"
  * badge, so it reads the order history rather than trusting the submission.

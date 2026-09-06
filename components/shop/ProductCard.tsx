@@ -6,6 +6,7 @@ import { Minus, Plus, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/components/cart/CartProvider';
 import DrinkPhoto from '@/components/shop/DrinkPhoto';
 import DrinkInfoButton from '@/components/shop/DrinkInfoButton';
+import Stars from '@/components/shop/Stars';
 import { formatNgn, type DrinkProduct } from '@/lib/drinks/catalog';
 import { tasteNoteForSlug } from '@/lib/drinks/taste-note';
 
@@ -14,6 +15,9 @@ export type ProductCardData = DrinkProduct & {
   onHand?: number;
   available?: number;
   lowStock?: boolean;
+  /** Published-review average, 0 when nobody has rated it yet. */
+  rating?: number;
+  ratingCount?: number;
 };
 
 export function ProductCard({ product }: { product: ProductCardData }) {
@@ -78,6 +82,16 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         <p className="mt-0.5 text-[11px] text-obsidian/45 sm:mt-1 sm:text-xs">
           {product.abv}% · {product.volume}
         </p>
+        {/* Only shown once a bottle actually has reviews — an empty star row reads as a bad score. */}
+        {product.rating != null && product.rating > 0 && (
+          <span className="mt-1 flex items-center gap-1">
+            <Stars value={product.rating} size={11} />
+            <span className="text-[10px] font-semibold text-obsidian/45 sm:text-[11px]">
+              {product.rating.toFixed(1)}
+              {product.ratingCount ? ` (${product.ratingCount})` : ''}
+            </span>
+          </span>
+        )}
         <p className="mt-1 text-sm font-bold text-obsidian sm:mt-1.5 sm:text-base">{formatNgn(product.priceNgn)}</p>
       </Link>
 

@@ -1,6 +1,7 @@
 import sql from '@/lib/db';
 import { DRINKS, type DrinkCategory, type DrinkProduct } from '@/lib/drinks/catalog';
 import { findSellable } from '@/lib/catalog/sellable';
+import { allRatingAggregates } from '@/lib/drinks/reviews';
 import { TASTE_NOTES } from '@/lib/drinks/brand-guide';
 import { upsertBrand } from '@/lib/drinks/product-info';
 
@@ -221,7 +222,30 @@ export async function adminStockList(): Promise<AdminStockRow[]> {
     available: 0,
     tracked: false,
   }));
-  return [...rows.map((r) => ({ ...r, tracked: true })), ...untracked];
+  /**
+   * Fall back to the catalog for anything the inventory row leaves null.
+   *
+   * Only a handful of rows carry their own `image_url` — the rest were seeded without one and take
+   * the bottle shot from `lib/drinks/catalog.ts`. The shop already does this (see `shopCatalog`),
+   * so without the same fallback the desk showed empty thumbnails for bottles that render fine
+   * in the shop.
+   */
+  const catalogBySlug = new Map(DRINKS.map((d) => [d.slug, d]));
+  const tracked = rows.map((r) => {
+    const d = catalogBySlug.get(r.slug);
+    return {
+      ...r,
+      tracked: true,
+      image_url: r.image_url || d?.image || null,
+      category: r.category || d?.category || null,
+      brand: r.brand || d?.brand || null,
+      volume: r.volume || d?.volume || null,
+      abv: r.abv ?? d?.abv ?? null,
+      tagline: r.tagline || d?.tagline || null,
+    };
+  });
+
+  return [...tracked, ...untracked];
 }
 
 export class StockEditError extends Error {
@@ -410,13 +434,29 @@ export async function fulfillStockForOrder(lines: StockLine[], orderId: string):
 
 /** Merge static catalog + admin inventory into shop products with live stock. */
 export async function shopCatalog(): Promise<
-  (DrinkProduct & { tasteNote?: string | null; onHand?: number; available?: number; lowStock?: boolean })[]
+  (DrinkProduct & {
+    tasteNote?: string | null;
+    onHand?: number;
+    available?: number;
+    lowStock?: boolean;
+    rating?: number;
+    ratingCount?: number;
+  })[]
 > {
   let stock: InventoryRow[] = [];
   try {
     stock = await listInventory(true);
   } catch {
     stock = [];
+  }
+
+  // Ratings power the "Top rated" sort in the shop, so they ship with the catalog rather than
+  // being fetched per card. A reviews outage must not take the shop down with it.
+  let ratings: Record<string, { average: number; count: number }> = {};
+  try {
+    ratings = await allRatingAggregates();
+  } catch {
+    ratings = {};
   }
   const bySlug = new Map(stock.map((s) => [s.slug, s]));
 
@@ -431,6 +471,8 @@ export async function shopCatalog(): Promise<
       image: inv?.image_url || d.image,
       priceNgn: inv?.price_ngn && inv.price_ngn > 0 ? inv.price_ngn : d.priceNgn,
       tasteNote: inv?.taste_note || TASTE_NOTES[d.slug] || null,
+      rating: ratings[d.slug]?.average ?? 0,
+      ratingCount: ratings[d.slug]?.count ?? 0,
     };
   });
 
@@ -453,6 +495,8 @@ export async function shopCatalog(): Promise<
       available: s.available,
       lowStock: s.available <= s.low_stock_threshold,
       tasteNote: s.taste_note || TASTE_NOTES[s.slug] || null,
+      rating: ratings[s.slug]?.average ?? 0,
+      ratingCount: ratings[s.slug]?.count ?? 0,
     }));
 
   return [...adminOnly, ...fromCatalog];

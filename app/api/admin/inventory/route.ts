@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin, setAdminSession } from '@/lib/admin';
 import { listInventory, upsertAdminProduct, adminStockList, editStockRow, StockEditError } from '@/lib/inventory';
+import { allSupplierStock, setSupplierStock, stockForSlug } from '@/lib/suppliers/stock';
+import { listSuppliers } from '@/lib/suppliers/repo';
 import { uploadBlob, validateImageFile, blobConfigured } from '@/lib/azure/blob';
 import { apiErrorResponse } from '@/lib/db';
 import { rateLimit, clientIp, redis } from '@/lib/redis';
@@ -11,9 +13,15 @@ export async function GET() {
   const gate = await requireAdmin();
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
-    const items = await adminStockList();
+    const [items, supplierStock, suppliers] = await Promise.all([
+      adminStockList(),
+      allSupplierStock().catch(() => ({})),
+      listSuppliers(true).catch(() => []),
+    ]);
     return NextResponse.json({
       items,
+      supplierStock,
+      suppliers: suppliers.map((s) => ({ id: s.id, name: s.name, city: s.city })),
       blobConfigured: blobConfigured(),
       aiConfigured: aiConfigured(),
     });
@@ -87,6 +95,22 @@ export async function POST(req: NextRequest) {
           throw err;
         }
       }
+      if (body.action === 'supplier-stock') {
+        const gate = await requireAdmin();
+        if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
+        const slug = String(body.slug || '');
+        const supplierId = String(body.supplierId || '');
+        if (!slug || !supplierId) {
+          return NextResponse.json({ error: 'Slug and supplier are required.' }, { status: 400 });
+        }
+        const onHand = Number(body.onHand);
+        if (!Number.isFinite(onHand) || onHand < 0) {
+          return NextResponse.json({ error: 'Quantity must be zero or more.' }, { status: 400 });
+        }
+        await setSupplierStock(supplierId, slug, onHand);
+        return NextResponse.json({ ok: true, rows: await stockForSlug(slug) });
+      }
+
       if (body.action === 'delete') {
         const gate = await requireAdmin();
         if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });

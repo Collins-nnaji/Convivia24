@@ -6,6 +6,7 @@ import { formatNgn } from '@/lib/drinks/catalog';
 import { LAGOS_AREAS } from '@/lib/geo/lagos';
 import { skuMargin } from '@/lib/suppliers/margin';
 import { type Supplier } from '@/lib/suppliers/repo';
+import { useDialogs } from '@/components/admin/ui/DialogProvider';
 
 type CatalogRow = {
   slug: string;
@@ -46,6 +47,8 @@ function MarginBadge({ retail, cost }: { retail: number | null; cost: number | n
 }
 
 export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?: () => void }) {
+  const { confirm } = useDialogs();
+
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [catalog, setCatalog] = useState<CatalogRow[]>([]);
   const [selectedId, setSelectedId] = useState('');
@@ -141,7 +144,18 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
   }
 
   async function removeSupplier(id: string, name: string) {
-    if (!confirm(`Remove ${name}? If they have sourced orders they are deactivated, not deleted.`)) return;
+    const ok = await confirm({
+      title: 'Remove this supplier?',
+      message: (
+        <>
+          <strong>{name}</strong> is removed. If they already have sourced orders they are deactivated
+          rather than deleted, so the order history stays intact.
+        </>
+      ),
+      confirmLabel: 'Remove supplier',
+      tone: 'danger',
+    });
+    if (!ok) return;
     try {
       const res = await fetch(`/api/admin/suppliers?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
       const data = await res.json();

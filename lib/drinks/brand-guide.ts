@@ -48,18 +48,9 @@ export const TASTE_NOTES: Record<string, string> = {
   "absolut-citron": "The classic Absolut base with real lemon peel distillate layered in — sharp citrus, clean finish.",
   "ciroc-red-berry": "Grape vodka infused with berry — sweeter and fruitier than the Snap Frost original.",
   "ciroc-mango": "Tropical and juicy — mango up front over the same soft, grape-distilled base.",
-  "chardonnay-house": "Crisp citrus and green apple with no oak weight — a cold-climate style built for warm evenings.",
   "prosecco-brut": "Pear and white flowers with a soft, fast fizz — lighter and less yeasty than Champagne.",
   "convivia-cocktail": "Light, citrus-led house mix — easy, cold, and built for delivery.",
   "smirnoff-ice-pack": "Lemon-lime and vodka, lightly carbonated — sweet, cold, and built for a cooler bag.",
-  "flying-fish-pack": "Citrus-forward malt cocktail — light body, low bitterness, easy across a long afternoon.",
-  "brutal-fruit-pack": "Berry-forward and lightly sparkling — sweeter and softer than a standard cider.",
-  "hunters-dry-pack": "Crisp apple and a dry, clean finish — the least sweet of the canned lineup.",
-  "ace-berry-pack": "Mixed berry, sweet and straightforward — built for volume, not sipping.",
-  "orijin-rtd-pack": "Herbal bitters in a can — the same bittersweet profile as the bottle, pre-mixed and cold.",
-  "desperados-pack": "Malt beer with a tequila twist — light lime and agave notes over a lager base.",
-  "breezer-peach-pack": "Sweet peach and vodka, lightly carbonated — a cooler-friendly sipper.",
-  "tiger-cranberry": "Tart cranberry, zero ABV — built to keep a mixer table stocked without the alcohol.",
   "schweppes-tonic-pack": "Bitter quinine and light citrus — the classic gin partner, nothing fancy.",
 };
 

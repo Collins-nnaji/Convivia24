@@ -10,7 +10,8 @@ import type { OrderStatus } from '@/lib/commerce/status';
 
 async function loadOrderForNotify(orderId: string) {
   const [order] = await sql`
-    SELECT id, email, phone, full_name, status, subtotal_ngn, total_ngn
+    SELECT id, email, phone, full_name, status, subtotal_ngn, total_ngn,
+           courier_name, rider_phone, eta_at
     FROM ritual_orders WHERE id = ${orderId} LIMIT 1
   `;
   if (!order) return null;
@@ -94,6 +95,9 @@ export async function notifyOrderStatus(orderId: string, status: OrderStatus, no
       lines,
       subtotalNgn: totalNgn,
       note,
+      courierName: (order.courier_name as string) || null,
+      riderPhone: (order.rider_phone as string) || null,
+      etaAt: order.eta_at ? new Date(order.eta_at as string).toISOString() : null,
     });
     await sendEmail({ to: order.email as string, subject, html, text });
   } catch (err) {

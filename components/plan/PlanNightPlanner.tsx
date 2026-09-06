@@ -299,15 +299,15 @@ export default function PlanNightPlanner() {
   return (
     <div className="min-h-[70vh] bg-paper pb-16 sm:pb-20">
       <section className="border-b border-obsidian/8 bg-paper">
-        <div className="relative mx-auto max-w-6xl px-5 py-5 sm:px-8 sm:py-12">
-          <p className="mb-1.5 text-[10px] font-black uppercase tracking-[0.28em] text-ember sm:mb-3">Party Planner</p>
+        <div className="relative mx-auto w-full max-w-[1600px] px-2.5 py-4 sm:px-4 sm:py-6 lg:px-5">
+          <p className="mb-1.5 text-[10px] font-black uppercase tracking-[0.28em] text-ember sm:mb-2">Party Planner</p>
           <h1 className="max-w-2xl font-wordmark text-2xl leading-tight text-obsidian sm:text-5xl sm:leading-[1.05]">
             We&apos;ll build the party.
           </h1>
-          <p className="mt-2 max-w-md text-xs text-obsidian/55 sm:mt-4 sm:text-base">
+          <p className="mt-1.5 max-w-md text-xs text-obsidian/55 sm:mt-2.5 sm:text-base">
             Guests, budget, delivery — you get one complete package.
           </p>
-          <div className="mt-4 flex flex-wrap gap-2 sm:mt-7 sm:gap-3">
+          <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-5 sm:gap-3">
             <button type="button" onClick={() => builderRef.current?.scrollIntoView({ behavior: 'smooth' })} className="inline-flex items-center gap-2 rounded-full bg-ember px-4 py-2 text-xs font-bold text-white transition hover:bg-ember-dark sm:px-6 sm:py-3 sm:text-sm">
               Plan my party
             </button>
@@ -317,6 +317,18 @@ export default function PlanNightPlanner() {
             <button type="button" onClick={() => setSavedOpen((value) => !value)} className="inline-flex items-center gap-2 rounded-full border border-obsidian/15 px-4 py-2 text-xs font-bold text-obsidian transition hover:border-ember hover:text-ember sm:px-6 sm:py-3 sm:text-sm">
               <History size={14} className="sm:h-4 sm:w-4" /> Previous plans{savedPlans.length > 0 ? ` (${savedPlans.length})` : ''}
             </button>
+            <span className="hidden h-5 w-px bg-obsidian/10 sm:block" aria-hidden />
+            <span className="hidden text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/35 sm:inline">Shortcuts</span>
+            {QUICK_PLANS.map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                onClick={() => applyQuickPlan(item)}
+                className="shrink-0 rounded-full border border-obsidian/10 bg-white px-3 py-2 text-xs font-semibold text-obsidian/65 shadow-sm transition hover:border-ember/40 hover:text-ember sm:px-4 sm:py-2.5 sm:text-sm"
+              >
+                {item.label}
+              </button>
+            ))}
           </div>
           {joinOpen && (
             <div className="mt-3 flex max-w-md gap-2 rounded-2xl border border-obsidian/10 bg-white p-2 sm:mt-4">
@@ -361,19 +373,8 @@ export default function PlanNightPlanner() {
         </div>
       </section>
 
-      <main className="mx-auto max-w-6xl px-4 sm:px-8">
-          <section className="py-4 sm:py-10">
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-obsidian/40 sm:mb-3 sm:text-xs">Start with a shortcut</p>
-            <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide sm:gap-2 sm:pb-2">
-              {QUICK_PLANS.map((item) => (
-                <button key={item.label} type="button" onClick={() => applyQuickPlan(item)} className="shrink-0 rounded-full border border-obsidian/10 bg-white px-3 py-2 text-xs font-semibold text-obsidian/65 shadow-sm transition hover:border-ember/40 hover:text-ember sm:px-4 sm:py-2.5 sm:text-sm">
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section ref={builderRef} className="scroll-mt-28 pb-8 sm:scroll-mt-36 sm:pb-12">
+      <main className="mx-auto w-full max-w-[1600px] px-2.5 sm:px-4 lg:px-5">
+          <section ref={builderRef} className="scroll-mt-28 pt-4 pb-8 sm:scroll-mt-36 sm:pt-6 sm:pb-12">
             <div className="overflow-hidden rounded-2xl border border-obsidian/10 bg-white shadow-[0_12px_40px_rgba(15,15,15,0.06)] sm:rounded-3xl sm:shadow-[0_20px_70px_rgba(15,15,15,0.08)]">
               <div className="p-4 sm:p-8 lg:p-10">
                 <div className="mb-5 flex items-start justify-between gap-4 sm:mb-8 sm:gap-5">

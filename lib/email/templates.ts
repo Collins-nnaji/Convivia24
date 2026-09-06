@@ -156,6 +156,10 @@ export function orderStatusEmail(opts: {
   lines: EmailLine[];
   subtotalNgn: number;
   note?: string | null;
+  /** Tracking details the desk set alongside the status — shown once a rider is assigned. */
+  courierName?: string | null;
+  riderPhone?: string | null;
+  etaAt?: string | null;
 }): { subject: string; html: string; text: string } {
   const label = ORDER_STATUS_LABELS[opts.status] || opts.status;
   const first = opts.fullName.split(' ')[0] || 'there';
@@ -172,13 +176,39 @@ export function orderStatusEmail(opts: {
     awaiting_payment: 'We are waiting on payment to release this drop.',
   };
   const message = copy[opts.status] || `Your order is now ${label.toLowerCase()}.`;
+
+  // Rider details only make sense once the order is actually moving.
+  const showTracking =
+    (opts.status === 'out_for_delivery' || opts.status === 'packed') &&
+    (opts.courierName || opts.riderPhone || opts.etaAt);
+  const etaText = opts.etaAt
+    ? new Date(opts.etaAt).toLocaleString('en-NG', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        hour: 'numeric',
+        minute: '2-digit',
+      })
+    : null;
+  const trackingHtml = showTracking
+    ? `<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 16px;font-size:14px;color:#3a3532;border-top:1px solid #eae5e0;border-bottom:1px solid #eae5e0;">
+         ${opts.courierName ? `<tr><td style="padding:8px 0;color:#6b6560;">Courier</td><td style="padding:8px 0;text-align:right;">${escapeHtml(opts.courierName)}</td></tr>` : ''}
+         ${opts.riderPhone ? `<tr><td style="padding:8px 0;color:#6b6560;">Rider</td><td style="padding:8px 0;text-align:right;"><a href="tel:${escapeHtml(opts.riderPhone)}" style="color:#8B2A22;text-decoration:none;">${escapeHtml(opts.riderPhone)}</a></td></tr>` : ''}
+         ${etaText ? `<tr><td style="padding:8px 0;color:#6b6560;">Expected</td><td style="padding:8px 0;text-align:right;">${escapeHtml(etaText)}</td></tr>` : ''}
+       </table>`
+    : '';
+  const trackingText = showTracking
+    ? ` ${[opts.courierName && `Courier: ${opts.courierName}.`, opts.riderPhone && `Rider: ${opts.riderPhone}.`, etaText && `Expected: ${etaText}.`].filter(Boolean).join(' ')}`
+    : '';
+
   return {
     subject: `${label} · ${shortId}`,
-    text: `Hi ${first}, ${message} Order ${shortId}. Total ${formatNgn(opts.subtotalNgn)}.`,
+    text: `Hi ${first}, ${message}${trackingText} Order ${shortId}. Total ${formatNgn(opts.subtotalNgn)}.`,
     html: wrap(
       label,
       `<p style="margin:0 0 16px;line-height:1.55;font-size:15px;color:#3a3532;">Hi ${escapeHtml(first)}, ${escapeHtml(message)}</p>
        ${opts.note ? `<p style="margin:0 0 16px;line-height:1.55;font-size:14px;color:#3a3532;">${escapeHtml(opts.note)}</p>` : ''}
+       ${trackingHtml}
        ${linesTable(opts.lines)}
        <p style="margin:16px 0 0;font-size:18px;font-weight:700;color:#0a0a0a;">Total ${formatNgn(opts.subtotalNgn)}</p>
        <p style="margin:12px 0 0;font-size:13px;color:#6b6560;">Order ${escapeHtml(opts.orderId)}</p>`
@@ -271,10 +301,7 @@ export function adminSuccessfulOrderEmail(opts: {
          <tr><td style="padding:4px 0;color:#6b6560;">Status</td><td style="padding:4px 0;text-align:right;text-transform:capitalize;">${escapeHtml(status)}</td></tr>
        </table>
        ${linesTable(opts.lines)}
-       <p style="margin:16px 0 0;font-size:18px;font-weight:700;color:#0a0a0a;">Total ${formatNgn(opts.totalNgn)}</p>
-       <p style="margin:16px 0 0;">
-         <a href="${appUrl()}/admin" style="display:inline-block;padding:12px 18px;background:#8B2A22;color:#fff;text-decoration:none;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">Open admin desk</a>
-       </p>`
+       <p style="margin:16px 0 0;font-size:18px;font-weight:700;color:#0a0a0a;">Total ${formatNgn(opts.totalNgn)}</p>`
     ),
   };
 }

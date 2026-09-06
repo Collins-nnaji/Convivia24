@@ -122,7 +122,7 @@ export default function Navigation() {
                       {firstName.slice(0, 1).toUpperCase()}
                     </span>
                   )}
-                  <span className="text-base font-semibold max-w-[6rem] truncate">{firstName}</span>
+                  <span className="font-wordmark text-[13px] tracking-[0.08em] font-bold max-w-[6rem] truncate">{firstName}</span>
                   <ChevronDown size={14} className={`text-obsidian/40 transition-transform ${accountOpen ? 'rotate-180' : ''}`} />
                 </button>
                 <AnimatePresence>
@@ -136,13 +136,13 @@ export default function Navigation() {
                       <p className="px-4 py-2 text-[11px] text-obsidian/45 truncate border-b border-obsidian/6 mb-1">
                         {user.email}
                       </p>
-                      <Link href="/my-account" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
+                      <Link href="/my-account" className="block px-4 py-2.5 font-wordmark text-xs tracking-[0.1em] font-semibold hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
                         My profile
                       </Link>
-                      <Link href="/party-planner" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
+                      <Link href="/party-planner" className="block px-4 py-2.5 font-wordmark text-xs tracking-[0.1em] font-semibold hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
                         My night plans
                       </Link>
-                      <Link href="/orders" className="block px-4 py-2.5 text-sm hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
+                      <Link href="/orders" className="block px-4 py-2.5 font-wordmark text-xs tracking-[0.1em] font-semibold hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
                         Order history
                       </Link>
                       <button
@@ -151,7 +151,7 @@ export default function Navigation() {
                           setAccountOpen(false);
                           signOut();
                         }}
-                        className="w-full text-left px-4 py-2.5 text-sm text-ember inline-flex items-center gap-2 hover:bg-ember/5"
+                        className="w-full text-left px-4 py-2.5 font-wordmark text-xs tracking-[0.1em] font-semibold text-ember inline-flex items-center gap-2 hover:bg-ember/5"
                       >
                         <LogOut size={14} /> Sign out
                       </button>
@@ -162,7 +162,7 @@ export default function Navigation() {
             ) : (
               <Link
                 href={`/signin?next=${encodeURIComponent(pathname || '/')}`}
-                className="ml-2 inline-flex items-center gap-1.5 px-2 py-1.5 text-base font-semibold text-obsidian/55 transition-colors hover:text-obsidian"
+                className="ml-2 inline-flex items-center gap-1.5 px-2 py-1.5 font-wordmark text-[13px] tracking-[0.1em] font-medium text-obsidian/65 transition-colors hover:text-obsidian"
               >
                 <UserRound size={16} /> Sign in
               </Link>
@@ -234,7 +234,7 @@ export default function Navigation() {
                       <Link
                         href={href}
                         scroll
-                        className={`flex items-center justify-between py-3.5 text-base font-semibold ${
+                        className={`flex items-center justify-between py-3.5 font-wordmark text-sm tracking-[0.1em] font-semibold ${
                           isActive(href) || accent ? 'text-ember' : 'text-obsidian/70'
                         }`}
                       >
@@ -265,7 +265,7 @@ export default function Navigation() {
                 <Link
                   href="/contact"
                   scroll
-                  className={`flex items-center justify-between py-3.5 text-base font-semibold ${
+                  className={`flex items-center justify-between py-3.5 font-wordmark text-sm tracking-[0.1em] font-semibold ${
                     isActive('/contact') ? 'text-ember' : 'text-obsidian/70'
                   }`}
                 >
@@ -274,7 +274,7 @@ export default function Navigation() {
                 </Link>
                 <Link
                   href="/refer-and-earn"
-                  className={`flex items-center justify-between py-3.5 text-base font-semibold ${
+                  className={`flex items-center justify-between py-3.5 font-wordmark text-sm tracking-[0.1em] font-semibold ${
                     isActive('/refer-and-earn') ? 'text-ember' : 'text-obsidian/70'
                   }`}
                 >
@@ -283,18 +283,18 @@ export default function Navigation() {
                 </Link>
                 {signedIn && user ? (
                   <>
-                    <Link href="/my-account" className="flex items-center justify-between py-3.5 text-base font-semibold text-obsidian/70">
+                    <Link href="/my-account" className="flex items-center justify-between py-3.5 font-wordmark text-sm tracking-[0.1em] font-semibold text-obsidian/70">
                       My profile
                       <span className="text-ember/40 text-lg">&rsaquo;</span>
                     </Link>
-                    <Link href="/orders" className="flex items-center justify-between py-3.5 text-base font-semibold text-obsidian/70">
+                    <Link href="/orders" className="flex items-center justify-between py-3.5 font-wordmark text-sm tracking-[0.1em] font-semibold text-obsidian/70">
                       Order history
                       <span className="text-ember/40 text-lg">&rsaquo;</span>
                     </Link>
                     <button
                       type="button"
                       onClick={() => signOut()}
-                      className="flex w-full items-center justify-between py-3.5 text-base font-semibold text-ember"
+                      className="flex w-full items-center justify-between py-3.5 font-wordmark text-sm tracking-[0.1em] font-semibold text-ember"
                     >
                       Sign out
                       <LogOut size={16} />
@@ -341,14 +341,14 @@ function DesktopNavLink({
     <Link
       href={href}
       scroll
-      className={`relative inline-flex items-center gap-2 px-3.5 py-2.5 text-base transition-colors ${
+      className={`relative inline-flex items-center gap-2 px-3 py-2.5 font-wordmark text-[13px] tracking-[0.1em] transition-colors ${
         active
           ? accent
             ? 'font-bold text-ember'
             : 'font-bold text-obsidian'
           : accent
-            ? 'font-semibold text-ember/65 hover:text-ember'
-            : 'font-semibold text-obsidian/55 hover:text-obsidian'
+            ? 'font-medium text-ember/70 hover:text-ember'
+            : 'font-medium text-obsidian/65 hover:text-obsidian'
       }`}
     >
       {Icon && <Icon size={16} strokeWidth={2.2} />}
@@ -389,7 +389,7 @@ function DesktopNavLink({
                 key={child.href}
                 href={child.href}
                 scroll
-                className="block px-4 py-2.5 text-sm text-obsidian/65 hover:bg-ember/5 hover:text-ember transition-colors"
+                className="block px-4 py-2.5 font-wordmark text-xs tracking-[0.1em] font-semibold text-obsidian/65 hover:bg-ember/5 hover:text-ember transition-colors"
               >
                 {child.label}
               </Link>

@@ -2,6 +2,21 @@ import sql from '@/lib/db';
 import { releaseStockForOrder, fulfillStockForOrder, type StockLine } from '@/lib/inventory';
 import { releaseGiftCard } from '@/lib/commerce/gift-cards';
 import { voidReferralForOrder } from '@/lib/referrals/repo';
+import {
+  releaseSupplierStock,
+  fulfillSupplierStock,
+  syncInventoryRollup,
+} from '@/lib/suppliers/stock';
+
+/** The supplier an order was routed to, if routing found one. */
+async function routedSupplier(orderId: string): Promise<string | null> {
+  try {
+    const [row] = await sql`SELECT routed_supplier_id FROM ritual_orders WHERE id = ${orderId} LIMIT 1`;
+    return row?.routed_supplier_id ? String(row.routed_supplier_id) : null;
+  } catch {
+    return null;
+  }
+}
 
 async function orderLines(orderId: string): Promise<StockLine[]> {
   const rows = await sql`SELECT kit_slug AS slug, qty FROM ritual_order_items WHERE order_id = ${orderId}`;
@@ -14,7 +29,15 @@ async function orderLines(orderId: string): Promise<StockLine[]> {
  */
 export async function releaseOrderResources(orderId: string): Promise<void> {
   const lines = await orderLines(orderId);
-  if (lines.length > 0) await releaseStockForOrder(lines, orderId);
+  if (lines.length > 0) {
+    await releaseStockForOrder(lines, orderId);
+    // Put the units back on the specific shelf they were taken from, then re-derive the rollup.
+    const supplierId = await routedSupplier(orderId);
+    if (supplierId) {
+      await releaseSupplierStock(supplierId, lines).catch(() => {});
+      for (const l of lines) await syncInventoryRollup(l.slug).catch(() => {});
+    }
+  }
   await releaseGiftCard(orderId);
   await voidReferralForOrder(orderId);
 }
@@ -24,6 +47,13 @@ export async function fulfillOrderStock(orderId: string): Promise<void> {
   const [order] = await sql`SELECT stock_consumed FROM ritual_orders WHERE id = ${orderId} LIMIT 1`;
   if (!order || order.stock_consumed) return;
   const lines = await orderLines(orderId);
-  if (lines.length > 0) await fulfillStockForOrder(lines, orderId);
+  if (lines.length > 0) {
+    await fulfillStockForOrder(lines, orderId);
+    const supplierId = await routedSupplier(orderId);
+    if (supplierId) {
+      await fulfillSupplierStock(supplierId, lines).catch(() => {});
+      for (const l of lines) await syncInventoryRollup(l.slug).catch(() => {});
+    }
+  }
   await sql`UPDATE ritual_orders SET stock_consumed = true WHERE id = ${orderId}`;
 }

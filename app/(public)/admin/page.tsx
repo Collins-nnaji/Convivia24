@@ -1,16 +1,32 @@
 'use client';
 
-import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { formatNgn } from '@/lib/drinks/catalog';
+import { CATEGORIES, CATEGORY_LABELS, formatNgn } from '@/lib/drinks/catalog';
 import { getPackageBySlug, resolveComponents } from '@/lib/packages/catalog';
 import SourcingDesk from '@/components/admin/SourcingDesk';
 import SuppliersDesk from '@/components/admin/SuppliersDesk';
 import PriceListImport from '@/components/admin/PriceListImport';
 import ReferralsDesk from '@/components/admin/ReferralsDesk';
+import OrdersLedger from '@/components/admin/OrdersLedger';
 import { ORDER_STATUS_LABELS, type OrderStatus } from '@/lib/commerce/status';
 import { skuMargin } from '@/lib/suppliers/margin';
+import AdminShell, { type AdminTab } from '@/components/admin/AdminShell';
+import DialogProvider, { useDialogs } from '@/components/admin/ui/DialogProvider';
+import { AdminSelect } from '@/components/admin/ui/Fields';
+import {
+  ChevronDown,
+  FileText,
+  Plus,
+  Gift,
+  PackageSearch,
+  Share2,
+  ShoppingBag,
+  Trophy,
+  Truck,
+  Wine,
+} from 'lucide-react';
 
 type Item = {
   slug: string;
@@ -33,21 +49,6 @@ type Item = {
   description?: string | null;
   taste_note?: string | null;
 };
-
-type AdminEvent = {
-  id: string;
-  title: string;
-  venueSlug: string;
-  tag: string;
-  blurb: string;
-  expected: string;
-  coverNgn?: number;
-  startsAtIso: string;
-  endsAtIso: string;
-  published: boolean;
-};
-
-type VenueOption = { slug: string; name: string };
 
 type TriviaWeek = {
   id: string;
@@ -107,6 +108,17 @@ type AdminOrder = {
   items: { slug?: string; name: string; qty: number; unitPriceNgn: number }[];
 };
 
+type SupplierLite = { id: string; name: string; city: string };
+type SupplierStockRow = {
+  supplierId: string;
+  supplierName: string;
+  city: string;
+  slug: string;
+  onHand: number;
+  reserved: number;
+  available: number;
+};
+
 type GiftCard = {
   id: string;
   code: string;
@@ -117,31 +129,6 @@ type GiftCard = {
   redeemedOrderId: string | null;
   createdAt: string;
 };
-
-type EventDraft = {
-  id?: string;
-  title: string;
-  venueSlug: string;
-  tag: string;
-  blurb: string;
-  expected: string;
-  coverNgn: string;
-  startsAtLocal: string;
-  endsAtLocal: string;
-  published: boolean;
-};
-
-const emptyDraft = (venueSlug = '', tag = 'Lounge'): EventDraft => ({
-  title: '',
-  venueSlug,
-  tag,
-  blurb: '',
-  expected: '',
-  coverNgn: '',
-  startsAtLocal: '',
-  endsAtLocal: '',
-  published: true,
-});
 
 /** ISO → value for <input type="datetime-local"> in the browser's own zone. */
 function toLocalInput(iso: string): string {
@@ -169,23 +156,27 @@ function formatWhen(iso: string): string {
 }
 
 export default function AdminPage() {
+  return (
+    <DialogProvider>
+      <AdminDesk />
+    </DialogProvider>
+  );
+}
+
+function AdminDesk() {
+  const { confirm, notify } = useDialogs();
   const [authed, setAuthed] = useState(false);
   const [password, setPassword] = useState('');
   const [tab, setTab] = useState<
-    'drinks' | 'suppliers' | 'events' | 'trivia' | 'orders' | 'giftcards' | 'venues' | 'sourcing' | 'referrals'
+    'drinks' | 'suppliers' | 'trivia' | 'orders' | 'giftcards' | 'sourcing' | 'referrals'
   >('drinks');
   const [items, setItems] = useState<Item[]>([]);
-  const [events, setEvents] = useState<AdminEvent[]>([]);
-  const [venues, setVenues] = useState<VenueOption[]>([]);
-  const [tags, setTags] = useState<string[]>([]);
-  const [draft, setDraft] = useState<EventDraft>(emptyDraft());
   const [msg, setMsg] = useState('');
   const [advice, setAdvice] = useState('');
   const [loading, setLoading] = useState(false);
   const [savingSlug, setSavingSlug] = useState('');
   const [blobOk, setBlobOk] = useState(false);
   const [aiOk, setAiOk] = useState(false);
-  const [eventsError, setEventsError] = useState('');
   const [entries, setEntries] = useState<TriviaEntry[]>([]);
   const [triviaError, setTriviaError] = useState('');
   const [weeks, setWeeks] = useState<TriviaWeek[]>([]);
@@ -199,6 +190,13 @@ export default function AdminPage() {
   const [giftCards, setGiftCards] = useState<GiftCard[]>([]);
   const [giftCardError, setGiftCardError] = useState('');
   const [giftCardIssuing, setGiftCardIssuing] = useState(false);
+  const [addStockOpen, setAddStockOpen] = useState(false);
+  const [priceListOpen, setPriceListOpen] = useState(false);
+  /** Per-supplier holdings, keyed by SKU slug — the shop total is the sum of these. */
+  const [supplierStock, setSupplierStock] = useState<Record<string, SupplierStockRow[]>>({});
+  const [suppliers, setSuppliers] = useState<SupplierLite[]>([]);
+  const [stockQuery, setStockQuery] = useState('');
+  const [stockCategory, setStockCategory] = useState('bottles');
 
   const loadStock = useCallback(async () => {
     const res = await fetch('/api/admin/inventory');
@@ -209,23 +207,12 @@ export default function AdminPage() {
     const data = await res.json();
     setAuthed(true);
     setItems(data.items || []);
+    setSupplierStock(data.supplierStock || {});
+    setSuppliers(data.suppliers || []);
     setBlobOk(Boolean(data.blobConfigured));
     setAiOk(Boolean(data.aiConfigured));
   }, []);
 
-  const loadEvents = useCallback(async () => {
-    const res = await fetch('/api/admin/events');
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      setEventsError(data.error || 'Could not load events.');
-      return;
-    }
-    setEventsError(data.error || '');
-    setEvents(data.events || []);
-    setVenues(data.venues || []);
-    setTags(data.tags || []);
-    setDraft((d) => (d.venueSlug ? d : { ...d, venueSlug: data.venues?.[0]?.slug || '' }));
-  }, []);
 
   const loadTrivia = useCallback(async () => {
     const [entryRes, schedRes] = await Promise.all([
@@ -322,7 +309,18 @@ export default function AdminPage() {
   }
 
   async function refundOrder(order: AdminOrder) {
-    if (!window.confirm(`Refund ${order.fullName}'s order for ${formatNgn(order.totalNgn)}?`)) return;
+    const ok = await confirm({
+      title: 'Refund this order?',
+      message: (
+        <>
+          {formatNgn(order.totalNgn)} goes back to <strong>{order.fullName}</strong> through Flutterwave, the
+          order is marked refunded, and reserved stock is released. This cannot be undone.
+        </>
+      ),
+      confirmLabel: 'Refund order',
+      tone: 'danger',
+    });
+    if (!ok) return;
     setOrdersError('');
     setUpdatingOrder(order.id);
     const res = await fetch('/api/admin/orders', {
@@ -342,7 +340,17 @@ export default function AdminPage() {
   }
 
   async function deleteOrder(order: AdminOrder) {
-    if (!window.confirm(`Delete order ${order.id.slice(0, 8).toUpperCase()} from ${order.fullName}? This cannot be undone.`)) return;
+    const ok = await confirm({
+      title: `Delete order ${order.id.slice(0, 8).toUpperCase()}?`,
+      message: (
+        <>
+          The order from <strong>{order.fullName}</strong> is removed permanently. This cannot be undone.
+        </>
+      ),
+      confirmLabel: 'Delete order',
+      tone: 'danger',
+    });
+    if (!ok) return;
     setUpdatingOrder(order.id);
     const res = await fetch(`/api/admin/orders?id=${order.id}`, { method: 'DELETE' });
     setUpdatingOrder('');
@@ -377,14 +385,30 @@ export default function AdminPage() {
   }
 
   async function deleteGiftCard(id: string) {
-    if (!window.confirm('Delete this gift card?')) return;
+    const ok = await confirm({
+      title: 'Delete this gift card?',
+      message: 'Any remaining balance on the card is lost and the code stops working immediately.',
+      confirmLabel: 'Delete card',
+      tone: 'danger',
+    });
+    if (!ok) return;
     const res = await fetch(`/api/admin/gift-cards?id=${id}`, { method: 'DELETE' });
     if (res.ok) setGiftCards((rows) => rows.filter((r) => r.id !== id));
     else setGiftCardError('Could not delete gift card.');
   }
 
   async function deleteTrivia(entry: TriviaEntry) {
-    if (!window.confirm(`Delete trivia entry from ${entry.name}?`)) return;
+    const ok = await confirm({
+      title: 'Delete trivia entry?',
+      message: (
+        <>
+          The entry from <strong>{entry.name}</strong> is removed from this week&apos;s round.
+        </>
+      ),
+      confirmLabel: 'Delete entry',
+      tone: 'danger',
+    });
+    if (!ok) return;
     const res = await fetch(`/api/admin/trivia?id=${entry.id}`, { method: 'DELETE' });
     if (res.ok) setEntries((rows) => rows.filter((r) => r.id !== entry.id));
     else setTriviaError('Could not delete entry.');
@@ -407,12 +431,11 @@ export default function AdminPage() {
 
   useEffect(() => {
     loadStock()
-      .then(loadEvents)
       .then(loadTrivia)
       .then(loadOrders)
       .then(loadGiftCards)
       .catch(() => setAuthed(false));
-  }, [loadStock, loadEvents, loadTrivia, loadOrders, loadGiftCards]);
+  }, [loadStock, loadTrivia, loadOrders, loadGiftCards]);
 
   async function login(e: FormEvent) {
     e.preventDefault();
@@ -429,7 +452,6 @@ export default function AdminPage() {
       return;
     }
     await loadStock();
-    await loadEvents();
     await loadTrivia();
     await loadOrders();
     await loadGiftCards();
@@ -454,6 +476,13 @@ export default function AdminPage() {
   }
 
   function loadItemIntoForm(item: Item) {
+    // The form only exists in the DOM while the panel is open, so expand first and populate on
+    // the next frame once React has mounted the fields.
+    setAddStockOpen(true);
+    requestAnimationFrame(() => populateForm(item));
+  }
+
+  function populateForm(item: Item) {
     const form = document.getElementById('admin-product-form') as HTMLFormElement | null;
     if (!form) return;
     const set = (field: string, value: string) => {
@@ -473,6 +502,33 @@ export default function AdminPage() {
     set('tasteNote', item.taste_note || '');
     form.scrollIntoView({ behavior: 'smooth', block: 'start' });
     setMsg(`Loaded “${item.name}” into the form — edit taste/brand and save.`);
+  }
+
+  /** Live-stock list after the desk's own search and category narrowing. */
+  const visibleItems = useMemo(() => {
+    const q = stockQuery.trim().toLowerCase();
+    return items.filter((it) => {
+      if (stockCategory === 'bottles' && it.category === 'party-packs') return false;
+      if (stockCategory !== 'all' && stockCategory !== 'bottles' && it.category !== stockCategory) return false;
+      if (!q) return true;
+      return `${it.name} ${it.brand ?? ''} ${it.slug}`.toLowerCase().includes(q);
+    });
+  }, [items, stockQuery, stockCategory]);
+
+  async function setSupplierStockQty(supplierId: string, slug: string, onHand: number) {
+    const res = await fetch('/api/admin/inventory', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'supplier-stock', supplierId, slug, onHand }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      notify(data.error || 'Could not update supplier stock.', 'error');
+      return;
+    }
+    setSupplierStock((prev) => ({ ...prev, [slug]: data.rows || [] }));
+    // The SKU's headline on-hand is derived from these, so pull the row totals back in.
+    await loadStock();
   }
 
   async function saveStock(slug: string, patch: Record<string, unknown>) {
@@ -496,7 +552,17 @@ export default function AdminPage() {
   }
 
   async function deleteStock(slug: string, name: string) {
-    if (!window.confirm(`Delete ${name} from inventory?`)) return;
+    const ok = await confirm({
+      title: 'Delete from inventory?',
+      message: (
+        <>
+          <strong>{name}</strong> is removed from the stock list. Existing orders keep their line items.
+        </>
+      ),
+      confirmLabel: 'Delete SKU',
+      tone: 'danger',
+    });
+    if (!ok) return;
     setSavingSlug(slug);
     const res = await fetch('/api/admin/inventory', {
       method: 'POST',
@@ -573,83 +639,9 @@ export default function AdminPage() {
     setAdvice(data.advice || '');
   }
 
-  async function saveEvent(e: FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setEventsError('');
-    const res = await fetch('/api/admin/events', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: draft.id,
-        title: draft.title,
-        venueSlug: draft.venueSlug,
-        tag: draft.tag,
-        blurb: draft.blurb,
-        expected: draft.expected,
-        coverNgn: draft.coverNgn,
-        startsAtIso: fromLocalInput(draft.startsAtLocal),
-        endsAtIso: fromLocalInput(draft.endsAtLocal),
-        published: draft.published,
-      }),
-    });
-    const data = await res.json().catch(() => ({}));
-    setLoading(false);
-    if (!res.ok) {
-      setEventsError(data.error || 'Could not save event.');
-      return;
-    }
-    setDraft(emptyDraft(venues[0]?.slug || '', tags[0] || 'Lounge'));
-    await loadEvents();
-  }
 
-  async function togglePublished(event: AdminEvent) {
-    setEventsError('');
-    const res = await fetch('/api/admin/events', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: event.id, published: !event.published }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      setEventsError(data.error || 'Could not update event.');
-      return;
-    }
-    setEvents((rows) => rows.map((r) => (r.id === event.id ? { ...r, published: !event.published } : r)));
-  }
 
-  async function removeEvent(event: AdminEvent) {
-    if (!window.confirm(`Delete “${event.title}”? This cannot be undone.`)) return;
-    setEventsError('');
-    const res = await fetch(`/api/admin/events?id=${encodeURIComponent(event.id)}`, { method: 'DELETE' });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      setEventsError(data.error || 'Could not delete event.');
-      return;
-    }
-    setEvents((rows) => rows.filter((r) => r.id !== event.id));
-    setDraft((d) => (d.id === event.id ? emptyDraft(venues[0]?.slug || '', tags[0] || 'Lounge') : d));
-  }
 
-  function editEvent(event: AdminEvent) {
-    setDraft({
-      id: event.id,
-      title: event.title,
-      venueSlug: event.venueSlug,
-      tag: event.tag,
-      blurb: event.blurb,
-      expected: event.expected,
-      coverNgn: event.coverNgn ? String(event.coverNgn) : '',
-      startsAtLocal: toLocalInput(event.startsAtIso),
-      endsAtLocal: toLocalInput(event.endsAtIso),
-      published: event.published,
-    });
-    setTab('events');
-    // #app-scroll is the actual scroll container on mobile (see the (public)
-    // layout's app-shell wrapper); window.scrollTo alone is a no-op there.
-    document.getElementById('app-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
 
   if (!authed) {
     return (
@@ -686,187 +678,59 @@ export default function AdminPage() {
     );
   }
 
+  const tabs: AdminTab[] = [
+    { key: 'drinks', label: 'Drinks', count: items.length, icon: <Wine size={17} /> },
+    { key: 'orders', label: 'Orders', count: orders.length, icon: <ShoppingBag size={17} /> },
+    {
+      key: 'sourcing',
+      label: 'Order sourcing',
+      count: orders.filter((o) => o.supplierCostNgn == null).length,
+      icon: <PackageSearch size={17} />,
+    },
+    { key: 'suppliers', label: 'Suppliers', icon: <Truck size={17} /> },
+    { key: 'referrals', label: 'Referrals', icon: <Share2 size={17} /> },
+    { key: 'giftcards', label: 'Gift cards', count: giftCards.length, icon: <Gift size={17} /> },
+    { key: 'trivia', label: 'Trivia', count: entries.length, icon: <Trophy size={17} /> },
+  ];
+
   return (
-    <section className="bg-paper min-h-[70vh]">
-      <div className="max-w-6xl mx-auto px-5 sm:px-8 py-10 sm:py-14">
-        <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.28em] text-ember mb-2">Admin</p>
-            <h1 className="text-3xl font-bold">Desk</h1>
-            <p className="text-sm text-obsidian/50 mt-1">
-              Azure upload {blobOk ? 'ready' : 'not configured'} · OpenAI {aiOk ? 'ready' : 'off'}
-            </p>
-          </div>
-          {tab === 'drinks' && (
-            <button
-              type="button"
-              onClick={askAi}
-              disabled={loading || !aiOk}
-              className="px-4 py-2.5 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-40"
-            >
-              AI stock advice
-            </button>
-          )}
-        </div>
-
-        <div className="flex gap-1 mb-8 border-b border-obsidian/10 overflow-x-auto">
-          {(['drinks', 'suppliers', 'orders', 'sourcing', 'referrals', 'giftcards', 'events', 'venues', 'trivia'] as const).map((key) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setTab(key)}
-              className={`px-4 py-2.5 text-[11px] font-black uppercase tracking-[0.14em] border-b-2 -mb-px transition-colors whitespace-nowrap ${
-                tab === key ? 'border-ember text-ember' : 'border-transparent text-obsidian/40 hover:text-obsidian/70'
-              }`}
-            >
-              {key === 'drinks'
-                ? `Drinks (${items.length})`
-                : key === 'suppliers'
-                  ? 'Suppliers'
-                : key === 'orders'
-                  ? `Orders (${orders.length})`
-                  : key === 'sourcing'
-                    ? `Order sourcing (${orders.filter((o) => o.supplierCostNgn == null).length})`
-                    : key === 'referrals'
-                      ? 'Referrals'
-                      : key === 'giftcards'
-                    ? `Gift cards (${giftCards.length})`
-                    : key === 'events'
-                      ? `Events (${events.length})`
-                      : key === 'venues'
-                        ? 'Venues'
-                        : `Trivia (${entries.length})`}
-            </button>
-          ))}
-        </div>
-
+    <AdminShell
+      title="Desk"
+      subtitle={`Azure upload ${blobOk ? 'ready' : 'not configured'} · OpenAI ${aiOk ? 'ready' : 'off'}`}
+      tabs={tabs}
+      active={tab}
+      onSelect={(key) => setTab(key as typeof tab)}
+      actions={
+        tab === 'drinks' ? (
+          <button
+            type="button"
+            onClick={askAi}
+            disabled={loading || !aiOk}
+            className="rounded-lg border border-obsidian/15 px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/70 transition-colors hover:bg-obsidian/[0.04] disabled:opacity-40"
+          >
+            AI stock advice
+          </button>
+        ) : null
+      }
+    >
         {tab === 'orders' ? (
           <>
-            {ordersError && <p className="text-sm text-ember mb-6">{ordersError}</p>}
-            <p className="text-sm text-obsidian/50 mb-5">
-              Move an order through fulfillment, add rider ETA/contact, or refund it. Each status change emails
-              the customer automatically (once Resend is configured).
-            </p>
-            <div className="space-y-3">
-              {orders.map((order) => {
-                const refundable = !['refunded', 'cancelled', 'pending', 'awaiting_payment'].includes(order.status);
-                return (
-                  <div key={order.id} className="bg-white p-4 shadow-sm">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="font-medium">
-                          {order.fullName}{' '}
-                          <span className="text-[11px] text-obsidian/40 font-mono font-normal">
-                            {order.id.slice(0, 8).toUpperCase()}
-                          </span>
-                        </p>
-                        <p className="text-[12px] text-obsidian/50 truncate">
-                          {order.email}
-                          {order.phone ? ` · ${order.phone}` : ''}
-                        </p>
-                        <p className="text-[12px] text-obsidian/50">
-                          {order.addressLine1}
-                          {order.area ? `, ${order.area}` : ''}
-                        </p>
-                        <p className="text-[12px] text-obsidian/45 mt-1">
-                          {order.items.map((i) => `${i.name} × ${i.qty}`).join(' · ')}
-                        </p>
-                        {order.items.flatMap((i) => {
-                          const pkg = i.slug ? getPackageBySlug(i.slug) : undefined;
-                          if (!pkg) return [];
-                          return [
-                            <div
-                              key={`${order.id}-${i.slug}`}
-                              className="mt-2 border-l-2 border-ember/30 pl-2.5"
-                            >
-                              <p className="text-[10px] uppercase tracking-wider text-ember/80">
-                                Pick list · {pkg.name}
-                                {i.qty > 1 ? ` × ${i.qty}` : ''}
-                              </p>
-                              <p className="text-[11px] text-obsidian/50 leading-relaxed">
-                                {resolveComponents(pkg)
-                                  .map((c) => `${c.qty * i.qty} × ${c.product.name}`)
-                                  .join(' · ')}
-                              </p>
-                            </div>,
-                          ];
-                        })}
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className="font-bold">{formatNgn(order.totalNgn)}</p>
-                        {order.giftCardDiscountNgn > 0 && (
-                          <p className="text-[11px] text-ember">−{formatNgn(order.giftCardDiscountNgn)} gift card</p>
-                        )}
-                        {order.status === 'refunded' && order.refundedNgn > 0 && (
-                          <p className="text-[11px] text-obsidian/40">Refunded {formatNgn(order.refundedNgn)}</p>
-                        )}
-                        <p className="text-[11px] text-obsidian/40">{formatWhen(order.createdAt)}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-obsidian/10 flex-wrap">
-                      <span className="text-[10px] font-black uppercase tracking-[0.12em] px-2 py-1 bg-paper text-obsidian/60">
-                        {ORDER_STATUS_LABELS[order.status] || order.status}
-                      </span>
-                      <a
-                        href={`/admin/label/${order.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[10px] font-black uppercase tracking-[0.1em] px-3 py-2 border border-obsidian/15 text-obsidian/60 hover:border-ember hover:text-ember"
-                      >
-                        Print label
-                      </a>
-                      {refundable && (
-                        <button
-                          type="button"
-                          disabled={updatingOrder === order.id}
-                          onClick={() => refundOrder(order)}
-                          className="text-[10px] font-black uppercase tracking-[0.1em] px-3 py-2 border border-obsidian/15 text-obsidian/60 hover:border-ember hover:text-ember disabled:opacity-40"
-                        >
-                          Refund
-                        </button>
-                      )}
-                      <select
-                        value=""
-                        disabled={updatingOrder === order.id}
-                        onChange={(e) => {
-                          const next = e.target.value as OrderStatus;
-                          if (next) updateOrderStatus(order, next);
-                          e.target.value = '';
-                        }}
-                        className="ml-auto text-[11px] font-black uppercase tracking-[0.1em] border border-obsidian/15 px-3 py-2 disabled:opacity-40"
-                      >
-                        <option value="">
-                          {updatingOrder === order.id ? 'Updating…' : 'Set status…'}
-                        </option>
-                        {settableStatuses
-                          .filter((s) => s !== order.status)
-                          .map((s) => (
-                            <option key={s} value={s}>
-                              {ORDER_STATUS_LABELS[s] || s}
-                            </option>
-                          ))}
-                      </select>
-                    </div>
-
-                    <TrackingForm order={order} saving={updatingOrder === order.id} onSave={(patch) => saveTracking(order, patch)} />
-                    <div className="mt-2 pt-2 border-t border-obsidian/5">
-                      <button
-                        type="button"
-                        disabled={updatingOrder === order.id}
-                        onClick={() => deleteOrder(order)}
-                        className="text-[10px] font-black uppercase tracking-[0.1em] px-3 py-2 border border-ember/40 text-ember disabled:opacity-40"
-                      >
-                        Delete order
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-              {orders.length === 0 && !ordersError && (
-                <p className="text-sm text-obsidian/45">No paid orders yet.</p>
+            {ordersError && <p className="text-sm text-ember mb-4">{ordersError}</p>}
+            <OrdersLedger
+              orders={orders}
+              settableStatuses={settableStatuses}
+              updatingOrder={updatingOrder}
+              onStatusChange={updateOrderStatus}
+              onRefund={refundOrder}
+              onDelete={deleteOrder}
+              renderTracking={(order) => (
+                <TrackingForm
+                  order={order}
+                  saving={updatingOrder === order.id}
+                  onSave={(patch) => saveTracking(order, patch)}
+                />
               )}
-            </div>
+            />
           </>
         ) : tab === 'suppliers' ? (
           <SuppliersDesk onCatalogChanged={loadStock} />
@@ -1061,8 +925,6 @@ export default function AdminPage() {
               )}
             </div>
           </>
-        ) : tab === 'venues' ? (
-          <AdminVenuesTab />
         ) : tab === 'drinks' ? (
           <>
             {msg && <p className="text-sm text-ember mb-6">{msg}</p>}
@@ -1072,19 +934,54 @@ export default function AdminPage() {
               </div>
             )}
 
-            <form id="admin-product-form" onSubmit={onUpload} className="bg-white p-6 sm:p-8 mb-12 space-y-4 shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)]">
-              <h2 className="font-bold">Add / update stock</h2>
-              <p className="text-sm text-obsidian/50">
-                Upload a bottle image to Azure Storage. Add taste notes and brand story for the ⓘ bottle guide in shop and cart.
-              </p>
+            {/*
+              Collapsed by default. This form is long enough to push the live stock table off the
+              screen, and the table is what the desk actually works in day to day.
+            */}
+            <div className="mb-8 overflow-hidden rounded-2xl border border-obsidian/10 bg-white shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)]">
+              <button
+                type="button"
+                onClick={() => setAddStockOpen((v) => !v)}
+                aria-expanded={addStockOpen}
+                aria-controls="admin-product-form"
+                className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-obsidian/[0.02] sm:px-6"
+              >
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-ember/10 text-ember">
+                  <Plus size={17} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-bold text-obsidian">Add / update stock</span>
+                  <span className="block truncate text-xs text-obsidian/45">
+                    Upload a bottle image, taste notes and brand story for the ⓘ guide.
+                  </span>
+                </span>
+                <ChevronDown
+                  size={18}
+                  aria-hidden
+                  className={`shrink-0 text-obsidian/40 transition-transform duration-200 ${addStockOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {addStockOpen && (
+            <form id="admin-product-form" onSubmit={onUpload} className="border-t border-obsidian/8 p-5 sm:p-6 space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <Field name="name" label="Name" required />
                 <Field name="slug" label="Slug (optional)" placeholder="auto-from-name" />
                 <Field name="priceNgn" label="Price (NGN)" type="number" required />
                 <Field name="onHand" label="On hand" type="number" required />
                 <Field name="brand" label="Brand" />
-                <Field name="category" label="Category" placeholder="whisky, cognac, spirits…" />
-                <Field name="volume" label="Volume" placeholder="70cl" />
+                <SelectField
+                  name="category"
+                  label="Category"
+                  placeholder="Choose a category…"
+                  options={CATEGORIES.map((c) => ({ value: c, label: CATEGORY_LABELS[c] }))}
+                />
+                <SelectField
+                  name="volume"
+                  label="Volume"
+                  placeholder="Choose a size…"
+                  options={BOTTLE_VOLUMES.map((v) => ({ value: v, label: v }))}
+                />
                 <Field name="abv" label="ABV %" type="number" />
               </div>
               <Field name="tagline" label="Tagline" />
@@ -1120,19 +1017,80 @@ export default function AdminPage() {
                 </label>
                 <input name="image" type="file" accept="image/*" className="text-sm" />
               </div>
-              <button type="submit" disabled={loading} className="px-6 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em]">
-                {loading ? 'Saving…' : 'Save to shop'}
-              </button>
+              <div className="flex flex-wrap items-center gap-3 border-t border-obsidian/8 pt-4">
+                <button type="submit" disabled={loading} className="px-6 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em]">
+                  {loading ? 'Saving…' : 'Save to shop'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAddStockOpen(false)}
+                  className="px-4 py-3 text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/45 hover:text-obsidian"
+                >
+                  Close
+                </button>
+              </div>
             </form>
+              )}
+            </div>
 
-            <div className="mb-10 pb-10 border-b border-obsidian/10">
-              <PriceListImport onApplied={loadStock} />
+            {/* Same disclosure treatment as Add / update stock — both are occasional tasks. */}
+            <div className="mb-8 overflow-hidden rounded-2xl border border-obsidian/10 bg-white shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)]">
+              <button
+                type="button"
+                onClick={() => setPriceListOpen((v) => !v)}
+                aria-expanded={priceListOpen}
+                className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-obsidian/[0.02] sm:px-6"
+              >
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-ember/10 text-ember">
+                  <FileText size={17} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-bold text-obsidian">Scan a supplier price list</span>
+                  <span className="block truncate text-xs text-obsidian/45">
+                    Paste the list or upload a photo — review every change before it applies.
+                  </span>
+                </span>
+                <ChevronDown
+                  size={18}
+                  aria-hidden
+                  className={`shrink-0 text-obsidian/40 transition-transform duration-200 ${priceListOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+              {priceListOpen && (
+                <div className="border-t border-obsidian/8 p-5 sm:p-6">
+                  <PriceListImport onApplied={loadStock} />
+                </div>
+              )}
             </div>
 
             <h2 className="font-bold mb-1">Live stock</h2>
-            <p className="text-sm text-obsidian/50 mb-5">
+            <p className="text-sm text-obsidian/50 mb-3">
               Retail, wholesale cost and margin per SKU. Supplier-specific costs live in the Suppliers tab.
             </p>
+
+            {/* Party packs outnumber bottles roughly two to one, so the list needs narrowing. */}
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              <input
+                value={stockQuery}
+                onChange={(e) => setStockQuery(e.target.value)}
+                placeholder="Search SKU, brand…"
+                aria-label="Search stock"
+                className="w-52 rounded-lg border border-obsidian/12 px-3 py-2 text-sm focus:border-ember focus:ring-0"
+              />
+              <AdminSelect
+                value={stockCategory}
+                onChange={setStockCategory}
+                options={[
+                  { value: 'all', label: 'All categories' },
+                  { value: 'bottles', label: 'Bottles only (no packs)' },
+                  ...CATEGORIES.map((c) => ({ value: c, label: CATEGORY_LABELS[c] })),
+                ]}
+                className="w-auto"
+              />
+              <span className="text-xs text-obsidian/45">
+                {visibleItems.length} of {items.length}
+              </span>
+            </div>
             <div className="hidden lg:grid grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(0,.55fr))_auto] gap-3 px-4 pb-2 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40">
               <span>SKU</span>
               <span className="text-right">On hand</span>
@@ -1142,7 +1100,7 @@ export default function AdminPage() {
               <span className="text-right">Actions</span>
             </div>
             <div className="space-y-3">
-              {items.map((item) => (
+              {visibleItems.map((item) => (
                 <StockRow
                   key={item.slug}
                   item={item}
@@ -1150,210 +1108,26 @@ export default function AdminPage() {
                   onSave={(patch) => saveStock(item.slug, patch)}
                   onDelete={() => deleteStock(item.slug, item.name)}
                   onLoadForm={() => loadItemIntoForm(item)}
+                  suppliers={suppliers}
+                  supplierRows={supplierStock[item.slug] || []}
+                  onSetSupplierStock={setSupplierStockQty}
                 />
               ))}
-              {items.length === 0 && <p className="text-sm text-obsidian/45">No SKUs yet.</p>}
-            </div>
-          </>
-        ) : (
-          <>
-            {eventsError && <p className="text-sm text-ember mb-6">{eventsError}</p>}
-            <p className="text-sm text-obsidian/50 mb-6">
-              Create and publish nights for <code className="text-xs">/events</code>. Pick a venue from the list
-              — add a new one under the{' '}
-              <button
-                type="button"
-                onClick={() => setTab('venues')}
-                className="text-ember font-medium hover:underline"
-              >
-                Venues
-              </button>{' '}
-              tab if you need to. Check “Published on /events” to go live.
-            </p>
-
-            <form onSubmit={saveEvent} className="bg-white p-6 sm:p-8 mb-12 space-y-4 shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)]">
-              <div className="flex items-center justify-between gap-4">
-                <h2 className="font-bold">{draft.id ? 'Edit event' : 'Create event'}</h2>
-                {draft.id && (
-                  <button
-                    type="button"
-                    onClick={() => setDraft(emptyDraft(venues[0]?.slug || '', tags[0] || 'Lounge'))}
-                    className="text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/45 hover:text-obsidian"
-                  >
-                    New instead
-                  </button>
-                )}
-              </div>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <FieldLabel>Title</FieldLabel>
-                  <input
-                    value={draft.title}
-                    onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-                    required
-                    className={inputClass}
-                  />
-                </div>
-                <div>
-                  <FieldLabel>Venue</FieldLabel>
-                  <select
-                    value={draft.venueSlug}
-                    onChange={(e) => setDraft({ ...draft, venueSlug: e.target.value })}
-                    required
-                    className={inputClass}
-                    disabled={venues.length === 0}
-                  >
-                    <option value="">{venues.length === 0 ? 'Loading venues…' : 'Select venue…'}</option>
-                    {venues.map((v) => (
-                      <option key={v.slug} value={v.slug}>
-                        {v.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <FieldLabel>Starts</FieldLabel>
-                  <input
-                    type="datetime-local"
-                    value={draft.startsAtLocal}
-                    onChange={(e) => setDraft({ ...draft, startsAtLocal: e.target.value })}
-                    required
-                    className={inputClass}
-                  />
-                </div>
-                <div>
-                  <FieldLabel>Ends</FieldLabel>
-                  <input
-                    type="datetime-local"
-                    value={draft.endsAtLocal}
-                    onChange={(e) => setDraft({ ...draft, endsAtLocal: e.target.value })}
-                    required
-                    className={inputClass}
-                  />
-                </div>
-                <div>
-                  <FieldLabel>Tag</FieldLabel>
-                  <select
-                    value={draft.tag}
-                    onChange={(e) => setDraft({ ...draft, tag: e.target.value })}
-                    className={inputClass}
-                  >
-                    {tags.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <FieldLabel>Cover (NGN)</FieldLabel>
-                  <input
-                    type="number"
-                    min={0}
-                    value={draft.coverNgn}
-                    onChange={(e) => setDraft({ ...draft, coverNgn: e.target.value })}
-                    className={inputClass}
-                  />
-                </div>
-                <div>
-                  <FieldLabel>Expected turnout</FieldLabel>
-                  <input
-                    value={draft.expected}
-                    onChange={(e) => setDraft({ ...draft, expected: e.target.value })}
-                    placeholder="~180 in"
-                    className={inputClass}
-                  />
-                </div>
-                <div className="flex items-end">
-                  <label className="flex items-center gap-2 text-sm text-obsidian/70">
-                    <input
-                      type="checkbox"
-                      checked={draft.published}
-                      onChange={(e) => setDraft({ ...draft, published: e.target.checked })}
-                      className="rounded border-obsidian/25 text-ember focus:ring-ember"
-                    />
-                    Published on /events
-                  </label>
-                </div>
-              </div>
-              <div>
-                <FieldLabel>Blurb</FieldLabel>
-                <textarea
-                  value={draft.blurb}
-                  onChange={(e) => setDraft({ ...draft, blurb: e.target.value })}
-                  rows={2}
-                  className={`${inputClass} resize-y`}
-                />
-              </div>
-              <button type="submit" disabled={loading} className="px-6 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em]">
-                {loading ? 'Saving…' : draft.id ? 'Save changes' : 'Publish event'}
-              </button>
-            </form>
-
-            <h2 className="font-bold mb-1">Saved events</h2>
-            <p className="text-sm text-obsidian/50 mb-5">
-              Events you create here appear on /events when published. Unpublished nights stay hidden from the public feed.
-            </p>
-            <div className="space-y-3">
-              {events.map((event) => (
-                <div
-                  key={event.id}
-                  className="bg-white p-4 sm:p-5 shadow-sm flex flex-col sm:flex-row sm:items-center gap-4"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-medium">{event.title}</p>
-                      <span className="text-[9px] font-black uppercase tracking-[0.12em] px-2 py-0.5 bg-paper text-obsidian/50">
-                        {event.tag}
-                      </span>
-                      {!event.published && (
-                        <span className="text-[9px] font-black uppercase tracking-[0.12em] px-2 py-0.5 bg-obsidian text-white">
-                          Hidden
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[12px] text-obsidian/50 mt-1">
-                      {formatWhen(event.startsAtIso)} → {formatWhen(event.endsAtIso)} ·{' '}
-                      {venues.find((v) => v.slug === event.venueSlug)?.name || event.venueSlug}
-                      {event.coverNgn ? ` · ${formatNgn(event.coverNgn)}` : ''}
-                    </p>
-                    {event.blurb && <p className="text-[12px] text-obsidian/45 mt-1 line-clamp-2">{event.blurb}</p>}
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => editEvent(event)}
-                      className="px-3 py-2 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em]"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => togglePublished(event)}
-                      className="px-3 py-2 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em]"
-                    >
-                      {event.published ? 'Hide' : 'Publish'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeEvent(event)}
-                      className="px-3 py-2 border border-ember/40 text-ember text-[10px] font-black uppercase tracking-[0.12em]"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
-              {events.length === 0 && !eventsError && (
-                <p className="text-sm text-obsidian/45">No events yet — create the first one above.</p>
+              {visibleItems.length === 0 && (
+                <p className="text-sm text-obsidian/45">No SKUs match that search.</p>
               )}
             </div>
           </>
-        )}
-      </div>
-    </section>
+        ) : null}
+    </AdminShell>
   );
 }
+
+/** The bottle sizes we actually stock — keeps `volume` values consistent across the catalog. */
+const BOTTLE_VOLUMES = ['5CL', '20CL', '35CL', '50CL', '70CL', '75CL', '100CL', '150CL', '33CL × 6', '33CL × 12'];
+
+/** Couriers the desk dispatches with. `allowCustom` covers a one-off rider. */
+const COURIERS = ['GIG Logistics', 'Kwik', 'Gokada', 'Sendbox', 'Bolt Courier', 'In-house rider'];
 
 const inputClass =
   'w-full border-0 border-b border-obsidian/15 focus:border-ember focus:ring-0 text-sm py-2 bg-transparent';
@@ -1394,8 +1168,13 @@ function TrackingForm({
   return (
     <div className="mt-3 pt-3 border-t border-obsidian/10 grid sm:grid-cols-4 gap-3">
       <div>
-        <FieldLabel>Rider name</FieldLabel>
-        <input value={courierName} onChange={(e) => setCourierName(e.target.value)} className={inputClass} placeholder="e.g. Tunde" />
+        <FieldLabel>Courier</FieldLabel>
+        <AdminSelect
+          value={courierName}
+          onChange={setCourierName}
+          placeholder="Choose a courier…"
+          options={COURIERS}
+        />
       </div>
       <div>
         <FieldLabel>Rider phone</FieldLabel>
@@ -1437,18 +1216,75 @@ function TrackingForm({
   );
 }
 
+/** One supplier's holding of one SKU. Saves on blur so there is no button per cell. */
+function SupplierQtyField({
+  supplier,
+  row,
+  onSave,
+}: {
+  supplier: SupplierLite;
+  row?: SupplierStockRow;
+  onSave: (qty: number) => Promise<void>;
+}) {
+  const [value, setValue] = useState(String(row?.onHand ?? 0));
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    setValue(String(row?.onHand ?? 0));
+  }, [row?.onHand]);
+
+  async function commit() {
+    const qty = Number(value);
+    if (!Number.isFinite(qty) || qty < 0 || qty === (row?.onHand ?? 0)) {
+      setValue(String(row?.onHand ?? 0));
+      return;
+    }
+    setBusy(true);
+    await onSave(qty);
+    setBusy(false);
+  }
+
+  return (
+    <label className="rounded-xl border border-obsidian/10 bg-paper/50 p-2.5">
+      <span className="block text-[10px] font-black uppercase tracking-[0.1em] text-obsidian/45">
+        {supplier.city}
+      </span>
+      <span className="mb-1.5 block truncate text-[11px] text-obsidian/40">{supplier.name}</span>
+      <input
+        type="number"
+        min={0}
+        value={value}
+        disabled={busy}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+        className="w-full rounded-lg border border-obsidian/12 bg-white px-2 py-1.5 text-sm font-semibold tabular-nums text-obsidian focus:border-ember focus:ring-0 disabled:opacity-50"
+      />
+      <span className="mt-1 block text-[10px] text-obsidian/40">
+        {row && row.reserved > 0 ? `${row.reserved} reserved · ${row.available} free` : 'none reserved'}
+      </span>
+    </label>
+  );
+}
+
 function StockRow({
   item,
   saving,
   onSave,
   onDelete,
   onLoadForm,
+  suppliers,
+  supplierRows,
+  onSetSupplierStock,
 }: {
   item: Item;
   saving: boolean;
   onSave: (patch: Record<string, unknown>) => void;
   onDelete: () => void;
   onLoadForm: () => void;
+  suppliers: SupplierLite[];
+  supplierRows: SupplierStockRow[];
+  onSetSupplierStock: (supplierId: string, slug: string, onHand: number) => Promise<void>;
 }) {
   const [onHand, setOnHand] = useState(String(item.on_hand));
   const [price, setPrice] = useState(item.price_ngn != null ? String(item.price_ngn) : '');
@@ -1456,6 +1292,7 @@ function StockRow({
   const [threshold, setThreshold] = useState(String(item.low_stock_threshold));
   const [tasteNote, setTasteNote] = useState(item.taste_note || '');
   const [guideOpen, setGuideOpen] = useState(false);
+  const [stockOpen, setStockOpen] = useState(false);
 
   useEffect(() => {
     setOnHand(String(item.on_hand));
@@ -1589,6 +1426,15 @@ function StockRow({
           </button>
           <button
             type="button"
+            onClick={() => setStockOpen((v) => !v)}
+            className={`px-3 py-2.5 border text-[10px] font-black uppercase tracking-[0.12em] ${
+              stockOpen ? 'border-ember text-ember' : 'border-obsidian/15'
+            }`}
+          >
+            {stockOpen ? 'Hide stock' : 'Suppliers'}
+          </button>
+          <button
+            type="button"
             onClick={() => setGuideOpen((v) => !v)}
             className="px-3 py-2.5 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em]"
           >
@@ -1611,6 +1457,36 @@ function StockRow({
           </button>
         </div>
       </div>
+
+      {stockOpen && (
+        <div className="pt-3 mt-3 border-t border-obsidian/10">
+          <p className="mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40">
+            Stock by supplier
+          </p>
+          <div className="grid gap-2 sm:grid-cols-3">
+            {suppliers.map((sup) => {
+              const row = supplierRows.find((r) => r.supplierId === sup.id);
+              return (
+                <SupplierQtyField
+                  key={sup.id}
+                  supplier={sup}
+                  row={row}
+                  onSave={(qty) => onSetSupplierStock(sup.id, item.slug, qty)}
+                />
+              );
+            })}
+            {suppliers.length === 0 && (
+              <p className="text-xs text-obsidian/45 sm:col-span-3">
+                No active suppliers. Add one in the Suppliers tab, or run{' '}
+                <code className="text-[11px]">npx tsx lib/db/seed-suppliers.ts</code>.
+              </p>
+            )}
+          </div>
+          <p className="mt-2 text-[11px] text-obsidian/40">
+            On hand above is the total across suppliers and is recalculated from these numbers.
+          </p>
+        </div>
+      )}
 
       {guideOpen && (
         <div className="pt-3 border-t border-obsidian/10 space-y-3">
@@ -1658,6 +1534,52 @@ function Field({
   );
 }
 
+/**
+ * Uncontrolled counterpart to `Field` for anything with a known set of values. Typing these by
+ * hand is how `Whisky`, `whiskey` and `WHISKY ` all ended up in the catalog as separate categories.
+ */
+function SelectField({
+  name,
+  label,
+  options,
+  required,
+  placeholder,
+  defaultValue,
+}: {
+  name: string;
+  label: string;
+  options: { value: string; label: string }[];
+  required?: boolean;
+  placeholder?: string;
+  defaultValue?: string;
+}) {
+  return (
+    <div>
+      <FieldLabel>{label}</FieldLabel>
+      <div className="relative">
+        <select
+          name={name}
+          required={required}
+          defaultValue={defaultValue ?? ''}
+          className={`${inputClass} appearance-none pr-8`}
+        >
+          {placeholder && <option value="">{placeholder}</option>}
+          {options.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+        <ChevronDown
+          size={14}
+          aria-hidden
+          className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-obsidian/40"
+        />
+      </div>
+    </div>
+  );
+}
+
 function TextAreaField({
   name,
   label,
@@ -1682,237 +1604,3 @@ function TextAreaField({
   );
 }
 
-type AdminVenue = {
-  id: string;
-  slug: string;
-  name: string;
-  kind: string;
-  area: string;
-  areaId: string;
-  status: string;
-  source: string;
-  photoUrl: string | null;
-  tagline: string;
-  about: string;
-  hours: string;
-  followerCount: number;
-  reviewCount: number;
-};
-
-function AdminVenuesTab() {
-  const [venues, setVenues] = useState<AdminVenue[]>([]);
-  const [areas, setAreas] = useState<{ id: string; name: string }[]>([]);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  const [name, setName] = useState('');
-  const [slug, setSlug] = useState('');
-  const [kind, setKind] = useState('lounge');
-  const [areaId, setAreaId] = useState('vi');
-  const [areaName, setAreaName] = useState('Victoria Island');
-  const [tagline, setTagline] = useState('');
-  const [about, setAbout] = useState('');
-  const [hours, setHours] = useState('');
-  const [photoUrl, setPhotoUrl] = useState('');
-
-  useEffect(() => {
-    fetch('/api/admin/venues')
-      .then((r) => r.json())
-      .then((d) => {
-        setVenues(d.venues || []);
-        setAreas(d.areas || []);
-      })
-      .catch(() => setError('Could not load venues.'))
-      .finally(() => setLoading(false));
-  }, []);
-
-  function autoSlug(n: string) {
-    setName(n);
-    setSlug(n.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
-  }
-
-  async function createVenue(e: FormEvent) {
-    e.preventDefault();
-    setSaving(true);
-    setError('');
-    const res = await fetch('/api/admin/venues', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name, slug, kind, areaId, area: areaName,
-        tagline, about, hours, photoUrl: photoUrl || null,
-      }),
-    });
-    const data = await res.json();
-    setSaving(false);
-    if (!res.ok) { setError(data.error || 'Could not create venue.'); return; }
-    setVenues((v) => [data.venue, ...v]);
-    setShowForm(false);
-    setName(''); setSlug(''); setTagline(''); setAbout(''); setHours(''); setPhotoUrl('');
-  }
-
-  async function approveVenue(venue: AdminVenue) {
-    const res = await fetch('/api/admin/venues', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: venue.id, status: 'active' }),
-    });
-    if (res.ok) setVenues((v) => v.map((x) => x.id === venue.id ? { ...x, status: 'active' } : x));
-  }
-
-  async function suspendVenue(venue: AdminVenue) {
-    const res = await fetch('/api/admin/venues', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: venue.id, status: 'suspended' }),
-    });
-    if (res.ok) setVenues((v) => v.map((x) => x.id === venue.id ? { ...x, status: 'suspended' } : x));
-  }
-
-  async function removeVenue(venue: AdminVenue) {
-    if (!window.confirm(`Delete ${venue.name}?`)) return;
-    const res = await fetch(`/api/admin/venues?id=${venue.id}`, { method: 'DELETE' });
-    if (res.ok) setVenues((v) => v.filter((x) => x.id !== venue.id));
-  }
-
-  if (loading) return <p className="text-sm text-obsidian/45">Loading venues…</p>;
-
-  const pending = venues.filter((v) => v.status === 'pending');
-  const active = venues.filter((v) => v.status === 'active');
-  const suspended = venues.filter((v) => v.status === 'suspended');
-
-  return (
-    <>
-      {error && <p className="text-sm text-ember mb-4">{error}</p>}
-
-      <div className="flex items-center justify-between mb-6">
-        <p className="text-sm text-obsidian/50">
-          Manage venue profiles. Approve partner submissions, add photos, and control visibility.
-        </p>
-        <button
-          type="button"
-          onClick={() => setShowForm(!showForm)}
-          className="px-5 py-2.5 btn-brand text-[10px] font-black uppercase tracking-[0.14em]"
-        >
-          {showForm ? 'Cancel' : '+ Add venue'}
-        </button>
-      </div>
-
-      {showForm && (
-        <form onSubmit={createVenue} className="bg-white p-6 mb-8 shadow-sm space-y-4">
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div>
-              <FieldLabel>Name</FieldLabel>
-              <input value={name} onChange={(e) => autoSlug(e.target.value)} required className={inputClass} />
-            </div>
-            <div>
-              <FieldLabel>Slug</FieldLabel>
-              <input value={slug} onChange={(e) => setSlug(e.target.value)} required className={inputClass} />
-            </div>
-          </div>
-          <div className="grid sm:grid-cols-3 gap-4">
-            <div>
-              <FieldLabel>Type</FieldLabel>
-              <select value={kind} onChange={(e) => setKind(e.target.value)} className={inputClass}>
-                {['club','lounge','rooftop','beach','live','restaurant','bar'].map((k) => (
-                  <option key={k} value={k}>{k}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <FieldLabel>Area</FieldLabel>
-              <select
-                value={areaId}
-                onChange={(e) => {
-                  setAreaId(e.target.value);
-                  const a = areas.find((x) => x.id === e.target.value);
-                  if (a) setAreaName(a.name);
-                }}
-                className={inputClass}
-              >
-                {areas.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-              </select>
-            </div>
-            <div>
-              <FieldLabel>Hours</FieldLabel>
-              <input value={hours} onChange={(e) => setHours(e.target.value)} placeholder="e.g. Thu-Sun · 7pm-3am" className={inputClass} />
-            </div>
-          </div>
-          <div>
-            <FieldLabel>Photo URL</FieldLabel>
-            <input value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} placeholder="https://..." className={inputClass} />
-          </div>
-          <div>
-            <FieldLabel>Tagline</FieldLabel>
-            <input value={tagline} onChange={(e) => setTagline(e.target.value)} className={inputClass} />
-          </div>
-          <div>
-            <FieldLabel>About</FieldLabel>
-            <textarea value={about} onChange={(e) => setAbout(e.target.value)} rows={3} className={`${inputClass} resize-y`} />
-          </div>
-          <button type="submit" disabled={saving} className="px-6 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em]">
-            {saving ? 'Saving…' : 'Create venue'}
-          </button>
-        </form>
-      )}
-
-      {pending.length > 0 && (
-        <div className="mb-8">
-          <h3 className="text-sm font-bold text-ember mb-3">Pending approval ({pending.length})</h3>
-          <div className="space-y-3">
-            {pending.map((v) => (
-              <div key={v.id} className="bg-white p-4 shadow-sm flex items-center gap-4">
-                <div className="w-12 h-12 rounded bg-paper flex items-center justify-center shrink-0">
-                  {v.photoUrl ? <img src={v.photoUrl} alt="" className="w-full h-full object-cover rounded" /> : <span className="text-lg">📍</span>}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium">{v.name}</p>
-                  <p className="text-xs text-obsidian/45">{v.kind} · {v.area} · via {v.source}</p>
-                </div>
-                <button type="button" onClick={() => approveVenue(v)} className="px-3 py-2 border border-green-500 text-green-600 text-[10px] font-black uppercase">Approve</button>
-                <button type="button" onClick={() => removeVenue(v)} className="px-3 py-2 border border-ember/40 text-ember text-[10px] font-black uppercase">Reject</button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <h3 className="text-sm font-bold mb-3">Active venues ({active.length})</h3>
-      <div className="space-y-3 mb-8">
-        {active.map((v) => (
-          <div key={v.id} className="bg-white p-4 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded bg-paper flex items-center justify-center shrink-0 overflow-hidden">
-              {v.photoUrl ? <img src={v.photoUrl} alt="" className="w-full h-full object-cover" /> : <span className="text-lg">📍</span>}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="font-medium">{v.name}</p>
-              <p className="text-xs text-obsidian/45">{v.kind} · {v.area} · {v.followerCount} followers · {v.reviewCount} reviews</p>
-            </div>
-            <button type="button" onClick={() => suspendVenue(v)} className="px-3 py-2 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em]">Suspend</button>
-            <button type="button" onClick={() => removeVenue(v)} className="px-3 py-2 border border-ember/40 text-ember text-[10px] font-black uppercase tracking-[0.12em]">Delete</button>
-          </div>
-        ))}
-        {active.length === 0 && <p className="text-sm text-obsidian/45">No active venues. Create one above.</p>}
-      </div>
-
-      {suspended.length > 0 && (
-        <div>
-          <h3 className="text-sm font-bold text-obsidian/50 mb-3">Suspended ({suspended.length})</h3>
-          <div className="space-y-3">
-            {suspended.map((v) => (
-              <div key={v.id} className="bg-white p-4 shadow-sm flex items-center gap-4 opacity-60">
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium">{v.name}</p>
-                  <p className="text-xs text-obsidian/45">{v.kind} · {v.area}</p>
-                </div>
-                <button type="button" onClick={() => approveVenue(v)} className="px-3 py-2 border border-obsidian/15 text-[10px] font-black uppercase">Reactivate</button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </>
-  );
-}

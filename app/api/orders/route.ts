@@ -7,6 +7,7 @@ import { rateLimit, clientIp } from '@/lib/redis';
 import { reserveStockForOrder, releaseStockForOrder, resolveSellableProduct } from '@/lib/inventory';
 import { redeemGiftCardForOrder } from '@/lib/commerce/gift-cards';
 import { releaseOrderResources } from '@/lib/commerce/fulfillment';
+import { routeOrder, reserveSupplierStock } from '@/lib/suppliers/stock';
 import { readReferralCookie } from '@/lib/referrals/cookie';
 import { attributeOrder } from '@/lib/referrals/repo';
 import {
@@ -92,8 +93,23 @@ export async function POST(req: NextRequest) {
     const rl = await rateLimit(`orders:create:${clientIp(req)}`, 10, 60);
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests. Please try again shortly.' }, { status: 429 });
 
+    /**
+     * Ordering requires an account.
+     *
+     * Tracking (`GET /api/orders/[id]`) matches an order to the signed-in buyer by email, so a
+     * guest checkout produced an order nobody could ever open. The email is taken from the
+     * session rather than the request body — a typo'd address would orphan the order the same way.
+     */
+    const user = await getCurrentUser();
+    if (!user?.email) {
+      return NextResponse.json(
+        { error: 'Please sign in to place your order — that is how you track it.', authRequired: true },
+        { status: 401 }
+      );
+    }
+    const email = user.email.trim().toLowerCase();
+
     const body = await req.json();
-    const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
     const fullName = typeof body.fullName === 'string' ? body.fullName.trim() : '';
     const phone = typeof body.phone === 'string' ? body.phone.trim() : '';
     const deliveryMode = body.deliveryMode === 'venue' ? 'venue' : 'address';
@@ -219,6 +235,29 @@ export async function POST(req: NextRequest) {
     if (reservationError) {
       await sql`DELETE FROM ritual_orders WHERE id = ${orderId}`;
       return NextResponse.json({ error: reservationError.error }, { status: 409 });
+    }
+
+    /**
+     * Route the order to the supplier who will actually fill it.
+     *
+     * Best-effort: reservation has already succeeded against the national rollup, so a routing
+     * miss must not fail the order — it just leaves `routed_supplier_id` null for the desk to
+     * source by hand, which is exactly what happened before routing existed.
+     */
+    try {
+      const decision = await routeOrder(city, stockLines);
+      if (decision) {
+        await reserveSupplierStock(decision.supplierId, stockLines);
+        await sql`
+          UPDATE ritual_orders
+          SET routed_supplier_id = ${decision.supplierId}::uuid,
+              routed_out_of_city = ${decision.outOfCity},
+              routed_cost_ngn = ${decision.expectedCostNgn}
+          WHERE id = ${orderId}
+        `;
+      }
+    } catch (err) {
+      console.error('Order routing failed', err);
     }
 
     let finalTotal = total;

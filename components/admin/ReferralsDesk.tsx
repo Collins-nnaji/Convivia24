@@ -9,6 +9,7 @@ import {
   GOAL_LABELS,
   type BrandEnquiry,
 } from '@/lib/trivia/enquiries';
+import { useDialogs } from '@/components/admin/ui/DialogProvider';
 
 type Attribution = {
   id: string;
@@ -26,6 +27,8 @@ type Attribution = {
 const ENQUIRY_STATUSES = ['new', 'contacted', 'won', 'closed'] as const;
 
 export default function ReferralsDesk() {
+  const { confirm, notify } = useDialogs();
+
   const [partners, setPartners] = useState<ReferralPartner[]>([]);
   const [attributions, setAttributions] = useState<Attribution[]>([]);
   const [enquiries, setEnquiries] = useState<BrandEnquiry[]>([]);
@@ -79,7 +82,17 @@ export default function ReferralsDesk() {
 
   async function payCommission(a: Attribution, asGiftCard: boolean) {
     const label = asGiftCard ? 'issue a gift card for' : 'mark paid';
-    if (!confirm(`${label} ${formatNgn(a.commissionNgn)} to ${a.partnerName}?`)) return;
+    const ok = await confirm({
+      title: asGiftCard ? 'Issue a gift card?' : 'Mark this commission paid?',
+      message: (
+        <>
+          {formatNgn(a.commissionNgn)} to <strong>{a.partnerName}</strong>
+          {asGiftCard ? ' as a gift card code.' : ' — record it as settled outside the platform.'}
+        </>
+      ),
+      confirmLabel: asGiftCard ? 'Issue gift card' : 'Mark paid',
+    });
+    if (!ok) return;
     setBusy(a.id);
     try {
       const res = await fetch('/api/admin/referrals', {
@@ -94,7 +107,7 @@ export default function ReferralsDesk() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Unable to pay that commission.');
-      if (data.giftCardCode) alert(`Gift card issued: ${data.giftCardCode}`);
+      if (data.giftCardCode) notify(`Gift card issued: ${data.giftCardCode}`);
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to pay that commission.');

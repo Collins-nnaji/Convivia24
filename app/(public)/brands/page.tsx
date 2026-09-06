@@ -24,19 +24,17 @@ export default function BrandsPage() {
     <section className="bg-paper min-h-[70vh]">
       <div className="relative overflow-hidden border-b border-obsidian/8">
         <div className="absolute inset-0 brand-gradient opacity-[0.05]" />
-        <div className="relative max-w-6xl mx-auto px-5 sm:px-8 pt-10 pb-10 sm:pt-14 sm:pb-12">
+        <div className="relative max-w-6xl mx-auto px-5 sm:px-8 pt-6 pb-6 sm:pt-8 sm:pb-8">
           <h1 className="font-wordmark text-3xl sm:text-5xl leading-tight">
             <span className="brand-text">Brands</span>
           </h1>
-          <p className="text-lg font-semibold text-obsidian/70 mt-3">The houses behind the bottles.</p>
-          <p className="text-base text-obsidian/50 mt-2 max-w-lg leading-relaxed">
-            Every house we stock, with its history, its range, and the rounds you can play on it. Written
-            and maintained by Convivia24.
+          <p className="text-base sm:text-lg font-semibold text-obsidian/70 mt-1.5">
+            The houses behind the bottles.
           </p>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
+      <div className="max-w-6xl mx-auto px-5 sm:px-8 py-6 sm:py-8">
         <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {BRANDS.map((brand) => {
             const hero = brand.products.find((p) => p.image);

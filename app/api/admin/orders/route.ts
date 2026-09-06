@@ -44,6 +44,9 @@ export async function GET() {
         o.payment_ref,
         o.refund_ref,
         o.refunded_ngn,
+        o.routed_supplier_id,
+        o.routed_out_of_city,
+        rs.name AS routed_supplier_name,
         o.supplier_id,
         o.supplier_cost_ngn,
         o.sourced_at,
@@ -61,8 +64,9 @@ export async function GET() {
       FROM ritual_orders o
       LEFT JOIN ritual_order_items i ON i.order_id = o.id
       LEFT JOIN suppliers s ON s.id = o.supplier_id
+      LEFT JOIN suppliers rs ON rs.id = o.routed_supplier_id
       WHERE o.status != 'pending'
-      GROUP BY o.id, s.name
+      GROUP BY o.id, s.name, rs.name
       ORDER BY o.created_at DESC
       LIMIT 200
     `;
@@ -89,6 +93,8 @@ export async function GET() {
         paymentProvider: o.payment_provider,
         paymentRef: o.payment_ref,
         refundRef: o.refund_ref,
+        routedSupplierName: (o.routed_supplier_name as string) || null,
+        routedOutOfCity: o.routed_out_of_city === true,
         refundedNgn: Number(o.refunded_ngn ?? 0),
         supplierId: o.supplier_id,
         supplierName: o.supplier_name,
@@ -150,6 +156,9 @@ export async function PATCH(req: NextRequest) {
         WHERE id = ${orderId}
       `;
       await releaseOrderResources(orderId);
+      // Stamp the transition like every other status change, so the customer's tracking page
+      // shows the refund instead of stopping at the last delivery step.
+      await recordOrderEvent(orderId, 'refunded', `Refunded ${formatNgn(amountNgn)}.`).catch(() => {});
       await notifyOrderStatus(orderId, 'refunded', `Refunded ${formatNgn(amountNgn)}.`);
       return NextResponse.json({ ok: true, orderId, status: 'refunded', refundedNgn: amountNgn });
     }
