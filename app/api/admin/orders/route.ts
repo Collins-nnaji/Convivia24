@@ -11,6 +11,7 @@ import { refundFlutterwave } from '@/lib/payments/flutterwave';
 import { captureApiError } from '@/lib/sentry';
 import { orderMargin } from '@/lib/suppliers/margin';
 import { getSupplier } from '@/lib/suppliers/repo';
+import { reconcileOrderPoints } from '@/lib/loyalty/members';
 
 /** Statuses the desk can hand-set. System-only statuses (pending, awaiting_payment) are excluded. */
 const ADMIN_SETTABLE_STATUSES: OrderStatus[] = ORDER_STATUSES.filter(
@@ -156,6 +157,7 @@ export async function PATCH(req: NextRequest) {
         WHERE id = ${orderId}
       `;
       await releaseOrderResources(orderId);
+      await reconcileOrderPoints(orderId);
       // Stamp the transition like every other status change, so the customer's tracking page
       // shows the refund instead of stopping at the last delivery step.
       await recordOrderEvent(orderId, 'refunded', `Refunded ${formatNgn(amountNgn)}.`).catch(() => {});
@@ -260,6 +262,7 @@ export async function PATCH(req: NextRequest) {
     } else if (status === 'cancelled' || status === 'refunded') {
       await releaseOrderResources(orderId);
     }
+    await reconcileOrderPoints(orderId);
 
     await notifyOrderStatus(orderId, status, note);
 

@@ -10,7 +10,12 @@ export async function GET() {
   const ownerId = await resolveMemberOwner();
   if (!ownerId) return NextResponse.json({ signedIn: false, standing: null });
   try {
-    const member = await getMember(ownerId);
+    const user = await getCurrentUser();
+    // A signed-in customer is automatically eligible. Claiming here also links and reconciles
+    // older delivered orders, so opening Discover/Profile is enough to repair a missing balance.
+    const member = user
+      ? await claimMember(ownerId, { email: user.email, name: user.name })
+      : await getMember(ownerId);
     return NextResponse.json({ signedIn: true, standing: standingFor(member) });
   } catch (err) {
     captureApiError(err, { route: 'loyalty/me GET' });

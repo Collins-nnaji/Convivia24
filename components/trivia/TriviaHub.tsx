@@ -14,6 +14,8 @@ import BrandStrip from '@/components/trivia/BrandStrip';
 import RewardsShop from '@/components/trivia/RewardsShop';
 import ChallengesHub from '@/components/trivia/ChallengesHub';
 import TriviaRoundPlayer from '@/components/trivia/TriviaRound';
+import CocktailMaker from '@/components/trivia/CocktailMaker';
+import ReferEarnTab from '@/components/trivia/ReferEarnTab';
 import { useTriviaHub } from '@/components/trivia/use-hub';
 import { getRound, rankRounds, TRIVIA_ROUNDS, type TriviaRound } from '@/lib/trivia/catalog';
 import { DRINKS } from '@/lib/drinks/catalog';
@@ -35,7 +37,7 @@ function formatWeek(weekStart: string | null): string {
   return `${fmt(start)} – ${fmt(end)}`;
 }
 
-type HubTab = 'discover' | 'rewards';
+type HubTab = 'discover' | 'cocktails' | 'rewards' | 'refer';
 
 export default function TriviaHub() {
   const hub = useTriviaHub();
@@ -51,10 +53,19 @@ export default function TriviaHub() {
   // Rewards is a tab here rather than its own nav entry — points are earned and
   // spent in the same place, and the URL keeps it linkable.
   const tabParam = params.get('tab');
-  const tab: HubTab = tabParam === 'rewards-shop' || tabParam === 'rewards' ? 'rewards' : 'discover';
+  const tab: HubTab = tabParam === 'rewards-shop' || tabParam === 'rewards'
+    ? 'rewards'
+    : tabParam === 'cocktails'
+      ? 'cocktails'
+      : tabParam === 'refer-and-earn' || tabParam === 'refer'
+        ? 'refer'
+      : 'discover';
 
   function selectTab(next: HubTab) {
-    router.replace(next === 'discover' ? '/discover' : '/discover?tab=rewards-shop', { scroll: false });
+    router.replace(
+      next === 'discover' ? '/discover' : `/discover?tab=${next === 'rewards' ? 'rewards-shop' : next === 'refer' ? 'refer-and-earn' : 'cocktails'}`,
+      { scroll: false }
+    );
   }
 
   const live = getRound(hub.roundSlug) || TRIVIA_ROUNDS[0];
@@ -160,7 +171,11 @@ export default function TriviaHub() {
           <motion.div key="hub" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <HubTabs tab={tab} onSelect={selectTab} />
 
-            {tab === 'rewards' ? (
+            {tab === 'refer' ? (
+              <ReferEarnTab />
+            ) : tab === 'cocktails' ? (
+              <CocktailMaker />
+            ) : tab === 'rewards' ? (
               <>
                 <RewardsHero />
                 <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
@@ -461,7 +476,9 @@ function HubTabs({ tab, onSelect }: { tab: HubTab; onSelect: (next: HubTab) => v
         {(
           [
             ['discover', 'Discover'],
+            ['cocktails', 'Cocktail maker'],
             ['rewards', 'Rewards shop'],
+            ['refer', 'Refer & earn'],
           ] as [HubTab, string][]
         ).map(([id, label]) => (
           <button

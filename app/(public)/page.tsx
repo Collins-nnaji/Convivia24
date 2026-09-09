@@ -4,7 +4,7 @@ import Link from 'next/link';
 import DrinkPlaceholder from '@/components/shop/DrinkPlaceholder';
 import DrinkPhoto from '@/components/shop/DrinkPhoto';
 import HomeHero from '@/components/home/HomeHero';
-import Footer from '@/components/Footer';
+import HomeTriviaCard from '@/components/home/HomeTriviaCard';
 import { formatEventWhen, isTonight } from '@/lib/events/catalog';
 import { useEventFeed } from '@/lib/events/use-feed';
 import { eventsEnabled } from '@/lib/features';
@@ -16,7 +16,7 @@ import {
   type DrinkCategory,
 } from '@/lib/drinks/catalog';
 
-const featured = DRINKS.filter((d) => d.featured && (d.image || d.packImages?.length)).slice(0, 4);
+const featured = DRINKS.filter((d) => d.featured && (d.image || d.packImages?.length)).slice(0, 6);
 
 export default function HomePage() {
   const feed = useEventFeed();
@@ -27,7 +27,7 @@ export default function HomePage() {
       <HomeHero />
 
       <section className="bg-white py-10 sm:py-16 border-y border-obsidian/5">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex items-end justify-between gap-4 mb-8">
             <div>
               <p className="text-[9px] font-wordmark-sm text-ember mb-2">Recommended</p>
@@ -42,12 +42,12 @@ export default function HomePage() {
               View all →
             </Link>
           </div>
-          <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 -mx-5 px-5 sm:mx-0 sm:px-0">
+          <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:grid lg:grid-cols-6 lg:gap-3 lg:px-0 lg:overflow-visible">
             {featured.map((p) => (
               <Link
                 key={p.slug}
                 href={`/shop/${p.slug}`}
-                className="shrink-0 w-[160px] sm:w-[180px] group"
+                className="shrink-0 w-[160px] sm:w-[180px] lg:w-auto group"
               >
                 <div className="aspect-[3/4] overflow-hidden relative mb-3 border border-obsidian/10 bg-paper">
                   <DrinkPhoto product={p} className="absolute inset-0 w-full h-full" />
@@ -102,6 +102,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <HomeTriviaCard />
 
       {!eventsEnabled && (
         <section className="bg-white py-10 sm:py-16 border-t border-obsidian/5">
@@ -201,8 +203,6 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
-
-      <Footer />
     </>
   );
 }

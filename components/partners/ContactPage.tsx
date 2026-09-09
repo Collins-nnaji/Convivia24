@@ -4,6 +4,12 @@ import { FormEvent, useState } from 'react';
 import { ArrowRight, Building2, CheckCircle2, Mail, Package, Store, Truck } from 'lucide-react';
 import { VENUE_KINDS } from '@/lib/partners/pricing';
 import { SUPPORT_EMAIL, SUPPORT_MAILTO } from '@/lib/site';
+import {
+  BUDGET_BANDS,
+  BUDGET_LABELS,
+  ENQUIRY_GOALS,
+  GOAL_LABELS,
+} from '@/lib/trivia/enquiries';
 
 type Tier = 'outlet' | 'brand';
 
@@ -41,12 +47,23 @@ export default function ContactPage() {
     setSuccess(null);
 
     const fd = new FormData(e.currentTarget);
+    const brandGoal = tier === 'brand' ? String(fd.get('goal') || '') : '';
+    const brandBudget = tier === 'brand' ? String(fd.get('budgetBand') || '') : '';
+    const submittedNotes = String(fd.get('notes') || '');
+    const brandContext = tier === 'brand'
+      ? [
+          brandGoal ? `Goal: ${GOAL_LABELS[brandGoal as keyof typeof GOAL_LABELS] || brandGoal}` : '',
+          brandBudget ? `Budget: ${BUDGET_LABELS[brandBudget as keyof typeof BUDGET_LABELS] || brandBudget}` : '',
+          submittedNotes,
+        ].filter(Boolean).join('\n')
+      : submittedNotes;
+
     const base = {
       kind: tier,
       contactName: String(fd.get('contactName') || ''),
       email: String(fd.get('email') || ''),
       phone: String(fd.get('phone') || '') || null,
-      notes: String(fd.get('notes') || '') || null,
+      notes: brandContext || null,
     };
 
     let body: Record<string, unknown>;
@@ -280,6 +297,36 @@ export default function ContactPage() {
                         name="skuEstimate"
                         placeholder="e.g. 12 SKUs in Nigeria"
                       />
+                      <div className="grid sm:grid-cols-2 gap-5">
+                        <div>
+                          <label className="text-xs font-bold uppercase tracking-[0.14em] text-obsidian/45 block mb-1.5">
+                            What are you after?
+                          </label>
+                          <select
+                            name="goal"
+                            defaultValue="trivia-round"
+                            className="w-full rounded-lg border border-obsidian/12 bg-white px-3 py-2.5 text-base focus:border-ember focus:ring-0"
+                          >
+                            {ENQUIRY_GOALS.map((goal) => (
+                              <option key={goal} value={goal}>{GOAL_LABELS[goal]}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-xs font-bold uppercase tracking-[0.14em] text-obsidian/45 block mb-1.5">
+                            Campaign budget
+                          </label>
+                          <select
+                            name="budgetBand"
+                            defaultValue="unsure"
+                            className="w-full rounded-lg border border-obsidian/12 bg-white px-3 py-2.5 text-base focus:border-ember focus:ring-0"
+                          >
+                            {BUDGET_BANDS.map((budget) => (
+                              <option key={budget} value={budget}>{BUDGET_LABELS[budget]}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
                       <fieldset>
                         <legend className="text-xs font-bold uppercase tracking-[0.14em] text-obsidian/45 mb-3">
                           Product categories

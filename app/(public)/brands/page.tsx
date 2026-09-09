@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
-import BrandEnquiryForm from '@/components/trivia/BrandEnquiryForm';
 import { BRANDS } from '@/lib/brands/catalog';
 import { formatNgn } from '@/lib/drinks/catalog';
 import { absoluteUrl } from '@/lib/seo';
@@ -83,8 +82,6 @@ export default function BrandsPage() {
           })}
         </ul>
       </div>
-
-      <BrandEnquiryForm />
     </section>
   );
 }

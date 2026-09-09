@@ -93,8 +93,6 @@ export default function Navigation() {
               />
             ))}
 
-            <DesktopNavLink href="/contact" label="Contact" active={isActive('/contact')} />
-
             <CartButton
               count={count}
               subtotalNgn={subtotalNgn}
@@ -144,6 +142,9 @@ export default function Navigation() {
                       </Link>
                       <Link href="/orders" className="block px-4 py-2.5 font-wordmark text-xs tracking-[0.1em] font-semibold hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
                         Order history
+                      </Link>
+                      <Link href="/discover?tab=refer-and-earn" className="block px-4 py-2.5 font-wordmark text-xs tracking-[0.1em] font-semibold hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
+                        Refer &amp; earn
                       </Link>
                       <button
                         type="button"
@@ -262,25 +263,6 @@ export default function Navigation() {
                     </div>
                   );
                 })}
-                <Link
-                  href="/contact"
-                  scroll
-                  className={`flex items-center justify-between py-3.5 font-wordmark text-sm tracking-[0.1em] font-semibold ${
-                    isActive('/contact') ? 'text-ember' : 'text-obsidian/70'
-                  }`}
-                >
-                  Contact
-                  <span className="text-ember/40 text-lg">&rsaquo;</span>
-                </Link>
-                <Link
-                  href="/refer-and-earn"
-                  className={`flex items-center justify-between py-3.5 font-wordmark text-sm tracking-[0.1em] font-semibold ${
-                    isActive('/refer-and-earn') ? 'text-ember' : 'text-obsidian/70'
-                  }`}
-                >
-                  Refer &amp; earn
-                  <span className="text-ember/40 text-lg">&rsaquo;</span>
-                </Link>
                 {signedIn && user ? (
                   <>
                     <Link href="/my-account" className="flex items-center justify-between py-3.5 font-wordmark text-sm tracking-[0.1em] font-semibold text-obsidian/70">

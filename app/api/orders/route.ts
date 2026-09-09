@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import sql, { apiErrorResponse } from '@/lib/db';
 import { preferTrackForCategory } from '@/lib/drinks/catalog';
 import { getCurrentUser } from '@/lib/auth/session';
-import { getMember, loyaltyDiscountNgn, resolveMemberOwner } from '@/lib/loyalty/members';
+import { claimMember, loyaltyDiscountNgn, resolveMemberOwner } from '@/lib/loyalty/members';
 import { rateLimit, clientIp } from '@/lib/redis';
 import { reserveStockForOrder, releaseStockForOrder, resolveSellableProduct } from '@/lib/inventory';
 import { redeemGiftCardForOrder } from '@/lib/commerce/gift-cards';
@@ -192,7 +192,9 @@ export async function POST(req: NextRequest) {
 
     // Tier discount comes from the server's own points record, never the client.
     const loyaltyOwnerId = await resolveMemberOwner();
-    const member = loyaltyOwnerId ? await getMember(loyaltyOwnerId) : null;
+    const member = loyaltyOwnerId
+      ? await claimMember(loyaltyOwnerId, { email, name: fullName })
+      : null;
     const discount = loyaltyDiscountNgn(subtotal, member);
     const total = Math.max(0, subtotal - discount.ngn);
 

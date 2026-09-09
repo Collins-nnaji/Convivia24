@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   ArrowUpDown,
@@ -10,6 +11,8 @@ import {
   ListFilter,
   Search,
   SlidersHorizontal,
+  UserRound,
+  Users,
 } from 'lucide-react';
 import { ProductCard } from '@/components/shop/ProductCard';
 import ShopCartBar from '@/components/shop/ShopCartBar';
@@ -43,21 +46,13 @@ type ShopProduct = DrinkProduct & {
 
 type ShopSection = 'bottles' | 'packages';
 
-type SortKey = 'recommended' | 'rating' | 'price-asc' | 'price-desc' | 'name';
+type SortKey = 'recommended' | 'price-asc' | 'price-desc' | 'name';
 
 const SORT_OPTIONS: { key: SortKey; label: string; short: string }[] = [
-  { key: 'recommended', label: 'Recommended', short: 'Recommended' },
-  { key: 'rating', label: 'Customer rating', short: 'Top rated' },
+  { key: 'recommended', label: 'Clear sorting', short: 'Recommended' },
   { key: 'price-asc', label: 'Price — low to high', short: 'Price ↑' },
   { key: 'price-desc', label: 'Price — high to low', short: 'Price ↓' },
   { key: 'name', label: 'Name A–Z', short: 'A–Z' },
-];
-
-/** Minimum-rating filter, the way most shopping apps present it. */
-const RATING_FILTERS: { value: number; label: string }[] = [
-  { value: 0, label: 'Any rating' },
-  { value: 4, label: '4★ & up' },
-  { value: 3, label: '3★ & up' },
 ];
 
 function parseSection(raw: string | null): ShopSection {
@@ -87,8 +82,6 @@ export default function ShopCatalog() {
     const raw = params.get('sort');
     return SORT_OPTIONS.some((o) => o.key === raw) ? (raw as SortKey) : 'recommended';
   });
-  const [minRating, setMinRating] = useState(0);
-  const [inStockOnly, setInStockOnly] = useState(false);
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
@@ -196,19 +189,10 @@ export default function ShopCatalog() {
 
   const refined = useMemo(() => {
     let list = filtered;
-    if (minRating > 0) list = list.filter((d) => (d.rating ?? 0) >= minRating);
-    if (inStockOnly) list = list.filter((d) => d.available == null || d.available > 0);
     if (maxPrice != null) list = list.filter((d) => d.priceNgn <= maxPrice);
 
     const sorted = [...list];
     switch (sort) {
-      case 'rating':
-        // Unrated bottles sink rather than tying at zero with genuinely poor ones, and a
-        // higher review count breaks ties so one five-star review can't top the list.
-        sorted.sort(
-          (a, b) => (b.rating ?? 0) - (a.rating ?? 0) || (b.ratingCount ?? 0) - (a.ratingCount ?? 0)
-        );
-        break;
       case 'price-asc':
         sorted.sort((a, b) => a.priceNgn - b.priceNgn);
         break;
@@ -225,13 +209,11 @@ export default function ShopCatalog() {
         );
     }
     return sorted;
-  }, [filtered, minRating, inStockOnly, maxPrice, sort]);
+  }, [filtered, maxPrice, sort]);
 
-  const activeFilterCount = (minRating > 0 ? 1 : 0) + (inStockOnly ? 1 : 0) + (maxPrice != null ? 1 : 0);
+  const activeFilterCount = maxPrice != null ? 1 : 0;
 
   function resetFilters() {
-    setMinRating(0);
-    setInStockOnly(false);
     setMaxPrice(null);
   }
 
@@ -262,7 +244,21 @@ export default function ShopCatalog() {
         <div className="min-w-0 flex-1">
           <h1 className="font-wordmark text-xl sm:text-3xl md:text-4xl text-obsidian">{sectionTitle}</h1>
         </div>
-        <GuestCardStrip variant="inline" className="hidden shrink-0 w-full sm:block sm:w-auto sm:max-w-[280px]" />
+        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+          <Link
+            href="/my-account"
+            className="inline-flex items-center gap-1.5 rounded-full border border-obsidian/12 bg-white px-3 py-2 text-xs font-bold text-obsidian/65 hover:border-ember/35 hover:text-ember"
+          >
+            <UserRound size={14} /> My profile
+          </Link>
+          <Link
+            href="/discover?tab=refer-and-earn"
+            className="inline-flex items-center gap-1.5 rounded-full border border-ember/20 bg-ember/[0.06] px-3 py-2 text-xs font-bold text-ember hover:bg-ember/[0.1]"
+          >
+            <Users size={14} /> Refer &amp; earn
+          </Link>
+          <GuestCardStrip variant="inline" className="hidden shrink-0 w-full xl:block xl:w-auto xl:max-w-[280px]" />
+        </div>
       </header>
 
       {/* Shop modes are tabs. Package occasions are views, not filters. */}
@@ -399,28 +395,6 @@ export default function ShopCatalog() {
                   <div className="space-y-3 rounded-xl bg-white p-3 shadow-sm ring-1 ring-obsidian/[0.06]">
                     <div>
                       <p className="mb-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40">
-                        Customer rating
-                      </p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {RATING_FILTERS.map((r) => (
-                          <button
-                            key={r.value}
-                            type="button"
-                            onClick={() => setMinRating(r.value)}
-                            className={`rounded-full border px-2.5 py-1.5 text-xs font-semibold transition-colors ${
-                              minRating === r.value
-                                ? 'border-ember bg-ember text-white'
-                                : 'border-obsidian/12 text-obsidian/60 hover:border-ember/40 hover:text-ember'
-                            }`}
-                          >
-                            {r.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="mb-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40">
                         Max price
                       </p>
                       <input
@@ -440,16 +414,6 @@ export default function ShopCatalog() {
                         {maxPrice == null ? 'Any price' : `Up to ${formatNgn(maxPrice)}`}
                       </p>
                     </div>
-
-                    <label className="inline-flex cursor-pointer items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={inStockOnly}
-                        onChange={(e) => setInStockOnly(e.target.checked)}
-                        className="h-4 w-4 rounded border-obsidian/25 text-ember focus:ring-ember"
-                      />
-                      <span className="text-xs font-semibold text-obsidian/70">In stock only</span>
-                    </label>
                   </div>
                 </div>
               </div>
@@ -572,29 +536,7 @@ export default function ShopCatalog() {
                 </div>
 
                 {filtersOpen && (
-                  <div className="mt-2 grid gap-3 border-t border-obsidian/[0.07] px-1.5 pt-3 sm:grid-cols-3">
-                    <div>
-                      <p className="mb-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40">
-                        Customer rating
-                      </p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {RATING_FILTERS.map((r) => (
-                          <button
-                            key={r.value}
-                            type="button"
-                            onClick={() => setMinRating(r.value)}
-                            className={`rounded-full border px-2.5 py-1.5 text-xs font-semibold transition-colors ${
-                              minRating === r.value
-                                ? 'border-ember bg-ember text-white'
-                                : 'border-obsidian/12 text-obsidian/60 hover:border-ember/40 hover:text-ember'
-                            }`}
-                          >
-                            {r.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
+                  <div className="mt-2 grid gap-3 border-t border-obsidian/[0.07] px-1.5 pt-3 sm:grid-cols-[minmax(0,1fr)_auto]">
                     <div>
                       <p className="mb-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40">
                         Max price
@@ -618,15 +560,6 @@ export default function ShopCatalog() {
                     </div>
 
                     <div className="flex flex-col justify-between gap-2">
-                      <label className="inline-flex cursor-pointer items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={inStockOnly}
-                          onChange={(e) => setInStockOnly(e.target.checked)}
-                          className="h-4 w-4 rounded border-obsidian/25 text-ember focus:ring-ember"
-                        />
-                        <span className="text-xs font-semibold text-obsidian/70">In stock only</span>
-                      </label>
                       {activeFilterCount > 0 && (
                         <button
                           type="button"

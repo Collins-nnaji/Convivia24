@@ -23,7 +23,9 @@ export function primaryNavLinks(): NavLink[] {
     accent: true,
     children: [
       { label: 'Discover', href: '/discover' },
+      { label: 'Cocktail maker', href: '/discover?tab=cocktails' },
       { label: 'Rewards shop', href: '/discover?tab=rewards-shop' },
+      { label: 'Refer & earn', href: '/discover?tab=refer-and-earn' },
     ],
   });
   links.push({ label: 'Brands', href: '/brands' });
@@ -54,8 +56,8 @@ export function isNavActive(pathname: string, href: string): boolean {
   if (href === '/brands') return pathname === '/brands' || pathname.startsWith('/brands/') || pathname.startsWith('/campaigns/');
   if (href === '/contact') return pathname === '/contact';
   if (href === '/partners') return pathname.startsWith('/partners/');
-  if (href === '/refer-and-earn' || href === '/refer') {
-    return pathname === '/refer-and-earn' || pathname.startsWith('/refer-and-earn/') || pathname === '/your-referrals';
+  if (href.includes('tab=refer-and-earn') || href === '/refer-and-earn' || href === '/refer') {
+    return pathname === '/discover' || pathname === '/refer-and-earn' || pathname === '/your-referrals';
   }
   if (href === '/cart') return pathname === '/cart' || pathname.startsWith('/checkout');
   return pathname === href || pathname.startsWith(`${href}/`);

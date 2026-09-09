@@ -299,15 +299,15 @@ export default function PlanNightPlanner() {
   return (
     <div className="min-h-[70vh] bg-paper pb-16 sm:pb-20">
       <section className="border-b border-obsidian/8 bg-paper">
-        <div className="relative mx-auto w-full max-w-[1600px] px-2.5 py-4 sm:px-4 sm:py-6 lg:px-5">
+        <div className="relative mx-auto w-full max-w-[1600px] px-2.5 py-4 sm:px-4 sm:py-6 lg:px-5 lg:py-4">
           <p className="mb-1.5 text-[10px] font-black uppercase tracking-[0.28em] text-ember sm:mb-2">Party Planner</p>
-          <h1 className="max-w-2xl font-wordmark text-2xl leading-tight text-obsidian sm:text-5xl sm:leading-[1.05]">
+          <h1 className="max-w-2xl font-wordmark text-2xl leading-tight text-obsidian sm:text-5xl sm:leading-[1.05] lg:text-4xl">
             We&apos;ll build the party.
           </h1>
           <p className="mt-1.5 max-w-md text-xs text-obsidian/55 sm:mt-2.5 sm:text-base">
             Guests, budget, delivery — you get one complete package.
           </p>
-          <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-5 sm:gap-3">
+          <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-5 sm:gap-3 lg:mt-3">
             <button type="button" onClick={() => builderRef.current?.scrollIntoView({ behavior: 'smooth' })} className="inline-flex items-center gap-2 rounded-full bg-ember px-4 py-2 text-xs font-bold text-white transition hover:bg-ember-dark sm:px-6 sm:py-3 sm:text-sm">
               Plan my party
             </button>
@@ -374,10 +374,10 @@ export default function PlanNightPlanner() {
       </section>
 
       <main className="mx-auto w-full max-w-[1600px] px-2.5 sm:px-4 lg:px-5">
-          <section ref={builderRef} className="scroll-mt-28 pt-4 pb-8 sm:scroll-mt-36 sm:pt-6 sm:pb-12">
+          <section ref={builderRef} className="scroll-mt-28 pt-4 pb-8 sm:scroll-mt-36 sm:pt-6 sm:pb-12 lg:pt-4">
             <div className="overflow-hidden rounded-2xl border border-obsidian/10 bg-white shadow-[0_12px_40px_rgba(15,15,15,0.06)] sm:rounded-3xl sm:shadow-[0_20px_70px_rgba(15,15,15,0.08)]">
-              <div className="p-4 sm:p-8 lg:p-10">
-                <div className="mb-5 flex items-start justify-between gap-4 sm:mb-8 sm:gap-5">
+              <div className="p-4 sm:p-8 lg:p-6">
+                <div className="mb-5 flex items-start justify-between gap-4 sm:mb-8 sm:gap-5 lg:mb-5">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-ember">Your brief</p>
                     <h2 className="mt-1.5 font-wordmark text-xl text-obsidian sm:mt-2 sm:text-3xl">Build your party package</h2>
@@ -385,65 +385,69 @@ export default function PlanNightPlanner() {
                   <span className="hidden rounded-full bg-emerald-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-700 sm:block">About 45 sec</span>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
-                  <Field label="Plan name" icon={<PartyPopper size={15} />} wide>
-                    <input value={name} onChange={(event) => setName(event.target.value)} placeholder={suggestedName(mood, date)} className="night-input" />
-                  </Field>
-                  <Field label="City" icon={<MapPin size={15} />}>
-                    <span className="night-input block text-obsidian/70">Lagos</span>
-                  </Field>
-                  <Field label="Preferred area" icon={<MapPin size={15} />}>
-                    <span className="relative block">
-                      <select value={area} onChange={(event) => setArea(event.target.value)} className="night-input select-clean pr-9">
-                        {LAGOS_AREAS.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-                      </select>
-                      <ChevronDown size={15} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-obsidian/35" />
-                    </span>
-                  </Field>
-                  <Field label="Date" icon={<CalendarDays size={15} />}>
-                    <input type="date" min={isoDate()} value={date} onChange={(event) => setDate(event.target.value)} className="night-input" />
-                  </Field>
-                  <Field label="Delivery time" icon={<Clock3 size={15} />}>
-                    <input type="time" value={time} onChange={(event) => setTime(event.target.value)} className="night-input" />
-                  </Field>
-                  <Field label="Guests" icon={<Users size={15} />}>
-                    <input type="number" min={2} max={500} value={groupSize} onChange={(event) => setGroupSize(Math.max(2, Math.min(500, Number(event.target.value) || 2)))} className="night-input" />
-                  </Field>
-                  <Field label="Total budget" icon={<WalletCards size={15} />}>
-                    <div className="flex items-center border-b border-obsidian/15 focus-within:border-ember">
-                      <span className="text-sm text-obsidian/40">₦</span>
-                      <input type="number" min={20000} step={5000} value={totalBudget} onChange={(event) => setTotalBudget(Math.max(20000, Number(event.target.value) || 20000))} className="night-input border-0 pl-1 focus:ring-0" />
-                    </div>
-                    <p className="mt-1 text-[11px] text-obsidian/40">About {formatNgn(budgetPerPerson)} per guest</p>
-                  </Field>
-                </div>
+                <div className="grid gap-5 lg:grid-cols-3 lg:gap-4">
+                  <div className="grid content-start gap-4 rounded-2xl border border-obsidian/8 bg-paper/50 p-4 sm:grid-cols-2 lg:grid-cols-1">
+                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-ember sm:col-span-2 lg:col-span-1">1 · Event details</p>
+                    <Field label="Plan name" icon={<PartyPopper size={15} />}>
+                      <input value={name} onChange={(event) => setName(event.target.value)} placeholder={suggestedName(mood, date)} className="night-input" />
+                    </Field>
+                    <Field label="Date" icon={<CalendarDays size={15} />}>
+                      <input type="date" min={isoDate()} value={date} onChange={(event) => setDate(event.target.value)} className="night-input" />
+                    </Field>
+                    <Field label="Delivery time" icon={<Clock3 size={15} />}>
+                      <input type="time" value={time} onChange={(event) => setTime(event.target.value)} className="night-input" />
+                    </Field>
+                  </div>
 
-                <div className="mt-5 sm:mt-7">
-                  <p className="mb-2 text-xs font-bold text-obsidian/55 sm:mb-3">Party type</p>
-                  <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-5 sm:gap-2">
+                  <div className="grid content-start gap-4 rounded-2xl border border-obsidian/8 bg-paper/50 p-4 sm:grid-cols-2 lg:grid-cols-1">
+                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-ember sm:col-span-2 lg:col-span-1">2 · Place &amp; budget</p>
+                    <Field label="City" icon={<MapPin size={15} />}>
+                      <span className="night-input block text-obsidian/70">Lagos</span>
+                    </Field>
+                    <Field label="Preferred area" icon={<MapPin size={15} />}>
+                      <span className="relative block">
+                        <select value={area} onChange={(event) => setArea(event.target.value)} className="night-input select-clean pr-9">
+                          {LAGOS_AREAS.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+                        </select>
+                        <ChevronDown size={15} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-obsidian/35" />
+                      </span>
+                    </Field>
+                    <Field label="Guests" icon={<Users size={15} />}>
+                      <input type="number" min={2} max={500} value={groupSize} onChange={(event) => setGroupSize(Math.max(2, Math.min(500, Number(event.target.value) || 2)))} className="night-input" />
+                    </Field>
+                    <Field label="Total budget" icon={<WalletCards size={15} />}>
+                      <div className="flex items-center border-b border-obsidian/15 focus-within:border-ember">
+                        <span className="text-sm text-obsidian/40">₦</span>
+                        <input type="number" min={20000} step={5000} value={totalBudget} onChange={(event) => setTotalBudget(Math.max(20000, Number(event.target.value) || 20000))} className="night-input border-0 pl-1 focus:ring-0" />
+                      </div>
+                      <p className="mt-1 text-[11px] text-obsidian/40">About {formatNgn(budgetPerPerson)} per guest</p>
+                    </Field>
+                  </div>
+
+                  <div className="rounded-2xl border border-obsidian/8 bg-paper/50 p-4">
+                    <p className="mb-3 text-[10px] font-black uppercase tracking-[0.16em] text-ember">3 · Party preferences</p>
+                    <p className="mb-2 text-xs font-bold text-obsidian/55">Party type</p>
+                    <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-5 sm:gap-2 lg:grid-cols-2">
                     {MOODS.map((item) => (
-                      <button key={item.id} type="button" onClick={() => { setMood(item.id); setDrinkVibe(moodToDrinkVibe[item.id]); }} className={`rounded-xl border p-2.5 text-left transition sm:rounded-2xl sm:p-3 ${mood === item.id ? 'border-ember bg-ember/[0.06] text-ember' : 'border-obsidian/10 bg-paper text-obsidian/60 hover:border-obsidian/20'}`}>
-                        <span className="text-base sm:text-lg">{item.icon}</span>
-                        <span className="mt-0.5 block text-[11px] font-bold sm:mt-1 sm:text-xs">{item.label}</span>
+                      <button key={item.id} type="button" onClick={() => { setMood(item.id); setDrinkVibe(moodToDrinkVibe[item.id]); }} className={`rounded-xl border p-2 text-left transition ${mood === item.id ? 'border-ember bg-ember/[0.06] text-ember' : 'border-obsidian/10 bg-white text-obsidian/60 hover:border-obsidian/20'}`}>
+                        <span className="mr-1.5 text-sm">{item.icon}</span>
+                        <span className="text-[11px] font-bold sm:text-xs">{item.label}</span>
                       </button>
                     ))}
-                  </div>
-                </div>
-
-                <div className="mt-5 sm:mt-7">
-                  <p className="mb-2 text-xs font-bold text-obsidian/55 sm:mb-3">Preferred drinks</p>
-                  <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
+                    </div>
+                    <p className="mb-2 mt-4 text-xs font-bold text-obsidian/55">Preferred drinks</p>
+                    <div className="grid grid-cols-2 gap-1.5">
                     {DRINK_VIBES.map((id) => (
-                      <button key={id} type="button" onClick={() => setDrinkVibe(id)} className={`rounded-xl border p-2.5 text-left transition sm:rounded-2xl sm:p-3 ${drinkVibe === id ? 'border-ember bg-ember/[0.06] text-ember' : 'border-obsidian/10 bg-paper text-obsidian/60 hover:border-obsidian/20'}`}>
-                        <span className="block text-xs font-bold sm:text-sm">{VIBE_LABELS[id]}</span>
+                      <button key={id} type="button" onClick={() => setDrinkVibe(id)} className={`rounded-xl border p-2 text-left transition ${drinkVibe === id ? 'border-ember bg-ember/[0.06] text-ember' : 'border-obsidian/10 bg-white text-obsidian/60 hover:border-obsidian/20'}`}>
+                        <span className="block text-[11px] font-bold sm:text-xs">{VIBE_LABELS[id]}</span>
                       </button>
                     ))}
+                    </div>
+                    <button type="button" onClick={createPlan} disabled={creating} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-obsidian px-5 py-3 text-xs font-black uppercase tracking-[0.12em] text-white transition hover:bg-ember disabled:opacity-60">
+                      {creating ? 'Planning your party…' : 'Plan my party'}
+                    </button>
                   </div>
                 </div>
-
-                <button type="button" onClick={createPlan} disabled={creating} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-obsidian px-5 py-3.5 text-xs font-black uppercase tracking-[0.12em] text-white transition hover:bg-ember disabled:opacity-60 sm:mt-8 sm:rounded-2xl sm:px-6 sm:py-4 sm:text-sm">
-                  {creating ? 'Planning your party…' : 'Plan my party'}
-                </button>
               </div>
             </div>
           </section>

@@ -1,16 +1,13 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
 import Navigation from '@/components/Navigation';
 import MobileTabBar from '@/components/MobileTabBar';
 import RouteScrollReset from '@/components/RouteScrollReset';
 import { Suspense } from 'react';
 import { CartProvider } from '@/components/cart/CartProvider';
+import Footer from '@/components/Footer';
 
 export default function PublicShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const onShop = pathname === '/shop' || pathname.startsWith('/shop/');
-
   return (
     <CartProvider>
       <RouteScrollReset />
@@ -27,7 +24,8 @@ export default function PublicShell({ children }: { children: React.ReactNode })
           id="app-scroll"
           className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch] md:overflow-visible md:min-h-fit md:flex-none"
         >
-          <main className={`relative z-0 ${onShop ? '' : 'pb-20 md:pb-0'}`}>{children}</main>
+          <main className="relative z-0">{children}</main>
+          <Footer />
         </div>
         <Suspense fallback={null}>
           <MobileTabBar />

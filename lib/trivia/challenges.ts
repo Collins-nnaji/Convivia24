@@ -59,7 +59,7 @@ export const CHALLENGES: Challenge[] = [
     points: 500,
     icon: 'Users',
     status: 'live',
-    action: { kind: 'link', href: '/refer-and-earn', label: 'Invite' },
+    action: { kind: 'link', href: '/discover?tab=refer-and-earn', label: 'Invite' },
     cadence: 'once',
     target: 1,
     badge: 'popular',

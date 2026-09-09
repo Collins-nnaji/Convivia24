@@ -2,13 +2,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 const footerLinks = [
-  { label: 'Shop', href: '/shop' },
-  { label: 'Party Planner', href: '/party-planner' },
-  { label: 'Discover', href: '/discover' },
   { label: 'Brands', href: '/brands' },
   { label: 'Contact', href: '/contact' },
-  { label: 'Privacy', href: '/privacy-policy' },
-  { label: 'Terms', href: '/terms-of-use' },
+  { label: 'Refer & earn', href: '/discover?tab=refer-and-earn' },
 ];
 
 export default function Footer() {

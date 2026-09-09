@@ -4,7 +4,7 @@ import { EVENT_PACKAGES } from '@/lib/packages/catalog';
 import { eventsEnabled } from '@/lib/features';
 import { absoluteUrl } from '@/lib/seo';
 
-const MVP_PATHS = ['/', '/shop', '/party-planner', '/discover', '/contact', '/refer-and-earn', '/guest-card', '/convivium', '/privacy-policy', '/terms-of-use'];
+const MVP_PATHS = ['/', '/shop', '/party-planner', '/discover', '/contact', '/guest-card', '/convivium', '/privacy-policy', '/terms-of-use'];
 
 const FULL_PATHS = [...MVP_PATHS, '/events', '/venues', '/circles'];
 

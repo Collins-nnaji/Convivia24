@@ -132,7 +132,7 @@ export default function AccountShell() {
               Invite friends to Convivia24 and earn together.
             </p>
             <Link
-              href="/refer-and-earn"
+              href="/discover?tab=refer-and-earn"
               className="mt-4 inline-flex items-center gap-1.5 px-4 py-2.5 bg-white text-obsidian text-[10px] font-black uppercase tracking-[0.12em]"
             >
               <Bookmark size={12} /> Invite friends

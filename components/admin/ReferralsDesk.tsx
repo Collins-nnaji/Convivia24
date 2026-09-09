@@ -166,7 +166,7 @@ export default function ReferralsDesk() {
           <p className="text-sm text-obsidian/45">Loading…</p>
         ) : partners.length === 0 ? (
           <p className="text-sm text-obsidian/45">
-            No applications yet. The form is at <code>/refer-and-earn</code>.
+            No applications yet. The form is in the Refer &amp; Earn tab under Discover.
           </p>
         ) : (
           <ul className="space-y-3">

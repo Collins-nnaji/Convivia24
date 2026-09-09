@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ChevronRight, Gift, MapPin, Package, Star, Target, Trophy } from 'lucide-react';
+import { ChevronRight, Gift, MapPin, Package, Star, Target, Trophy, Users } from 'lucide-react';
 import { useUser } from '@/components/auth/AuthProvider';
 import MatchRing from '@/components/account/MatchRing';
 import { useTriviaHub } from '@/components/trivia/use-hub';
@@ -171,13 +171,19 @@ export default function AccountOverview({
         )}
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-4">
+      <div className="grid sm:grid-cols-3 gap-4">
         <QuickLink href="/orders" icon={Package} title="Orders" detail="Track deliveries and past orders" />
         <QuickLink
           href="/discover#challenges"
           icon={Target}
           title="Challenges"
           detail="See what you can still earn"
+        />
+        <QuickLink
+          href="/discover?tab=refer-and-earn"
+          icon={Users}
+          title="Refer & earn"
+          detail="Share your link and earn on orders"
         />
       </div>
     </div>
