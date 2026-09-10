@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
-import { aiConfigured, chat } from '@/lib/ai/azure';
+import { aiConfigured, AzureAiError, chat } from '@/lib/ai/azure';
 import { apiErrorResponse } from '@/lib/db';
 import { editStockRow, listInventory, type InventoryRow } from '@/lib/inventory';
 import { DRINKS } from '@/lib/drinks/catalog';
@@ -131,6 +131,12 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     captureApiError(err, { route: 'admin/price-list POST' });
+    if (err instanceof AzureAiError) {
+      const detail = err.status === 401 || err.status === 403
+        ? 'Azure rejected the configured endpoint or key. Update the Azure AI credentials, then retry the scan.'
+        : 'Azure could not read this image right now. Try again, or paste the price list as text.';
+      return NextResponse.json({ error: detail }, { status: 503 });
+    }
     const { status, error } = apiErrorResponse(err, 'Unable to read that price list.');
     return NextResponse.json({ error }, { status });
   }

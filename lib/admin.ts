@@ -7,9 +7,9 @@ const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 
 function adminEmails(): string[] {
   return (process.env.CONVIVIA_ADMIN_EMAILS || '')
-    .split(',')
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
+    .split(/[;,\s]+/)
+    .map((e) => e.trim().toLowerCase().replace(/\\@/g, '@'))
+    .filter((email) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email));
 }
 
 /**

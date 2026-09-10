@@ -275,6 +275,17 @@ CREATE TABLE IF NOT EXISTS trivia_entries (
 CREATE INDEX IF NOT EXISTS idx_trivia_entries_round ON trivia_entries(round_slug, created_at DESC);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_trivia_entries_once ON trivia_entries(round_slug, LOWER(email));
 
+CREATE TABLE IF NOT EXISTS trivia_custom_questions (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  round_slug    TEXT NOT NULL,
+  prompt        TEXT NOT NULL,
+  options       JSONB NOT NULL,
+  answer_index  INTEGER NOT NULL CHECK (answer_index BETWEEN 0 AND 3),
+  explainer     TEXT NOT NULL,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_trivia_custom_questions_round ON trivia_custom_questions(round_slug, created_at);
+
 -- ═══════════════════════════════════════════════
 -- TRIVIA SCHEDULE (one sponsoring brand per week)
 -- ═══════════════════════════════════════════════

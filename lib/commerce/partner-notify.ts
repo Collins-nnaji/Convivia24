@@ -16,13 +16,14 @@ export async function notifyPartnerApplication(
       applicationId,
       ...input,
     });
-    await sendEmail({
+    const result = await sendEmail({
       to: admins,
       subject,
       html,
       text,
       replyTo: input.email,
     });
+    if (!result.sent) console.error('Admin partner notification failed:', result.error);
   } catch (err) {
     console.error('notifyPartnerApplication failed', err);
   }

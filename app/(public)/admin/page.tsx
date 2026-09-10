@@ -59,7 +59,8 @@ type TriviaWeek = {
   live: boolean;
 };
 
-type RoundOption = { slug: string; brand: string; prizeLabel: string };
+type RoundOption = { slug: string; brand: string; prizeLabel: string; prizeSlug?: string };
+type CustomQuestion = { databaseId: string; roundSlug: string; prompt: string; options: string[]; answerIndex: number; explainer: string };
 
 type TriviaEntry = {
   id: string;
@@ -181,6 +182,8 @@ function AdminDesk() {
   const [triviaError, setTriviaError] = useState('');
   const [weeks, setWeeks] = useState<TriviaWeek[]>([]);
   const [rounds, setRounds] = useState<RoundOption[]>([]);
+  const [customQuestions, setCustomQuestions] = useState<CustomQuestion[]>([]);
+  const [triviaQuestionRound, setTriviaQuestionRound] = useState('');
   const [weekRound, setWeekRound] = useState('');
   const [weekStart, setWeekStart] = useState('');
   const [orders, setOrders] = useState<AdminOrder[]>([]);
@@ -194,7 +197,9 @@ function AdminDesk() {
   const [priceListOpen, setPriceListOpen] = useState(false);
   /** Per-supplier holdings, keyed by SKU slug — the shop total is the sum of these. */
   const [supplierStock, setSupplierStock] = useState<Record<string, SupplierStockRow[]>>({});
+  const [supplierCosts, setSupplierCosts] = useState<Record<string, Record<string, number>>>({});
   const [suppliers, setSuppliers] = useState<SupplierLite[]>([]);
+  const [visibleSupplierIds, setVisibleSupplierIds] = useState<string[]>([]);
   const [stockQuery, setStockQuery] = useState('');
   const [stockCategory, setStockCategory] = useState('bottles');
 
@@ -208,7 +213,9 @@ function AdminDesk() {
     setAuthed(true);
     setItems(data.items || []);
     setSupplierStock(data.supplierStock || {});
+    setSupplierCosts(data.supplierCosts || {});
     setSuppliers(data.suppliers || []);
+    setVisibleSupplierIds((current) => current.length ? current : (data.suppliers || []).slice(0, 3).map((supplier: SupplierLite) => supplier.id));
     setBlobOk(Boolean(data.blobConfigured));
     setAiOk(Boolean(data.aiConfigured));
   }, []);
@@ -228,8 +235,11 @@ function AdminDesk() {
     setTriviaError(entryData.error || schedData.error || '');
     setEntries(entryData.entries || []);
     setWeeks(schedData.weeks || []);
-    setRounds(schedData.rounds || []);
-    setWeekRound((v) => v || schedData.rounds?.[0]?.slug || '');
+    const availableRounds = entryData.rounds || schedData.rounds || [];
+    setRounds(availableRounds);
+    setCustomQuestions(entryData.questions || []);
+    setWeekRound((v) => v || availableRounds[0]?.slug || '');
+    setTriviaQuestionRound((v) => v || availableRounds[0]?.slug || '');
     setWeekStart((v) => v || schedData.thisWeek || '');
   }, []);
 
@@ -260,6 +270,37 @@ function AdminDesk() {
       return;
     }
     setWeeks((rows) => rows.filter((r) => r.id !== week.id));
+  }
+
+  async function addTriviaQuestion(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setTriviaError('');
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    const response = await fetch('/api/admin/trivia', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        roundSlug: data.get('roundSlug'),
+        prompt: data.get('prompt'),
+        options: [data.get('option0'), data.get('option1'), data.get('option2'), data.get('option3')],
+        answerIndex: Number(data.get('answerIndex')),
+        explainer: data.get('explainer'),
+      }),
+    });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      setTriviaError(body.error || 'Could not add question.');
+      return;
+    }
+    setCustomQuestions((questions) => [...questions, body.question]);
+    form.reset();
+  }
+
+  async function removeTriviaQuestion(question: CustomQuestion) {
+    const response = await fetch(`/api/admin/trivia?questionId=${encodeURIComponent(question.databaseId)}`, { method: 'DELETE' });
+    if (response.ok) setCustomQuestions((questions) => questions.filter((item) => item.databaseId !== question.databaseId));
+    else setTriviaError('Could not remove the question.');
   }
 
   const loadOrders = useCallback(async () => {
@@ -514,6 +555,8 @@ function AdminDesk() {
       return `${it.name} ${it.brand ?? ''} ${it.slug}`.toLowerCase().includes(q);
     });
   }, [items, stockQuery, stockCategory]);
+  const selectedTriviaPrizeSlug = rounds.find((round) => round.slug === triviaQuestionRound)?.prizeSlug;
+  const selectedTriviaPrize = items.find((item) => item.slug === selectedTriviaPrizeSlug);
 
   async function setSupplierStockQty(supplierId: string, slug: string, onHand: number) {
     const res = await fetch('/api/admin/inventory', {
@@ -528,6 +571,24 @@ function AdminDesk() {
     }
     setSupplierStock((prev) => ({ ...prev, [slug]: data.rows || [] }));
     // The SKU's headline on-hand is derived from these, so pull the row totals back in.
+    await loadStock();
+  }
+
+  async function setSupplierCost(supplierId: string, slug: string, costNgn: number) {
+    const res = await fetch('/api/admin/supplier-prices', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ supplierId, slug, costNgn }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      notify(data.error || 'Could not update supplier cost.', 'error');
+      return;
+    }
+    setSupplierCosts((current) => ({
+      ...current,
+      [slug]: { ...(current[slug] || {}), [supplierId]: costNgn },
+    }));
     await loadStock();
   }
 
@@ -867,6 +928,53 @@ function AdminDesk() {
               )}
             </div>
 
+            <div className="mb-12 grid gap-6 lg:grid-cols-[1fr_.9fr]">
+              <form onSubmit={addTriviaQuestion} className="bg-white p-6 shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)] space-y-4">
+                <div>
+                  <h2 className="font-bold">Add trivia question</h2>
+                  <p className="mt-1 text-sm text-obsidian/50">Questions can only be attached to prize bottles already available with an image.</p>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
+                  <label className="block">
+                    <span className="text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40">Drink / round</span>
+                    <select name="roundSlug" required value={triviaQuestionRound} onChange={(event) => setTriviaQuestionRound(event.target.value)} className={inputClass}>
+                      {rounds.map((round) => <option key={round.slug} value={round.slug}>{round.brand} — {round.prizeLabel}</option>)}
+                    </select>
+                  </label>
+                  {selectedTriviaPrize?.image_url && (
+                    <Image src={selectedTriviaPrize.image_url} alt="" width={44} height={56} className="h-14 w-11 object-contain" />
+                  )}
+                </div>
+                <Field name="prompt" label="Question" required />
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {[0, 1, 2, 3].map((index) => <Field key={index} name={`option${index}`} label={`Answer ${index + 1}`} required />)}
+                </div>
+                <label className="block">
+                  <span className="text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40">Correct answer</span>
+                  <select name="answerIndex" defaultValue="0" className={inputClass}>
+                    {[0, 1, 2, 3].map((index) => <option key={index} value={index}>Answer {index + 1}</option>)}
+                  </select>
+                </label>
+                <TextAreaField name="explainer" label="Answer explanation" rows={2} />
+                <button type="submit" className="btn-brand px-5 py-3 text-[11px] font-black uppercase tracking-[0.12em]">Add question</button>
+              </form>
+
+              <div className="bg-white p-6 shadow-sm">
+                <h2 className="font-bold">Added questions ({customQuestions.length})</h2>
+                <div className="mt-4 max-h-[32rem] divide-y divide-obsidian/8 overflow-y-auto">
+                  {customQuestions.map((question) => (
+                    <div key={question.databaseId} className="py-3">
+                      <p className="text-[10px] font-black uppercase tracking-[0.12em] text-ember">{rounds.find((round) => round.slug === question.roundSlug)?.brand || question.roundSlug}</p>
+                      <p className="mt-1 text-sm font-semibold text-obsidian">{question.prompt}</p>
+                      <p className="mt-1 text-xs text-obsidian/45">Correct: {question.options[question.answerIndex]}</p>
+                      <button type="button" onClick={() => removeTriviaQuestion(question)} className="mt-2 text-[10px] font-black uppercase tracking-[0.12em] text-ember">Remove</button>
+                    </div>
+                  ))}
+                  {customQuestions.length === 0 && <p className="py-6 text-sm text-obsidian/40">No extra questions yet.</p>}
+                </div>
+              </div>
+            </div>
+
             <h2 className="font-bold mb-1">Draw entries</h2>
             <p className="text-sm text-obsidian/50 mb-5">
               Everyone who passed a brand round. Mark a winner, then mark the bottle claimed once collected.
@@ -1091,7 +1199,27 @@ function AdminDesk() {
                 {visibleItems.length} of {items.length}
               </span>
             </div>
-            <div className="hidden lg:grid grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(0,.55fr))_auto] gap-3 px-4 pb-2 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40">
+            <div className="mb-4 rounded-xl border border-obsidian/10 bg-white p-3">
+              <p className="text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40">Supplier columns</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {suppliers.map((supplier) => {
+                  const active = visibleSupplierIds.includes(supplier.id);
+                  return (
+                    <button
+                      key={supplier.id}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => setVisibleSupplierIds((current) => active ? current.filter((id) => id !== supplier.id) : [...current, supplier.id].slice(-3))}
+                      className={`rounded-full border px-3 py-2 text-xs font-semibold transition-colors ${active ? 'border-ember bg-ember text-white' : 'border-obsidian/12 text-obsidian/55 hover:border-ember/35'}`}
+                    >
+                      {supplier.name}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-2 text-[11px] text-obsidian/40">Choose up to three suppliers. Each drink shows their stock, unit cost and margin.</p>
+            </div>
+            <div className="hidden lg:grid min-w-[980px] grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(0,.55fr))_auto] gap-3 border-x border-t border-obsidian/10 bg-paper px-4 py-3 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40">
               <span>SKU</span>
               <span className="text-right">On hand</span>
               <span className="text-right">Cost</span>
@@ -1099,7 +1227,7 @@ function AdminDesk() {
               <span className="text-right">Margin</span>
               <span className="text-right">Actions</span>
             </div>
-            <div className="space-y-3">
+            <div className="overflow-x-auto border-b border-obsidian/10">
               {visibleItems.map((item) => (
                 <StockRow
                   key={item.slug}
@@ -1108,9 +1236,11 @@ function AdminDesk() {
                   onSave={(patch) => saveStock(item.slug, patch)}
                   onDelete={() => deleteStock(item.slug, item.name)}
                   onLoadForm={() => loadItemIntoForm(item)}
-                  suppliers={suppliers}
+                  suppliers={suppliers.filter((supplier) => visibleSupplierIds.includes(supplier.id))}
                   supplierRows={supplierStock[item.slug] || []}
+                  supplierCosts={supplierCosts[item.slug] || {}}
                   onSetSupplierStock={setSupplierStockQty}
+                  onSetSupplierCost={setSupplierCost}
                 />
               ))}
               {visibleItems.length === 0 && (
@@ -1220,18 +1350,26 @@ function TrackingForm({
 function SupplierQtyField({
   supplier,
   row,
+  costNgn,
+  retailNgn,
   onSave,
+  onSaveCost,
 }: {
   supplier: SupplierLite;
   row?: SupplierStockRow;
+  costNgn?: number;
+  retailNgn: number | null;
   onSave: (qty: number) => Promise<void>;
+  onSaveCost: (cost: number) => Promise<void>;
 }) {
   const [value, setValue] = useState(String(row?.onHand ?? 0));
+  const [cost, setCost] = useState(costNgn == null ? '' : String(costNgn));
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     setValue(String(row?.onHand ?? 0));
   }, [row?.onHand]);
+  useEffect(() => setCost(costNgn == null ? '' : String(costNgn)), [costNgn]);
 
   async function commit() {
     const qty = Number(value);
@@ -1244,13 +1382,26 @@ function SupplierQtyField({
     setBusy(false);
   }
 
+  async function commitCost() {
+    const next = Number(cost);
+    if (!Number.isFinite(next) || next < 0 || next === costNgn) {
+      setCost(costNgn == null ? '' : String(costNgn));
+      return;
+    }
+    setBusy(true);
+    await onSaveCost(next);
+    setBusy(false);
+  }
+
+  const margin = skuMargin(retailNgn, cost === '' ? null : Number(cost));
+
   return (
-    <label className="rounded-xl border border-obsidian/10 bg-paper/50 p-2.5">
+    <div className="rounded-xl border border-obsidian/10 bg-paper/50 p-2.5">
       <span className="block text-[10px] font-black uppercase tracking-[0.1em] text-obsidian/45">
         {supplier.city}
       </span>
       <span className="mb-1.5 block truncate text-[11px] text-obsidian/40">{supplier.name}</span>
-      <input
+      <label className="block text-[10px] text-obsidian/40">Stock<input
         type="number"
         min={0}
         value={value}
@@ -1259,11 +1410,18 @@ function SupplierQtyField({
         onBlur={commit}
         onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
         className="w-full rounded-lg border border-obsidian/12 bg-white px-2 py-1.5 text-sm font-semibold tabular-nums text-obsidian focus:border-ember focus:ring-0 disabled:opacity-50"
-      />
+      /></label>
+      <label className="mt-1.5 block text-[10px] text-obsidian/40">
+        Unit cost
+        <input type="number" min={0} value={cost} disabled={busy} onChange={(e) => setCost(e.target.value)} onBlur={commitCost} onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()} className="w-full rounded-lg border border-obsidian/12 bg-white px-2 py-1.5 text-sm font-semibold tabular-nums text-obsidian focus:border-ember focus:ring-0 disabled:opacity-50" />
+      </label>
       <span className="mt-1 block text-[10px] text-obsidian/40">
         {row && row.reserved > 0 ? `${row.reserved} reserved · ${row.available} free` : 'none reserved'}
       </span>
-    </label>
+      <span className={`mt-1 block text-[10px] font-semibold ${margin?.negative ? 'text-red-600' : 'text-emerald-700'}`}>
+        {margin ? `${formatNgn(margin.marginNgn)} · ${margin.marginPct}% margin` : 'Add cost for margin'}
+      </span>
+    </div>
   );
 }
 
@@ -1275,7 +1433,9 @@ function StockRow({
   onLoadForm,
   suppliers,
   supplierRows,
+  supplierCosts,
   onSetSupplierStock,
+  onSetSupplierCost,
 }: {
   item: Item;
   saving: boolean;
@@ -1284,7 +1444,9 @@ function StockRow({
   onLoadForm: () => void;
   suppliers: SupplierLite[];
   supplierRows: SupplierStockRow[];
+  supplierCosts: Record<string, number>;
   onSetSupplierStock: (supplierId: string, slug: string, onHand: number) => Promise<void>;
+  onSetSupplierCost: (supplierId: string, slug: string, costNgn: number) => Promise<void>;
 }) {
   const [onHand, setOnHand] = useState(String(item.on_hand));
   const [price, setPrice] = useState(item.price_ngn != null ? String(item.price_ngn) : '');
@@ -1292,7 +1454,6 @@ function StockRow({
   const [threshold, setThreshold] = useState(String(item.low_stock_threshold));
   const [tasteNote, setTasteNote] = useState(item.taste_note || '');
   const [guideOpen, setGuideOpen] = useState(false);
-  const [stockOpen, setStockOpen] = useState(false);
 
   useEffect(() => {
     setOnHand(String(item.on_hand));
@@ -1317,7 +1478,7 @@ function StockRow({
   const lowStock = item.tracked !== false && item.available <= item.low_stock_threshold;
 
   return (
-    <div className="bg-white p-4 shadow-sm space-y-3">
+    <div className="min-w-[980px] border-x border-t border-obsidian/10 bg-white p-4 space-y-3">
       <div className="flex flex-col lg:flex-row lg:items-center gap-4">
         <div className="flex items-center gap-3 min-w-0 lg:w-64">
           {item.image_url ? (
@@ -1426,15 +1587,6 @@ function StockRow({
           </button>
           <button
             type="button"
-            onClick={() => setStockOpen((v) => !v)}
-            className={`px-3 py-2.5 border text-[10px] font-black uppercase tracking-[0.12em] ${
-              stockOpen ? 'border-ember text-ember' : 'border-obsidian/15'
-            }`}
-          >
-            {stockOpen ? 'Hide stock' : 'Suppliers'}
-          </button>
-          <button
-            type="button"
             onClick={() => setGuideOpen((v) => !v)}
             className="px-3 py-2.5 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em]"
           >
@@ -1458,7 +1610,7 @@ function StockRow({
         </div>
       </div>
 
-      {stockOpen && (
+      {suppliers.length > 0 && (
         <div className="pt-3 mt-3 border-t border-obsidian/10">
           <p className="mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40">
             Stock by supplier
@@ -1471,7 +1623,10 @@ function StockRow({
                   key={sup.id}
                   supplier={sup}
                   row={row}
+                  costNgn={supplierCosts[sup.id]}
+                  retailNgn={item.price_ngn}
                   onSave={(qty) => onSetSupplierStock(sup.id, item.slug, qty)}
+                  onSaveCost={(costNgn) => onSetSupplierCost(sup.id, item.slug, costNgn)}
                 />
               );
             })}
@@ -1603,4 +1758,3 @@ function TextAreaField({
     </div>
   );
 }
-

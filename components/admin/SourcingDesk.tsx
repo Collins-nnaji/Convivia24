@@ -147,7 +147,11 @@ export default function SourcingDesk({
         {orders.length === 0 ? (
           <p className="text-sm text-obsidian/45">No orders yet.</p>
         ) : (
-          <ul className="space-y-3">
+          <div className="overflow-x-auto rounded-xl border border-obsidian/10 bg-white">
+          <div className="grid min-w-[900px] grid-cols-[1.4fr_.65fr_2fr] gap-4 border-b border-obsidian/10 bg-paper px-4 py-3 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40">
+            <span>Order &amp; contents</span><span className="text-right">Revenue / margin</span><span>Supplier, cost &amp; notes</span>
+          </div>
+          <ul className="min-w-[900px] divide-y divide-obsidian/8">
             {orders.map((order) => {
               const draft = drafts[order.id] || {
                 supplierId: order.supplierId || '',
@@ -166,8 +170,8 @@ export default function SourcingDesk({
               const dirty = Boolean(drafts[order.id]);
 
               return (
-                <li key={order.id} className="bg-white border border-obsidian/10 p-4">
-                  <div className="flex flex-wrap items-baseline justify-between gap-3 mb-3">
+                <li key={order.id} className="grid grid-cols-[1.4fr_.65fr_2fr] gap-4 bg-white p-4 hover:bg-paper/30">
+                  <div className="min-w-0">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-obsidian">
                         {shortId(order.id)} · {order.fullName}
@@ -177,7 +181,9 @@ export default function SourcingDesk({
                         {order.items.map((i) => `${i.name} × ${i.qty}`).join(' · ') || 'no items'}
                       </p>
                     </div>
-                    <div className="text-right shrink-0">
+                  </div>
+
+                  <div className="text-right shrink-0">
                       <p className="text-sm font-bold text-obsidian tabular-nums">
                         {formatNgn(order.totalNgn)}
                       </p>
@@ -190,10 +196,10 @@ export default function SourcingDesk({
                           ? 'not costed'
                           : `${formatNgn(live.marginNgn)} margin · ${live.marginPct}%`}
                       </p>
-                    </div>
                   </div>
 
-                  <div className="grid sm:grid-cols-[minmax(0,1fr)_10rem_auto] gap-2 items-start">
+                  <div>
+                  <div className="grid grid-cols-[minmax(0,1fr)_10rem_auto] gap-2 items-start">
                     <select
                       aria-label="Supplier"
                       value={draft.supplierId}
@@ -245,10 +251,12 @@ export default function SourcingDesk({
                       {new Date(order.sourcedAt).toLocaleDateString()}.
                     </p>
                   )}
+                  </div>
                 </li>
               );
             })}
           </ul>
+          </div>
         )}
       </section>
     </div>

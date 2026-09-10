@@ -6,7 +6,8 @@
  * RESEND_API_KEY
  * RESEND_FROM — e.g. "Convivia24 <no-reply@convivia24.com>"
  * RESEND_REPLY_TO / SUPPORT_EMAIL — reply destination (support@…)
- * ADMIN_NOTIFY_EMAIL — optional BCC/ops copy for new paid orders
+ * ADMIN_NOTIFY_EMAIL — optional extra recipients for operational notifications.
+ * Every address in CONVIVIA_ADMIN_EMAILS is included automatically as well.
  */
 
 export type SendEmailInput = {
@@ -79,10 +80,18 @@ export async function sendEmail(input: SendEmailInput): Promise<{ sent: boolean;
 }
 
 export function adminNotifyEmail(): string | string[] | null {
-  const emails = (process.env.ADMIN_NOTIFY_EMAIL || '')
-    .split(',')
-    .map((e) => e.trim())
-    .filter((e) => e.includes('@'));
+  const seen = new Set<string>();
+  const emails = [process.env.CONVIVIA_ADMIN_EMAILS, process.env.ADMIN_NOTIFY_EMAIL]
+    .filter(Boolean)
+    .flatMap((value) => String(value).split(/[;,\s]+/))
+    // Deployment dashboards sometimes receive a Markdown-escaped `\@`; normalise it rather
+    // than asking Resend to deliver to a malformed address.
+    .map((email) => email.trim().toLowerCase().replace(/\\@/g, '@'))
+    .filter((email) => {
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || seen.has(email)) return false;
+      seen.add(email);
+      return true;
+    });
   if (emails.length === 0) return null;
   return emails.length === 1 ? emails[0] : emails;
 }

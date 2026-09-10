@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { EMPTY_TASTE_PROFILE, sanitizeProfile, type TasteProfile } from '@/lib/trivia/taste';
 import { TRIVIA_ROUNDS } from '@/lib/trivia/catalog';
 import type { ChallengeMeter } from '@/lib/trivia/challenges';
+import type { CustomTriviaQuestion } from '@/lib/trivia/custom-questions';
 
 const PROFILE_KEY = 'c24.taste-profile';
 
@@ -27,6 +28,7 @@ export type HubState = {
   claimed: Record<string, string>;
   /** Counted progress signals behind the challenge bars. */
   meters: Record<ChallengeMeter, number>;
+  customQuestions: CustomTriviaQuestion[];
 };
 
 const NO_METERS: HubState['meters'] = {
@@ -66,6 +68,7 @@ export function useTriviaHub() {
     profile: null,
     claimed: {},
     meters: NO_METERS,
+    customQuestions: [],
   });
 
   useEffect(() => {
@@ -93,6 +96,7 @@ export function useTriviaHub() {
           profile,
           claimed,
           meters: { ...NO_METERS, ...(data.meters || {}) },
+          customQuestions: data.customQuestions || [],
         });
       })
       .catch(() => {

@@ -17,7 +17,7 @@ import TriviaRoundPlayer from '@/components/trivia/TriviaRound';
 import CocktailMaker from '@/components/trivia/CocktailMaker';
 import ReferEarnTab from '@/components/trivia/ReferEarnTab';
 import { useTriviaHub } from '@/components/trivia/use-hub';
-import { getRound, rankRounds, TRIVIA_ROUNDS, type TriviaRound } from '@/lib/trivia/catalog';
+import { rankRounds, TRIVIA_ROUNDS, type TriviaRound } from '@/lib/trivia/catalog';
 import { DRINKS } from '@/lib/drinks/catalog';
 import { matchScore, overallMatch, type TasteProfile } from '@/lib/trivia/taste';
 
@@ -68,21 +68,25 @@ export default function TriviaHub() {
     );
   }
 
-  const live = getRound(hub.roundSlug) || TRIVIA_ROUNDS[0];
+  const rounds = useMemo(() => TRIVIA_ROUNDS.map((round) => ({
+    ...round,
+    questions: [...round.questions, ...hub.customQuestions.filter((question) => question.roundSlug === round.slug)],
+  })), [hub.customQuestions]);
+  const live = rounds.find((round) => round.slug === hub.roundSlug) || rounds[0];
   const scoreOf = useCallback(
     (round: TriviaRound) => matchScore(hub.profile, signature(round)),
     [hub.profile]
   );
 
   const overall = useMemo(
-    () => overallMatch(hub.profile, TRIVIA_ROUNDS.map(signature)),
-    [hub.profile]
+    () => overallMatch(hub.profile, rounds.map(signature)),
+    [hub.profile, rounds]
   );
 
   // Practice rounds lead with whatever fits the drinker best.
   const practice = useMemo(
-    () => rankRounds(TRIVIA_ROUNDS.filter((r) => r.slug !== live.slug), scoreOf),
-    [live.slug, scoreOf]
+    () => rankRounds(rounds.filter((r) => r.slug !== live.slug), scoreOf),
+    [live.slug, scoreOf, rounds]
   );
 
   // Redemptions and challenge claims both move the balance, so the hub keeps

@@ -8,19 +8,22 @@ import { apiErrorResponse } from '@/lib/db';
 import { rateLimit, clientIp, redis } from '@/lib/redis';
 import { captureApiError } from '@/lib/sentry';
 import { chat, aiConfigured } from '@/lib/ai/azure';
+import { listSupplierCatalog } from '@/lib/suppliers/sku-prices';
 
 export async function GET() {
   const gate = await requireAdmin();
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
-    const [items, supplierStock, suppliers] = await Promise.all([
+    const [items, supplierStock, suppliers, supplierCatalog] = await Promise.all([
       adminStockList(),
       allSupplierStock().catch(() => ({})),
       listSuppliers(true).catch(() => []),
+      listSupplierCatalog().catch(() => []),
     ]);
     return NextResponse.json({
       items,
       supplierStock,
+      supplierCosts: Object.fromEntries(supplierCatalog.map((row) => [row.slug, row.costs])),
       suppliers: suppliers.map((s) => ({ id: s.id, name: s.name, city: s.city })),
       blobConfigured: blobConfigured(),
       aiConfigured: aiConfigured(),

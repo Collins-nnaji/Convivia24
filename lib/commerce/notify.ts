@@ -34,7 +34,8 @@ async function notifyAdminsOfSuccessfulOrder(opts: {
   const admins = adminNotifyEmail();
   if (!admins) return;
   const { subject, html, text } = adminSuccessfulOrderEmail(opts);
-  await sendEmail({ to: admins, subject, html, text });
+  const result = await sendEmail({ to: admins, subject, html, text });
+  if (!result.sent) console.error('Admin order notification failed:', result.error);
 }
 
 /**

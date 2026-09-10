@@ -24,6 +24,16 @@ interface ChatOptions {
   model?: 'chat' | 'analysis';
 }
 
+export class AzureAiError extends Error {
+  status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = 'AzureAiError';
+    this.status = status;
+  }
+}
+
 function deploymentFor(model: 'chat' | 'analysis'): string {
   if (model === 'analysis') {
     return process.env.AZURE_OPENAI_ANALYSIS_DEPLOYMENT ||
@@ -47,23 +57,29 @@ export async function chat({ messages, temperature = 0.7, maxTokens = 900, json 
   if (!endpoint || !key) throw new Error('Azure OpenAI is not configured.');
 
   const url = `${endpoint.replace(/\/$/, '')}/openai/deployments/${deployment}/chat/completions?api-version=${apiVersion}`;
+  // GPT-5 and the o-series use the completion-token field and do not accept arbitrary
+  // temperatures. Keeping this here means cocktail copy and image extraction share the same
+  // deployment safely instead of each route having its own subtly different Azure request.
+  const usesReasoningParameters = /^(gpt-5|o[134](?:-|$))/i.test(deployment);
 
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'api-key': key },
     body: JSON.stringify({
       messages,
-      temperature,
-      max_tokens: maxTokens,
+      ...(usesReasoningParameters ? { max_completion_tokens: maxTokens } : { max_tokens: maxTokens, temperature }),
       ...(json ? { response_format: { type: 'json_object' } } : {}),
     }),
+    signal: AbortSignal.timeout(45_000),
   });
 
   if (!res.ok) {
     const text = await res.text().catch(() => '');
-    throw new Error(`Azure OpenAI error ${res.status}: ${text.slice(0, 300)}`);
+    throw new AzureAiError(res.status, `Azure OpenAI error ${res.status}: ${text.slice(0, 300)}`);
   }
 
   const data = await res.json();
-  return data?.choices?.[0]?.message?.content?.trim() ?? '';
+  const content = data?.choices?.[0]?.message?.content?.trim() ?? '';
+  if (!content) throw new AzureAiError(502, 'Azure OpenAI returned an empty response.');
+  return content;
 }

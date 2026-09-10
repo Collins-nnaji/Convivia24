@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRound, isPass } from '@/lib/trivia/catalog';
+import { isPass } from '@/lib/trivia/catalog';
+import { getRoundWithQuestions } from '@/lib/trivia/custom-questions';
 import { liveRoundSlug } from '@/lib/trivia/schedule';
 import { createEntry, DuplicateEntryError } from '@/lib/trivia/entries';
 import { apiErrorResponse, DatabaseUnavailableError } from '@/lib/db';
@@ -14,7 +15,7 @@ export async function POST(req: NextRequest) {
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
 
     const body = await req.json().catch(() => ({}));
-    const round = getRound(String(body.roundSlug || ''));
+    const round = await getRoundWithQuestions(String(body.roundSlug || ''));
     if (!round) return NextResponse.json({ error: 'Unknown round.' }, { status: 400 });
 
     // Only this week's sponsoring brand takes entries; older rounds are practice.

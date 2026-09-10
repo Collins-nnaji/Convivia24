@@ -9,6 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ListFilter,
+  RotateCcw,
   Search,
   SlidersHorizontal,
   UserRound,
@@ -49,7 +50,7 @@ type ShopSection = 'bottles' | 'packages';
 type SortKey = 'recommended' | 'price-asc' | 'price-desc' | 'name';
 
 const SORT_OPTIONS: { key: SortKey; label: string; short: string }[] = [
-  { key: 'recommended', label: 'Clear sorting', short: 'Recommended' },
+  { key: 'recommended', label: 'Recommended', short: 'Recommended' },
   { key: 'price-asc', label: 'Price — low to high', short: 'Price ↑' },
   { key: 'price-desc', label: 'Price — high to low', short: 'Price ↓' },
   { key: 'name', label: 'Name A–Z', short: 'A–Z' },
@@ -215,7 +216,14 @@ export default function ShopCatalog() {
 
   function resetFilters() {
     setMaxPrice(null);
+    setSort('recommended');
+    setCategory('all');
+    setQuery('');
+    setFiltersOpen(false);
+    router.replace('/shop', { scroll: false });
   }
+
+  const hasRefinements = activeFilterCount > 0 || sort !== 'recommended' || category !== 'all' || Boolean(q);
 
   const recommended = products.filter((d) => d.featured && !d.partyPack);
   const deals = products.filter((d) => d.deal && !d.partyPack);
@@ -263,14 +271,6 @@ export default function ShopCatalog() {
 
       {/* Shop modes are tabs. Package occasions are views, not filters. */}
       <div className="mb-3 space-y-2.5 sm:mb-5 sm:space-y-3">
-        <div className="grid grid-cols-2 gap-1.5 sm:flex sm:gap-2" role="tablist" aria-label="Shop view">
-          <ChipBtn active={section === 'bottles'} onClick={() => goSection('bottles')}>
-            Bottles
-          </ChipBtn>
-          <ChipBtn active={section === 'packages'} onClick={() => goSection('packages')}>
-            Packages
-          </ChipBtn>
-        </div>
         {section === 'bottles' && (
           <label className="relative flex min-h-11 items-center rounded-xl border border-obsidian/10 bg-white px-3 shadow-sm lg:hidden">
             <ListFilter size={17} className="mr-2.5 shrink-0 text-ember" />
@@ -323,11 +323,29 @@ export default function ShopCatalog() {
 
       <div className="flex flex-col lg:flex-row gap-4 lg:gap-5">
         {section === 'bottles' && (
+          <>
           <aside
-            className="hidden lg:block lg:sticky lg:top-[4.75rem] lg:self-start shrink-0 lg:w-72 xl:w-80 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto rounded-2xl bg-ember/[0.06] border border-ember/15 p-3 sm:p-4"
+            className="fixed bottom-[5.25rem] top-[10.5rem] z-20 hidden w-72 overflow-y-auto rounded-2xl border border-ember/15 bg-paper/95 p-4 shadow-[0_12px_35px_rgba(15,15,15,0.08)] backdrop-blur-md lg:block xl:w-80"
+            style={{ left: 'max(1.25rem, calc((100vw - 1600px) / 2 + 1.25rem))' }}
             aria-label="Browse and refine drinks"
           >
-              <p className="mb-2.5 px-1 text-xs font-bold uppercase tracking-[0.14em] text-obsidian/70">Category</p>
+              <div className="mb-3 flex items-center justify-between gap-3 px-1">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-obsidian/70">Browse &amp; filter</p>
+                  <p className="mt-0.5 text-[11px] text-obsidian/40">Refine the bottle list</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  disabled={!hasRefinements}
+                  aria-label="Clear all shop filters"
+                  title="Clear all filters"
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-obsidian/10 bg-white text-obsidian/45 transition hover:border-ember/30 hover:text-ember disabled:cursor-default disabled:opacity-30"
+                >
+                  <RotateCcw size={15} />
+                </button>
+              </div>
+              <p className="mb-2 px-1 text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40">Category</p>
               <div className="rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-obsidian/[0.06]">
                 <div className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible scrollbar-hide pb-0.5 lg:pb-0">
                   <SidebarBtn active={category === 'all'} onClick={() => goCategory('all')}>
@@ -382,15 +400,6 @@ export default function ShopCatalog() {
                 <div>
                   <div className="mb-2 flex items-center justify-between gap-2 px-1">
                     <p className="text-xs font-bold uppercase tracking-[0.14em] text-obsidian/70">Filters</p>
-                    {activeFilterCount > 0 && (
-                      <button
-                        type="button"
-                        onClick={resetFilters}
-                        className="text-[10px] font-black uppercase tracking-[0.12em] text-ember hover:underline"
-                      >
-                        Clear
-                      </button>
-                    )}
                   </div>
                   <div className="space-y-3 rounded-xl bg-white p-3 shadow-sm ring-1 ring-obsidian/[0.06]">
                     <div>
@@ -418,9 +427,24 @@ export default function ShopCatalog() {
                 </div>
               </div>
           </aside>
+          <div className="hidden shrink-0 lg:block lg:w-72 xl:w-80" aria-hidden />
+          </>
         )}
 
         <div className="flex-1 min-w-0">
+          <div
+            className="mb-3 grid grid-cols-2 gap-1 rounded-xl border border-obsidian/[0.08] bg-white p-1 shadow-sm sm:mb-4 sm:flex sm:w-fit"
+            role="tablist"
+            aria-label="Shop view"
+          >
+            <ChipBtn active={section === 'bottles'} onClick={() => goSection('bottles')}>
+              Bottles
+            </ChipBtn>
+            <ChipBtn active={section === 'packages'} onClick={() => goSection('packages')}>
+              Packages
+            </ChipBtn>
+          </div>
+
           {section === 'packages' && (
             <PackageBrowse
               selectedSlug={selectedPkg}
@@ -469,6 +493,7 @@ export default function ShopCatalog() {
                       Search all →
                     </span>
                   </button>
+
                 )}
               </div>
 
@@ -504,6 +529,18 @@ export default function ShopCatalog() {
                       </span>
                     )}
                   </button>
+
+                  {hasRefinements && (
+                    <button
+                      type="button"
+                      onClick={resetFilters}
+                      aria-label="Clear all shop filters"
+                      title="Clear all filters"
+                      className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-ember/25 bg-ember/[0.06] text-ember transition hover:bg-ember/[0.12]"
+                    >
+                      <RotateCcw size={14} />
+                    </button>
+                  )}
 
                   <label className="relative shrink-0">
                     <span className="sr-only">Sort drinks by</span>
@@ -559,17 +596,6 @@ export default function ShopCatalog() {
                       </p>
                     </div>
 
-                    <div className="flex flex-col justify-between gap-2">
-                      {activeFilterCount > 0 && (
-                        <button
-                          type="button"
-                          onClick={resetFilters}
-                          className="self-start text-[11px] font-black uppercase tracking-[0.12em] text-ember hover:underline"
-                        >
-                          Clear filters
-                        </button>
-                      )}
-                    </div>
                   </div>
                 )}
               </div>
@@ -599,13 +625,9 @@ export default function ShopCatalog() {
                 {refined.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-obsidian/15 px-5 py-10 text-center">
                     <p className="text-body text-obsidian/50">No drinks match these filters.</p>
-                    {activeFilterCount > 0 && (
-                      <button
-                        type="button"
-                        onClick={resetFilters}
-                        className="mt-3 text-[11px] font-black uppercase tracking-[0.12em] text-ember hover:underline"
-                      >
-                        Clear filters
+                    {hasRefinements && (
+                      <button type="button" onClick={resetFilters} className="mt-3 inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.12em] text-ember hover:underline">
+                        <RotateCcw size={13} /> Reset results
                       </button>
                     )}
                   </div>

@@ -6,6 +6,7 @@ import { challengeMeters, listCompletions, NO_METERS } from '@/lib/trivia/progre
 import { getMember, resolveMemberOwner, standingFor } from '@/lib/loyalty/members';
 import { getCurrentUser } from '@/lib/auth/session';
 import { captureApiError } from '@/lib/sentry';
+import { listCustomQuestions } from '@/lib/trivia/custom-questions';
 
 /**
  * Everything the /trivia hub needs in one round trip — which brand is live,
@@ -16,12 +17,13 @@ import { captureApiError } from '@/lib/sentry';
 export async function GET() {
   const fallbackSlug = TRIVIA_ROUNDS[0].slug;
 
-  const [week, ownerId] = await Promise.all([
+  const [week, ownerId, customQuestions] = await Promise.all([
     liveRoundSlug().catch((err) => {
       captureApiError(err, { route: 'trivia/hub week' });
       return { roundSlug: fallbackSlug, weekStart: null };
     }),
     resolveTasteOwner().catch(() => null),
+    listCustomQuestions().catch(() => []),
   ]);
 
   if (!ownerId) {
@@ -33,6 +35,7 @@ export async function GET() {
       profile: null,
       completions: [],
       meters: NO_METERS,
+      customQuestions,
     });
   }
 
@@ -53,5 +56,6 @@ export async function GET() {
     profile,
     completions,
     meters,
+    customQuestions,
   });
 }

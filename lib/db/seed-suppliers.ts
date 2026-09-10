@@ -29,9 +29,9 @@ for (const file of ['.env.local', '.env']) {
 }
 
 const SUPPLIERS = [
-  { name: 'Lagos Supplier', city: 'Lagos', sameDay: true, openingStock: 24 },
-  { name: 'Abuja Supplier', city: 'Abuja', sameDay: false, openingStock: 12 },
-  { name: 'Port Harcourt Supplier', city: 'Port Harcourt', sameDay: false, openingStock: 8 },
+  { name: 'Lagos Supplier', city: 'Lagos', sameDay: true, openingStock: 24, costRate: 0.78 },
+  { name: 'Abuja Supplier', city: 'Abuja', sameDay: false, openingStock: 12, costRate: 0.8 },
+  { name: 'Port Harcourt Supplier', city: 'Port Harcourt', sameDay: false, openingStock: 8, costRate: 0.82 },
 ];
 
 async function main() {
@@ -40,6 +40,21 @@ async function main() {
     process.exit(1);
   }
   const sql = neon(process.env.DATABASE_URL);
+
+  // Ensure every catalog SKU exists without replacing any live inventory values.
+  for (const d of DRINKS) {
+    await sql`
+      INSERT INTO inventory (
+        slug, name, on_hand, reserved, low_stock_threshold, track_stock, active,
+        price_ngn, category, brand, volume, abv, tagline, description, source, updated_at
+      ) VALUES (
+        ${d.slug}, ${d.name}, 0, 0, ${d.partyPack ? 4 : 8}, true, true,
+        ${d.priceNgn}, ${d.category}, ${d.brand || null}, ${d.volume}, ${d.abv},
+        ${d.tagline}, ${d.description}, 'seed', NOW()
+      )
+      ON CONFLICT (slug) DO NOTHING
+    `;
+  }
 
   for (const s of SUPPLIERS) {
     const [existing] = await sql`SELECT id FROM suppliers WHERE LOWER(name) = ${s.name.toLowerCase()} LIMIT 1`;
@@ -68,6 +83,11 @@ async function main() {
         RETURNING slug
       `;
       if (res.length) seeded++;
+      await sql`
+        INSERT INTO supplier_sku_prices (supplier_id, slug, cost_ngn)
+        VALUES (${id}::uuid, ${d.slug}, ${Math.round(d.priceNgn * s.costRate)})
+        ON CONFLICT (supplier_id, slug) DO NOTHING
+      `;
     }
     console.log(`  ${seeded} SKU rows seeded at ${s.openingStock} each (${DRINKS.length - seeded} already had counts)`);
   }
@@ -88,8 +108,15 @@ async function main() {
       ) s
       WHERE i.slug = ${d.slug}
     `;
+    await sql`
+      UPDATE inventory
+      SET cost_ngn = (
+        SELECT MIN(cost_ngn)::int FROM supplier_sku_prices WHERE slug = ${d.slug}
+      ), updated_at = NOW()
+      WHERE slug = ${d.slug}
+    `;
   }
-  console.log(`\nRolled up ${DRINKS.length} SKUs into inventory.on_hand.`);
+  console.log(`\nRolled up stock and lowest supplier cost for ${DRINKS.length} SKUs.`);
 }
 
 main().catch((err) => {
