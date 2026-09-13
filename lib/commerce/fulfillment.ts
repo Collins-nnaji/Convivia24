@@ -1,5 +1,6 @@
 import sql from '@/lib/db';
 import { releaseStockForOrder, fulfillStockForOrder, type StockLine } from '@/lib/inventory';
+import { expandPackLines } from '@/lib/packages/lines';
 import { releaseGiftCard } from '@/lib/commerce/gift-cards';
 import { voidReferralForOrder } from '@/lib/referrals/repo';
 import {
@@ -20,7 +21,7 @@ async function routedSupplier(orderId: string): Promise<string | null> {
 
 async function orderLines(orderId: string): Promise<StockLine[]> {
   const rows = await sql`SELECT kit_slug AS slug, qty FROM ritual_order_items WHERE order_id = ${orderId}`;
-  return rows.map((r) => ({ slug: String(r.slug), qty: Number(r.qty) }));
+  return expandPackLines(rows.map((r) => ({ slug: String(r.slug), qty: Number(r.qty) })));
 }
 
 /**

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 import { formatNgn } from '@/lib/drinks/catalog';
 import { marginSummary, orderMargin } from '@/lib/suppliers/margin';
 import { suggestSuppliers, type Supplier } from '@/lib/suppliers/repo';
@@ -166,9 +167,19 @@ export default function SourcingDesk({
                         {shortId(order.id)} · {order.fullName}
                       </p>
                       <p className="text-[11px] text-obsidian/45">
-                        {order.status} · {order.area || 'no area'} ·{' '}
-                        {order.items.map((i) => `${i.name} × ${i.qty}`).join(' · ') || 'no items'}
+                        {order.status} · {order.area || 'no area'}
                       </p>
+                      <ul className="mt-1.5 flex flex-wrap gap-1.5">
+                        {order.items.map((i) => (
+                          <li key={`${i.slug}-${i.name}`} title={i.name} className="flex items-center gap-1.5 rounded-full bg-paper py-0.5 pl-0.5 pr-2 text-[11px] text-obsidian/65">
+                            <span className="grid h-7 w-6 place-items-center overflow-hidden rounded-full bg-white">
+                              {i.imageUrl ? <Image src={i.imageUrl} alt="" width={20} height={28} className="h-7 w-5 object-contain" /> : <span className="h-4 w-1.5 rounded-sm bg-obsidian/10" />}
+                            </span>
+                            <span className="max-w-[140px] truncate">{i.name}</span> <strong>×{i.qty}</strong>
+                          </li>
+                        ))}
+                        {order.items.length === 0 && <li className="text-[11px] text-obsidian/40">no items</li>}
+                      </ul>
                     </div>
                   </div>
 

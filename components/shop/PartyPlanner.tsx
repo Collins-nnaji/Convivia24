@@ -1,5 +1,7 @@
 'use client';
 
+import DialogProvider, { useDialogs } from '@/components/admin/ui/DialogProvider';
+
 import { useEffect, useMemo, useRef, useState, type TouchEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowLeftRight, ArrowRight, ChevronDown, Minus, Plus, Save, Trash2, Users, X } from 'lucide-react';
@@ -61,6 +63,15 @@ const inputClass =
  * Advanced drink-supply planner used by the standalone Plan a Night experience.
  */
 export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: boolean }) {
+  return (
+    <DialogProvider>
+      <PartyPlannerInner defaultOpen={defaultOpen} />
+    </DialogProvider>
+  );
+}
+
+function PartyPlannerInner({ defaultOpen = false }: { defaultOpen?: boolean }) {
+  const { confirm } = useDialogs();
   const router = useRouter();
   const { addProduct } = useCart();
   const [open, setOpen] = useState(defaultOpen);
@@ -182,7 +193,8 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
   }
 
   async function removeParty(party: SavedParty) {
-    if (!window.confirm(`Delete “${party.name}”?`)) return;
+    const ok = await confirm({ title: `Delete “${party.name}”?`, message: 'The saved plan and its share link stop working.', confirmLabel: 'Delete plan', tone: 'danger' });
+    if (!ok) return;
     const res = await fetch(`/api/parties?id=${encodeURIComponent(party.id)}`, { method: 'DELETE' });
     if (!res.ok) {
       setMsg('Could not delete the plan.');

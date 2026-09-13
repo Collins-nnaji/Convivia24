@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 import { formatNgn } from '@/lib/drinks/catalog';
 import { ORDER_STATUS_LABELS, type OrderStatus } from '@/lib/commerce/status';
@@ -67,8 +68,14 @@ export default function SupplierOverview({ data, onGo }: { data: PortalData; onG
                 <span className="font-mono text-xs text-obsidian/50">{o.id.slice(0, 8).toUpperCase()}</span>
                 <span className="font-semibold">{o.fullName}</span>
                 <span className="text-obsidian/50">{o.area || o.city || ''}</span>
-                <span className="ml-auto text-xs text-obsidian/45">
-                  {o.items.map((i) => `${i.name} × ${i.qty}`).join(' · ')}
+                <span className="ml-auto flex items-center gap-2 text-xs text-obsidian/45">
+                  {o.items.slice(0, 4).map((i) => (
+                    <span key={i.slug} title={`${i.name} × ${i.qty}`} className="relative grid h-9 w-7 place-items-center overflow-hidden rounded bg-paper">
+                      {i.imageUrl ? <Image src={i.imageUrl} alt="" width={28} height={36} className="h-9 w-7 object-contain" /> : <span className="h-5 w-2 rounded-sm bg-obsidian/10" />}
+                      <span className="absolute -bottom-0.5 -right-0.5 rounded-full bg-obsidian px-1 text-[9px] font-black text-white">{i.qty}</span>
+                    </span>
+                  ))}
+                  {o.items.length > 4 && <span>+{o.items.length - 4}</span>}
                 </span>
                 <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-amber-700 ring-1 ring-amber-200">
                   {ORDER_STATUS_LABELS[o.status as OrderStatus]}

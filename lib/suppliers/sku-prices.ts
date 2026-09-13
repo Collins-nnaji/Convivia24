@@ -1,5 +1,6 @@
 import sql from '@/lib/db';
 import { adminStockList } from '@/lib/inventory';
+import { derivedPackCost, isDerivedCostSku } from './pack-cost';
 
 export type SupplierSkuPrice = {
   supplierId: string;
@@ -12,9 +13,12 @@ export type SupplierCatalogRow = {
   slug: string;
   name: string;
   category: string | null;
+  imageUrl: string | null;
   priceNgn: number | null;
   defaultCostNgn: number | null;
   costs: Record<string, number>;
+  /** True for party packs: costs above are summed from the bottles and cannot be edited. */
+  derived: boolean;
 };
 
 export async function listSupplierCatalog(): Promise<SupplierCatalogRow[]> {
@@ -31,14 +35,45 @@ export async function listSupplierCatalog(): Promise<SupplierCatalogRow[]> {
     costsBySlug.get(slug)![supplierId] = costNgn;
   }
 
-  return items.map((item) => ({
-    slug: item.slug,
-    name: item.name,
-    category: item.category,
-    priceNgn: item.price_ngn,
-    defaultCostNgn: item.cost_ngn ?? null,
-    costs: costsBySlug.get(item.slug) || {},
-  }));
+  const defaultCostBySlug = new Map(items.map((i) => [i.slug, i.cost_ngn ?? null]));
+  const supplierIds = new Set(priceRows.map((r) => String(r.supplier_id)));
+
+  return items.map((item) => {
+    if (isDerivedCostSku(item.slug)) {
+      const costs: Record<string, number> = {};
+      for (const sid of supplierIds) {
+        const c = derivedPackCost(item.slug, (part) => costsBySlug.get(part)?.[sid]);
+        if (c != null) costs[sid] = c;
+      }
+      return {
+        slug: item.slug,
+        name: item.name,
+        category: item.category,
+        imageUrl: item.image_url ?? null,
+        priceNgn: item.price_ngn,
+        defaultCostNgn: derivedPackCost(item.slug, (part) => defaultCostBySlug.get(part)),
+        costs,
+        derived: true,
+      };
+    }
+    return {
+      slug: item.slug,
+      name: item.name,
+      category: item.category,
+      imageUrl: item.image_url ?? null,
+      priceNgn: item.price_ngn,
+      defaultCostNgn: item.cost_ngn ?? null,
+      costs: costsBySlug.get(item.slug) || {},
+      derived: false,
+    };
+  });
+}
+
+export class DerivedCostError extends Error {
+  constructor(slug: string) {
+    super(`${slug} is a party pack — its cost comes from the bottles inside it and cannot be set directly.`);
+    this.name = 'DerivedCostError';
+  }
 }
 
 export async function upsertSupplierSkuPrice(
@@ -46,6 +81,7 @@ export async function upsertSupplierSkuPrice(
   slug: string,
   costNgn: number
 ): Promise<SupplierSkuPrice> {
+  if (isDerivedCostSku(slug)) throw new DerivedCostError(slug);
   const cost = Math.max(0, Math.floor(costNgn));
   const rows = await sql`
     INSERT INTO supplier_sku_prices (supplier_id, slug, cost_ngn)

@@ -33,6 +33,8 @@ export type TrackedOrder = {
   giftCardDiscountNgn: number;
   totalNgn: number;
   pointsAwarded: number;
+  claimable?: boolean;
+  pointsIfClaimed?: number;
   fullName: string;
   phone: string | null;
   addressLine1: string;
@@ -123,12 +125,29 @@ export default function OrderTracking({ orderId }: { orderId: string }) {
     );
   }
 
-  return <OrderTrackingView order={order} steps={steps} />;
+  return <OrderTrackingView order={order} steps={steps} onOrderChange={setOrder} />;
 }
 
 /** The view itself, given an order. Split out so it can be rendered from data. */
-export function OrderTrackingView({ order, steps }: { order: TrackedOrder; steps: TrackingStepView[] }) {
+export function OrderTrackingView({ order, steps, onOrderChange }: { order: TrackedOrder; steps: TrackingStepView[]; onOrderChange?: (o: TrackedOrder) => void }) {
   const [copied, setCopied] = useState(false);
+  const [claiming, setClaiming] = useState(false);
+  const [claimError, setClaimError] = useState('');
+
+  async function claimOrder() {
+    setClaiming(true);
+    setClaimError('');
+    try {
+      const res = await fetch('/api/loyalty/claim-order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId: order.id }) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Could not claim this order.');
+      onOrderChange?.({ ...order, claimable: false, pointsAwarded: Number(data.pointsAwarded || order.pointsAwarded) });
+    } catch (err) {
+      setClaimError(err instanceof Error ? err.message : 'Could not claim this order.');
+    } finally {
+      setClaiming(false);
+    }
+  }
 
   async function copyReference() {
     try {
@@ -386,6 +405,24 @@ export function OrderTrackingView({ order, steps }: { order: TrackedOrder; steps
                 </div>
               </dl>
 
+              {order.claimable && (
+                <div className="mx-5 mb-5 flex flex-wrap items-center gap-3 rounded-xl bg-ember/6 px-3.5 py-3 text-[13px] text-obsidian/70">
+                  <Star size={14} className="shrink-0 fill-ember text-ember" />
+                  <span className="min-w-0 flex-1">
+                    This order was placed as a guest. Claim it to bank{' '}
+                    <strong className="text-ember tabular-nums">{(order.pointsIfClaimed ?? 0).toLocaleString()} pts</strong> on your Guest Card once it&apos;s delivered.
+                  </span>
+                  <button
+                    type="button"
+                    disabled={claiming}
+                    onClick={claimOrder}
+                    className="btn-brand rounded-lg px-4 py-2 text-[11px] font-black uppercase tracking-[0.12em] disabled:opacity-50"
+                  >
+                    {claiming ? '…' : 'Claim points'}
+                  </button>
+                  {claimError && <span className="w-full text-[12px] text-ember">{claimError}</span>}
+                </div>
+              )}
               {order.pointsAwarded > 0 && (
                 <p className="mx-5 mb-5 px-3.5 py-2.5 bg-ember/6 text-[12px] text-obsidian/65 inline-flex items-center gap-1.5">
                   <Star size={13} className="text-ember fill-ember shrink-0" />

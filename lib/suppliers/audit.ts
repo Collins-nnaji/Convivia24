@@ -23,7 +23,8 @@ export type SupplierAuditAction =
   | 'portal.key_issued'
   | 'portal.key_revoked'
   | 'portal.enabled'
-  | 'portal.disabled';
+  | 'portal.disabled'
+  | 'portal.emails';
 
 export type SupplierAuditEntry = {
   id: string;
@@ -130,6 +131,8 @@ export function describeAudit(e: SupplierAuditEntry): string {
       return 'portal enabled';
     case 'portal.disabled':
       return 'portal disabled';
+    case 'portal.emails':
+      return `sign-in emails set to ${Array.isArray(d.emails) && d.emails.length ? (d.emails as string[]).join(', ') : 'none'}`;
     default:
       return e.action;
   }

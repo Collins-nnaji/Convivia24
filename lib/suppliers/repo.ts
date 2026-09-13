@@ -26,6 +26,8 @@ export type Supplier = {
   hasAccessKey: boolean;
   accessKeyIssuedAt: string | null;
   lastSeenAt: string | null;
+  /** Extra emails that open the portal with a normal account login (the contact email always does). */
+  portalEmails: string[];
 };
 
 export type SupplierInput = {
@@ -62,7 +64,44 @@ function mapSupplier(r: Record<string, unknown>): Supplier {
     hasAccessKey: Boolean(r.access_key_hash),
     accessKeyIssuedAt: r.access_key_issued_at ? String(r.access_key_issued_at) : null,
     lastSeenAt: r.last_seen_at ? String(r.last_seen_at) : null,
+    portalEmails: Array.isArray(r.portal_emails) ? (r.portal_emails as string[]) : [],
   };
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Every email that may open this supplier's portal, lower-cased and de-duplicated. */
+export function supplierSignInEmails(s: Pick<Supplier, 'email' | 'portalEmails'>): string[] {
+  const all = [s.email, ...s.portalEmails].map((e) => (e || '').trim().toLowerCase()).filter(Boolean);
+  return [...new Set(all)];
+}
+
+/** Replaces the allowlist. Returns the rejected entries so the desk can say which ones. */
+export async function setSupplierPortalEmails(id: string, emails: string[]): Promise<{ supplier: Supplier | null; rejected: string[] }> {
+  const clean: string[] = [];
+  const rejected: string[] = [];
+  for (const raw of emails) {
+    const e = String(raw || '').trim().toLowerCase();
+    if (!e) continue;
+    if (!EMAIL_RE.test(e)) rejected.push(raw);
+    else if (!clean.includes(e)) clean.push(e);
+  }
+  const rows = await sql`
+    UPDATE suppliers SET portal_emails = ${clean.slice(0, 20)}, updated_at = NOW() WHERE id = ${id} RETURNING *
+  `;
+  return { supplier: rows[0] ? mapSupplier(rows[0]) : null, rejected };
+}
+
+/** The active supplier this email may open, if any — used to route a signed-in user to their portal. */
+export async function findSupplierForEmail(email: string): Promise<Supplier | null> {
+  const e = email.trim().toLowerCase();
+  if (!e) return null;
+  const rows = await sql`
+    SELECT * FROM suppliers
+    WHERE active = true AND portal_enabled = true AND (LOWER(email) = ${e} OR ${e} = ANY(portal_emails))
+    ORDER BY name ASC LIMIT 1
+  `;
+  return rows[0] ? mapSupplier(rows[0]) : null;
 }
 
 export function slugifySupplier(name: string): string {

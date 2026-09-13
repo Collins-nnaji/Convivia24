@@ -6,6 +6,7 @@ import { captureApiError } from '@/lib/sentry';
 import { invalidateCatalog } from '@/lib/shop/catalog-cache';
 import { logSupplierAction } from '@/lib/suppliers/audit';
 import {
+  DerivedCostError,
   deleteSupplierSkuPrice,
   listSupplierCatalog,
   upsertSupplierSkuPrice,
@@ -43,7 +44,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Cost must be a valid amount.' }, { status: 400 });
     }
 
-    const price = await upsertSupplierSkuPrice(supplierId, slug, costNgn);
+    let price;
+    try {
+      price = await upsertSupplierSkuPrice(supplierId, slug, costNgn);
+    } catch (err) {
+      if (err instanceof DerivedCostError) return NextResponse.json({ error: err.message }, { status: 400 });
+      throw err;
+    }
     await invalidateCatalog();
     await logSupplierAction({
       supplierId, actor: 'admin', actorLabel: 'desk', action: 'cost.set', skuSlug: slug, detail: { to: Math.round(costNgn) },

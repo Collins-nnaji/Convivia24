@@ -56,8 +56,8 @@ export default function OverviewDesk({
       label: 'Supplier changes (24h)',
       value: summary.supplierChanges24h,
       tab: 'suppliers',
-      hint: 'Stock, prices and orders edited from supplier portals',
-      hot: false,
+      hint: summary.bottleRequestsPending > 0 ? `${summary.bottleRequestsPending} bottle request${summary.bottleRequestsPending === 1 ? '' : 's'} waiting` : 'Stock, prices and orders edited from supplier portals',
+      hot: summary.bottleRequestsPending > 0,
     },
     {
       label: 'Commissions owed',

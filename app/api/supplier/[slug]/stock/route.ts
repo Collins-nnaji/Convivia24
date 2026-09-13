@@ -3,8 +3,10 @@ import sql, { apiErrorResponse } from '@/lib/db';
 import { requireSupplier } from '@/lib/suppliers/auth';
 import { removeSupplierStock, setSupplierStock, supplierShelf } from '@/lib/suppliers/stock';
 import { upsertSupplierSkuPrice, deleteSupplierSkuPrice } from '@/lib/suppliers/sku-prices';
+import { isDerivedCostSku } from '@/lib/suppliers/pack-cost';
 import { logSupplierAction } from '@/lib/suppliers/audit';
 import { invalidateCatalog } from '@/lib/shop/catalog-cache';
+import { notifyRestockAlerts } from '@/lib/shop/restock-alerts';
 import { rateLimit, clientIp } from '@/lib/redis';
 import { captureApiError } from '@/lib/sentry';
 
@@ -64,7 +66,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
           { status: 409 }
         );
       }
-      await setSupplierStock(supplier.id, sku, onHand);
+      await setSupplierStock(supplier.id, sku, onHand, { kind: 'supplier', label: actorLabel });
       await logSupplierAction({
         supplierId: supplier.id,
         actor: 'supplier',
@@ -73,6 +75,9 @@ export async function POST(req: NextRequest, { params }: Ctx) {
         skuSlug: sku,
         detail: { skuName: before.name, from: before.onHand, to: Math.floor(onHand) },
       });
+    }
+    if (hasCost && isDerivedCostSku(sku)) {
+      return NextResponse.json({ error: 'Party packs are priced from the bottles inside them — quote the bottles instead.' }, { status: 400 });
     }
     if (hasCost) {
       const costNgn = Number(body.costNgn);
@@ -90,6 +95,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
       });
     }
     await invalidateCatalog();
+    if (hasQty) notifyRestockAlerts(sku).catch(() => {});
     const shelf = await supplierShelf(supplier.id);
     return NextResponse.json({ ok: true, row: shelf.find((r) => r.slug === sku) ?? null });
   } catch (err) {

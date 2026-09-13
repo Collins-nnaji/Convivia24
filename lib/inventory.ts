@@ -346,22 +346,28 @@ export async function editStockRow(
   const row = mapRow(rows[0]);
   if (onHand != null) {
     const previous = existing?.on_hand ?? 0;
-    await logMovement(slug, { onHand: onHand - previous }, 'adjust', 'Admin stock edit');
+    await logMovement(slug, { onHand: onHand - previous }, 'adjust', 'Desk set on-hand', undefined, { kind: 'admin', label: 'desk' });
   }
   return row;
 }
 
-async function logMovement(
+export type MovementActor = { kind: 'system' | 'admin' | 'supplier'; label?: string | null; supplierId?: string | null };
+
+export async function logMovement(
   slug: string,
   delta: { onHand?: number; reserved?: number },
   reason: string,
   note: string,
-  orderId?: string
+  orderId?: string,
+  actor: MovementActor = { kind: 'system' }
 ) {
   try {
     await sql`
-      INSERT INTO inventory_movements (slug, delta_on_hand, delta_reserved, reason, order_id, note)
-      VALUES (${slug}, ${delta.onHand ?? 0}, ${delta.reserved ?? 0}, ${reason}, ${orderId || null}, ${note})
+      INSERT INTO inventory_movements (slug, delta_on_hand, delta_reserved, reason, order_id, note, actor, actor_label, supplier_id)
+      VALUES (
+        ${slug}, ${delta.onHand ?? 0}, ${delta.reserved ?? 0}, ${reason}, ${orderId || null}, ${note},
+        ${actor.kind}, ${actor.label || null}, ${actor.supplierId || null}::uuid
+      )
     `;
   } catch {
     /* movement log is best-effort */

@@ -1,5 +1,7 @@
 'use client';
 
+import DialogProvider, { useDialogs } from '@/components/admin/ui/DialogProvider';
+
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -77,6 +79,15 @@ function suggestedName(mood: NightMood, date: string) {
 }
 
 export default function PlanNightPlanner() {
+  return (
+    <DialogProvider>
+      <PlanNightPlannerInner />
+    </DialogProvider>
+  );
+}
+
+function PlanNightPlannerInner() {
+  const { confirm } = useDialogs();
   const router = useRouter();
   const { addProduct } = useCart();
   const builderRef = useRef<HTMLDivElement>(null);
@@ -172,7 +183,8 @@ export default function PlanNightPlanner() {
   }
 
   async function removeSavedPlan(party: SavedParty) {
-    if (!window.confirm(`Delete “${party.name}”?`)) return;
+    const ok = await confirm({ title: `Delete “${party.name}”?`, message: 'The saved plan and its share link stop working.', confirmLabel: 'Delete plan', tone: 'danger' });
+    if (!ok) return;
     const response = await fetch(`/api/parties?id=${encodeURIComponent(party.id)}`, { method: 'DELETE' });
     if (!response.ok) {
       setMessage('Could not delete that plan. Try again.');

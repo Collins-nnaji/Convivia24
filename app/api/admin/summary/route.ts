@@ -21,6 +21,9 @@ export type AdminSummary = {
   todayRevenueNgn: number;
   /** Changes suppliers made in their own portals in the last 24 hours. */
   supplierChanges24h: number;
+  bottleRequestsPending: number;
+  /** Venue submissions and brand claims waiting on the desk. */
+  contentPending: number;
   blobConfigured: boolean;
   aiConfigured: boolean;
 };
@@ -34,7 +37,7 @@ export async function GET() {
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const one = <T,>(p: Promise<T[]>) => p.then((rows) => rows[0] ?? ({} as T)).catch(() => ({} as T));
-    const [orders, stock, prizes, enquiries, partners, owed, supplierActivity] = await Promise.all([
+    const [orders, stock, prizes, enquiries, partners, owed, supplierActivity, bottleRequests, content] = await Promise.all([
       one(sql`
         SELECT
           COUNT(*) FILTER (WHERE status IN ('paid','processing','packed','out_for_delivery'))::int AS to_fulfil,
@@ -66,6 +69,12 @@ export async function GET() {
         SELECT COUNT(*)::int AS changes FROM supplier_audit_log
         WHERE actor = 'supplier' AND action <> 'portal.login' AND created_at >= NOW() - INTERVAL '24 hours'
       `),
+      one(sql`SELECT COUNT(*)::int AS pending FROM supplier_bottle_requests WHERE status = 'pending'`),
+      one(sql`
+        SELECT
+          (SELECT COUNT(*) FROM venues WHERE status = 'pending')::int
+          + (SELECT COUNT(*) FROM brand_claims WHERE status IN ('pending','verified'))::int AS pending
+      `),
     ]);
 
     const summary: AdminSummary = {
@@ -79,6 +88,8 @@ export async function GET() {
       todayOrders: Number(orders.today_orders ?? 0),
       todayRevenueNgn: Number(orders.today_revenue ?? 0),
       supplierChanges24h: Number(supplierActivity.changes ?? 0),
+      bottleRequestsPending: Number(bottleRequests.pending ?? 0),
+      contentPending: Number(content.pending ?? 0),
       blobConfigured: blobConfigured(),
       aiConfigured: aiConfigured(),
     };

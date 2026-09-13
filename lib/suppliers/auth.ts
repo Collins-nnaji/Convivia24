@@ -5,6 +5,7 @@ import {
   getSupplierAccessKeyHash,
   getSupplierBySlug,
   hashAccessKey,
+  supplierSignInEmails,
   touchSupplierSeen,
   type Supplier,
 } from './repo';
@@ -13,7 +14,7 @@ import {
  * Supplier portal sessions.
  *
  * A supplier signs in with the access key the desk issued them, or with a Neon Auth account whose
- * email matches the supplier record. Either way the cookie is a signed, expiring token bound to
+ * email is the supplier's contact email or on the supplier's allowlist. Either way the cookie is a signed, expiring token bound to
  * the supplier's current key hash — revoking or rotating the key ends every open session.
  */
 
@@ -53,19 +54,23 @@ export async function requireSupplier(slug: string): Promise<SupplierGate> {
     return { ok: false, status: 403, error: 'This portal is switched off. Contact Convivia24.' };
   }
 
-  // A Neon Auth account whose email is the supplier's own email is good enough.
+  // A Neon Auth account on the supplier's email list is good enough — no key needed.
   const user = await getCurrentUser().catch(() => null);
-  if (user?.email && supplier.email && user.email.trim().toLowerCase() === supplier.email.toLowerCase()) {
+  if (user?.email && supplierSignInEmails(supplier).includes(user.email.trim().toLowerCase())) {
     return { ok: true, supplier, via: 'account' };
   }
 
   if (!secret()) return { ok: false, status: 503, error: 'Portal sign-in is not configured.' };
   const keyHash = await getSupplierAccessKeyHash(supplier.id);
-  if (!keyHash) return { ok: false, status: 401, error: 'No access key has been issued for this supplier yet.' };
-
   const jar = await cookies();
   const token = jar.get(cookieName(supplier.id))?.value;
-  if (!token) return { ok: false, status: 401, error: 'Sign in with your access key.' };
+  if (!keyHash || !token) {
+    // Tell a signed-in account holder why they were not let in, rather than asking for a key they may not have.
+    if (user?.email) {
+      return { ok: false, status: 403, error: `${user.email} is not on this supplier's sign-in list. Ask the Convivia24 desk to add it, or use the access key.` };
+    }
+    return { ok: false, status: 401, error: keyHash ? 'Sign in with your access key, or with your Convivia24 account.' : 'Sign in with your Convivia24 account, or ask the desk for an access key.' };
+  }
   const [expiresAtRaw, sig] = token.split('.');
   const expiresAt = Number(expiresAtRaw);
   if (!sig || !Number.isFinite(expiresAt) || Date.now() > expiresAt) {

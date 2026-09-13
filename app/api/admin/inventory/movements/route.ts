@@ -13,10 +13,10 @@ export async function GET(req: NextRequest) {
     if (!slug) return NextResponse.json({ error: 'slug is required.' }, { status: 400 });
     const limit = Math.min(200, Math.max(1, Number(url.searchParams.get('limit') || 50) || 50));
     const rows = await sql`
-      SELECT id, delta_on_hand, delta_reserved, reason, order_id, note, created_at
-      FROM inventory_movements
-      WHERE slug = ${slug}
-      ORDER BY created_at DESC
+      SELECT m.id, m.delta_on_hand, m.delta_reserved, m.reason, m.order_id, m.note, m.created_at, m.actor, m.actor_label, s.name AS supplier_name
+      FROM inventory_movements m LEFT JOIN suppliers s ON s.id = m.supplier_id
+      WHERE m.slug = ${slug}
+      ORDER BY m.created_at DESC
       LIMIT ${limit}
     `;
     return NextResponse.json({
@@ -27,6 +27,9 @@ export async function GET(req: NextRequest) {
         reason: String(r.reason),
         orderId: (r.order_id as string) || null,
         note: (r.note as string) || null,
+        actor: String(r.actor || 'system'),
+        actorLabel: (r.actor_label as string) || null,
+        supplierName: (r.supplier_name as string) || null,
         createdAt: String(r.created_at),
       })),
     });

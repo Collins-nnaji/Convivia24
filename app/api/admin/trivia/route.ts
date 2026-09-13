@@ -7,6 +7,8 @@ import { apiErrorResponse } from '@/lib/db';
 import { captureApiError } from '@/lib/sentry';
 import { DRINKS } from '@/lib/drinks/catalog';
 import { addCustomQuestion, deleteCustomQuestion, listCustomQuestions } from '@/lib/trivia/custom-questions';
+import { generateQuestions } from '@/lib/trivia/generate';
+import { aiConfigured } from '@/lib/ai/azure';
 
 const STATUSES = ['entered', 'won', 'claimed', 'void'];
 
@@ -23,7 +25,7 @@ export async function GET(req: NextRequest) {
   try {
     const roundSlug = new URL(req.url).searchParams.get('round') || undefined;
     const [entries, questions] = await Promise.all([listEntries(roundSlug), listCustomQuestions()]);
-    return NextResponse.json({ entries, rounds, questions });
+    return NextResponse.json({ entries, rounds, questions, aiConfigured: aiConfigured() });
   } catch (err) {
     captureApiError(err, { route: 'admin/trivia GET' });
     const { error } = apiErrorResponse(err, 'Could not load entries.');
@@ -38,6 +40,17 @@ export async function POST(req: NextRequest) {
   if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   try {
     const body = await req.json().catch(() => ({}));
+
+    if (body.action === 'generate') {
+      if (!aiConfigured()) return NextResponse.json({ error: 'Azure OpenAI is not configured.' }, { status: 503 });
+      const drafts = await generateQuestions({
+        roundSlug: String(body.roundSlug || ''),
+        count: Number(body.count) || 5,
+        focus: typeof body.focus === 'string' ? body.focus.slice(0, 200) : null,
+      });
+      return NextResponse.json({ drafts });
+    }
+
     const question = await addCustomQuestion({
       roundSlug: String(body.roundSlug || ''),
       prompt: String(body.prompt || '').slice(0, 500),

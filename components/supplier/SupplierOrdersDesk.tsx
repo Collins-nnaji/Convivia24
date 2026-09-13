@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Image from 'next/image';
 import { ChevronDown, ChevronRight, Phone } from 'lucide-react';
 import { ORDER_STATUS_LABELS, ORDER_TRANSITIONS, type OrderStatus } from '@/lib/commerce/status';
 import { formatNgn } from '@/lib/drinks/catalog';
@@ -161,11 +162,18 @@ export default function SupplierOrdersDesk({
                     )}
                   </td>
                   <td className="px-2 py-2.5 text-xs text-obsidian/70">
-                    {o.items.map((i) => (
-                      <span key={`${i.slug}-${i.name}`} className="block">
-                        {i.name} <strong>× {i.qty}</strong>
-                      </span>
-                    ))}
+                    <ul className="space-y-1">
+                      {o.items.map((i) => (
+                        <li key={`${i.slug}-${i.name}`} className="flex items-center gap-2">
+                          <span className="grid h-9 w-7 shrink-0 place-items-center overflow-hidden rounded bg-paper">
+                            {i.imageUrl ? <Image src={i.imageUrl} alt="" width={28} height={36} className="h-9 w-7 object-contain" /> : <span className="h-5 w-2 rounded-sm bg-obsidian/10" />}
+                          </span>
+                          <span>
+                            {i.name} <strong>× {i.qty}</strong>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
                   </td>
                   <td className="px-2 py-2.5 text-right tabular-nums text-obsidian/70">{o.costNgn != null ? formatNgn(o.costNgn) : '—'}</td>
                   <td className="px-2 py-2.5">

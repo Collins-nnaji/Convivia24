@@ -5,6 +5,8 @@ import Image from 'next/image';
 import { useDialogs } from './ui/DialogProvider';
 import { AdminInput, AdminSelect, AdminTextArea } from './ui/Fields';
 import { readError } from './types';
+import TriviaAiDrafts, { type Draft } from './TriviaAiDrafts';
+import TriviaDrawDesk from './TriviaDrawDesk';
 
 type TriviaWeek = {
   id: string;
@@ -48,6 +50,7 @@ export default function TriviaDesk({ onChanged }: { onChanged?: () => void }) {
   const [weekRound, setWeekRound] = useState('');
   const [weekStart, setWeekStart] = useState('');
   const [entryFilter, setEntryFilter] = useState<'all' | 'won' | 'entered' | 'claimed'>('all');
+  const [aiOk, setAiOk] = useState(false);
 
   const load = useCallback(async () => {
     const [entryRes, schedRes] = await Promise.all([fetch('/api/admin/trivia'), fetch('/api/admin/trivia/schedule')]);
@@ -63,6 +66,7 @@ export default function TriviaDesk({ onChanged }: { onChanged?: () => void }) {
     const availableRounds: RoundOption[] = entryData.rounds || schedData.rounds || [];
     setRounds(availableRounds);
     setQuestions(entryData.questions || []);
+    setAiOk(Boolean(entryData.aiConfigured));
     setWeekRound((v) => v || availableRounds[0]?.slug || '');
     setQuestionRound((v) => v || availableRounds[0]?.slug || '');
     setWeekStart((v) => v || schedData.thisWeek || '');
@@ -123,6 +127,21 @@ export default function TriviaDesk({ onChanged }: { onChanged?: () => void }) {
     const body = await res.json();
     setQuestions((rows) => [...rows, body.question]);
     form.reset();
+  }
+
+  async function addDraft(draft: Draft): Promise<boolean> {
+    const res = await fetch('/api/admin/trivia', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ roundSlug: questionRound, ...draft }),
+    });
+    if (!res.ok) {
+      setError(await readError(res, 'Could not add question.'));
+      return false;
+    }
+    const body = await res.json();
+    setQuestions((rows) => [...rows, body.question]);
+    return true;
   }
 
   async function removeQuestion(question: CustomQuestion) {
@@ -221,6 +240,16 @@ export default function TriviaDesk({ onChanged }: { onChanged?: () => void }) {
             ))}
           </ul>
         )}
+      </div>
+
+      <div className="mb-12">
+        <h2 className="mb-1 font-bold">Bottle draw</h2>
+        <p className="mb-4 text-sm text-obsidian/50">The raffle behind each round. Winners are emailed their claim code; mark the bottle claimed below once handed over.</p>
+        <TriviaDrawDesk rounds={rounds} weeks={weeks} onDrawn={() => { load(); onChanged?.(); }} />
+      </div>
+
+      <div className="mb-6">
+        <TriviaAiDrafts roundSlug={questionRound} roundLabel={selectedRound ? `${selectedRound.brand} — ${selectedRound.prizeLabel}` : 'the selected round'} aiOk={aiOk} onAdd={addDraft} />
       </div>
 
       <div className="mb-12 grid gap-6 lg:grid-cols-[1fr_.9fr]">

@@ -13,16 +13,43 @@ import { captureApiError } from '@/lib/sentry';
 import { orderMargin } from '@/lib/suppliers/margin';
 import { getSupplier } from '@/lib/suppliers/repo';
 import { reconcileOrderPoints } from '@/lib/loyalty/members';
+import { DRINKS } from '@/lib/drinks/catalog';
 
 /** Statuses the desk can hand-set. System-only statuses (pending, awaiting_payment) are excluded. */
 const ADMIN_SETTABLE_STATUSES: OrderStatus[] = ORDER_STATUSES.filter(
   (s) => s !== 'pending' && s !== 'awaiting_payment'
 );
 
-export async function GET() {
+/**
+ * GET ?from=&to=&status=&q=&limit=&offset= — the ledger, filtered and paged on the server so
+ * "all time" and the CSV are actually complete.
+ */
+export async function GET(req: NextRequest) {
   const gate = await requireAdmin();
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
+    const url = new URL(req.url);
+    const fromRaw = url.searchParams.get('from');
+    const toRaw = url.searchParams.get('to');
+    const from = fromRaw && !Number.isNaN(Date.parse(fromRaw)) ? new Date(fromRaw).toISOString() : null;
+    const to = toRaw && !Number.isNaN(Date.parse(toRaw)) ? new Date(toRaw).toISOString() : null;
+    const statusFilter = url.searchParams.get('status') || null;
+    const status = statusFilter && (ORDER_STATUSES as readonly string[]).includes(statusFilter) ? statusFilter : null;
+    const q = (url.searchParams.get('q') || '').trim().toLowerCase() || null;
+    const like = q ? `%${q}%` : null;
+    const limit = Math.min(500, Math.max(1, Number(url.searchParams.get('limit')) || 100));
+    const offset = Math.max(0, Number(url.searchParams.get('offset')) || 0);
+
+    const [{ total }] = await sql`
+      SELECT COUNT(*)::int AS total FROM ritual_orders o
+      WHERE o.status != 'pending'
+        AND (${from}::timestamptz IS NULL OR o.created_at >= ${from}::timestamptz)
+        AND (${to}::timestamptz IS NULL OR o.created_at < ${to}::timestamptz)
+        AND (${status}::text IS NULL OR o.status = ${status})
+        AND (${like}::text IS NULL OR LOWER(o.full_name) LIKE ${like} OR LOWER(o.email) LIKE ${like}
+             OR COALESCE(o.phone, '') LIKE ${like} OR o.id::text LIKE ${like} OR LOWER(COALESCE(o.area, '')) LIKE ${like})
+    `;
+
     const orders = await sql`
       SELECT
         o.id,
@@ -37,6 +64,7 @@ export async function GET() {
         o.address_line1,
         o.address_line2,
         o.area,
+        o.city,
         o.notes,
         o.courier_name,
         o.rider_phone,
@@ -58,21 +86,33 @@ export async function GET() {
         o.updated_at,
         COALESCE(
           json_agg(
-            json_build_object('slug', i.kit_slug, 'name', i.kit_name, 'qty', i.qty, 'unitPriceNgn', i.unit_price_ngn)
+            json_build_object('slug', i.kit_slug, 'name', i.kit_name, 'qty', i.qty, 'unitPriceNgn', i.unit_price_ngn, 'imageUrl', inv.image_url)
             ORDER BY i.created_at
           ) FILTER (WHERE i.id IS NOT NULL),
           '[]'::json
         ) AS items
       FROM ritual_orders o
       LEFT JOIN ritual_order_items i ON i.order_id = o.id
+      LEFT JOIN inventory inv ON inv.slug = i.kit_slug
       LEFT JOIN suppliers s ON s.id = o.supplier_id
       LEFT JOIN suppliers rs ON rs.id = o.routed_supplier_id
       WHERE o.status != 'pending'
+        AND (${from}::timestamptz IS NULL OR o.created_at >= ${from}::timestamptz)
+        AND (${to}::timestamptz IS NULL OR o.created_at < ${to}::timestamptz)
+        AND (${status}::text IS NULL OR o.status = ${status})
+        AND (${like}::text IS NULL OR LOWER(o.full_name) LIKE ${like} OR LOWER(o.email) LIKE ${like}
+             OR COALESCE(o.phone, '') LIKE ${like} OR o.id::text LIKE ${like} OR LOWER(COALESCE(o.area, '')) LIKE ${like})
       GROUP BY o.id, s.name, rs.name
       ORDER BY o.created_at DESC
-      LIMIT 200
+      LIMIT ${limit} OFFSET ${offset}
     `;
 
+    // Most bottles carry their shot in the static catalog, not the inventory row.
+    const catalogImage = (slug: string) => {
+      const d = DRINKS.find((x) => x.slug === slug);
+      return d?.image || d?.packImages?.[0] || null;
+    };
+    type Line = { slug?: string; name: string; qty: number; unitPriceNgn: number; imageUrl?: string | null };
     return NextResponse.json({
       orders: orders.map((o) => ({
         id: o.id,
@@ -87,6 +127,7 @@ export async function GET() {
         addressLine1: o.address_line1,
         addressLine2: o.address_line2,
         area: o.area,
+        city: o.city,
         notes: o.notes,
         courierName: o.courier_name,
         riderPhone: o.rider_phone,
@@ -110,9 +151,12 @@ export async function GET() {
         }),
         createdAt: o.created_at,
         updatedAt: o.updated_at,
-        items: o.items,
+        items: ((o.items as Line[]) || []).map((l) => ({ ...l, imageUrl: l.imageUrl || (l.slug ? catalogImage(l.slug) : null) })),
       })),
       statuses: ADMIN_SETTABLE_STATUSES,
+      total: Number(total ?? 0),
+      limit,
+      offset,
     });
   } catch (err) {
     captureApiError(err, { route: 'admin/orders GET' });
@@ -135,7 +179,7 @@ export async function PATCH(req: NextRequest) {
     // Refund is its own action — it calls out to Flutterwave and always lands on status=refunded.
     if (body.action === 'refund') {
       const [order] = await sql`
-        SELECT id, status, total_ngn, subtotal_ngn, payment_provider, payment_ref
+        SELECT id, status, total_ngn, subtotal_ngn, payment_provider, payment_ref, refunded_ngn
         FROM ritual_orders WHERE id = ${orderId} LIMIT 1
       `;
       if (!order) return NextResponse.json({ error: 'Order not found.' }, { status: 404 });
@@ -145,7 +189,17 @@ export async function PATCH(req: NextRequest) {
           { status: 400 }
         );
       }
-      const amountNgn = Number(order.total_ngn ?? order.subtotal_ngn);
+      const alreadyNgn = Number(order.refunded_ngn ?? 0);
+      const remainingNgn = Math.max(0, Number(order.total_ngn ?? order.subtotal_ngn) - alreadyNgn);
+      const requested = body.amountNgn == null || body.amountNgn === '' ? remainingNgn : Math.round(Number(body.amountNgn));
+      if (!Number.isFinite(requested) || requested <= 0) {
+        return NextResponse.json({ error: 'Refund amount must be more than zero.' }, { status: 400 });
+      }
+      if (requested > remainingNgn) {
+        return NextResponse.json({ error: `Only ${formatNgn(remainingNgn)} is left to refund on this order.` }, { status: 400 });
+      }
+      const amountNgn = requested;
+      const partial = amountNgn < remainingNgn;
       let refundRef = 'manual';
       if (
         (order.payment_provider === 'flutterwave' || order.payment_provider === 'paystack') &&
@@ -155,9 +209,23 @@ export async function PATCH(req: NextRequest) {
         if ('error' in result) return NextResponse.json({ error: result.error }, { status: 502 });
         refundRef = result.refundRef;
       }
+      const totalRefunded = alreadyNgn + amountNgn;
+      if (partial) {
+        // Money back for part of the order (a broken bottle, a missing mixer) — the order itself
+        // carries on: status, stock and points are untouched, only the refunded total moves.
+        await sql`
+          UPDATE ritual_orders
+          SET refund_ref = ${refundRef}, refunded_ngn = ${totalRefunded}, updated_at = NOW()
+          WHERE id = ${orderId}
+        `;
+        const note = `Partial refund of ${formatNgn(amountNgn)}${typeof body.reason === 'string' && body.reason.trim() ? ` — ${body.reason.trim().slice(0, 200)}` : ''}.`;
+        await recordOrderEvent(orderId, order.status as OrderStatus, note).catch(() => {});
+        await notifyOrderStatus(orderId, order.status as OrderStatus, note);
+        return NextResponse.json({ ok: true, orderId, status: order.status, refundedNgn: totalRefunded, partial: true });
+      }
       await sql`
         UPDATE ritual_orders
-        SET status = 'refunded', refund_ref = ${refundRef}, refunded_ngn = ${amountNgn}, updated_at = NOW()
+        SET status = 'refunded', refund_ref = ${refundRef}, refunded_ngn = ${totalRefunded}, updated_at = NOW()
         WHERE id = ${orderId}
       `;
       await releaseOrderResources(orderId);
@@ -166,7 +234,48 @@ export async function PATCH(req: NextRequest) {
       // shows the refund instead of stopping at the last delivery step.
       await recordOrderEvent(orderId, 'refunded', `Refunded ${formatNgn(amountNgn)}.`).catch(() => {});
       await notifyOrderStatus(orderId, 'refunded', `Refunded ${formatNgn(amountNgn)}.`);
-      return NextResponse.json({ ok: true, orderId, status: 'refunded', refundedNgn: amountNgn });
+      return NextResponse.json({ ok: true, orderId, status: 'refunded', refundedNgn: totalRefunded });
+    }
+
+    // Delivery details change without touching status — a typo in the address should not
+    // require cancelling a paid order. Closed orders are left as they were delivered.
+    if (body.action === 'edit') {
+      const [current] = await sql`SELECT status FROM ritual_orders WHERE id = ${orderId} LIMIT 1`;
+      if (!current) return NextResponse.json({ error: 'Order not found.' }, { status: 404 });
+      if (['delivered', 'fulfilled', 'cancelled', 'refunded'].includes(String(current.status))) {
+        return NextResponse.json({ error: 'A closed order cannot be edited.' }, { status: 409 });
+      }
+      const str = (v: unknown, max = 200) => (typeof v === 'string' ? v.trim().slice(0, max) : undefined);
+      const fullName = str(body.fullName, 120);
+      const addressLine1 = str(body.addressLine1);
+      if (fullName === '' || addressLine1 === '') {
+        return NextResponse.json({ error: 'Name and address line 1 are required.' }, { status: 400 });
+      }
+      const [updated] = await sql`
+        UPDATE ritual_orders SET
+          full_name = COALESCE(${fullName ?? null}, full_name),
+          phone = COALESCE(${str(body.phone, 40) ?? null}, phone),
+          address_line1 = COALESCE(${addressLine1 ?? null}, address_line1),
+          address_line2 = CASE WHEN ${body.addressLine2 === undefined} THEN address_line2 ELSE ${str(body.addressLine2) || null} END,
+          area = CASE WHEN ${body.area === undefined} THEN area ELSE ${str(body.area, 80) || null} END,
+          city = COALESCE(${str(body.city, 80) ?? null}, city),
+          notes = CASE WHEN ${body.notes === undefined} THEN notes ELSE ${str(body.notes, 500) || null} END,
+          updated_at = NOW()
+        WHERE id = ${orderId}
+        RETURNING full_name, phone, address_line1, address_line2, area, city, notes
+      `;
+      await recordOrderEvent(orderId, current.status as OrderStatus, 'Delivery details updated by the desk.').catch(() => {});
+      return NextResponse.json({
+        ok: true,
+        orderId,
+        fullName: updated.full_name,
+        phone: updated.phone,
+        addressLine1: updated.address_line1,
+        addressLine2: updated.address_line2,
+        area: updated.area,
+        city: updated.city,
+        notes: updated.notes,
+      });
     }
 
     // Sourcing is its own action — it records who filled the order and what they charged, and

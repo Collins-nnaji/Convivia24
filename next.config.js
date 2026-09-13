@@ -1,8 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Ensure images work properly
+  // Bottle shots are served through the image optimizer (Netlify Image CDN in production):
+  // resized per breakpoint and re-encoded as AVIF/WebP instead of the 600×900 originals.
   images: {
-    unoptimized: true, // For Netlify compatibility
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [360, 414, 640, 768, 1024, 1280, 1600],
+    imageSizes: [28, 44, 64, 96, 128, 200, 300],
     remotePatterns: [
       {
         protocol: 'https',
@@ -18,6 +21,11 @@ const nextConfig = {
       { source: '/crews/:path*', destination: '/', permanent: true },
       { source: '/trivia', destination: '/discover', permanent: true },
       { source: '/trivia/:path*', destination: '/discover/:path*', permanent: true },
+      { source: '/my24', destination: '/', permanent: true },
+      { source: '/my24/:path*', destination: '/', permanent: true },
+      { source: '/stays', destination: '/', permanent: true },
+      { source: '/inquire', destination: '/contact', permanent: true },
+      { source: '/invite/:path*', destination: '/', permanent: true },
       { source: '/plan', destination: '/party-planner', permanent: true },
       { source: '/plan/:path*', destination: '/party-planner/:path*', permanent: true },
       { source: '/card', destination: '/guest-card', permanent: true },

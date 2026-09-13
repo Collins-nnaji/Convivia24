@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Copy, KeyRound, Link2, ShieldOff } from 'lucide-react';
+import { useState, type FormEvent } from 'react';
+import { Copy, KeyRound, Link2, Mail, ShieldOff, X } from 'lucide-react';
 import type { Supplier } from '@/lib/suppliers/repo';
 import { useDialogs } from './ui/DialogProvider';
 import Modal from './ui/Modal';
@@ -15,6 +15,7 @@ export default function SupplierPortalPanel({ supplier, onChanged }: { supplier:
   const { confirm, notify } = useDialogs();
   const [busy, setBusy] = useState(false);
   const [issued, setIssued] = useState<string | null>(null);
+  const [newEmail, setNewEmail] = useState('');
   const portalPath = `/supplier/${supplier.slug}`;
   const portalUrl = typeof window !== 'undefined' ? `${window.location.origin}${portalPath}` : portalPath;
 
@@ -63,6 +64,19 @@ export default function SupplierPortalPanel({ supplier, onChanged }: { supplier:
     await act({ action: 'revoke-key' }, 'Could not revoke the key.');
   }
 
+  async function saveEmails(emails: string[]) {
+    const data = await act({ action: 'portal-emails', emails }, 'Could not update sign-in emails.');
+    if (data?.rejected?.length) notify(`Not a valid email: ${data.rejected.join(', ')}`, 'error');
+    return Boolean(data);
+  }
+
+  async function addEmail(e: FormEvent) {
+    e.preventDefault();
+    const email = newEmail.trim().toLowerCase();
+    if (!email) return;
+    if (await saveEmails([...supplier.portalEmails, email])) setNewEmail('');
+  }
+
   function copy(text: string, what: string) {
     navigator.clipboard?.writeText(text).then(() => notify(`${what} copied.`), () => notify('Could not copy.', 'error'));
   }
@@ -102,9 +116,52 @@ export default function SupplierPortalPanel({ supplier, onChanged }: { supplier:
         <dd>{supplier.hasAccessKey ? `Issued ${supplier.accessKeyIssuedAt ? formatWhen(supplier.accessKeyIssuedAt) : ''}` : 'Not issued'}</dd>
         <dt className="text-obsidian/40">Last seen</dt>
         <dd>{supplier.lastSeenAt ? formatWhen(supplier.lastSeenAt) : 'Never'}</dd>
-        <dt className="text-obsidian/40">Email login</dt>
-        <dd>{supplier.email ? `${supplier.email} can also sign in with a Convivia24 account` : 'No email on file'}</dd>
       </dl>
+
+      {/* Anyone on this list signs in with a normal Convivia24 account — no key needed. */}
+      <div className="mb-4 rounded-xl border border-obsidian/10 bg-paper/60 p-3">
+        <p className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/50">
+          <Mail size={12} /> Sign in with an account
+        </p>
+        <p className="mt-1 text-[12px] text-obsidian/55">
+          These emails open the portal by signing in to Convivia24 normally. No access key needed.
+        </p>
+        <ul className="mt-2 flex flex-wrap gap-1.5">
+          {supplier.email && (
+            <li className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[12px] font-semibold text-obsidian/70 ring-1 ring-obsidian/10" title="Contact email — always allowed">
+              {supplier.email}
+              <span className="text-[10px] font-bold uppercase tracking-wider text-obsidian/35">contact</span>
+            </li>
+          )}
+          {supplier.portalEmails.map((email) => (
+            <li key={email} className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[12px] font-semibold text-obsidian/70 ring-1 ring-obsidian/10">
+              {email}
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => saveEmails(supplier.portalEmails.filter((e) => e !== email))}
+                aria-label={`Remove ${email}`}
+                className="grid h-4 w-4 place-items-center rounded-full text-obsidian/35 hover:bg-obsidian/10 hover:text-obsidian"
+              >
+                <X size={11} />
+              </button>
+            </li>
+          ))}
+          {!supplier.email && supplier.portalEmails.length === 0 && <li className="text-[12px] text-obsidian/40">No emails yet.</li>}
+        </ul>
+        <form onSubmit={addEmail} className="mt-2 flex gap-2">
+          <input
+            type="email"
+            value={newEmail}
+            onChange={(e) => setNewEmail(e.target.value)}
+            placeholder="name@supplier.com"
+            className="min-w-0 flex-1 rounded-lg border border-obsidian/12 bg-white px-3 py-2 text-sm focus:border-ember focus:ring-0"
+          />
+          <button type="submit" disabled={busy || !newEmail.trim()} className="rounded-lg border border-obsidian/15 px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] hover:border-ember hover:text-ember disabled:opacity-40">
+            Add
+          </button>
+        </form>
+      </div>
 
       <div className="flex flex-wrap gap-2">
         <button type="button" onClick={issueKey} disabled={busy} className="inline-flex items-center gap-1.5 btn-brand px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-50">

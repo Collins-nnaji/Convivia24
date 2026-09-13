@@ -35,7 +35,7 @@ export type AdminOrder = {
   margin: { revenueNgn: number; costNgn: number; marginNgn: number; marginPct: number; sourced: boolean };
   createdAt: string;
   updatedAt: string;
-  items: { slug?: string; name: string; qty: number; unitPriceNgn: number }[];
+  items: { slug?: string; name: string; qty: number; unitPriceNgn: number; imageUrl?: string | null }[];
 };
 
 export type AdminSummary = {
@@ -49,6 +49,8 @@ export type AdminSummary = {
   todayOrders: number;
   todayRevenueNgn: number;
   supplierChanges24h: number;
+  bottleRequestsPending: number;
+  contentPending: number;
   blobConfigured: boolean;
   aiConfigured: boolean;
 };
@@ -64,6 +66,8 @@ export const EMPTY_SUMMARY: AdminSummary = {
   todayOrders: 0,
   todayRevenueNgn: 0,
   supplierChanges24h: 0,
+  bottleRequestsPending: 0,
+  contentPending: 0,
   blobConfigured: false,
   aiConfigured: false,
 };

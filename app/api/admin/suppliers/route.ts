@@ -11,6 +11,7 @@ import {
   listSuppliers,
   revokeSupplierAccessKey,
   setSupplierPortalEnabled,
+  setSupplierPortalEmails,
   updateSupplier,
   validateSupplier,
   type SupplierInput,
@@ -90,6 +91,13 @@ export async function PATCH(req: NextRequest) {
       await revokeSupplierAccessKey(id);
       await logSupplierAction({ supplierId: id, actor: 'admin', actorLabel: 'desk', action: 'portal.key_revoked' });
       return NextResponse.json({ ok: true, supplier: await getSupplier(id) });
+    }
+    if (body.action === 'portal-emails') {
+      const emails = Array.isArray(body.emails) ? body.emails.map(String) : [];
+      const { supplier, rejected } = await setSupplierPortalEmails(id, emails);
+      if (!supplier) return NextResponse.json({ error: 'Supplier not found.' }, { status: 404 });
+      await logSupplierAction({ supplierId: id, actor: 'admin', actorLabel: 'desk', action: 'portal.emails', detail: { emails: supplier.portalEmails } });
+      return NextResponse.json({ ok: true, supplier, rejected });
     }
     if (body.action === 'portal') {
       const enabled = body.enabled !== false;

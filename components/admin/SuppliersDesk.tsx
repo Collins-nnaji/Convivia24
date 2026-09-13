@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 import { Pencil, Plus, RefreshCw, Search, Trash2 } from 'lucide-react';
 import { formatNgn } from '@/lib/drinks/catalog';
 import { skuMargin } from '@/lib/suppliers/margin';
@@ -9,20 +10,23 @@ import type { SupplierAuditEntry } from '@/lib/suppliers/audit';
 import { useDialogs } from './ui/DialogProvider';
 import SupplierForm from './SupplierForm';
 import SupplierPortalPanel from './SupplierPortalPanel';
+import BottleRequestsPanel from './BottleRequestsPanel';
 import { readError } from './types';
 
 type CatalogRow = {
   slug: string;
   name: string;
   category: string | null;
+  imageUrl: string | null;
   priceNgn: number | null;
   defaultCostNgn: number | null;
   costs: Record<string, number>;
+  derived: boolean;
 };
 
 type AuditRow = SupplierAuditEntry & { text: string };
 
-type Pane = 'prices' | 'activity';
+type Pane = 'prices' | 'activity' | 'requests';
 
 function MarginBadge({ retail, cost }: { retail: number | null; cost: number | null }) {
   const margin = skuMargin(retail, cost);
@@ -353,7 +357,7 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
               <SupplierPortalPanel supplier={selected} onChanged={reloadAll} />
 
               <div className="flex gap-1 border-b border-obsidian/10">
-                {(['prices', 'activity'] as Pane[]).map((p) => (
+                {(['prices', 'activity', 'requests'] as Pane[]).map((p) => (
                   <button
                     key={p}
                     type="button"
@@ -362,12 +366,14 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
                       pane === p ? 'border-ember text-ember' : 'border-transparent text-obsidian/50 hover:text-obsidian'
                     }`}
                   >
-                    {p === 'prices' ? 'Wholesale costs' : `Activity (${activity.length})`}
+                    {p === 'prices' ? 'Wholesale costs' : p === 'activity' ? `Activity (${activity.length})` : 'Bottle requests'}
                   </button>
                 ))}
               </div>
 
-              {pane === 'activity' ? (
+              {pane === 'requests' ? (
+                <BottleRequestsPanel onChanged={reloadAll} />
+              ) : pane === 'activity' ? (
                 <>
                   <p className="text-sm text-obsidian/50">
                     Everything done on this supplier&apos;s shelf, orders and access — by them in their portal, by the desk, or by routing.
@@ -406,21 +412,35 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
                           const marginCost = value !== '' ? Number(value) : savedCost ?? row.defaultCostNgn;
                           return (
                             <tr key={row.slug} className="hover:bg-paper/60">
-                              <td className="px-3 py-3">
-                                <p className="font-medium text-obsidian">{row.name}</p>
-                                <p className="font-mono text-[11px] text-obsidian/40">{row.slug}</p>
+                              <td className="px-3 py-2.5">
+                                <div className="flex items-center gap-3">
+                                  <span className="grid h-12 w-9 shrink-0 place-items-center overflow-hidden rounded-md bg-paper">
+                                    {row.imageUrl ? <Image src={row.imageUrl} alt="" width={36} height={48} className="h-12 w-9 object-contain" /> : <span className="h-6 w-2 rounded-sm bg-obsidian/10" />}
+                                  </span>
+                                  <div className="min-w-0">
+                                    <p className="truncate font-medium text-obsidian">{row.name}</p>
+                                    <p className="truncate font-mono text-[11px] text-obsidian/40">{row.slug}</p>
+                                  </div>
+                                </div>
                               </td>
                               <td className="px-3 py-3 text-right tabular-nums">{row.priceNgn ? formatNgn(row.priceNgn) : '—'}</td>
                               <td className="px-3 py-3 text-right">
-                                <input
-                                  type="number"
-                                  min={0}
-                                  inputMode="numeric"
-                                  value={value}
-                                  onChange={(e) => setDraftCosts((d) => ({ ...d, [row.slug]: e.target.value }))}
-                                  placeholder="Cost"
-                                  className="w-28 rounded border border-obsidian/15 px-2 py-1.5 text-right text-sm tabular-nums focus:border-ember focus:ring-0"
-                                />
+                                {row.derived ? (
+                                  <span className="inline-block text-right" title="Summed from the bottles in the pack — quote those instead">
+                                    <span className="block text-sm font-semibold tabular-nums text-obsidian/70">{savedCost != null ? formatNgn(savedCost) : '—'}</span>
+                                    <span className="block text-[10px] font-bold uppercase tracking-wider text-obsidian/35">from bottles</span>
+                                  </span>
+                                ) : (
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    inputMode="numeric"
+                                    value={value}
+                                    onChange={(e) => setDraftCosts((d) => ({ ...d, [row.slug]: e.target.value }))}
+                                    placeholder="Cost"
+                                    className="w-28 rounded border border-obsidian/15 px-2 py-1.5 text-right text-sm tabular-nums focus:border-ember focus:ring-0"
+                                  />
+                                )}
                               </td>
                               <td className="px-3 py-3 text-right">
                                 <MarginBadge retail={row.priceNgn} cost={marginCost} />
@@ -428,7 +448,7 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
                               <td className="px-3 py-3 text-right">
                                 <button
                                   type="button"
-                                  disabled={!dirty || savingSlug === row.slug}
+                                  disabled={row.derived || !dirty || savingSlug === row.slug}
                                   onClick={() => saveCost(row.slug)}
                                   className="border border-obsidian/15 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.1em] hover:border-ember hover:text-ember disabled:opacity-35"
                                 >

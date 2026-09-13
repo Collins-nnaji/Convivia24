@@ -1,4 +1,8 @@
 import sql from '@/lib/db';
+import { logMovement } from '@/lib/inventory';
+import { DRINKS } from '@/lib/drinks/catalog';
+import { derivedPackCost, isDerivedCostSku } from './pack-cost';
+import { getPackageBySlug } from '@/lib/packages/catalog';
 
 /**
  * Per-supplier stock, and the routing that decides which supplier fills an order.
@@ -111,9 +115,12 @@ export async function allSupplierStock(): Promise<Record<string, SupplierStockRo
 export async function setSupplierStock(
   supplierId: string,
   slug: string,
-  onHand: number
+  onHand: number,
+  actor: { kind: 'admin' | 'supplier'; label?: string | null } = { kind: 'admin', label: 'desk' }
 ): Promise<void> {
   const qty = Math.max(0, Math.floor(onHand));
+  const [before] = await sql`SELECT on_hand FROM supplier_stock WHERE supplier_id = ${supplierId}::uuid AND slug = ${slug} LIMIT 1`;
+  const previous = Number(before?.on_hand ?? 0);
   await sql`
     INSERT INTO supplier_stock (supplier_id, slug, on_hand)
     VALUES (${supplierId}, ${slug}, ${qty})
@@ -121,6 +128,14 @@ export async function setSupplierStock(
       SET on_hand = EXCLUDED.on_hand, updated_at = NOW()
   `;
   await syncInventoryRollup(slug);
+  if (qty !== previous) {
+    const [sup] = await sql`SELECT name FROM suppliers WHERE id = ${supplierId}::uuid LIMIT 1`;
+    await logMovement(slug, { onHand: qty - previous }, 'adjust', `${String(sup?.name || 'Supplier')} shelf ${previous} → ${qty}`, undefined, {
+      kind: actor.kind,
+      label: actor.label,
+      supplierId,
+    });
+  }
 }
 
 export type RoutingDecision = {
@@ -298,6 +313,8 @@ export type ShelfRow = {
   reserved: number;
   available: number;
   costNgn: number | null;
+  /** Party packs: the price is summed from the bottles and cannot be typed. */
+  derivedCost: boolean;
   updatedAt: string | null;
 };
 
@@ -305,6 +322,12 @@ export type ShelfRow = {
  * The whole catalog from one supplier's point of view: what they hold, what they quote, and the
  * SKUs they could add. Retail is included so they can see the margin they leave us.
  */
+/** Bottle shot for a SKU: the inventory row's own upload, else the catalog's. Same rule as the shop. */
+function catalogImage(slug: string): string | null {
+  const d = DRINKS.find((x) => x.slug === slug);
+  return d?.image || d?.packImages?.[0] || null;
+}
+
 export async function supplierShelf(supplierId: string): Promise<ShelfRow[]> {
   const rows = await sql`
     SELECT
@@ -317,20 +340,24 @@ export async function supplierShelf(supplierId: string): Promise<ShelfRow[]> {
     WHERE i.active = true
     ORDER BY (ss.on_hand IS NULL) ASC, i.name ASC
   `;
+  const quoteBySlug = new Map(rows.map((r) => [String(r.slug), r.cost_ngn == null ? null : Number(r.cost_ngn)]));
   return rows.map((r) => {
     const onHand = r.on_hand == null ? null : Number(r.on_hand);
     const reserved = Number(r.reserved ?? 0);
+    const slug = String(r.slug);
+    const derivedCost = isDerivedCostSku(slug);
     return {
       slug: String(r.slug),
       name: String(r.name),
       brand: (r.brand as string) || null,
       category: (r.category as string) || null,
-      imageUrl: (r.image_url as string) || null,
+      imageUrl: (r.image_url as string) || catalogImage(String(r.slug)),
       retailNgn: r.price_ngn == null ? null : Number(r.price_ngn),
       onHand,
       reserved,
       available: onHand == null ? 0 : Math.max(0, onHand - reserved),
-      costNgn: r.cost_ngn == null ? null : Number(r.cost_ngn),
+      costNgn: derivedCost ? derivedPackCost(slug, (part) => quoteBySlug.get(part)) : r.cost_ngn == null ? null : Number(r.cost_ngn),
+      derivedCost,
       updatedAt: r.stock_updated_at ? String(r.stock_updated_at) : null,
     };
   });
@@ -354,7 +381,7 @@ export type SupplierOrder = {
   /** What we expect to pay this supplier — their own quote at routing time, or the sourced cost. */
   costNgn: number | null;
   createdAt: string;
-  items: { slug: string; name: string; qty: number }[];
+  items: { slug: string; name: string; qty: number; imageUrl: string | null }[];
 };
 
 /**
@@ -384,6 +411,13 @@ export async function supplierOrders(supplierId: string, opts: { limit?: number 
       o.created_at DESC
     LIMIT ${limit}
   `;
+  // One lookup for every bottle on every order, so each line can show its picture.
+  const slugs = [...new Set(rows.flatMap((r) => ((r.items as { slug: string }[]) || []).map((i) => i.slug)).filter(Boolean))];
+  const uploads = slugs.length
+    ? await sql`SELECT slug, image_url FROM inventory WHERE slug = ANY(${slugs}) AND image_url IS NOT NULL`
+    : [];
+  const uploaded = new Map(uploads.map((u) => [String(u.slug), String(u.image_url)]));
+
   return rows.map((r) => ({
     id: String(r.id),
     status: String(r.status),
@@ -401,7 +435,17 @@ export async function supplierOrders(supplierId: string, opts: { limit?: number 
     outOfCity: r.routed_out_of_city === true,
     costNgn: r.cost_ngn == null ? null : Number(r.cost_ngn),
     createdAt: String(r.created_at),
-    items: (r.items as { slug: string; name: string; qty: number }[]) || [],
+    // A supplier packs bottles, not "packs" — a pack line is shown as the bottles inside it.
+    items: ((r.items as { slug: string; name: string; qty: number }[]) || []).flatMap((i) => {
+      const pkg = getPackageBySlug(i.slug);
+      if (!pkg) return [{ ...i, imageUrl: uploaded.get(i.slug) || catalogImage(i.slug) }];
+      return pkg.components.map((c) => ({
+        slug: c.slug,
+        name: `${DRINKS.find((d) => d.slug === c.slug)?.name || c.slug} (${i.name})`,
+        qty: c.qty * i.qty,
+        imageUrl: uploaded.get(c.slug) || catalogImage(c.slug),
+      }));
+    }),
   }));
 }
 

@@ -106,9 +106,13 @@ function Portal({ slug }: { slug: string }) {
           <p className="mb-2 text-[10px] font-black uppercase tracking-[0.28em] text-ember">Convivia24 · Supplier</p>
           <h1 className="mb-1 text-2xl font-bold">Your stock portal</h1>
           <p className="mb-6 font-mono text-xs text-obsidian/40">/supplier/{slug}</p>
-          <p className="mb-6 text-sm text-obsidian/50">
-            Enter the access key Convivia24 sent you. Every change you make here is recorded on the Convivia24 desk.
-          </p>
+          <a
+            href={`/signin?next=${encodeURIComponent(`/supplier/${slug}`)}`}
+            className="btn-brand mb-5 block w-full rounded-xl py-3 text-center text-[11px] font-black uppercase tracking-[0.14em]"
+          >
+            Sign in with your Convivia24 account
+          </a>
+          <p className="mb-3 text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/35">Or use an access key</p>
           <form onSubmit={signIn} className="space-y-4">
             <input
               type="password"
@@ -122,13 +126,15 @@ function Portal({ slug }: { slug: string }) {
             <button
               type="submit"
               disabled={busy || !key.trim()}
-              className="btn-brand w-full py-3 text-[11px] font-black uppercase tracking-[0.14em] disabled:opacity-50"
+              className="w-full rounded-xl border border-obsidian/15 bg-white py-3 text-[11px] font-black uppercase tracking-[0.14em] text-obsidian hover:border-ember hover:text-ember disabled:opacity-50"
             >
-              {busy ? '…' : 'Open portal'}
+              {busy ? '…' : 'Open with key'}
             </button>
           </form>
           {gateMsg && <p className="mt-4 text-sm text-ember">{gateMsg}</p>}
-          <p className="mt-6 text-xs text-obsidian/40">Lost your key? Ask the Convivia24 desk to issue a new one.</p>
+          <p className="mt-6 text-xs text-obsidian/40">
+            Every change you make here is recorded on the Convivia24 desk. Lost your key or not on the sign-in list? Ask the desk.
+          </p>
         </div>
       </section>
     );

@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import RestockAlert, { useAvailability } from '@/components/shop/RestockAlert';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Check,
@@ -54,6 +55,9 @@ export default function ProductDetail({ product }: { product: DrinkProduct }) {
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const [tab, setTab] = useState<Tab>('about');
+  const availability = useAvailability(product.slug);
+  const soldOut = Boolean(availability?.tracked && (availability.available ?? 0) <= 0);
+  const lowStock = Boolean(availability?.tracked && !soldOut && availability.low);
   const [rating, setRating] = useState({ average: 0, count: 0 });
   const [shared, setShared] = useState(false);
 
@@ -171,10 +175,15 @@ export default function ProductDetail({ product }: { product: DrinkProduct }) {
               </div>
 
               <div className="flex flex-col gap-2.5 sm:pt-6">
+                {soldOut && <RestockAlert slug={product.slug} name={product.name} />}
+                {lowStock && (
+                  <p className="text-[12px] font-bold uppercase tracking-wider text-amber-700">Only {availability?.available} left</p>
+                )}
                 <button
                   type="button"
                   onClick={handleAdd}
-                  className="py-3.5 btn-brand text-[11px] font-black uppercase tracking-[0.14em] inline-flex items-center justify-center gap-2"
+                  disabled={soldOut}
+                  className="py-3.5 btn-brand text-[11px] font-black uppercase tracking-[0.14em] inline-flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <AnimatePresence mode="wait" initial={false}>
                     {added ? (
@@ -203,7 +212,8 @@ export default function ProductDetail({ product }: { product: DrinkProduct }) {
                 <button
                   type="button"
                   onClick={buyNow}
-                  className="py-3.5 bg-white border border-ember/40 text-ember text-[11px] font-black uppercase tracking-[0.14em] hover:bg-ember/5 transition-colors"
+                  disabled={soldOut}
+                  className="py-3.5 bg-white border border-ember/40 text-ember text-[11px] font-black uppercase tracking-[0.14em] hover:bg-ember/5 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Buy now
                 </button>

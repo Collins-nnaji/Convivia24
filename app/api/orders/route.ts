@@ -9,6 +9,7 @@ import { redeemGiftCardForOrder } from '@/lib/commerce/gift-cards';
 import { releaseOrderResources } from '@/lib/commerce/fulfillment';
 import { routeOrder, reserveSupplierStock } from '@/lib/suppliers/stock';
 import { logSupplierAction } from '@/lib/suppliers/audit';
+import { expandPackLines } from '@/lib/packages/lines';
 import { readReferralCookie } from '@/lib/referrals/cookie';
 import { attributeOrder } from '@/lib/referrals/repo';
 import {
@@ -233,7 +234,8 @@ export async function POST(req: NextRequest) {
     // Reserve stock before this order can be paid for — two shoppers can't
     // both walk away with the last bottle. Roll the whole order back if any
     // tracked line is out of stock, rather than silently overselling it.
-    const stockLines = resolved.map((r) => ({ slug: r.slug, qty: r.qty }));
+    // Packs reserve and route as the bottles inside them — a pack row holds no stock itself.
+    const stockLines = expandPackLines(resolved.map((r) => ({ slug: r.slug, qty: r.qty })));
     const reservationError = await reserveStockForOrder(stockLines, orderId);
     if (reservationError) {
       await sql`DELETE FROM ritual_orders WHERE id = ${orderId}`;

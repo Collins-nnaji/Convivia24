@@ -13,11 +13,12 @@ import SuppliersDesk from '@/components/admin/SuppliersDesk';
 import ReferralsDesk from '@/components/admin/ReferralsDesk';
 import GiftCardsDesk from '@/components/admin/GiftCardsDesk';
 import TriviaDesk from '@/components/admin/TriviaDesk';
+import ContentDesk from '@/components/admin/ContentDesk';
 import { useAdminOrders } from '@/components/admin/useAdminOrders';
 import { EMPTY_SUMMARY, type AdminSummary } from '@/components/admin/types';
-import { Gift, LayoutDashboard, PackageSearch, Share2, ShoppingBag, Trophy, Truck, Wine } from 'lucide-react';
+import { CalendarDays, Gift, LayoutDashboard, PackageSearch, Share2, ShoppingBag, Trophy, Truck, Wine } from 'lucide-react';
 
-const TAB_KEYS = ['overview', 'drinks', 'orders', 'sourcing', 'suppliers', 'referrals', 'giftcards', 'trivia'] as const;
+const TAB_KEYS = ['overview', 'drinks', 'orders', 'sourcing', 'suppliers', 'referrals', 'giftcards', 'trivia', 'content'] as const;
 type TabKey = (typeof TAB_KEYS)[number];
 
 function isTab(v: string): v is TabKey {
@@ -155,7 +156,7 @@ function AdminDesk() {
     { key: 'orders', label: 'Orders', count: pill(summary.ordersToFulfil), icon: <ShoppingBag size={17} /> },
     { key: 'sourcing', label: 'Order sourcing', count: pill(summary.ordersUnsourced), icon: <PackageSearch size={17} /> },
     { key: 'drinks', label: 'Drinks', count: pill(summary.lowStock), icon: <Wine size={17} /> },
-    { key: 'suppliers', label: 'Suppliers', icon: <Truck size={17} /> },
+    { key: 'suppliers', label: 'Suppliers', count: pill(summary.bottleRequestsPending), icon: <Truck size={17} /> },
     {
       key: 'referrals',
       label: 'Referrals',
@@ -164,6 +165,7 @@ function AdminDesk() {
     },
     { key: 'giftcards', label: 'Gift cards', icon: <Gift size={17} /> },
     { key: 'trivia', label: 'Trivia', count: pill(summary.prizesUnclaimed), icon: <Trophy size={17} /> },
+    { key: 'content', label: 'Events & venues', count: pill(summary.contentPending), icon: <CalendarDays size={17} /> },
   ];
 
   const subtitle =
@@ -189,6 +191,7 @@ function AdminDesk() {
       {tab === 'referrals' && <ReferralsDesk onChanged={loadSummary} />}
       {tab === 'giftcards' && <GiftCardsDesk onChanged={loadSummary} />}
       {tab === 'trivia' && <TriviaDesk onChanged={loadSummary} />}
+      {tab === 'content' && <ContentDesk onChanged={loadSummary} />}
     </AdminShell>
   );
 }

@@ -40,3 +40,30 @@ CREATE TABLE IF NOT EXISTS supplier_audit_log (
 );
 CREATE INDEX IF NOT EXISTS idx_supplier_audit_supplier ON supplier_audit_log(supplier_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_supplier_audit_created ON supplier_audit_log(created_at DESC);
+
+-- Extra sign-in emails per supplier. Anyone on the list opens the portal with a normal
+-- Convivia24 account login — no access key needed. The supplier's own contact email always counts.
+ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS portal_emails TEXT[] NOT NULL DEFAULT '{}';
+CREATE INDEX IF NOT EXISTS idx_suppliers_portal_emails ON suppliers USING GIN (portal_emails);
+
+-- Bottles a supplier would like to stock that are not in the catalog yet. The desk approves
+-- (creating the SKU with a retail price) or declines, and the supplier sees the outcome.
+CREATE TABLE IF NOT EXISTS supplier_bottle_requests (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  supplier_id   UUID NOT NULL REFERENCES suppliers(id) ON DELETE CASCADE,
+  name          TEXT NOT NULL,
+  brand         TEXT,
+  category      TEXT,
+  volume        TEXT,
+  abv           NUMERIC(4,1),
+  cost_ngn      INTEGER CHECK (cost_ngn IS NULL OR cost_ngn >= 0),
+  on_hand       INTEGER NOT NULL DEFAULT 0 CHECK (on_hand >= 0),
+  note          TEXT,
+  status        TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','approved','declined')),
+  decision_note TEXT,
+  created_slug  TEXT,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  decided_at    TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_supplier_bottle_requests_status ON supplier_bottle_requests(status, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_supplier_bottle_requests_supplier ON supplier_bottle_requests(supplier_id, created_at DESC);

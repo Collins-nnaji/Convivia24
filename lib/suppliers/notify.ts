@@ -1,6 +1,9 @@
 import sql from '@/lib/db';
 import { sendEmail } from '@/lib/email/resend';
 import { genericNoticeEmail } from '@/lib/email/templates';
+import { getPackageBySlug } from '@/lib/packages/catalog';
+import { DRINKS } from '@/lib/drinks/catalog';
+import { sendSms, termiiConfigured, normalizeNgPhone } from '@/lib/notify/termii';
 
 function appUrl(): string {
   return (process.env.NEXT_PUBLIC_APP_URL || 'https://convivia24.com').replace(/\/$/, '');
@@ -21,17 +24,22 @@ export async function notifySupplierOfPaidOrder(orderId: string): Promise<void> 
       SELECT
         o.id, o.full_name, o.area, o.city, o.address_line1, o.address_line2, o.notes, o.routed_out_of_city,
         s.id AS supplier_id, s.name AS supplier_name, s.email AS supplier_email, s.slug AS supplier_slug,
-        s.portal_enabled
+        s.phone AS supplier_phone, s.portal_enabled
       FROM ritual_orders o
       JOIN suppliers s ON s.id = COALESCE(o.supplier_id, o.routed_supplier_id)
       WHERE o.id = ${orderId}
       LIMIT 1
     `;
-    if (!row?.supplier_email) return;
+    if (!row) return;
 
-    const items = await sql`
-      SELECT kit_name AS name, qty FROM ritual_order_items WHERE order_id = ${orderId} ORDER BY created_at
+    const raw = await sql`
+      SELECT kit_slug AS slug, kit_name AS name, qty FROM ritual_order_items WHERE order_id = ${orderId} ORDER BY created_at
     `;
+    const items = raw.flatMap((i) => {
+      const pkg = getPackageBySlug(String(i.slug));
+      if (!pkg) return [{ name: String(i.name), qty: Number(i.qty) }];
+      return pkg.components.map((c) => ({ name: `${DRINKS.find((d) => d.slug === c.slug)?.name || c.slug} (${i.name})`, qty: c.qty * Number(i.qty) }));
+    });
     const portal = `${appUrl()}/supplier/${row.supplier_slug}#orders`;
     const lines = items
       .map((i) => `<li style="margin:0 0 6px;">${escapeHtml(String(i.name))} × <strong>${Number(i.qty)}</strong></li>`)
@@ -54,8 +62,18 @@ export async function notifySupplierOfPaidOrder(orderId: string): Promise<void> 
         }
       `,
     });
-    const result = await sendEmail({ to: String(row.supplier_email), subject, html });
-    if (!result.sent) console.error('Supplier order notification failed:', result.error);
+    if (row.supplier_email) {
+      const result = await sendEmail({ to: String(row.supplier_email), subject, html });
+      if (!result.sent) console.error('Supplier order notification failed:', result.error);
+    }
+
+    // Suppliers live on their phones — a text lands even when the email waits until morning.
+    if (row.supplier_phone && termiiConfigured()) {
+      const short = String(row.id).slice(0, 8).toUpperCase();
+      const bottles = items.map((i) => `${i.qty}x ${i.name}`).join(', ').slice(0, 120);
+      const text = `Convivia24 order ${short}: ${bottles}. Deliver to ${String(row.area || row.city || 'Lagos')}. ${row.portal_enabled ? `Open ${appUrl()}/supplier/${row.supplier_slug}` : 'Check your email.'}`;
+      await sendSms(normalizeNgPhone(String(row.supplier_phone)), text).catch((err) => console.error('Supplier SMS failed', err));
+    }
   } catch (err) {
     console.error('notifySupplierOfPaidOrder failed', err);
   }

@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, clientIp } from '@/lib/redis';
 import { getCurrentUser } from '@/lib/auth/session';
 import { apiErrorResponse } from '@/lib/db';
 import { createVenue } from '@/lib/venues/repo';
 
 export async function POST(req: NextRequest) {
+  const rl = await rateLimit(`venues-submit:${clientIp(req)}`, 30, 60);
+  if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: 'Sign in to submit a venue.' }, { status: 401 });

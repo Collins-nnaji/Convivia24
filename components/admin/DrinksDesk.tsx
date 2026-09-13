@@ -3,8 +3,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import Image from 'next/image';
 import { ChevronDown, FileText, Plus, Sparkles, X } from 'lucide-react';
+import Modal from './ui/Modal';
 import { CATEGORIES, CATEGORY_LABELS, formatNgn } from '@/lib/drinks/catalog';
 import { skuMargin } from '@/lib/suppliers/margin';
+import { derivedPackCost, isDerivedCostSku } from '@/lib/suppliers/pack-cost';
 import PriceListImport from './PriceListImport';
 import { useDialogs } from './ui/DialogProvider';
 import { AdminInput, AdminLabel, AdminSelect, AdminTextArea, adminInputClass } from './ui/Fields';
@@ -94,7 +96,6 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
   const [formOpen, setFormOpen] = useState(false);
   const [priceListOpen, setPriceListOpen] = useState(false);
   const [product, setProduct] = useState<ProductForm>(EMPTY_PRODUCT);
-  const formRef = useRef<HTMLFormElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   /** Per-supplier holdings, keyed by SKU slug — the shop total is the sum of these. */
   const [supplierStock, setSupplierStock] = useState<Record<string, SupplierStockRow[]>>({});
@@ -159,8 +160,12 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
   function editItem(item: Item) {
     setProduct(productFromItem(item));
     setFormOpen(true);
-    setMsg(`Editing “${item.name}” — change what you need and save.`);
-    requestAnimationFrame(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }
+
+  function closeForm() {
+    setProduct(EMPTY_PRODUCT);
+    if (fileRef.current) fileRef.current.value = '';
+    setFormOpen(false);
   }
 
   async function generateCopy() {
@@ -327,18 +332,24 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
         </div>
       )}
 
-      {/*
-        Collapsed by default. This form is long enough to push the live stock table off the
-        screen, and the table is what the desk actually works in day to day.
-      */}
-      <Disclosure
+      <Modal
         open={formOpen}
-        onToggle={() => setFormOpen((v) => !v)}
-        icon={<Plus size={17} />}
-        title={product.slug ? `Editing ${product.name || product.slug}` : 'Add / update stock'}
-        hint="Upload a bottle image, taste notes and brand story for the ⓘ guide."
+        size="lg"
+        title={product.slug ? `Edit ${product.name || product.slug}` : 'Add a drink'}
+        description={product.slug ? 'Changes go live in the shop on save.' : 'Name, price and stock are enough to list it — the rest can come later.'}
+        onClose={closeForm}
+        footer={
+          <>
+            <button type="button" onClick={closeForm} className="rounded-lg border border-obsidian/15 px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/70 hover:bg-obsidian/[0.04]">
+              {product.slug ? 'Discard' : 'Cancel'}
+            </button>
+            <button type="submit" form="admin-product-form" disabled={loading} className="btn-brand rounded-lg px-6 py-2.5 text-[11px] font-black uppercase tracking-[0.14em] disabled:opacity-50">
+              {loading ? 'Saving…' : 'Save to shop'}
+            </button>
+          </>
+        }
       >
-        <form ref={formRef} onSubmit={saveProduct} className="space-y-4 border-t border-obsidian/8 p-5 sm:p-6">
+        <form id="admin-product-form" onSubmit={saveProduct} className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <AdminInput label="Name" value={product.name} onChange={(e) => setField('name')(e.target.value)} required />
             <AdminInput label="Slug" hint="optional — auto from name" value={product.slug} onChange={(e) => setField('slug')(e.target.value)} placeholder="auto-from-name" />
@@ -390,23 +401,8 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
             <AdminLabel hint={blobOk ? undefined : 'Azure Storage not configured — images will be rejected'}>Product image</AdminLabel>
             <input ref={fileRef} name="image" type="file" accept="image/*" className="text-sm" />
           </div>
-          <div className="flex flex-wrap items-center gap-3 border-t border-obsidian/8 pt-4">
-            <button type="submit" disabled={loading} className="btn-brand px-6 py-3 text-[11px] font-black uppercase tracking-[0.14em]">
-              {loading ? 'Saving…' : 'Save to shop'}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setProduct(EMPTY_PRODUCT);
-                setFormOpen(false);
-              }}
-              className="px-4 py-3 text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/45 hover:text-obsidian"
-            >
-              {product.slug ? 'Discard' : 'Close'}
-            </button>
-          </div>
         </form>
-      </Disclosure>
+      </Modal>
 
       {/* Same disclosure treatment as Add / update stock — both are occasional tasks. */}
       <Disclosure
@@ -423,6 +419,17 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
 
       <div className="mb-1 flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-bold">Live stock</h2>
+        <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            setProduct(EMPTY_PRODUCT);
+            setFormOpen(true);
+          }}
+          className="btn-brand inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em]"
+        >
+          <Plus size={13} /> Add a drink
+        </button>
         <button
           type="button"
           onClick={askAdvice}
@@ -432,6 +439,7 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
         >
           <Sparkles size={13} /> AI stock advice
         </button>
+        </div>
       </div>
       <p className="mb-3 text-sm text-obsidian/50">
         Retail, wholesale cost and margin per SKU. Supplier-specific costs live in the Suppliers tab.
@@ -522,6 +530,7 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
             supplierCosts={supplierCosts[item.slug] || {}}
             onSetSupplierStock={setSupplierStockQty}
             onSetSupplierCost={setSupplierCost}
+            defaultCostOf={(slug) => items.find((i) => i.slug === slug)?.cost_ngn ?? null}
           />
         ))}
         {visibleItems.length === 0 && (
@@ -579,6 +588,7 @@ function SupplierQtyField({
   row,
   costNgn,
   retailNgn,
+  derivedCost = false,
   onSave,
   onSaveCost,
 }: {
@@ -586,6 +596,7 @@ function SupplierQtyField({
   row?: SupplierStockRow;
   costNgn?: number;
   retailNgn: number | null;
+  derivedCost?: boolean;
   onSave: (qty: number) => Promise<void>;
   onSaveCost: (cost: number) => Promise<void>;
 }) {
@@ -642,12 +653,14 @@ function SupplierQtyField({
         />
       </label>
       <label className="mt-1.5 block text-[10px] text-obsidian/40">
-        Unit cost
+        Unit cost{derivedCost ? ' · from bottles' : ''}
         <input
           type="number"
           min={0}
           value={cost}
-          disabled={busy}
+          disabled={busy || derivedCost}
+          readOnly={derivedCost}
+          title={derivedCost ? 'Summed from the bottles in the pack' : undefined}
           onChange={(e) => setCost(e.target.value)}
           onBlur={commitCost}
           onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
@@ -664,7 +677,7 @@ function SupplierQtyField({
   );
 }
 
-type Movement = { id: string; deltaOnHand: number; deltaReserved: number; reason: string; orderId: string | null; note: string | null; createdAt: string };
+type Movement = { id: string; deltaOnHand: number; deltaReserved: number; reason: string; orderId: string | null; note: string | null; actor: string; actorLabel: string | null; supplierName: string | null; createdAt: string };
 
 const REASON_LABEL: Record<string, string> = {
   reserve: 'Reserved',
@@ -708,6 +721,7 @@ function StockHistory({ slug }: { slug: string }) {
         <tr>
           <th className="py-1 text-left">When</th>
           <th className="py-1 text-left">What</th>
+          <th className="py-1 text-left">Who</th>
           <th className="py-1 text-right">On hand</th>
           <th className="py-1 text-right">Reserved</th>
           <th className="py-1 text-left pl-3">Note</th>
@@ -720,6 +734,7 @@ function StockHistory({ slug }: { slug: string }) {
               {new Date(m.createdAt).toLocaleString('en-NG', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}
             </td>
             <td className="py-1.5 font-semibold text-obsidian/70">{REASON_LABEL[m.reason] ?? m.reason}</td>
+            <td className="py-1.5 text-obsidian/55">{m.actor === 'supplier' ? m.supplierName || 'Supplier' : m.actor === 'admin' ? 'Desk' : 'System'}</td>
             <td className={`py-1.5 text-right tabular-nums ${m.deltaOnHand < 0 ? 'text-red-600' : m.deltaOnHand > 0 ? 'text-emerald-700' : 'text-obsidian/30'}`}>{delta(m.deltaOnHand)}</td>
             <td className={`py-1.5 text-right tabular-nums ${m.deltaReserved !== 0 ? 'text-obsidian/70' : 'text-obsidian/30'}`}>{delta(m.deltaReserved)}</td>
             <td className="py-1.5 pl-3 text-obsidian/50">
@@ -744,6 +759,7 @@ function StockRow({
   supplierCosts,
   onSetSupplierStock,
   onSetSupplierCost,
+  defaultCostOf,
 }: {
   item: Item;
   saving: boolean;
@@ -755,6 +771,8 @@ function StockRow({
   supplierCosts: Record<string, number>;
   onSetSupplierStock: (supplierId: string, slug: string, onHand: number) => Promise<void>;
   onSetSupplierCost: (supplierId: string, slug: string, costNgn: number) => Promise<void>;
+  /** Default cost of another SKU — lets a pack sum its bottles. */
+  defaultCostOf: (slug: string) => number | null;
 }) {
   const [onHand, setOnHand] = useState(String(item.on_hand));
   const [price, setPrice] = useState(item.price_ngn != null ? String(item.price_ngn) : '');
@@ -773,15 +791,36 @@ function StockRow({
     setTasteNote(item.taste_note || '');
   }, [item.on_hand, item.price_ngn, item.cost_ngn, item.low_stock_threshold, item.taste_note]);
 
+  const derived = supplierRows.some((r) => r.onHand > 0 || r.reserved > 0);
   const dirty =
-    onHand !== String(item.on_hand) ||
+    (!derived && onHand !== String(item.on_hand)) ||
     price !== (item.price_ngn != null ? String(item.price_ngn) : '') ||
-    cost !== (item.cost_ngn != null ? String(item.cost_ngn) : '') ||
+    (!isDerivedCostSku(item.slug) && cost !== (item.cost_ngn != null ? String(item.cost_ngn) : '')) ||
     threshold !== String(item.low_stock_threshold) ||
     tasteNote !== (item.taste_note || '');
 
-  const margin = skuMargin(price === '' ? null : Number(price), cost === '' ? null : Number(cost));
+  // Once any supplier holds this bottle, on-hand is the sum of their shelves — editing the SKU
+  // directly would only be overwritten by the next rollup, so the field goes read-only.
+  const heldBySuppliers = supplierRows.filter((r) => r.onHand > 0 || r.reserved > 0);
+  const quotes = Object.entries(supplierCosts).map(([id, c]) => ({ id, cost: c })).sort((a, b) => a.cost - b.cost);
+  const bestQuote = quotes[0];
+  const bestSupplier = bestQuote ? supplierRows.find((r) => r.supplierId === bestQuote.id)?.supplierName : undefined;
+  // A party pack's cost is the sum of its bottles — never typed. `supplierCosts` for packs already
+  // arrives summed per supplier from the API; the default falls back to the bottles' defaults.
+  const isPack = isDerivedCostSku(item.slug);
+  const packDefault = isPack ? derivedPackCost(item.slug, defaultCostOf) : null;
+  // Margin is against what we would actually pay: the cheapest real quote, else the default cost.
+  const effectiveCost = bestQuote ? bestQuote.cost : isPack ? packDefault : cost === '' ? null : Number(cost);
+  const margin = skuMargin(price === '' ? null : Number(price), effectiveCost);
   const lowStock = item.tracked !== false && item.available <= item.low_stock_threshold;
+  const chips: { label: string; tone?: string }[] = [
+    ...(item.tracked === false ? [{ label: 'Not tracked yet', tone: 'text-amber-700' }] : []),
+    ...(item.brand ? [{ label: item.brand }] : []),
+    ...(item.reserved > 0 ? [{ label: `${item.reserved} reserved` }] : []),
+    ...(lowStock ? [{ label: 'Low', tone: 'text-amber-700' }] : []),
+    ...(!item.active ? [{ label: 'Off shop', tone: 'text-red-600' }] : []),
+    ...(item.taste_note ? [] : [{ label: 'No guide' }]),
+  ];
   const cell = `${adminInputClass} py-2`;
   const btn = 'px-3 py-2.5 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-40';
 
@@ -797,20 +836,56 @@ function StockRow({
           <div className="min-w-0">
             <p className="truncate font-medium">{item.name}</p>
             <p className="truncate font-mono text-[11px] text-obsidian/40">{item.slug}</p>
-            <p className="mt-0.5 text-[10px] font-black uppercase tracking-[0.1em] text-obsidian/35">
-              {item.source}
-              {item.brand ? ` · ${item.brand}` : ''}
-              {item.reserved > 0 ? ` · ${item.reserved} reserved` : ''}
-              {lowStock ? <span className="text-amber-700"> · low</span> : ''}
-              {!item.active ? ' · off shop' : ''}
-              {item.taste_note ? ' · guide ✓' : ' · no guide'}
+            <p className="mt-0.5 flex flex-wrap gap-x-1.5 text-[10px] font-black uppercase tracking-[0.1em] text-obsidian/35">
+              {chips.map((c, i) => (
+                <span key={c.label} className={c.tone}>
+                  {i > 0 && <span className="text-obsidian/20">· </span>}
+                  {c.label}
+                </span>
+              ))}
             </p>
           </div>
         </div>
 
         <div className="grid flex-1 grid-cols-2 gap-3 sm:grid-cols-4">
-          <AdminInput label="On hand" type="number" min={0} inputMode="numeric" value={onHand} onChange={(e) => setOnHand(e.target.value)} className={cell} />
-          <AdminInput label="Cost (NGN)" type="number" min={0} inputMode="numeric" value={cost} onChange={(e) => setCost(e.target.value)} placeholder="Wholesale" className={cell} />
+          {derived ? (
+            <div>
+              <AdminLabel hint={`${heldBySuppliers.length} supplier${heldBySuppliers.length === 1 ? '' : 's'}`}>On hand</AdminLabel>
+              <button
+                type="button"
+                onClick={() => setSuppliersOpen(true)}
+                title="Set per supplier"
+                className="w-full rounded-lg border border-dashed border-obsidian/15 bg-paper/60 px-3 py-2 text-left text-sm font-semibold tabular-nums text-obsidian hover:border-ember"
+              >
+                {item.on_hand} <span className="text-[11px] font-normal text-obsidian/45">· {item.available} free</span>
+              </button>
+            </div>
+          ) : (
+            <AdminInput label="On hand" type="number" min={0} inputMode="numeric" value={onHand} onChange={(e) => setOnHand(e.target.value)} className={cell} />
+          )}
+          {bestQuote ? (
+            <div>
+              <AdminLabel hint="best quote">Cost</AdminLabel>
+              <button
+                type="button"
+                onClick={() => setSuppliersOpen(true)}
+                title="Quotes per supplier"
+                className="w-full rounded-lg border border-dashed border-obsidian/15 bg-paper/60 px-3 py-2 text-left text-sm font-semibold tabular-nums text-obsidian hover:border-ember"
+              >
+                {formatNgn(bestQuote.cost)}
+                {bestSupplier && <span className="block truncate text-[11px] font-normal text-obsidian/45">{bestSupplier}</span>}
+              </button>
+            </div>
+          ) : isPack ? (
+            <div>
+              <AdminLabel hint="from bottles">Cost</AdminLabel>
+              <div className="w-full rounded-lg border border-dashed border-obsidian/15 bg-paper/60 px-3 py-2 text-sm font-semibold tabular-nums text-obsidian/70" title="Summed from the pack's bottles — set their costs">
+                {packDefault != null ? formatNgn(packDefault) : <span className="font-normal text-obsidian/40">cost the bottles</span>}
+              </div>
+            </div>
+          ) : (
+            <AdminInput label="Default cost" hint="until a supplier quotes" type="number" min={0} inputMode="numeric" value={cost} onChange={(e) => setCost(e.target.value)} placeholder="Wholesale" className={cell} />
+          )}
           <AdminInput label="Retail (NGN)" type="number" min={0} inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value)} className={cell} />
           <AdminInput label="Low at" type="number" min={0} inputMode="numeric" value={threshold} onChange={(e) => setThreshold(e.target.value)} className={cell} />
         </div>
@@ -833,9 +908,9 @@ function StockRow({
             disabled={saving || !dirty}
             onClick={() =>
               onSave({
-                onHand,
+                ...(derived ? {} : { onHand }),
                 priceNgn: price === '' ? undefined : price,
-                costNgn: cost === '' ? null : cost,
+                ...(isPack ? {} : { costNgn: cost === '' ? null : cost }),
                 lowStockThreshold: threshold,
                 tasteNote,
               })
@@ -883,13 +958,14 @@ function StockRow({
                 row={supplierRows.find((r) => r.supplierId === sup.id)}
                 costNgn={supplierCosts[sup.id]}
                 retailNgn={item.price_ngn}
+                derivedCost={isPack}
                 onSave={(qty) => onSetSupplierStock(sup.id, item.slug, qty)}
                 onSaveCost={(costNgn) => onSetSupplierCost(sup.id, item.slug, costNgn)}
               />
             ))}
           </div>
           <p className="mt-2 text-[11px] text-obsidian/40">
-            On hand above is the total across suppliers and is recalculated from these numbers.
+            The SKU's on-hand is the sum of these shelves. Quotes here also set the cost the margin column uses.
           </p>
         </div>
       )}

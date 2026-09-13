@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { pointsFromSpend } from '@/lib/loyalty/program';
 import sql, { apiErrorResponse } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth/session';
 import { buildTrackingSteps, listOrderEvents } from '@/lib/commerce/timeline';
@@ -15,7 +16,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     const rows = await sql`
       SELECT
         o.id, o.status, o.subtotal_ngn, o.loyalty_discount_ngn, o.gift_card_discount_ngn,
-        o.total_ngn, o.loyalty_points_awarded, o.full_name, o.phone,
+        o.total_ngn, o.loyalty_points_awarded, o.loyalty_owner_id, o.full_name, o.phone,
         o.address_line1, o.address_line2, o.city, o.area, o.notes,
         o.courier_name, o.rider_phone, o.eta_at, o.tracking_note, o.created_at,
         COALESCE(
@@ -50,6 +51,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
         giftCardDiscountNgn: Number(o.gift_card_discount_ngn ?? 0),
         totalNgn: Number(o.total_ngn ?? o.subtotal_ngn ?? 0),
         pointsAwarded: Number(o.loyalty_points_awarded ?? 0),
+        // A guest order the signed-in account can attach to itself for points.
+        claimable: !o.loyalty_owner_id && !['pending', 'awaiting_payment', 'cancelled', 'refunded'].includes(String(o.status)),
+        pointsIfClaimed: pointsFromSpend(Number(o.total_ngn ?? o.subtotal_ngn ?? 0)),
         fullName: String(o.full_name || ''),
         phone: (o.phone as string) || null,
         addressLine1: String(o.address_line1 || ''),

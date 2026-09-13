@@ -8,6 +8,8 @@ import { apiErrorResponse } from '@/lib/db';
 import { rateLimit, clientIp } from '@/lib/redis';
 import { invalidateCatalog } from '@/lib/shop/catalog-cache';
 import { logSupplierAction } from '@/lib/suppliers/audit';
+import { isDerivedCostSku } from '@/lib/suppliers/pack-cost';
+import { notifyRestockAlerts } from '@/lib/shop/restock-alerts';
 import { captureApiError } from '@/lib/sentry';
 import { chat, aiConfigured } from '@/lib/ai/azure';
 import { listSupplierCatalog } from '@/lib/suppliers/sku-prices';
@@ -66,6 +68,9 @@ export async function POST(req: NextRequest) {
         const patch: Parameters<typeof editStockRow>[1] = {};
         if (body.onHand != null && body.onHand !== '') patch.onHand = Number(body.onHand);
         if (body.priceNgn != null && body.priceNgn !== '') patch.priceNgn = Number(body.priceNgn);
+        if (body.costNgn !== undefined && isDerivedCostSku(slug)) {
+          return NextResponse.json({ error: 'Party packs are costed from their bottles — set the bottle costs instead.' }, { status: 400 });
+        }
         if (body.costNgn != null && body.costNgn !== '') patch.costNgn = Number(body.costNgn);
         if (body.costNgn === '') patch.costNgn = null;
         if (body.lowStockThreshold != null && body.lowStockThreshold !== '') {
@@ -92,6 +97,7 @@ export async function POST(req: NextRequest) {
           const row = await editStockRow(slug, patch);
           if (!row) return NextResponse.json({ error: 'Unknown SKU.' }, { status: 404 });
           await invalidateCatalog();
+          if (patch.onHand != null || patch.active === true) notifyRestockAlerts(slug).catch(() => {});
           return NextResponse.json({ item: row });
         } catch (err) {
           if (err instanceof StockEditError) {
@@ -115,6 +121,7 @@ export async function POST(req: NextRequest) {
         const before = (await stockForSlug(slug)).find((r) => r.supplierId === supplierId);
         await setSupplierStock(supplierId, slug, onHand);
         await invalidateCatalog();
+        notifyRestockAlerts(slug).catch(() => {});
         await logSupplierAction({
           supplierId, actor: 'admin', actorLabel: 'desk', action: 'stock.set', skuSlug: slug,
           detail: { from: before?.onHand ?? null, to: Math.floor(onHand) },
@@ -278,6 +285,7 @@ Return JSON:
     });
 
     await invalidateCatalog();
+    notifyRestockAlerts(item.slug).catch(() => {});
     return NextResponse.json({ item }, { status: 201 });
   } catch (err) {
     captureApiError(err, { route: 'admin/inventory POST' });

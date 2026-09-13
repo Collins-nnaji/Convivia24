@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo, useState, type ReactNode } from 'react';
-import { ChevronDown, ChevronRight, Download, Printer, Search, Trash2, Undo2 } from 'lucide-react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import Image from 'next/image';
+import { ChevronDown, ChevronRight, Download, Pencil, Printer, Search, Trash2, Undo2 } from 'lucide-react';
 import { formatNgn } from '@/lib/drinks/catalog';
 import {
   ORDER_STATUS_LABELS,
@@ -10,6 +11,7 @@ import {
   type OrderStatus,
 } from '@/lib/commerce/status';
 import type { AdminOrder } from './types';
+import type { OrderFilters } from './useAdminOrders';
 
 type RangeKey = 'today' | '7d' | '30d' | 'month' | 'all' | 'custom';
 
@@ -96,7 +98,13 @@ export default function OrdersLedger({
   onStatusChange,
   onRefund,
   onDelete,
+  onEdit,
   renderTracking,
+  onFilter,
+  total,
+  hasMore,
+  loading,
+  onLoadMore,
 }: {
   orders: AdminOrder[];
   settableStatuses: OrderStatus[];
@@ -104,8 +112,15 @@ export default function OrdersLedger({
   onStatusChange: (order: AdminOrder, status: OrderStatus) => void;
   onRefund: (order: AdminOrder) => void;
   onDelete: (order: AdminOrder) => void;
+  onEdit: (order: AdminOrder) => void;
   /** The tracking form, injected so this component stays presentational. */
   renderTracking: (order: AdminOrder) => ReactNode;
+  /** Filters are applied on the server; the ledger reports what the desk picked. */
+  onFilter: (filters: OrderFilters) => void;
+  total: number;
+  hasMore: boolean;
+  loading: boolean;
+  onLoadMore: () => void;
 }) {
   const [range, setRange] = useState<RangeKey>('30d');
   const [from, setFrom] = useState('');
@@ -113,6 +128,16 @@ export default function OrdersLedger({
   const [status, setStatus] = useState<OrderStatus | 'all'>('all');
   const [query, setQuery] = useState('');
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const { from: lo, to: hi } = rangeBounds(range, from, to);
+    const t = setTimeout(
+      () => onFilter({ from: lo ? lo.toISOString() : null, to: hi ? hi.toISOString() : null, status, q: query }),
+      query ? 300 : 0
+    );
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [range, from, to, status, query]);
 
   function toggle(id: string) {
     setExpanded((prev) => {
@@ -279,7 +304,7 @@ export default function OrdersLedger({
               disabled={rows.length === 0}
               className="inline-flex items-center gap-1.5 rounded-lg border border-obsidian/12 px-3 py-1.5 text-xs font-bold text-obsidian/70 transition-colors hover:border-ember/40 hover:text-ember disabled:opacity-40"
             >
-              <Download size={13} /> CSV
+              <Download size={13} /> CSV{hasMore ? ` (${rows.length} of ${total})` : ''}
             </button>
           </div>
         </div>
@@ -399,6 +424,17 @@ export default function OrdersLedger({
                   </td>
                   <td className="whitespace-nowrap px-2 py-2 text-right">
                     {!closed && (
+                      <button
+                        type="button"
+                        onClick={() => onEdit(o)}
+                        disabled={updatingOrder === o.id}
+                        title="Edit delivery details"
+                        className="mr-1 inline-grid h-7 w-7 place-items-center rounded text-obsidian/40 hover:bg-obsidian/[0.06] hover:text-obsidian disabled:opacity-40"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                    )}
+                    {!closed && (
                       <a
                         href={`/admin/label/${o.id}`}
                         target="_blank"
@@ -456,7 +492,14 @@ export default function OrdersLedger({
                             <tbody>
                               {o.items.map((i, idx) => (
                                 <tr key={`${i.slug ?? i.name}-${idx}`} className="border-t border-obsidian/[0.06]">
-                                  <td className="py-1.5 pr-2 text-obsidian/75">{i.name}</td>
+                                  <td className="py-1.5 pr-2 text-obsidian/75">
+                                    <span className="flex items-center gap-2">
+                                      <span className="grid h-9 w-7 shrink-0 place-items-center overflow-hidden rounded bg-paper">
+                                        {i.imageUrl ? <Image src={i.imageUrl} alt="" width={28} height={36} className="h-9 w-7 object-contain" /> : <span className="h-5 w-2 rounded-sm bg-obsidian/10" />}
+                                      </span>
+                                      {i.name}
+                                    </span>
+                                  </td>
                                   <td className="py-1.5 text-right tabular-nums text-obsidian/60">{i.qty}</td>
                                   <td className="py-1.5 text-right tabular-nums text-obsidian/60">
                                     {formatNgn(i.unitPriceNgn)}
@@ -566,10 +609,22 @@ export default function OrdersLedger({
           )}
         </table>
 
-        {rows.length === 0 && (
+        {rows.length === 0 && !loading && (
           <p className="px-4 py-10 text-center text-sm text-obsidian/45">
             No orders in this range. Widen the dates or clear the filters.
           </p>
+        )}
+        {(hasMore || loading) && (
+          <div className="flex items-center justify-center gap-3 border-t border-obsidian/[0.06] px-4 py-3 text-xs text-obsidian/50">
+            <span>
+              {rows.length} of {total}
+            </span>
+            {hasMore && (
+              <button type="button" onClick={onLoadMore} disabled={loading} className="rounded-lg border border-obsidian/12 px-3 py-1.5 font-bold text-obsidian/70 hover:border-ember hover:text-ember disabled:opacity-40">
+                {loading ? 'Loading…' : 'Load more'}
+              </button>
+            )}
+          </div>
         )}
       </div>
     </div>

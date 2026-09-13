@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { createContext, createElement, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { EMPTY_TASTE_PROFILE, sanitizeProfile, type TasteProfile } from '@/lib/trivia/taste';
 import { TRIVIA_ROUNDS } from '@/lib/trivia/catalog';
 import type { ChallengeMeter } from '@/lib/trivia/challenges';
@@ -58,7 +58,7 @@ function writeLocalProfile(profile: TasteProfile) {
   }
 }
 
-export function useTriviaHub() {
+export function useTriviaHubSource({ enabled = true }: { enabled?: boolean } = {}) {
   const [state, setState] = useState<HubState>({
     loading: true,
     signedIn: false,
@@ -72,6 +72,7 @@ export function useTriviaHub() {
   });
 
   useEffect(() => {
+    if (!enabled) return;
     let cancelled = false;
     const local = readLocalProfile();
 
@@ -106,7 +107,7 @@ export function useTriviaHub() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [enabled]);
 
   /** Optimistic locally, persisted server-side when there is an account to hang it on. */
   const saveProfile = useCallback(async (next: TasteProfile) => {
@@ -149,4 +150,26 @@ export function useTriviaHub() {
   );
 
   return { ...state, saveProfile, claimChallenge, emptyProfile: EMPTY_TASTE_PROFILE };
+}
+
+export type TriviaHub = ReturnType<typeof useTriviaHubSource>;
+
+const HubContext = createContext<TriviaHub | null>(null);
+
+/**
+ * One fetch per page tree. Wrap a layout in this and every `useTriviaHub()` below it shares the
+ * same state — the Discover rail and its sections used to each call /api/trivia/hub on mount.
+ */
+export function TriviaHubProvider({ children }: { children: ReactNode }) {
+  const hub = useTriviaHubSource();
+  return createElement(HubContext.Provider, { value: hub }, children);
+}
+
+/** The shared hub when a provider is above, otherwise its own fetch (account pages, etc.). */
+export function useTriviaHub(): TriviaHub {
+  const shared = useContext(HubContext);
+  // Hooks must run unconditionally, so the standalone source exists either way but only fetches
+  // when there is no provider to share from.
+  const own = useTriviaHubSource({ enabled: shared === null });
+  return shared ?? own;
 }

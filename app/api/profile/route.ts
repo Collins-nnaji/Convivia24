@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, clientIp } from '@/lib/redis';
 import { getCurrentUser } from '@/lib/auth/session';
 import { getProfile, saveProfile, type ProfileData } from '@/lib/profile/repo';
 
@@ -17,6 +18,8 @@ export async function GET() {
 
 /** POST /api/profile — save onboarding answers. body: { answers: { [questionId]: string[] } } */
 export async function POST(req: NextRequest) {
+  const rl = await rateLimit(`profile:${clientIp(req)}`, 30, 60);
+  if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   try {

@@ -6,6 +6,10 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
+# Remote hosts the Netlify Image CDN may fetch from (bottle shots on Azure Blob and the CDN).
+[images]
+  remote_images = ["https://.*"]
+
 [build.environment]
   CI = "false"
   NODE_VERSION = "22"

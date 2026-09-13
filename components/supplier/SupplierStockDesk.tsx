@@ -8,6 +8,7 @@ import { skuMargin } from '@/lib/suppliers/margin';
 import { useDialogs } from '@/components/admin/ui/DialogProvider';
 import { AdminSelect, adminInputClass } from '@/components/admin/ui/Fields';
 import { readError, type ShelfRow } from './types';
+import SupplierBottleRequests from './SupplierBottleRequests';
 
 /**
  * The supplier's shelf. Listed SKUs first, with stock and their quote editable inline (saves on
@@ -132,6 +133,8 @@ export default function SupplierStockDesk({
           </p>
         )}
       </div>
+
+      <SupplierBottleRequests base={base} onApproved={onChanged} />
     </div>
   );
 }
@@ -176,11 +179,13 @@ function ShelfLine({
     <tr className={`hover:bg-paper/50 ${busy ? 'opacity-60' : ''}`}>
       <td className="px-3 py-2.5">
         <div className="flex items-center gap-3">
-          {row.imageUrl ? (
-            <Image src={row.imageUrl} alt="" width={32} height={40} className="h-10 w-8 shrink-0 object-contain" />
-          ) : (
-            <div className="h-10 w-8 shrink-0 border border-obsidian/10 bg-paper" />
-          )}
+          <span className="grid h-14 w-11 shrink-0 place-items-center overflow-hidden rounded-lg bg-paper">
+            {row.imageUrl ? (
+              <Image src={row.imageUrl} alt="" width={44} height={56} className="h-14 w-11 object-contain" />
+            ) : (
+              <span className="h-8 w-3 rounded-sm bg-obsidian/10" />
+            )}
+          </span>
           <div className="min-w-0">
             <p className="truncate font-medium text-obsidian">{row.name}</p>
             <p className="truncate text-[11px] text-obsidian/40">{[row.brand, row.category].filter(Boolean).join(' · ')}</p>
@@ -217,19 +222,26 @@ function ShelfLine({
         {listed ? (row.reserved > 0 ? <span className="text-amber-700">{row.reserved}</span> : '0') : '—'}
       </td>
       <td className="px-3 py-2.5 text-right">
-        <input
-          type="number"
-          min={0}
-          inputMode="numeric"
-          value={cost}
-          disabled={busy || (!listed && !adding)}
-          placeholder="₦"
-          onChange={(e) => setCost(e.target.value)}
-          onBlur={commitCost}
-          onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
-          className={cell}
-          aria-label={`${row.name} price`}
-        />
+        {row.derivedCost ? (
+          <span className="inline-block text-right" title="Priced from the bottles inside — set those bottle prices instead">
+            <span className="block text-sm font-semibold tabular-nums text-obsidian/70">{row.costNgn != null ? formatNgn(row.costNgn) : '—'}</span>
+            <span className="block text-[10px] font-bold uppercase tracking-wider text-obsidian/35">{row.costNgn != null ? 'from bottles' : 'price the bottles'}</span>
+          </span>
+        ) : (
+          <input
+            type="number"
+            min={0}
+            inputMode="numeric"
+            value={cost}
+            disabled={busy || (!listed && !adding)}
+            placeholder="₦"
+            onChange={(e) => setCost(e.target.value)}
+            onBlur={commitCost}
+            onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+            className={cell}
+            aria-label={`${row.name} price`}
+          />
+        )}
       </td>
       <td className="px-3 py-2.5 text-right text-xs tabular-nums">
         {margin ? (
