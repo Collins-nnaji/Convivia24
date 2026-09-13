@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
-import { issueGiftCard, listGiftCards } from '@/lib/commerce/gift-cards';
+import { issueGiftCard, listGiftCards, voidGiftCard } from '@/lib/commerce/gift-cards';
 import { apiErrorResponse } from '@/lib/db';
 import { rateLimit, clientIp } from '@/lib/redis';
 import { captureApiError } from '@/lib/sentry';
@@ -46,12 +46,15 @@ export async function DELETE(req: NextRequest) {
   try {
     const id = new URL(req.url).searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'Gift card ID required.' }, { status: 400 });
-    const { default: sql } = await import('@/lib/db');
-    await sql`DELETE FROM gift_cards WHERE id = ${id}`;
-    return NextResponse.json({ ok: true });
+    // Void, never delete — redeemed cards are referenced by orders and paid commissions.
+    const voided = await voidGiftCard(id);
+    if (!voided) {
+      return NextResponse.json({ error: 'Only an active, unredeemed card can be voided.' }, { status: 409 });
+    }
+    return NextResponse.json({ ok: true, status: 'void' });
   } catch (err) {
     captureApiError(err, { route: 'admin/gift-cards DELETE' });
-    const { status, error } = apiErrorResponse(err, 'Could not delete gift card.');
+    const { status, error } = apiErrorResponse(err, 'Could not void gift card.');
     return NextResponse.json({ error }, { status });
   }
 }

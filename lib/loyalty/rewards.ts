@@ -22,7 +22,7 @@ export type RewardCategory = 'bottles' | 'experiences' | 'credit' | 'merch';
 export const REWARD_CATEGORIES: { id: RewardCategory | 'all'; label: string; icon: string }[] = [
   { id: 'all', label: 'All rewards', icon: 'LayoutGrid' },
   { id: 'bottles', label: 'Bottles', icon: 'Wine' },
-  { id: 'experiences', label: 'Experiences', icon: 'Sparkles' },
+  { id: 'experiences', label: 'Experiences', icon: 'Ticket' },
   { id: 'credit', label: 'Shop credit', icon: 'Wallet' },
   { id: 'merch', label: 'Merchandise', icon: 'Gift' },
 ];

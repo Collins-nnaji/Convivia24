@@ -278,3 +278,139 @@ export async function fulfillSupplierStock(
     `;
   }
 }
+
+/** Take a SKU off a supplier's shelf entirely (their holding and their quote), then re-roll up. */
+export async function removeSupplierStock(supplierId: string, slug: string): Promise<void> {
+  await sql`DELETE FROM supplier_stock WHERE supplier_id = ${supplierId}::uuid AND slug = ${slug}`;
+  await sql`DELETE FROM supplier_sku_prices WHERE supplier_id = ${supplierId}::uuid AND slug = ${slug}`;
+  await syncInventoryRollup(slug);
+}
+
+export type ShelfRow = {
+  slug: string;
+  name: string;
+  brand: string | null;
+  category: string | null;
+  imageUrl: string | null;
+  retailNgn: number | null;
+  /** Null when the supplier has never listed this SKU. */
+  onHand: number | null;
+  reserved: number;
+  available: number;
+  costNgn: number | null;
+  updatedAt: string | null;
+};
+
+/**
+ * The whole catalog from one supplier's point of view: what they hold, what they quote, and the
+ * SKUs they could add. Retail is included so they can see the margin they leave us.
+ */
+export async function supplierShelf(supplierId: string): Promise<ShelfRow[]> {
+  const rows = await sql`
+    SELECT
+      i.slug, i.name, i.brand, i.category, i.image_url, i.price_ngn,
+      ss.on_hand, ss.reserved, ss.updated_at AS stock_updated_at,
+      sp.cost_ngn
+    FROM inventory i
+    LEFT JOIN supplier_stock ss ON ss.slug = i.slug AND ss.supplier_id = ${supplierId}::uuid
+    LEFT JOIN supplier_sku_prices sp ON sp.slug = i.slug AND sp.supplier_id = ${supplierId}::uuid
+    WHERE i.active = true
+    ORDER BY (ss.on_hand IS NULL) ASC, i.name ASC
+  `;
+  return rows.map((r) => {
+    const onHand = r.on_hand == null ? null : Number(r.on_hand);
+    const reserved = Number(r.reserved ?? 0);
+    return {
+      slug: String(r.slug),
+      name: String(r.name),
+      brand: (r.brand as string) || null,
+      category: (r.category as string) || null,
+      imageUrl: (r.image_url as string) || null,
+      retailNgn: r.price_ngn == null ? null : Number(r.price_ngn),
+      onHand,
+      reserved,
+      available: onHand == null ? 0 : Math.max(0, onHand - reserved),
+      costNgn: r.cost_ngn == null ? null : Number(r.cost_ngn),
+      updatedAt: r.stock_updated_at ? String(r.stock_updated_at) : null,
+    };
+  });
+}
+
+export type SupplierOrder = {
+  id: string;
+  status: string;
+  fullName: string;
+  phone: string | null;
+  addressLine1: string;
+  addressLine2: string | null;
+  area: string | null;
+  city: string | null;
+  notes: string | null;
+  courierName: string | null;
+  riderPhone: string | null;
+  etaAt: string | null;
+  trackingNote: string | null;
+  outOfCity: boolean;
+  /** What we expect to pay this supplier — their own quote at routing time, or the sourced cost. */
+  costNgn: number | null;
+  createdAt: string;
+  items: { slug: string; name: string; qty: number }[];
+};
+
+/**
+ * Orders this supplier is filling: routed to them at checkout or assigned by the desk. Money
+ * (retail totals, customer email) deliberately stays out — a supplier needs the address and the
+ * bottles, not the customer's bill.
+ */
+export async function supplierOrders(supplierId: string, opts: { limit?: number } = {}): Promise<SupplierOrder[]> {
+  const limit = Math.min(300, Math.max(1, opts.limit ?? 150));
+  const rows = await sql`
+    SELECT
+      o.id, o.status, o.full_name, o.phone, o.address_line1, o.address_line2, o.area, o.city, o.notes,
+      o.courier_name, o.rider_phone, o.eta_at, o.tracking_note, o.routed_out_of_city,
+      COALESCE(o.supplier_cost_ngn, o.routed_cost_ngn) AS cost_ngn, o.created_at,
+      COALESCE(
+        json_agg(json_build_object('slug', i.kit_slug, 'name', i.kit_name, 'qty', i.qty) ORDER BY i.created_at)
+          FILTER (WHERE i.id IS NOT NULL),
+        '[]'::json
+      ) AS items
+    FROM ritual_orders o
+    LEFT JOIN ritual_order_items i ON i.order_id = o.id
+    WHERE (o.routed_supplier_id = ${supplierId}::uuid OR o.supplier_id = ${supplierId}::uuid)
+      AND o.status NOT IN ('pending', 'awaiting_payment')
+    GROUP BY o.id
+    ORDER BY
+      CASE WHEN o.status IN ('paid', 'processing', 'packed', 'out_for_delivery') THEN 0 ELSE 1 END,
+      o.created_at DESC
+    LIMIT ${limit}
+  `;
+  return rows.map((r) => ({
+    id: String(r.id),
+    status: String(r.status),
+    fullName: String(r.full_name),
+    phone: (r.phone as string) || null,
+    addressLine1: String(r.address_line1 || ''),
+    addressLine2: (r.address_line2 as string) || null,
+    area: (r.area as string) || null,
+    city: (r.city as string) || null,
+    notes: (r.notes as string) || null,
+    courierName: (r.courier_name as string) || null,
+    riderPhone: (r.rider_phone as string) || null,
+    etaAt: r.eta_at ? String(r.eta_at) : null,
+    trackingNote: (r.tracking_note as string) || null,
+    outOfCity: r.routed_out_of_city === true,
+    costNgn: r.cost_ngn == null ? null : Number(r.cost_ngn),
+    createdAt: String(r.created_at),
+    items: (r.items as { slug: string; name: string; qty: number }[]) || [],
+  }));
+}
+
+/** True when this supplier is on the hook for the order — the only orders they may touch. */
+export async function supplierOwnsOrder(supplierId: string, orderId: string): Promise<boolean> {
+  const rows = await sql`
+    SELECT 1 FROM ritual_orders
+    WHERE id = ${orderId} AND (routed_supplier_id = ${supplierId}::uuid OR supplier_id = ${supplierId}::uuid)
+    LIMIT 1
+  `;
+  return rows.length > 0;
+}

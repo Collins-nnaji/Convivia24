@@ -26,7 +26,7 @@ type Attribution = {
 
 const ENQUIRY_STATUSES = ['new', 'contacted', 'won', 'closed'] as const;
 
-export default function ReferralsDesk() {
+export default function ReferralsDesk({ onChanged }: { onChanged?: () => void }) {
   const { confirm, notify } = useDialogs();
 
   const [partners, setPartners] = useState<ReferralPartner[]>([]);
@@ -73,6 +73,7 @@ export default function ReferralsDesk() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Unable to update partner.');
       await load();
+      onChanged?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to update partner.');
     } finally {
@@ -109,6 +110,7 @@ export default function ReferralsDesk() {
       if (!res.ok) throw new Error(data.error || 'Unable to pay that commission.');
       if (data.giftCardCode) notify(`Gift card issued: ${data.giftCardCode}`);
       await load();
+      onChanged?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to pay that commission.');
     } finally {
@@ -127,6 +129,7 @@ export default function ReferralsDesk() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Unable to update that enquiry.');
       await load();
+      onChanged?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to update that enquiry.');
     } finally {

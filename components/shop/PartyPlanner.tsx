@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type TouchEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowLeftRight, ArrowRight, ChevronDown, Minus, Plus, Save, Sparkles, Trash2, Users, X } from 'lucide-react';
+import { ArrowLeft, ArrowLeftRight, ArrowRight, ChevronDown, Minus, Plus, Save, Trash2, Users, X } from 'lucide-react';
 import PlanShareActions from '@/components/party/PlanShareActions';
 import { useCart } from '@/components/cart/CartProvider';
 import {
@@ -491,8 +491,7 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
                 </div>
                 <textarea value={question} onChange={(event) => setQuestion(event.target.value)} rows={2} placeholder="Any preferences or notes?" className="w-full rounded-lg border-obsidian/10 px-2 py-2 text-sm focus:border-ember focus:ring-0" />
                 <div className="flex gap-2">
-                  <button type="button" onClick={askAi} disabled={thinking} className="flex-1 rounded-lg border border-obsidian/10 px-2 py-2 text-xs font-bold text-obsidian/60 disabled:opacity-50">
-                    <Sparkles size={13} className="mr-1 inline" /> {thinking ? 'Thinking…' : 'Get advice'}
+                  <button type="button" onClick={askAi} disabled={thinking} className="flex-1 rounded-lg border border-obsidian/10 px-2 py-2 text-xs font-bold text-obsidian/60 disabled:opacity-50"> {thinking ? 'Thinking…' : 'Get advice'}
                   </button>
                   <button type="button" onClick={saveParty} disabled={saving} className="flex-1 rounded-lg border border-obsidian/10 px-2 py-2 text-xs font-bold text-obsidian/60 disabled:opacity-50">
                     <Save size={13} className="mr-1 inline" /> {saving ? 'Saving…' : 'Save'}
@@ -800,8 +799,7 @@ export default function PartyPlanner({ defaultOpen = false }: { defaultOpen?: bo
                   onClick={askAi}
                   disabled={thinking}
                   className="inline-flex items-center gap-2 px-4 py-3 sm:py-2.5 border border-obsidian/15 text-xs sm:text-xs sm:text-sm font-black uppercase tracking-[0.12em] disabled:opacity-50"
-                >
-                  <Sparkles size={14} /> {thinking ? 'Thinking…' : 'Hosting advice'}
+                > {thinking ? 'Thinking…' : 'Hosting advice'}
                 </button>
                 <button
                   type="button"

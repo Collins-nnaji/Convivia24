@@ -44,6 +44,9 @@ export function AdminSelect({
   label,
   value,
   onChange,
+  name,
+  defaultValue,
+  required,
   options,
   placeholder,
   hint,
@@ -53,8 +56,12 @@ export function AdminSelect({
   customLabel = 'Other…',
 }: {
   label?: string;
-  value: string;
-  onChange: (value: string) => void;
+  /** Controlled pair. Leave both off (and pass `name`) for a plain form field. */
+  value?: string;
+  onChange?: (value: string) => void;
+  name?: string;
+  defaultValue?: string;
+  required?: boolean;
   options: (SelectOption | string)[];
   placeholder?: string;
   hint?: string;
@@ -66,18 +73,21 @@ export function AdminSelect({
 }) {
   const opts: SelectOption[] = options.map((o) => (typeof o === 'string' ? { value: o, label: o } : o));
   // A value loaded from the database that is not in the list must still display.
-  const unlisted = value && !opts.some((o) => o.value === value);
+  const shown = value ?? defaultValue ?? '';
+  const unlisted = shown && !opts.some((o) => o.value === shown);
+  const controlled = onChange !== undefined;
 
   const control = (
     <span className="relative block">
       <select
-        value={value}
+        name={name}
+        required={required}
+        {...(controlled ? { value: value ?? '', onChange: (e) => onChange(e.target.value) } : { defaultValue: defaultValue ?? '' })}
         disabled={disabled}
-        onChange={(e) => onChange(e.target.value)}
         className={`${adminInputClass} appearance-none pr-9 ${className}`}
       >
         {placeholder && <option value="">{placeholder}</option>}
-        {unlisted && <option value={value}>{value}</option>}
+        {unlisted && <option value={shown}>{shown}</option>}
         {opts.map((o) => (
           <option key={o.value} value={o.value}>
             {o.label}

@@ -3,18 +3,19 @@ import { shopCatalog, listInventory } from '@/lib/inventory';
 import { apiErrorResponse } from '@/lib/db';
 import { cacheGet, cacheSet, rateLimit, clientIp } from '@/lib/redis';
 import { captureApiError } from '@/lib/sentry';
+import { CATALOG_CACHE_KEY } from '@/lib/shop/catalog-cache';
 
 export async function GET(req: NextRequest) {
   try {
     const rl = await rateLimit(`shop-catalog:${clientIp(req)}`, 60, 60);
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
 
-    const cached = await cacheGet<{ products: unknown[] }>('shop:catalog:v3');
+    const cached = await cacheGet<{ products: unknown[] }>(CATALOG_CACHE_KEY);
     if (cached) return NextResponse.json(cached);
 
     const products = await shopCatalog();
     const payload = { products };
-    await cacheSet('shop:catalog:v3', payload, 30);
+    await cacheSet(CATALOG_CACHE_KEY, payload, 30);
     return NextResponse.json(payload);
   } catch (err) {
     captureApiError(err, { route: 'shop/catalog' });

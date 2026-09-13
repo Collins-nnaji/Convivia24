@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql, { apiErrorResponse } from '@/lib/db';
 import { requireAdmin } from '@/lib/admin';
-import { ORDER_STATUSES, type OrderStatus } from '@/lib/commerce/status';
+import { ORDER_STATUSES, ORDER_STATUS_LABELS, canTransition, type OrderStatus } from '@/lib/commerce/status';
 import { recordOrderEvent } from '@/lib/commerce/timeline';
 import { notifyOrderStatus } from '@/lib/commerce/notify';
 import { formatNgn } from '@/lib/drinks/catalog';
-import { releaseOrderResources, fulfillOrderStock } from '@/lib/commerce/fulfillment';
+import { releaseOrderResources } from '@/lib/commerce/fulfillment';
+import { applyOrderStatus, applyOrderTracking, readTrackingPatch } from '@/lib/commerce/transitions';
 import { rateLimit, clientIp } from '@/lib/redis';
 import { refundFlutterwave } from '@/lib/payments/flutterwave';
 import { captureApiError } from '@/lib/sentry';
@@ -138,8 +139,11 @@ export async function PATCH(req: NextRequest) {
         FROM ritual_orders WHERE id = ${orderId} LIMIT 1
       `;
       if (!order) return NextResponse.json({ error: 'Order not found.' }, { status: 404 });
-      if (order.status === 'refunded' || order.status === 'cancelled') {
-        return NextResponse.json({ error: 'This order is already refunded or cancelled.' }, { status: 400 });
+      if (!canTransition(order.status as OrderStatus, 'refunded')) {
+        return NextResponse.json(
+          { error: `A ${ORDER_STATUS_LABELS[order.status as OrderStatus].toLowerCase()} order cannot be refunded.` },
+          { status: 400 }
+        );
       }
       const amountNgn = Number(order.total_ngn ?? order.subtotal_ngn);
       let refundRef = 'manual';
@@ -222,51 +226,27 @@ export async function PATCH(req: NextRequest) {
       });
     }
 
-    const status = typeof body.status === 'string' ? (body.status as OrderStatus) : null;
-    const note = typeof body.note === 'string' && body.note.trim() ? body.note.trim() : null;
-    const courierName = typeof body.courierName === 'string' ? body.courierName.trim() || null : undefined;
-    const riderPhone = typeof body.riderPhone === 'string' ? body.riderPhone.trim() || null : undefined;
-    const trackingNote = typeof body.trackingNote === 'string' ? body.trackingNote.trim() || null : undefined;
-    const etaAt =
-      typeof body.etaAt === 'string' && body.etaAt.trim()
-        ? new Date(body.etaAt).toISOString()
-        : body.etaAt === null
-          ? null
-          : undefined;
+    const tracking = readTrackingPatch(body);
 
+    // Tracking is its own action — rider, ETA and note change without touching status, so
+    // editing a phone number never re-sends the customer their "out for delivery" message.
+    if (body.action === 'tracking') {
+      const result = await applyOrderTracking(orderId, tracking, { kind: 'admin' });
+      if (!result) return NextResponse.json({ error: 'Order not found.' }, { status: 404 });
+      return NextResponse.json({ ok: true, ...result });
+    }
+
+    const status = typeof body.status === 'string' ? (body.status as OrderStatus) : null;
     if (!status || !ADMIN_SETTABLE_STATUSES.includes(status)) {
       return NextResponse.json({ error: 'Unknown or unsettable status.' }, { status: 400 });
     }
-
-    const [order] = await sql`
-      UPDATE ritual_orders
-      SET
-        status = ${status},
-        courier_name = COALESCE(${courierName}, courier_name),
-        rider_phone = COALESCE(${riderPhone}, rider_phone),
-        tracking_note = COALESCE(${trackingNote}, tracking_note),
-        eta_at = CASE WHEN ${etaAt === undefined} THEN eta_at ELSE ${etaAt}::timestamptz END,
-        updated_at = NOW()
-      WHERE id = ${orderId}
-      RETURNING id, status
-    `;
-
-    if (!order) return NextResponse.json({ error: 'Order not found.' }, { status: 404 });
-
-    // Stamp the transition so the customer's tracking page can show when each
-    // step happened rather than inferring it.
-    await recordOrderEvent(orderId, status, note).catch(() => {});
-
-    if (status === 'delivered' || status === 'fulfilled') {
-      await fulfillOrderStock(orderId);
-    } else if (status === 'cancelled' || status === 'refunded') {
-      await releaseOrderResources(orderId);
-    }
-    await reconcileOrderPoints(orderId);
-
-    await notifyOrderStatus(orderId, status, note);
-
-    return NextResponse.json({ ok: true, orderId: order.id, status: order.status });
+    const result = await applyOrderStatus(orderId, status, {
+      note: typeof body.note === 'string' ? body.note : null,
+      tracking,
+      actor: { kind: 'admin' },
+    });
+    if (result.ok === false) return NextResponse.json({ error: result.error }, { status: result.httpStatus });
+    return NextResponse.json({ ok: true, orderId: result.orderId, status: result.status });
   } catch (err) {
     captureApiError(err, { route: 'admin/orders PATCH' });
     const { status, error } = apiErrorResponse(err, 'Unable to update order.');
@@ -280,6 +260,22 @@ export async function DELETE(req: NextRequest) {
   try {
     const id = new URL(req.url).searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'Order ID required.' }, { status: 400 });
+
+    // Only a closed order can go. Cancelling or refunding is what releases stock, gift cards,
+    // points and referral commission — deleting a live order would skip all of that and the
+    // revenue would just vanish from the ledger.
+    const [order] = await sql`SELECT status FROM ritual_orders WHERE id = ${id} LIMIT 1`;
+    if (!order) return NextResponse.json({ error: 'Order not found.' }, { status: 404 });
+    if (order.status !== 'cancelled' && order.status !== 'refunded') {
+      return NextResponse.json(
+        { error: 'Cancel or refund the order first — only closed orders can be deleted.' },
+        { status: 409 }
+      );
+    }
+
+    // gift_cards.redeemed_order_id has no ON DELETE rule; everything else cascades or nulls.
+    await sql`UPDATE gift_cards SET redeemed_order_id = NULL WHERE redeemed_order_id = ${id}`;
+    await sql`DELETE FROM order_events WHERE order_id = ${id}`;
     await sql`DELETE FROM ritual_order_items WHERE order_id = ${id}`;
     await sql`DELETE FROM ritual_orders WHERE id = ${id}`;
     return NextResponse.json({ ok: true });

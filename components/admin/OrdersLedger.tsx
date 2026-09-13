@@ -1,42 +1,15 @@
 'use client';
 
 import { useMemo, useState, type ReactNode } from 'react';
-import { ChevronDown, ChevronRight, Download, Search, Trash2, Undo2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Download, Printer, Search, Trash2, Undo2 } from 'lucide-react';
 import { formatNgn } from '@/lib/drinks/catalog';
-import { ORDER_STATUS_LABELS, type OrderStatus } from '@/lib/commerce/status';
-
-export type LedgerOrder = {
-  id: string;
-  email: string;
-  fullName: string;
-  phone: string | null;
-  status: OrderStatus;
-  subtotalNgn: number;
-  loyaltyDiscountNgn: number;
-  giftCardDiscountNgn: number;
-  totalNgn: number;
-  addressLine1: string;
-  addressLine2: string | null;
-  area: string | null;
-  city?: string | null;
-  notes: string | null;
-  courierName: string | null;
-  riderPhone: string | null;
-  etaAt: string | null;
-  trackingNote: string | null;
-  paymentProvider: string | null;
-  paymentRef: string | null;
-  refundRef: string | null;
-  refundedNgn: number;
-  supplierName: string | null;
-  supplierCostNgn: number | null;
-  /** Supplier auto-picked from the delivery city at checkout. */
-  routedSupplierName?: string | null;
-  routedOutOfCity?: boolean;
-  margin: { revenueNgn: number; costNgn: number; marginNgn: number; marginPct: number; sourced: boolean };
-  createdAt: string;
-  items: { slug?: string; name: string; qty: number; unitPriceNgn: number }[];
-};
+import {
+  ORDER_STATUS_LABELS,
+  ORDER_TRANSITIONS,
+  TERMINAL_ORDER_STATUSES,
+  type OrderStatus,
+} from '@/lib/commerce/status';
+import type { AdminOrder } from './types';
 
 type RangeKey = 'today' | '7d' | '30d' | 'month' | 'all' | 'custom';
 
@@ -108,8 +81,15 @@ const STATUS_TONE: Partial<Record<OrderStatus, string>> = {
   pending: 'bg-obsidian/[0.06] text-obsidian/50 ring-obsidian/10',
 };
 
-/** Generic over the caller's richer order type, so the desk can pass its own `AdminOrder`. */
-export default function OrdersLedger<T extends LedgerOrder>({
+/**
+ * Statuses the desk can pick from the dropdown for one order: only the legal next steps.
+ * Refund is a separate button (it moves money) and `fulfilled` is a legacy twin of `delivered`.
+ */
+function nextStatuses(from: OrderStatus): OrderStatus[] {
+  return ORDER_TRANSITIONS[from].filter((s) => s !== 'refunded' && s !== 'fulfilled');
+}
+
+export default function OrdersLedger({
   orders,
   settableStatuses,
   updatingOrder,
@@ -118,14 +98,14 @@ export default function OrdersLedger<T extends LedgerOrder>({
   onDelete,
   renderTracking,
 }: {
-  orders: T[];
+  orders: AdminOrder[];
   settableStatuses: OrderStatus[];
   updatingOrder: string;
-  onStatusChange: (order: T, status: OrderStatus) => void;
-  onRefund: (order: T) => void;
-  onDelete: (order: T) => void;
-  /** The existing tracking form, injected so this component stays presentational. */
-  renderTracking: (order: T) => ReactNode;
+  onStatusChange: (order: AdminOrder, status: OrderStatus) => void;
+  onRefund: (order: AdminOrder) => void;
+  onDelete: (order: AdminOrder) => void;
+  /** The tracking form, injected so this component stays presentational. */
+  renderTracking: (order: AdminOrder) => ReactNode;
 }) {
   const [range, setRange] = useState<RangeKey>('30d');
   const [from, setFrom] = useState('');
@@ -339,7 +319,10 @@ export default function OrdersLedger<T extends LedgerOrder>({
               const open = expanded.has(o.id);
               const discounts = o.loyaltyDiscountNgn + o.giftCardDiscountNgn;
               const units = o.items.reduce((n, i) => n + i.qty, 0);
-              const refundable = !['refunded', 'cancelled', 'pending', 'awaiting_payment'].includes(o.status);
+              const options = nextStatuses(o.status);
+              const refundable = ORDER_TRANSITIONS[o.status].includes('refunded');
+              const deletable = o.status === 'cancelled' || o.status === 'refunded';
+              const closed = TERMINAL_ORDER_STATUSES.includes(o.status);
               return [
                 <tr
                   key={o.id}
@@ -387,22 +370,45 @@ export default function OrdersLedger<T extends LedgerOrder>({
                     )}
                   </td>
                   <td className="px-2 py-2">
-                    <select
-                      value={o.status}
-                      disabled={updatingOrder === o.id}
-                      onChange={(e) => onStatusChange(o, e.target.value as OrderStatus)}
-                      className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ring-1 focus:ring-2 focus:ring-ember disabled:opacity-50 ${
-                        STATUS_TONE[o.status] ?? 'bg-obsidian/[0.06] text-obsidian/60 ring-obsidian/10'
-                      }`}
-                    >
-                      {settableStatuses.map((s) => (
-                        <option key={s} value={s}>
-                          {ORDER_STATUS_LABELS[s]}
-                        </option>
-                      ))}
-                    </select>
+                    {options.length === 0 ? (
+                      <span
+                        className={`inline-block rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ring-1 ${
+                          STATUS_TONE[o.status] ?? 'bg-obsidian/[0.06] text-obsidian/60 ring-obsidian/10'
+                        }`}
+                      >
+                        {ORDER_STATUS_LABELS[o.status]}
+                      </span>
+                    ) : (
+                      <select
+                        value={o.status}
+                        disabled={updatingOrder === o.id}
+                        onChange={(e) => onStatusChange(o, e.target.value as OrderStatus)}
+                        aria-label="Change status"
+                        className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ring-1 focus:ring-2 focus:ring-ember disabled:opacity-50 ${
+                          STATUS_TONE[o.status] ?? 'bg-obsidian/[0.06] text-obsidian/60 ring-obsidian/10'
+                        }`}
+                      >
+                        <option value={o.status}>{ORDER_STATUS_LABELS[o.status]}</option>
+                        {options.map((s) => (
+                          <option key={s} value={s}>
+                            → {ORDER_STATUS_LABELS[s]}
+                          </option>
+                        ))}
+                      </select>
+                    )}
                   </td>
                   <td className="whitespace-nowrap px-2 py-2 text-right">
+                    {!closed && (
+                      <a
+                        href={`/admin/label/${o.id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        title="Print authenticity label"
+                        className="mr-1 inline-grid h-7 w-7 place-items-center rounded text-obsidian/40 hover:bg-obsidian/[0.06] hover:text-obsidian"
+                      >
+                        <Printer size={14} />
+                      </a>
+                    )}
                     {refundable && (
                       <button
                         type="button"
@@ -414,14 +420,17 @@ export default function OrdersLedger<T extends LedgerOrder>({
                         <Undo2 size={14} />
                       </button>
                     )}
-                    <button
-                      type="button"
-                      onClick={() => onDelete(o)}
-                      title="Delete order"
-                      className="inline-grid h-7 w-7 place-items-center rounded text-obsidian/40 hover:bg-red-50 hover:text-red-600"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    {deletable && (
+                      <button
+                        type="button"
+                        onClick={() => onDelete(o)}
+                        disabled={updatingOrder === o.id}
+                        title="Delete order"
+                        className="inline-grid h-7 w-7 place-items-center rounded text-obsidian/40 hover:bg-red-50 hover:text-red-600 disabled:opacity-40"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
                   </td>
                 </tr>,
 

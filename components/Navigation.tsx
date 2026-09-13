@@ -143,7 +143,7 @@ export default function Navigation() {
                       <Link href="/orders" className="block px-4 py-2.5 font-wordmark text-xs tracking-[0.1em] font-semibold hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
                         Order history
                       </Link>
-                      <Link href="/discover?tab=refer-and-earn" className="block px-4 py-2.5 font-wordmark text-xs tracking-[0.1em] font-semibold hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
+                      <Link href="/shop/refer-and-earn" className="block px-4 py-2.5 font-wordmark text-xs tracking-[0.1em] font-semibold hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
                         Refer &amp; earn
                       </Link>
                       <button

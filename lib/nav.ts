@@ -3,10 +3,7 @@ export type NavLink = {
   href: string;
   icon?: 'gift';
   accent?: boolean;
-  /**
-   * Sub-destinations shown under the link. The rewards shop is a tab on
-   * /discover rather than a page of its own, so the nav surfaces it here.
-   */
+  /** Sub-destinations shown under the link — the Discover hub's sections. */
   children?: { label: string; href: string }[];
 };
 
@@ -21,12 +18,6 @@ export function primaryNavLinks(): NavLink[] {
     href: '/discover',
     icon: 'gift',
     accent: true,
-    children: [
-      { label: 'Discover', href: '/discover' },
-      { label: 'Cocktail maker', href: '/discover?tab=cocktails' },
-      { label: 'Rewards shop', href: '/discover?tab=rewards-shop' },
-      { label: 'Refer & earn', href: '/discover?tab=refer-and-earn' },
-    ],
   });
   links.push({ label: 'Brands', href: '/brands' });
   return links;
@@ -34,7 +25,7 @@ export function primaryNavLinks(): NavLink[] {
 
 export function isNavActive(pathname: string, href: string): boolean {
   if (href === '/shop' || href.startsWith('/shop?')) {
-    return pathname === '/shop' || pathname.startsWith('/shop/');
+    return pathname === '/shop' || pathname.startsWith('/shop/') || pathname === '/your-referrals';
   }
   if (href === '/packages' || href.startsWith('/packages')) {
     return pathname === '/shop';
@@ -46,8 +37,11 @@ export function isNavActive(pathname: string, href: string): boolean {
     return pathname === '/party-planner' || pathname.startsWith('/party-planner/');
   }
   if (href === '/events') return pathname === '/events' || pathname.startsWith('/events/');
-  if (href === '/discover' || href.startsWith('/discover')) {
+  if (href === '/discover') {
     return pathname === '/discover' || pathname.startsWith('/discover/');
+  }
+  if (href.startsWith('/discover/')) {
+    return pathname === href || pathname.startsWith(`${href}/`);
   }
   if (href === '/trivia' || href.startsWith('/trivia')) {
     return pathname === '/discover' || pathname.startsWith('/discover/');
@@ -56,9 +50,6 @@ export function isNavActive(pathname: string, href: string): boolean {
   if (href === '/brands') return pathname === '/brands' || pathname.startsWith('/brands/') || pathname.startsWith('/campaigns/');
   if (href === '/contact') return pathname === '/contact';
   if (href === '/partners') return pathname.startsWith('/partners/');
-  if (href.includes('tab=refer-and-earn') || href === '/refer-and-earn' || href === '/refer') {
-    return pathname === '/discover' || pathname === '/refer-and-earn' || pathname === '/your-referrals';
-  }
   if (href === '/cart') return pathname === '/cart' || pathname.startsWith('/checkout');
   return pathname === href || pathname.startsWith(`${href}/`);
 }

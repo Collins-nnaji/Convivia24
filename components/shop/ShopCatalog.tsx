@@ -254,13 +254,7 @@ export default function ShopCatalog() {
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
           <Link
-            href="/my-account"
-            className="inline-flex items-center gap-1.5 rounded-full border border-obsidian/12 bg-white px-3 py-2 text-xs font-bold text-obsidian/65 hover:border-ember/35 hover:text-ember"
-          >
-            <UserRound size={14} /> My profile
-          </Link>
-          <Link
-            href="/discover?tab=refer-and-earn"
+            href="/shop/refer-and-earn"
             className="inline-flex items-center gap-1.5 rounded-full border border-ember/20 bg-ember/[0.06] px-3 py-2 text-xs font-bold text-ember hover:bg-ember/[0.1]"
           >
             <Users size={14} /> Refer &amp; earn

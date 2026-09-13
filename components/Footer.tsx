@@ -4,7 +4,7 @@ import Image from 'next/image';
 const footerLinks = [
   { label: 'Brands', href: '/brands' },
   { label: 'Contact', href: '/contact' },
-  { label: 'Refer & earn', href: '/discover?tab=refer-and-earn' },
+  { label: 'Refer & earn', href: '/shop/refer-and-earn' },
 ];
 
 export default function Footer() {

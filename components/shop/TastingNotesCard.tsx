@@ -1,4 +1,4 @@
-import { Droplet, Palette, Sparkles, Wind } from 'lucide-react';
+import { Droplet, Palette, Star, Wind } from 'lucide-react';
 import { tastingProfile } from '@/lib/drinks/tasting';
 import { TASTE_NOTES } from '@/lib/drinks/brand-guide';
 
@@ -6,7 +6,7 @@ const ROWS = [
   { key: 'colour', label: 'Colour', icon: Palette },
   { key: 'nose', label: 'Nose', icon: Wind },
   { key: 'palate', label: 'Palate', icon: Droplet },
-  { key: 'finish', label: 'Finish', icon: Sparkles },
+  { key: 'finish', label: 'Finish', icon: Star },
 ] as const;
 
 /**

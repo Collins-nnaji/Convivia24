@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
+import { rateLimit, clientIp } from '@/lib/redis';
 import {
   deleteCampaign,
   listCampaigns,
@@ -47,6 +48,8 @@ function parseTasks(value: unknown): CampaignTask[] {
 export async function POST(req: NextRequest) {
   const gate = await requireAdmin();
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
+  const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
+  if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
 
   try {
     const body = await req.json().catch(() => ({}));
@@ -84,6 +87,8 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   const gate = await requireAdmin();
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
+  const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
+  if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
 
   try {
     const body = await req.json().catch(() => ({}));
@@ -104,6 +109,8 @@ export async function PATCH(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const gate = await requireAdmin();
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
+  const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
+  if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
 
   try {
     const slug = String(new URL(req.url).searchParams.get('slug') || '');

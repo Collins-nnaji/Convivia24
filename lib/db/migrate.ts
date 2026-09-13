@@ -97,6 +97,8 @@ async function migrate() {
     // Inventory, supplier pricing and per-supplier stock. All statements are IF NOT EXISTS /
     // ADD COLUMN IF NOT EXISTS, so re-running is safe.
     'lib/db/ecommerce.sql',
+    // Supplier portal: per-supplier slugs, access keys and the audit log.
+    'lib/db/suppliers-portal.sql',
   ];
   const schema = schemaFiles
     .map(f => readFileSync(join(process.cwd(), f), 'utf-8'))

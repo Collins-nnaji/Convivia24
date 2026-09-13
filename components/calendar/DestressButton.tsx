@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Sparkles, X } from 'lucide-react';
+import { X } from 'lucide-react';
 
 interface Move { id: string; title: string; move_to: string }
 
@@ -45,8 +45,7 @@ export default function DestressButton({ onAccept }: { onAccept: (moves: Move[])
       <button
         onClick={ask}
         className="fixed bottom-6 right-5 sm:right-8 z-40 flex items-center gap-2 px-5 py-3.5 btn-brand text-[11px] font-black uppercase tracking-[0.15em] shadow-lg shadow-black/30 rounded-full"
-      >
-        <Sparkles size={15} /> Destress my day
+      > Destress my day
       </button>
 
       <AnimatePresence>

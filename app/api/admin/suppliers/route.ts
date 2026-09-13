@@ -6,11 +6,16 @@ import { captureApiError } from '@/lib/sentry';
 import {
   createSupplier,
   deleteSupplier,
+  getSupplier,
+  issueSupplierAccessKey,
   listSuppliers,
+  revokeSupplierAccessKey,
+  setSupplierPortalEnabled,
   updateSupplier,
   validateSupplier,
   type SupplierInput,
 } from '@/lib/suppliers/repo';
+import { logSupplierAction } from '@/lib/suppliers/audit';
 
 function readInput(body: Record<string, unknown>): SupplierInput {
   const str = (v: unknown) => (typeof v === 'string' ? v : null);
@@ -72,6 +77,26 @@ export async function PATCH(req: NextRequest) {
     const body = await req.json().catch(() => ({}));
     const id = typeof body.id === 'string' ? body.id.trim() : '';
     if (!id) return NextResponse.json({ error: 'Supplier id is required.' }, { status: 400 });
+
+    // Portal access is managed with explicit actions so a profile edit can never touch the key.
+    if (body.action === 'issue-key') {
+      const issued = await issueSupplierAccessKey(id);
+      if (!issued) return NextResponse.json({ error: 'Supplier not found.' }, { status: 404 });
+      await logSupplierAction({ supplierId: id, actor: 'admin', actorLabel: 'desk', action: 'portal.key_issued' });
+      // The plaintext is returned exactly once; only its hash is stored.
+      return NextResponse.json({ ok: true, key: issued.key, supplier: await getSupplier(id) });
+    }
+    if (body.action === 'revoke-key') {
+      await revokeSupplierAccessKey(id);
+      await logSupplierAction({ supplierId: id, actor: 'admin', actorLabel: 'desk', action: 'portal.key_revoked' });
+      return NextResponse.json({ ok: true, supplier: await getSupplier(id) });
+    }
+    if (body.action === 'portal') {
+      const enabled = body.enabled !== false;
+      await setSupplierPortalEnabled(id, enabled);
+      await logSupplierAction({ supplierId: id, actor: 'admin', actorLabel: 'desk', action: enabled ? 'portal.enabled' : 'portal.disabled' });
+      return NextResponse.json({ ok: true, supplier: await getSupplier(id) });
+    }
 
     const input = readInput(body);
     const invalid = validateSupplier(input);

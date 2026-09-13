@@ -7,7 +7,7 @@ import {
   Layers, Shuffle, AlarmClock, HeartCrack, MessageSquareWarning, Briefcase,
   Dumbbell, Heart, BedDouble, Sprout, PiggyBank, Coffee, Trees, Activity,
   Palette, CalendarX, CalendarClock, CalendarDays, CalendarCheck, Pause, Tent,
-  Check, ArrowRight, ArrowLeft, Sparkles, type LucideIcon,
+  Check, ArrowRight, ArrowLeft, type LucideIcon,
 } from 'lucide-react';
 import { ONBOARDING_QUESTIONS, type ProfileData } from '@/lib/profile/questions';
 
@@ -95,9 +95,7 @@ export default function OnboardingFlow({
                 transition={{ duration: 0.3 }}
                 className="text-center"
               >
-                <span className="inline-flex w-16 h-16 items-center justify-center rounded-2xl brand-gradient text-white mb-7">
-                  <Sparkles size={28} />
-                </span>
+                <span className="inline-flex w-16 h-16 items-center justify-center rounded-2xl brand-gradient text-white mb-7"> </span>
                 <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-light italic brand-text leading-tight">
                   {firstName ? `Hi ${firstName},` : 'Welcome,'}
                 </h1>

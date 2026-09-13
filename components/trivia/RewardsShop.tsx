@@ -10,7 +10,8 @@ import {
   Gift,
   LayoutGrid,
   Lock,
-  Sparkles,
+  Ticket,
+  Trophy,
   Star,
   Wallet,
   Wine,
@@ -27,8 +28,10 @@ import {
 } from '@/lib/loyalty/rewards';
 import { LOYALTY_TIERS } from '@/lib/loyalty/program';
 import { formatNgn } from '@/lib/drinks/catalog';
+import ConviviumCard from '@/components/ConviviumCard';
+import { useUser } from '@/components/auth/AuthProvider';
 
-const ICONS = { LayoutGrid, Wine, Sparkles, Wallet, Gift } as const;
+const ICONS = { LayoutGrid, Wine, Ticket, Wallet, Gift } as const;
 
 type Redemption = {
   id: string;
@@ -192,6 +195,7 @@ export default function RewardsShop({
   );
 }
 
+/** The Guest Card itself — the same one on the shop — with the balance beside it. */
 function BalanceCard({
   signedIn,
   points,
@@ -203,47 +207,27 @@ function BalanceCard({
   tierName?: string;
   pathname: string;
 }) {
+  const { user } = useUser();
+  const holder = (user?.name || user?.email || 'YOUR NAME').toUpperCase();
   return (
-    <div className="relative overflow-hidden bg-obsidian text-white p-6 sm:p-8">
-      <motion.div
-        aria-hidden
-        className="absolute -right-24 -top-24 w-80 h-80 rounded-full bg-ember/25 blur-3xl"
-        animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
-        transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
-      />
-      <div className="relative flex items-center justify-between gap-6 flex-wrap">
-        <div className="flex items-center gap-4">
-          <span className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center shrink-0">
-            <Star size={20} className="text-ember fill-ember" />
-          </span>
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/45">
-              Your points balance
-            </p>
-            {signedIn ? (
-              <>
-                <p className="font-logo font-black text-3xl tracking-tight tabular-nums mt-1">
-                  {points.toLocaleString()} PTS
-                </p>
-                <p className="text-[12px] text-white/50 mt-1">
-                  {tierName ? `${tierName} tier · keep earning to unlock more` : 'Keep earning to unlock more'}
-                </p>
-              </>
-            ) : (
-              <p className="text-sm text-white/60 mt-1 max-w-sm">
-                Sign in to see your balance and redeem. Everything below is browsable either way.
-              </p>
-            )}
-          </div>
-        </div>
-
-        {!signedIn && (
-          <Link
-            href={`/signin?next=${encodeURIComponent(pathname)}`}
-            className="px-6 py-3.5 bg-white text-obsidian text-[11px] font-black uppercase tracking-[0.14em]"
-          >
-            Sign in
-          </Link>
+    <div className="grid items-center gap-5 rounded-3xl border border-obsidian/10 bg-white p-4 sm:p-5 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
+      <div className="mx-auto w-full max-w-[340px]">
+        <ConviviumCard kind="loyalty" tier={signedIn ? (tierName || 'GUEST').toUpperCase() : 'GUEST CARD'} name={signedIn ? holder : 'YOUR NAME'} points={signedIn ? points : undefined} />
+      </div>
+      <div className="min-w-0">
+        <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-obsidian/50">Your balance</p>
+        {signedIn ? (
+          <>
+            <p className="mt-1 font-logo text-4xl font-black tabular-nums tracking-tight text-obsidian">{points.toLocaleString()} <span className="text-lg text-obsidian/50">PTS</span></p>
+            <p className="mt-1.5 text-[14px] text-obsidian/60">{tierName ? `${tierName} tier` : 'Guest'} · earn on every order, round and review.</p>
+          </>
+        ) : (
+          <>
+            <p className="mt-1 text-[15px] text-obsidian/60">Sign in to see your balance and redeem. Everything below is browsable either way.</p>
+            <Link href={`/signin?next=${encodeURIComponent(pathname)}`} className="btn-brand mt-3 inline-block rounded-full px-5 py-2.5 text-[12px] font-bold uppercase tracking-[0.12em]">
+              Sign in
+            </Link>
+          </>
         )}
       </div>
     </div>
@@ -355,7 +339,7 @@ function CategoryMark({ category }: { category: RewardCategory }) {
       : category === 'credit'
         ? Wallet
         : category === 'experiences'
-          ? Sparkles
+          ? Ticket
           : Gift;
   return <Icon size={34} className="text-ember/25" />;
 }
@@ -393,7 +377,7 @@ function RedemptionHistory({ redemptions }: { redemptions: Redemption[] }) {
 function EarnMoreStrip() {
   const ITEMS = [
     { icon: Wine, title: 'Shop & earn', detail: 'Points on every order you place.' },
-    { icon: Sparkles, title: 'Complete challenges', detail: 'Play the weekly brand round for points.' },
+    { icon: Trophy, title: 'Complete challenges', detail: 'Play the weekly brand round for points.' },
     { icon: Gift, title: 'Refer friends', detail: 'Invite people and earn together.' },
   ];
   return (

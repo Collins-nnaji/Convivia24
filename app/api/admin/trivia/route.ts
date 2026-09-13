@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
+import { rateLimit, clientIp } from '@/lib/redis';
 import { listEntries, setEntryStatus } from '@/lib/trivia/entries';
 import { TRIVIA_ROUNDS } from '@/lib/trivia/catalog';
 import { apiErrorResponse } from '@/lib/db';
@@ -13,10 +14,12 @@ export async function GET(req: NextRequest) {
   const gate = await requireAdmin();
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
 
-  const rounds = TRIVIA_ROUNDS.filter((r) => {
+  const rounds = TRIVIA_ROUNDS.flatMap((r) => {
     const drink = DRINKS.find((item) => item.slug === r.prizeSlug);
-    return Boolean(drink?.image || drink?.packImages?.length);
-  }).map((r) => ({ slug: r.slug, brand: r.brand, prizeLabel: r.prizeLabel, prizeSlug: r.prizeSlug }));
+    const prizeImage = drink?.image || drink?.packImages?.[0] || null;
+    if (!prizeImage) return [];
+    return [{ slug: r.slug, brand: r.brand, prizeLabel: r.prizeLabel, prizeSlug: r.prizeSlug, prizeImage }];
+  });
   try {
     const roundSlug = new URL(req.url).searchParams.get('round') || undefined;
     const [entries, questions] = await Promise.all([listEntries(roundSlug), listCustomQuestions()]);
@@ -31,6 +34,8 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const gate = await requireAdmin();
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
+  const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
+  if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   try {
     const body = await req.json().catch(() => ({}));
     const question = await addCustomQuestion({
@@ -50,6 +55,8 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   const gate = await requireAdmin();
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
+  const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
+  if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   try {
     const body = await req.json().catch(() => ({}));
     const id = String(body.id || '');
@@ -69,6 +76,8 @@ export async function PATCH(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const gate = await requireAdmin();
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
+  const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
+  if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   try {
     const questionId = new URL(req.url).searchParams.get('questionId');
     if (questionId) {

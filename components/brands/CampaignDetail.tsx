@@ -504,7 +504,7 @@ function RewardsPanel({ campaign }: { campaign: Campaign }) {
       </div>
 
       <Link
-        href="/discover?tab=rewards-shop"
+        href="/discover/rewards"
         className="mt-5 w-full py-3 bg-white text-obsidian text-[10px] font-black uppercase tracking-[0.12em] inline-flex items-center justify-center gap-1.5"
       >
         View all rewards <ChevronRight size={13} />

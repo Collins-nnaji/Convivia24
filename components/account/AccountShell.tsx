@@ -13,7 +13,7 @@ import {
   LayoutDashboard,
   LogOut,
   Package,
-  Sparkles,
+  FlaskConical,
   Target,
   User,
 } from 'lucide-react';
@@ -28,14 +28,14 @@ type Section = 'overview' | 'taste' | 'saved';
 /** In-page sections, and the places the account links out to. */
 const SECTIONS: { id: Section; label: string; icon: typeof User }[] = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-  { id: 'taste', label: 'Taste profile', icon: Sparkles },
+  { id: 'taste', label: 'Taste profile', icon: FlaskConical },
   { id: 'saved', label: 'Saved bottles', icon: Heart },
 ];
 
 const LINKS: { href: string; label: string; icon: typeof User }[] = [
   { href: '/orders', label: 'Orders', icon: Package },
-  { href: '/discover#challenges', label: 'Challenges', icon: Target },
-  { href: '/discover?tab=rewards-shop', label: 'Rewards shop', icon: Gift },
+  { href: '/discover/trivia#challenges', label: 'Challenges', icon: Target },
+  { href: '/discover/rewards', label: 'Rewards shop', icon: Gift },
   { href: '/guest-card', label: 'Guest Card', icon: CreditCard },
 ];
 
@@ -132,7 +132,7 @@ export default function AccountShell() {
               Invite friends to Convivia24 and earn together.
             </p>
             <Link
-              href="/discover?tab=refer-and-earn"
+              href="/shop/refer-and-earn"
               className="mt-4 inline-flex items-center gap-1.5 px-4 py-2.5 bg-white text-obsidian text-[10px] font-black uppercase tracking-[0.12em]"
             >
               <Bookmark size={12} /> Invite friends

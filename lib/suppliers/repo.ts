@@ -1,3 +1,4 @@
+import { createHash, randomBytes } from 'crypto';
 import sql from '@/lib/db';
 import { CATEGORIES } from '@/lib/drinks/catalog';
 import { LAGOS_AREAS } from '@/lib/geo/lagos';
@@ -17,6 +18,14 @@ export type Supplier = {
   notes: string | null;
   active: boolean;
   createdAt: string;
+  /** URL handle for the supplier's own portal: /supplier/<slug>. */
+  slug: string;
+  /** Whether the portal accepts logins at all — a soft switch separate from revoking the key. */
+  portalEnabled: boolean;
+  /** True once an access key has been issued (the key itself is never stored in the clear). */
+  hasAccessKey: boolean;
+  accessKeyIssuedAt: string | null;
+  lastSeenAt: string | null;
 };
 
 export type SupplierInput = {
@@ -48,7 +57,49 @@ function mapSupplier(r: Record<string, unknown>): Supplier {
     notes: (r.notes as string) || null,
     active: r.active !== false,
     createdAt: String(r.created_at),
+    slug: String(r.slug || ''),
+    portalEnabled: r.portal_enabled !== false,
+    hasAccessKey: Boolean(r.access_key_hash),
+    accessKeyIssuedAt: r.access_key_issued_at ? String(r.access_key_issued_at) : null,
+    lastSeenAt: r.last_seen_at ? String(r.last_seen_at) : null,
   };
+}
+
+export function slugifySupplier(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60) || 'supplier';
+}
+
+/** A slug nobody else holds, appending a short random suffix on collision. */
+async function uniqueSlug(base: string, excludeId?: string): Promise<string> {
+  let candidate = base;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const rows = excludeId
+      ? await sql`SELECT 1 FROM suppliers WHERE slug = ${candidate} AND id <> ${excludeId} LIMIT 1`
+      : await sql`SELECT 1 FROM suppliers WHERE slug = ${candidate} LIMIT 1`;
+    if (rows.length === 0) return candidate;
+    candidate = `${base}-${randomBytes(2).toString('hex')}`;
+  }
+  return `${base}-${randomBytes(4).toString('hex')}`;
+}
+
+export function hashAccessKey(key: string): string {
+  return createHash('sha256').update(key.trim()).digest('hex');
+}
+
+/** Human-typeable key, shown to the admin once. Format: CV24-XXXX-XXXX-XXXX (no 0/O/1/I). */
+function generateAccessKey(): string {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const bytes = randomBytes(12);
+  let out = '';
+  for (let i = 0; i < bytes.length; i++) {
+    out += alphabet[bytes[i] % alphabet.length];
+    if (i % 4 === 3 && i !== bytes.length - 1) out += '-';
+  }
+  return `CV24-${out}`;
 }
 
 /** Drops anything not in the known list, so a typo cannot quietly make a supplier unmatchable. */
@@ -94,9 +145,68 @@ export async function getSupplier(id: string): Promise<Supplier | null> {
   return rows[0] ? mapSupplier(rows[0]) : null;
 }
 
-export async function createSupplier(input: SupplierInput): Promise<Supplier> {
+export async function getSupplierBySlug(slug: string): Promise<Supplier | null> {
+  const clean = slug.trim().toLowerCase();
+  if (!clean) return null;
+  const rows = await sql`SELECT * FROM suppliers WHERE slug = ${clean} LIMIT 1`;
+  return rows[0] ? mapSupplier(rows[0]) : null;
+}
+
+/** The stored hash for login checks — kept off the `Supplier` type so it never reaches a client. */
+export async function getSupplierAccessKeyHash(id: string): Promise<string | null> {
+  const rows = await sql`SELECT access_key_hash FROM suppliers WHERE id = ${id} LIMIT 1`;
+  return rows[0]?.access_key_hash ? String(rows[0].access_key_hash) : null;
+}
+
+/** Issues a fresh key, replacing any existing one. Returns the plaintext exactly once. */
+export async function issueSupplierAccessKey(id: string): Promise<{ key: string } | null> {
+  const key = generateAccessKey();
   const rows = await sql`
-    INSERT INTO suppliers (name, contact_name, phone, email, city, areas, categories, same_day, notes, active)
+    UPDATE suppliers
+    SET access_key_hash = ${hashAccessKey(key)}, access_key_issued_at = NOW(), updated_at = NOW()
+    WHERE id = ${id}
+    RETURNING id
+  `;
+  return rows[0] ? { key } : null;
+}
+
+export async function revokeSupplierAccessKey(id: string): Promise<void> {
+  await sql`
+    UPDATE suppliers SET access_key_hash = NULL, access_key_issued_at = NULL, updated_at = NOW() WHERE id = ${id}
+  `;
+}
+
+export async function setSupplierPortalEnabled(id: string, enabled: boolean): Promise<void> {
+  await sql`UPDATE suppliers SET portal_enabled = ${enabled}, updated_at = NOW() WHERE id = ${id}`;
+}
+
+export async function touchSupplierSeen(id: string): Promise<void> {
+  await sql`UPDATE suppliers SET last_seen_at = NOW() WHERE id = ${id}`.catch(() => {});
+}
+
+/** What a supplier may change about themselves from the portal — never name, city or areas. */
+export async function updateSupplierContact(
+  id: string,
+  input: { contactName?: string | null; phone?: string | null; email?: string | null; sameDay?: boolean; notes?: string | null }
+): Promise<Supplier | null> {
+  const rows = await sql`
+    UPDATE suppliers SET
+      contact_name = COALESCE(${input.contactName === undefined ? null : input.contactName?.trim() || ''}, contact_name),
+      phone = COALESCE(${input.phone === undefined ? null : input.phone?.trim() || ''}, phone),
+      email = COALESCE(${input.email === undefined ? null : input.email?.trim().toLowerCase() || ''}, email),
+      same_day = COALESCE(${input.sameDay === undefined ? null : input.sameDay}, same_day),
+      notes = COALESCE(${input.notes === undefined ? null : input.notes?.trim() || ''}, notes),
+      updated_at = NOW()
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return rows[0] ? mapSupplier(rows[0]) : null;
+}
+
+export async function createSupplier(input: SupplierInput): Promise<Supplier> {
+  const slug = await uniqueSlug(slugifySupplier(input.name));
+  const rows = await sql`
+    INSERT INTO suppliers (name, contact_name, phone, email, city, areas, categories, same_day, notes, active, slug)
     VALUES (
       ${input.name.trim()},
       ${input.contactName?.trim() || null},
@@ -107,7 +217,8 @@ export async function createSupplier(input: SupplierInput): Promise<Supplier> {
       ${cleanList(input.categories, CATEGORIES)},
       ${input.sameDay === true},
       ${input.notes?.trim() || null},
-      ${input.active !== false}
+      ${input.active !== false},
+      ${slug}
     )
     RETURNING *
   `;

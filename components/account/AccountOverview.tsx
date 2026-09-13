@@ -116,7 +116,7 @@ export default function AccountOverview({
           </ul>
 
           <Link
-            href="/discover?tab=rewards-shop"
+            href="/discover/rewards"
             className="block px-5 sm:px-6 py-3.5 border-t border-white/10 text-[11px] font-black uppercase tracking-[0.12em] text-white/70 hover:text-white transition-colors"
           >
             View rewards shop <ChevronRight size={13} className="inline" />
@@ -174,13 +174,13 @@ export default function AccountOverview({
       <div className="grid sm:grid-cols-3 gap-4">
         <QuickLink href="/orders" icon={Package} title="Orders" detail="Track deliveries and past orders" />
         <QuickLink
-          href="/discover#challenges"
+          href="/discover/trivia#challenges"
           icon={Target}
           title="Challenges"
           detail="See what you can still earn"
         />
         <QuickLink
-          href="/discover?tab=refer-and-earn"
+          href="/shop/refer-and-earn"
           icon={Users}
           title="Refer & earn"
           detail="Share your link and earn on orders"

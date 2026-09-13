@@ -128,7 +128,9 @@ export default function PlanNightPlanner() {
     setGroupSize(item.guests);
     setTotalBudget(item.budget);
     setName(item.label === 'Tonight' || item.label === 'This weekend' ? '' : item.label);
-    builderRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Fill the brief in place — the form is right below, and jumping the page made the
+    // shortcuts feel like they had navigated somewhere.
+    setMessage(`Set up for “${item.label}” — tweak anything below, then generate.`);
   }
 
   function openAdjustPackage() {
@@ -382,7 +384,6 @@ export default function PlanNightPlanner() {
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-ember">Your brief</p>
                     <h2 className="mt-1.5 font-wordmark text-xl text-obsidian sm:mt-2 sm:text-3xl">Build your party package</h2>
                   </div>
-                  <span className="hidden rounded-full bg-emerald-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-700 sm:block">About 45 sec</span>
                 </div>
 
                 <div className="grid gap-5 lg:grid-cols-3 lg:gap-4">

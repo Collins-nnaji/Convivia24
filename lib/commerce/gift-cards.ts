@@ -55,6 +55,17 @@ export async function listGiftCards(limit = 100): Promise<GiftCard[]> {
   return rows.map(mapRow);
 }
 
+/**
+ * Voids an unspent card. A redeemed card is left alone — its value is already inside an order
+ * and the row is the audit trail for that. Returns false when nothing was voidable.
+ */
+export async function voidGiftCard(id: string): Promise<boolean> {
+  const rows = await sql`
+    UPDATE gift_cards SET status = 'void' WHERE id = ${id} AND status = 'active' RETURNING id
+  `;
+  return rows.length > 0;
+}
+
 export async function listGiftCardsIssuedBy(issuedBy: string, limit = 30): Promise<GiftCard[]> {
   const rows = await sql`
     SELECT * FROM gift_cards WHERE issued_by = ${issuedBy} ORDER BY created_at DESC LIMIT ${limit}

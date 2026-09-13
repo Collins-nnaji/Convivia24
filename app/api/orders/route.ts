@@ -8,6 +8,7 @@ import { reserveStockForOrder, releaseStockForOrder, resolveSellableProduct } fr
 import { redeemGiftCardForOrder } from '@/lib/commerce/gift-cards';
 import { releaseOrderResources } from '@/lib/commerce/fulfillment';
 import { routeOrder, reserveSupplierStock } from '@/lib/suppliers/stock';
+import { logSupplierAction } from '@/lib/suppliers/audit';
 import { readReferralCookie } from '@/lib/referrals/cookie';
 import { attributeOrder } from '@/lib/referrals/repo';
 import {
@@ -257,6 +258,14 @@ export async function POST(req: NextRequest) {
               routed_cost_ngn = ${decision.expectedCostNgn}
           WHERE id = ${orderId}
         `;
+        await logSupplierAction({
+          supplierId: decision.supplierId,
+          actor: 'system',
+          actorLabel: 'routing',
+          action: 'order.routed',
+          orderId,
+          detail: { outOfCity: decision.outOfCity, expectedCostNgn: decision.expectedCostNgn, lines: stockLines },
+        });
       }
     } catch (err) {
       console.error('Order routing failed', err);

@@ -4,10 +4,14 @@ import Navigation from '@/components/Navigation';
 import MobileTabBar from '@/components/MobileTabBar';
 import RouteScrollReset from '@/components/RouteScrollReset';
 import { Suspense } from 'react';
+import { usePathname } from 'next/navigation';
 import { CartProvider } from '@/components/cart/CartProvider';
 import Footer from '@/components/Footer';
 
 export default function PublicShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname() || '/';
+  // The footer belongs to the home page only — every other page ends on its own content.
+  const showFooter = pathname === '/';
   return (
     <CartProvider>
       <RouteScrollReset />
@@ -25,7 +29,7 @@ export default function PublicShell({ children }: { children: React.ReactNode })
           className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch] md:overflow-visible md:min-h-fit md:flex-none"
         >
           <main className="relative z-0">{children}</main>
-          <Footer />
+          {showFooter && <Footer />}
         </div>
         <Suspense fallback={null}>
           <MobileTabBar />

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import ConviviumCard from '@/components/ConviviumCard';
 
 /**
@@ -23,9 +23,7 @@ export default function HeroGuestCard() {
         <ConviviumCard kind="loyalty" tier="RESIDENT" name="YOUR NAME" points={8400} />
       </motion.div>
 
-      <p className="mt-4 text-sm text-obsidian/60 flex items-start gap-1.5">
-        <Sparkles size={14} className="text-ember shrink-0 mt-0.5" />
-        <span>
+      <p className="mt-4 text-sm text-obsidian/60 flex items-start gap-1.5"> <span>
           The Guest Card — points on every order, RSVP and review, then shop discounts and perks at partner rooms.
         </span>
       </p>

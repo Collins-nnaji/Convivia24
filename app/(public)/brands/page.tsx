@@ -5,6 +5,7 @@ import { ChevronRight } from 'lucide-react';
 import { BRANDS } from '@/lib/brands/catalog';
 import { formatNgn } from '@/lib/drinks/catalog';
 import { absoluteUrl } from '@/lib/seo';
+import BrandEnquiryForm from '@/components/trivia/BrandEnquiryForm';
 
 export const metadata: Metadata = {
   title: 'Brands',
@@ -20,20 +21,18 @@ export const metadata: Metadata = {
 
 export default function BrandsPage() {
   return (
-    <section className="bg-paper min-h-[70vh]">
-      <div className="relative overflow-hidden border-b border-obsidian/8">
-        <div className="absolute inset-0 brand-gradient opacity-[0.05]" />
-        <div className="relative max-w-6xl mx-auto px-5 sm:px-8 pt-6 pb-6 sm:pt-8 sm:pb-8">
-          <h1 className="font-wordmark text-3xl sm:text-5xl leading-tight">
+    <section className="min-h-[70vh] bg-paper">
+      <header className="border-b border-obsidian/8 bg-white">
+        <div className="mx-auto max-w-6xl px-4 pb-5 pt-6 sm:px-6 sm:pb-6 sm:pt-8">
+          <h1 className="font-wordmark text-3xl leading-tight sm:text-5xl">
             <span className="brand-text">Brands</span>
           </h1>
-          <p className="text-base sm:text-lg font-semibold text-obsidian/70 mt-1.5">
-            The houses behind the bottles.
+          <p className="mt-1.5 text-[15px] font-semibold text-obsidian/65 sm:text-base">
+            {BRANDS.length} houses behind the bottles — history, style, and everything we carry.
           </p>
         </div>
-      </div>
-
-      <div className="max-w-6xl mx-auto px-5 sm:px-8 py-6 sm:py-8">
+      </header>
+      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
         <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {BRANDS.map((brand) => {
             const hero = brand.products.find((p) => p.image);
@@ -42,9 +41,9 @@ export default function BrandsPage() {
               <li key={brand.slug}>
                 <Link
                   href={`/brands/${brand.slug}`}
-                  className="group h-full bg-white border border-obsidian/8 hover:border-ember/35 transition-colors flex flex-col"
+                  className="group flex h-full flex-col rounded-2xl border border-obsidian/10 bg-white transition-colors hover:border-ember/40"
                 >
-                  <span className="relative block aspect-[16/10] bg-paper overflow-hidden">
+                  <span className="relative block aspect-[16/9] overflow-hidden rounded-t-2xl bg-paper">
                     {hero?.image && (
                       <Image
                         src={hero.image}
@@ -55,14 +54,14 @@ export default function BrandsPage() {
                       />
                     )}
                   </span>
-                  <span className="p-5 flex-1 flex flex-col">
-                    <span className="block text-[10px] font-black uppercase tracking-[0.18em] text-obsidian/35">
+                  <span className="flex flex-1 flex-col p-4">
+                    <span className="block text-[11px] font-bold uppercase tracking-[0.16em] text-obsidian/45">
                       {brand.info.origin}
                     </span>
                     <span className="block font-logo font-extrabold uppercase tracking-tight text-lg mt-1">
                       {brand.name}
                     </span>
-                    <span className="block text-[12px] text-obsidian/50 mt-2 leading-relaxed line-clamp-2">
+                    <span className="block text-[13px] text-obsidian/55 mt-2 leading-relaxed line-clamp-2">
                       {brand.info.style}
                     </span>
                     <span className="mt-auto pt-4 flex items-center justify-between gap-3">
@@ -81,6 +80,17 @@ export default function BrandsPage() {
             );
           })}
         </ul>
+
+        <section className="mt-10 rounded-2xl border border-obsidian/10 bg-white p-5 sm:p-7">
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-ember">For brands</p>
+          <h2 className="mt-1 font-wordmark text-2xl text-obsidian sm:text-3xl">Sponsor a round</h2>
+          <p className="mt-1.5 max-w-xl text-[14px] leading-relaxed text-obsidian/60">
+            Put your house in front of Lagos drinkers with a trivia week, a prize bottle and a campaign page.
+          </p>
+          <div className="mt-5 max-w-2xl">
+            <BrandEnquiryForm />
+          </div>
+        </section>
       </div>
     </section>
   );

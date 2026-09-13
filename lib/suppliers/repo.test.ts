@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { suggestSuppliers, validateSupplier, type Supplier } from './repo';
+import { slugifySupplier } from './repo';
 
 function supplier(over: Partial<Supplier> = {}): Supplier {
   return {
@@ -104,5 +105,14 @@ describe('suggestSuppliers', () => {
       {}
     );
     expect(out.map((s) => s.name)).toEqual(['Alpha', 'Zed']);
+  });
+});
+
+describe('slugifySupplier', () => {
+  it('turns a trading name into a URL handle', () => {
+    expect(slugifySupplier('  Ikeja Drinks & Wholesale Ltd. ')).toBe('ikeja-drinks-wholesale-ltd');
+  });
+  it('never returns an empty slug', () => {
+    expect(slugifySupplier('!!!')).toBe('supplier');
   });
 });

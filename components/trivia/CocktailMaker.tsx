@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { GlassWater, LoaderCircle } from 'lucide-react';
+import type { TasteProfile } from '@/lib/trivia/taste';
 
 type Recipe = {
   name: string;
@@ -17,9 +18,41 @@ type Recipe = {
 const inputClass = 'w-full rounded-xl border border-obsidian/12 bg-white px-3.5 py-3 text-sm text-obsidian focus:border-ember focus:ring-0';
 const COMMON_INGREDIENTS = ['Lime', 'Lemon', 'Pineapple juice', 'Orange juice', 'Tonic', 'Soda water', 'Ginger beer', 'Cola', 'Mint', 'Simple syrup'];
 
-export default function CocktailMaker() {
-  const [spirit, setSpirit] = useState('gin');
-  const [style, setStyle] = useState('refreshing');
+/** Maps a taste profile onto the maker's base and style so the first recipe already fits. */
+export function cocktailDefaults(profile: TasteProfile | null): { spirit: string; style: string } {
+  if (!profile) return { spirit: 'gin', style: 'refreshing' };
+  const first = profile.spirits[0];
+  const spirit =
+    first === 'wines' || first === 'champagne' ? 'wine' : first && ['cognac', 'whisky', 'vodka', 'tequila'].includes(first) ? first : 'gin';
+  const f = new Set(profile.flavours);
+  const style = f.has('sweet')
+    ? 'sweet'
+    : f.has('citrus')
+      ? 'refreshing'
+      : f.has('rich') || f.has('oak') || f.has('smoky')
+        ? 'strong and spirit-forward'
+        : 'refreshing';
+  return { spirit, style };
+}
+
+export default function CocktailMaker({
+  profile = null,
+  embedded = false,
+}: {
+  /** Pre-fills base and style; changes re-seed the form until the drinker touches it. */
+  profile?: TasteProfile | null;
+  /** Skip the page wrapper — the parent owns the heading and spacing. */
+  embedded?: boolean;
+}) {
+  const defaults = cocktailDefaults(profile);
+  const [spirit, setSpirit] = useState(defaults.spirit);
+  const [style, setStyle] = useState(defaults.style);
+  const [touched, setTouched] = useState(false);
+  useEffect(() => {
+    if (touched) return;
+    setSpirit(defaults.spirit);
+    setStyle(defaults.style);
+  }, [defaults.spirit, defaults.style, touched]);
   const [servings, setServings] = useState(2);
   const [ingredients, setIngredients] = useState('');
   const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
@@ -52,32 +85,38 @@ export default function CocktailMaker() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
-      <div className="grid gap-6 lg:grid-cols-[.8fr_1.2fr] lg:gap-8">
-        <section className="rounded-2xl border border-obsidian/10 bg-white p-5 sm:p-7">
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-ember">AI cocktail maker</p>
-          <h1 className="mt-2 font-wordmark text-2xl text-obsidian sm:text-3xl">Build a drink from what you have</h1>
-          <p className="mt-2 text-sm leading-relaxed text-obsidian/50">Choose a base, a mood and your available ingredients. We’ll scale one measured recipe for your group.</p>
+    <div className={embedded ? '' : 'mx-auto max-w-6xl px-4 pb-10 pt-6 sm:px-6 sm:pb-16 sm:pt-8'}>
+      <div className="grid gap-4 lg:grid-cols-[.8fr_1.2fr] lg:gap-6">
+        <section className="rounded-2xl border border-obsidian/10 bg-white p-5 sm:p-6">
+          {!embedded && (
+            <>
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-ember">AI cocktail maker</p>
+              <h1 className="mt-2 font-wordmark text-2xl text-obsidian sm:text-3xl">Build a drink from what you have</h1>
+            </>
+          )}
+          <p className={`text-[14px] leading-relaxed text-obsidian/60 ${embedded ? '' : 'mt-1.5'}`}>
+            {profile && profile.spirits.length > 0 ? 'Base and style are set from your taste profile — change anything.' : 'Choose a base, a mood and what you have. One measured recipe, scaled for your group.'}
+          </p>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            <label className="text-xs font-bold text-obsidian/55">Base
-              <select value={spirit} onChange={(e) => setSpirit(e.target.value)} className={`${inputClass} mt-1.5`}>
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            <label className="text-[13px] font-bold text-obsidian/60">Base
+              <select value={spirit} onChange={(e) => { setTouched(true); setSpirit(e.target.value); }} className={`${inputClass} mt-1.5`}>
                 <option value="gin">Gin</option><option value="vodka">Vodka</option><option value="rum">Rum</option><option value="whisky">Whisky</option><option value="tequila">Tequila</option><option value="cognac">Cognac</option><option value="wine">Wine</option><option value="no-alcohol">No alcohol</option>
               </select>
             </label>
-            <label className="text-xs font-bold text-obsidian/55">Style
-              <select value={style} onChange={(e) => setStyle(e.target.value)} className={`${inputClass} mt-1.5`}>
+            <label className="text-[13px] font-bold text-obsidian/60">Style
+              <select value={style} onChange={(e) => { setTouched(true); setStyle(e.target.value); }} className={`${inputClass} mt-1.5`}>
                 <option value="refreshing">Refreshing</option><option value="fruity">Fruity</option><option value="sweet">Sweet</option><option value="strong and spirit-forward">Spirit-forward</option><option value="creamy">Creamy</option><option value="low-sugar">Low sugar</option>
               </select>
             </label>
-            <label className="text-xs font-bold text-obsidian/55 sm:col-span-2">Number of servings
+            <label className="text-[13px] font-bold text-obsidian/60 sm:col-span-2">Number of servings
               <input type="number" min={1} max={20} value={servings} onChange={(e) => setServings(Math.max(1, Math.min(20, Number(e.target.value) || 1)))} className={`${inputClass} mt-1.5`} />
             </label>
-            <label className="text-xs font-bold text-obsidian/55 sm:col-span-2">What ingredients do you have? <span className="font-normal text-obsidian/35">(optional)</span>
+            <label className="text-[13px] font-bold text-obsidian/60 sm:col-span-2">What ingredients do you have? <span className="font-normal text-obsidian/35">(optional)</span>
               <textarea value={ingredients} onChange={(e) => setIngredients(e.target.value)} maxLength={400} rows={3} placeholder="Lime, pineapple juice, ginger, mint…" className={`${inputClass} mt-1.5 resize-y`} />
             </label>
             <div className="sm:col-span-2">
-              <p className="text-xs font-bold text-obsidian/55">Or select common ingredients</p>
+              <p className="text-[13px] font-bold text-obsidian/60">Or select common ingredients</p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {COMMON_INGREDIENTS.map((item) => {
                   const active = selectedIngredients.includes(item);

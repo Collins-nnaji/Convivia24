@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Calendar, ChevronRight, Gift, MessageSquare, Package, Sparkles, Star } from 'lucide-react';
+import { Calendar, ChevronRight, Gift, MessageSquare, Package, Star } from 'lucide-react';
 import MatchRing from '@/components/account/MatchRing';
 import TasteProfileEditor from '@/components/trivia/TasteProfileEditor';
 import DrinkPlaceholder from '@/components/shop/DrinkPlaceholder';
@@ -35,7 +35,7 @@ type ActivityItem = {
 const ACTIVITY_ICONS = {
   review: MessageSquare,
   order: Package,
-  challenge: Sparkles,
+  challenge: Star,
   redemption: Gift,
 } as const;
 
@@ -100,9 +100,7 @@ export default function TasteProfilePanel({
       </div>
 
       {!built ? (
-        <div className="bg-white border border-obsidian/8 p-8 text-center">
-          <Sparkles size={30} className="mx-auto text-ember/40 mb-4" />
-          <p className="font-bold">No taste profile yet</p>
+        <div className="bg-white border border-obsidian/8 p-8 text-center"> <p className="font-bold">No taste profile yet</p>
           <p className="text-sm text-obsidian/55 mt-2 max-w-md mx-auto leading-relaxed">
             Four quick questions — what you drink, how you like it, when you pour, and what you spend. Every
             match percentage on the site comes from your answers.

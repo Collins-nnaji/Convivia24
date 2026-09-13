@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, Check, GraduationCap, Sparkles, X } from 'lucide-react';
+import { ArrowLeft, Check, GraduationCap, X } from 'lucide-react';
 import { HouseGlyph } from '@/components/trivia/TriviaIcons';
 import { isPass, type TriviaRound as Round } from '@/lib/trivia/catalog';
 import { getChallenge } from '@/lib/trivia/challenges';
@@ -337,8 +337,7 @@ function Result({
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           className="mt-4 inline-flex items-center gap-2 px-3.5 py-2 bg-ember/6 text-ember text-[12px] font-bold"
-        >
-          <Sparkles size={14} /> +{earned} points added to your balance
+        > +{earned} points added to your balance
         </motion.p>
       )}
 

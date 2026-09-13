@@ -5,7 +5,9 @@ import { allSupplierStock, setSupplierStock, stockForSlug } from '@/lib/supplier
 import { listSuppliers } from '@/lib/suppliers/repo';
 import { uploadBlob, validateImageFile, blobConfigured } from '@/lib/azure/blob';
 import { apiErrorResponse } from '@/lib/db';
-import { rateLimit, clientIp, redis } from '@/lib/redis';
+import { rateLimit, clientIp } from '@/lib/redis';
+import { invalidateCatalog } from '@/lib/shop/catalog-cache';
+import { logSupplierAction } from '@/lib/suppliers/audit';
 import { captureApiError } from '@/lib/sentry';
 import { chat, aiConfigured } from '@/lib/ai/azure';
 import { listSupplierCatalog } from '@/lib/suppliers/sku-prices';
@@ -89,7 +91,7 @@ export async function POST(req: NextRequest) {
         try {
           const row = await editStockRow(slug, patch);
           if (!row) return NextResponse.json({ error: 'Unknown SKU.' }, { status: 404 });
-          await redis()?.del('shop:catalog:v1');
+          await invalidateCatalog();
           return NextResponse.json({ item: row });
         } catch (err) {
           if (err instanceof StockEditError) {
@@ -110,7 +112,13 @@ export async function POST(req: NextRequest) {
         if (!Number.isFinite(onHand) || onHand < 0) {
           return NextResponse.json({ error: 'Quantity must be zero or more.' }, { status: 400 });
         }
+        const before = (await stockForSlug(slug)).find((r) => r.supplierId === supplierId);
         await setSupplierStock(supplierId, slug, onHand);
+        await invalidateCatalog();
+        await logSupplierAction({
+          supplierId, actor: 'admin', actorLabel: 'desk', action: 'stock.set', skuSlug: slug,
+          detail: { from: before?.onHand ?? null, to: Math.floor(onHand) },
+        });
         return NextResponse.json({ ok: true, rows: await stockForSlug(slug) });
       }
 
@@ -120,8 +128,11 @@ export async function POST(req: NextRequest) {
         const slug = String(body.slug || '');
         if (!slug) return NextResponse.json({ error: 'Slug is required.' }, { status: 400 });
         const { default: dbSql } = await import('@/lib/db');
+        // Supplier holdings and quotes key on slug with no FK, so clear them with the SKU.
+        await dbSql`DELETE FROM supplier_stock WHERE slug = ${slug}`;
+        await dbSql`DELETE FROM supplier_sku_prices WHERE slug = ${slug}`;
         await dbSql`DELETE FROM inventory WHERE slug = ${slug}`;
-        await redis()?.del('shop:catalog:v1');
+        await invalidateCatalog();
         return NextResponse.json({ ok: true });
       }
       if (body.action === 'ai-product-copy') {
@@ -266,7 +277,7 @@ Return JSON:
       imageUrl,
     });
 
-    await redis()?.del('shop:catalog:v1');
+    await invalidateCatalog();
     return NextResponse.json({ item }, { status: 201 });
   } catch (err) {
     captureApiError(err, { route: 'admin/inventory POST' });

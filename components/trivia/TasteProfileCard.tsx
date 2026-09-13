@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Lightbulb, Pencil, Sparkles } from 'lucide-react';
+import { Lightbulb, Pencil } from 'lucide-react';
 import { hasTasteProfile, tasteHighlights, type TasteProfile } from '@/lib/trivia/taste';
 
 /** Circular match gauge — the headline number on the taste card. */
@@ -84,9 +84,7 @@ export default function TasteProfileCard({
           </div>
         ) : (
           <div className="flex items-start gap-4">
-            <div className="w-[86px] h-[86px] shrink-0 rounded-full border-2 border-dashed border-ember/25 flex items-center justify-center">
-              <Sparkles size={22} className="text-ember/45" />
-            </div>
+            <div className="w-[86px] h-[86px] shrink-0 rounded-full border-2 border-dashed border-ember/25 flex items-center justify-center"> </div>
             <div className="min-w-0">
               <p className="text-sm text-obsidian/65 leading-relaxed mb-3">
                 Four quick questions and every round, bottle and reward on this page starts matching what you

@@ -12,6 +12,7 @@ import {
 } from '@/lib/pricing/parse-price-list';
 import { rateLimit, clientIp } from '@/lib/redis';
 import { captureApiError } from '@/lib/sentry';
+import { invalidateCatalog } from '@/lib/shop/catalog-cache';
 
 /** Roughly 8MB of base64 — a phone photo of a price list is well under this. */
 const MAX_IMAGE_CHARS = 8_000_000;
@@ -178,6 +179,7 @@ export async function PATCH(req: NextRequest) {
       }
     }
 
+    if (applied.length > 0) await invalidateCatalog();
     return NextResponse.json({ ok: failed.length === 0, applied, failed });
   } catch (err) {
     captureApiError(err, { route: 'admin/price-list PATCH' });

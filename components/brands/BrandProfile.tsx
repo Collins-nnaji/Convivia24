@@ -12,7 +12,7 @@ import {
   Plus,
   QrCode,
   ShieldCheck,
-  Sparkles,
+  Award,
   Star,
   Truck,
 } from 'lucide-react';
@@ -24,7 +24,7 @@ import { BRAND_PILLARS, brandStats, type Brand } from '@/lib/brands/catalog';
 import type { Campaign } from '@/lib/brands/campaigns';
 import { formatNgn } from '@/lib/drinks/catalog';
 
-const PILLAR_ICONS = [ShieldCheck, Sparkles, Truck, QrCode];
+const PILLAR_ICONS = [ShieldCheck, Award, Truck, QrCode];
 
 export default function BrandProfile({ brand, campaigns }: { brand: Brand; campaigns: Campaign[] }) {
   const pathname = usePathname();
@@ -279,7 +279,7 @@ export default function BrandProfile({ brand, campaigns }: { brand: Brand; campa
               Play the brand round, rate what you drink, and turn the points into rewards.
             </p>
             <Link
-              href="/discover#challenges"
+              href="/discover/trivia#challenges"
               className="mt-4 inline-block w-full py-3 btn-brand text-[10px] font-black uppercase tracking-[0.12em]"
             >
               See all challenges
@@ -316,7 +316,7 @@ function BrandChallenges({ brand, campaigns }: { brand: Brand; campaigns: Campai
           Brand challenges
         </h2>
         <Link
-          href="/discover#challenges"
+          href="/discover/trivia#challenges"
           className="text-[11px] font-black uppercase tracking-[0.1em] text-white/45 hover:text-white transition-colors"
         >
           View all

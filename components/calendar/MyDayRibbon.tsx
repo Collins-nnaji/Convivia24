@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, Link2, Plus, Sparkles } from 'lucide-react';
+import { Check, Link2, Plus } from 'lucide-react';
 import type { CalendarInvitee, CalendarItem } from '@/lib/calendar/buffers';
 import { seedsForDay, type DaySeed } from '@/lib/calendar/seeds';
 
@@ -55,9 +55,7 @@ export default function MyDayRibbon({
     return (
       <div className="py-8">
         <div className="text-center mb-5">
-          <span className="inline-flex w-10 h-10 items-center justify-center rounded-full bg-gold/10 text-gold-dark mb-2.5">
-            <Sparkles size={18} />
-          </span>
+          <span className="inline-flex w-10 h-10 items-center justify-center rounded-full bg-gold/10 text-gold-dark mb-2.5"> </span>
           <p className="font-display text-xl italic text-obsidian">A clear day.</p>
           <p className="text-sm text-obsidian/45 mt-1">Here are a few gentle ideas — tap one to add it.</p>
         </div>

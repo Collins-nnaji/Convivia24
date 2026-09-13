@@ -7,6 +7,7 @@ import {
   type EmailLine,
 } from '@/lib/email/templates';
 import type { OrderStatus } from '@/lib/commerce/status';
+import { notifySupplierOfPaidOrder } from '@/lib/suppliers/notify';
 
 async function loadOrderForNotify(orderId: string) {
   const [order] = await sql`
@@ -86,6 +87,7 @@ export async function notifyOrderStatus(orderId: string, status: OrderStatus, no
     // Paid → confirmation mail (not a separate "awaiting payment" style notice).
     if (status === 'paid') {
       await notifyOrderReceived(orderId);
+      await notifySupplierOfPaidOrder(orderId);
       return;
     }
 

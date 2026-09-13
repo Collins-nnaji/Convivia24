@@ -4,23 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { formatNgn } from '@/lib/drinks/catalog';
 import { marginSummary, orderMargin } from '@/lib/suppliers/margin';
 import { suggestSuppliers, type Supplier } from '@/lib/suppliers/repo';
-
-/** The slice of an admin order this desk needs. Mirrors /api/admin/orders GET. */
-export type SourcingOrder = {
-  id: string;
-  fullName: string;
-  status: string;
-  area: string | null;
-  totalNgn: number;
-  refundedNgn: number;
-  supplierId: string | null;
-  supplierName: string | null;
-  supplierCostNgn: number | null;
-  sourcedAt: string | null;
-  sourcingNote: string | null;
-  createdAt: string;
-  items: { slug?: string; name: string; qty: number }[];
-};
+import type { AdminOrder } from './types';
 
 function shortId(id: string) {
   return id.slice(0, 8);
@@ -30,7 +14,7 @@ export default function SourcingDesk({
   orders,
   onOrdersChanged,
 }: {
-  orders: SourcingOrder[];
+  orders: AdminOrder[];
   onOrdersChanged: () => void;
 }) {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -67,9 +51,14 @@ export default function SourcingDesk({
     [orders]
   );
 
-  const unsourced = useMemo(() => orders.filter((o) => o.supplierCostNgn == null), [orders]);
+  /** Cancelled and refunded orders never need a supplier — they'd only inflate the queue. */
+  const live = useMemo(
+    () => orders.filter((o) => o.status !== 'cancelled' && o.status !== 'refunded'),
+    [orders]
+  );
+  const unsourced = useMemo(() => live.filter((o) => o.supplierCostNgn == null), [live]);
 
-  async function saveSourcing(order: SourcingOrder) {
+  async function saveSourcing(order: AdminOrder) {
     const draft = drafts[order.id] || {
       supplierId: order.supplierId || '',
       cost: order.supplierCostNgn?.toString() || '',
@@ -144,15 +133,15 @@ export default function SourcingDesk({
           Assign orders ({unsourced.length} outstanding)
         </h2>
 
-        {orders.length === 0 ? (
-          <p className="text-sm text-obsidian/45">No orders yet.</p>
+        {live.length === 0 ? (
+          <p className="text-sm text-obsidian/45">No live orders to source.</p>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-obsidian/10 bg-white">
           <div className="grid min-w-[900px] grid-cols-[1.4fr_.65fr_2fr] gap-4 border-b border-obsidian/10 bg-paper px-4 py-3 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40">
             <span>Order &amp; contents</span><span className="text-right">Revenue / margin</span><span>Supplier, cost &amp; notes</span>
           </div>
           <ul className="min-w-[900px] divide-y divide-obsidian/8">
-            {orders.map((order) => {
+            {live.map((order) => {
               const draft = drafts[order.id] || {
                 supplierId: order.supplierId || '',
                 cost: order.supplierCostNgn?.toString() || '',
