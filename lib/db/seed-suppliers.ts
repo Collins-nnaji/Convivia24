@@ -1,8 +1,8 @@
 // Run: npx tsx lib/db/seed-suppliers.ts
 //
-// Seeds the three regional suppliers and gives each one an opening stock position for every SKU
-// in the catalog. Safe to re-run: suppliers are matched by name, and stock is only written where
-// a supplier does not already hold a row for that SKU, so real counts are never overwritten.
+// Seeds the single Nationwide supplier and gives it an opening stock position for every SKU
+// in the catalog. Safe to re-run: the supplier is matched by name, and stock is only written
+// where a row does not already exist for that SKU, so real counts are never overwritten.
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { neon } from '@neondatabase/serverless';
@@ -28,11 +28,13 @@ for (const file of ['.env.local', '.env']) {
   }
 }
 
-const SUPPLIERS = [
-  { name: 'Lagos Supplier', city: 'Lagos', sameDay: true, openingStock: 24, costRate: 0.78 },
-  { name: 'Abuja Supplier', city: 'Abuja', sameDay: false, openingStock: 12, costRate: 0.8 },
-  { name: 'Port Harcourt Supplier', city: 'Port Harcourt', sameDay: false, openingStock: 8, costRate: 0.82 },
-];
+const NATIONWIDE = {
+  name: 'Nationwide',
+  city: 'Nigeria',
+  sameDay: true,
+  openingStock: 24,
+  costRate: 0.78,
+};
 
 async function main() {
   if (!process.env.DATABASE_URL) {
@@ -56,43 +58,59 @@ async function main() {
     `;
   }
 
-  for (const s of SUPPLIERS) {
-    const [existing] = await sql`SELECT id FROM suppliers WHERE LOWER(name) = ${s.name.toLowerCase()} LIMIT 1`;
-    let id: string;
-    if (existing) {
-      id = String(existing.id);
-      await sql`UPDATE suppliers SET city = ${s.city}, same_day = ${s.sameDay}, active = true WHERE id = ${id}::uuid`;
-      console.log(`· ${s.name} — already present, refreshed`);
-    } else {
-      const [row] = await sql`
-        INSERT INTO suppliers (name, city, same_day, active, notes)
-        VALUES (${s.name}, ${s.city}, ${s.sameDay}, true, ${'Regional fulfilment hub for ' + s.city})
-        RETURNING id
-      `;
-      id = String(row.id);
-      console.log(`+ ${s.name} — created`);
-    }
+  // One partner fills every order. Older regional rows stay in the table but are switched off.
+  await sql`
+    UPDATE suppliers
+    SET active = false, updated_at = NOW()
+    WHERE active = true
+      AND LOWER(name) <> ${NATIONWIDE.name.toLowerCase()}
+  `;
 
-    // Opening position, only where nothing is recorded yet.
-    let seeded = 0;
-    for (const d of DRINKS) {
-      const res = await sql`
-        INSERT INTO supplier_stock (supplier_id, slug, on_hand)
-        VALUES (${id}::uuid, ${d.slug}, ${s.openingStock})
-        ON CONFLICT (supplier_id, slug) DO NOTHING
-        RETURNING slug
-      `;
-      if (res.length) seeded++;
-      await sql`
-        INSERT INTO supplier_sku_prices (supplier_id, slug, cost_ngn)
-        VALUES (${id}::uuid, ${d.slug}, ${Math.round(d.priceNgn * s.costRate)})
-        ON CONFLICT (supplier_id, slug) DO NOTHING
-      `;
-    }
-    console.log(`  ${seeded} SKU rows seeded at ${s.openingStock} each (${DRINKS.length - seeded} already had counts)`);
+  const [existing] = await sql`
+    SELECT id FROM suppliers WHERE LOWER(name) = ${NATIONWIDE.name.toLowerCase()} LIMIT 1
+  `;
+  let id: string;
+  if (existing) {
+    id = String(existing.id);
+    await sql`
+      UPDATE suppliers
+      SET city = ${NATIONWIDE.city}, same_day = ${NATIONWIDE.sameDay}, active = true,
+          notes = ${'Single fulfilment partner for nationwide delivery'}, updated_at = NOW()
+      WHERE id = ${id}::uuid
+    `;
+    console.log(`· ${NATIONWIDE.name} — already present, refreshed`);
+  } else {
+    const [row] = await sql`
+      INSERT INTO suppliers (name, city, same_day, active, notes)
+      VALUES (
+        ${NATIONWIDE.name}, ${NATIONWIDE.city}, ${NATIONWIDE.sameDay}, true,
+        ${'Single fulfilment partner for nationwide delivery'}
+      )
+      RETURNING id
+    `;
+    id = String(row.id);
+    console.log(`+ ${NATIONWIDE.name} — created`);
   }
 
-  // Bring the inventory rollup in line with what we just wrote.
+  let seeded = 0;
+  for (const d of DRINKS) {
+    const res = await sql`
+      INSERT INTO supplier_stock (supplier_id, slug, on_hand)
+      VALUES (${id}::uuid, ${d.slug}, ${NATIONWIDE.openingStock})
+      ON CONFLICT (supplier_id, slug) DO NOTHING
+      RETURNING slug
+    `;
+    if (res.length) seeded++;
+    await sql`
+      INSERT INTO supplier_sku_prices (supplier_id, slug, cost_ngn)
+      VALUES (${id}::uuid, ${d.slug}, ${Math.round(d.priceNgn * NATIONWIDE.costRate)})
+      ON CONFLICT (supplier_id, slug) DO NOTHING
+    `;
+  }
+  console.log(
+    `  ${seeded} SKU rows seeded at ${NATIONWIDE.openingStock} each (${DRINKS.length - seeded} already had counts)`
+  );
+
   for (const d of DRINKS) {
     await sql`
       UPDATE inventory i
@@ -111,12 +129,13 @@ async function main() {
     await sql`
       UPDATE inventory
       SET cost_ngn = (
-        SELECT MIN(cost_ngn)::int FROM supplier_sku_prices WHERE slug = ${d.slug}
+        SELECT MIN(cost_ngn)::int FROM supplier_sku_prices
+        WHERE slug = ${d.slug} AND supplier_id = ${id}::uuid
       ), updated_at = NOW()
       WHERE slug = ${d.slug}
     `;
   }
-  console.log(`\nRolled up stock and lowest supplier cost for ${DRINKS.length} SKUs.`);
+  console.log(`\nRolled up stock and Nationwide cost for ${DRINKS.length} SKUs.`);
 }
 
 main().catch((err) => {

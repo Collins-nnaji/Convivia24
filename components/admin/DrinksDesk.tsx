@@ -101,7 +101,6 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
   const [supplierStock, setSupplierStock] = useState<Record<string, SupplierStockRow[]>>({});
   const [supplierCosts, setSupplierCosts] = useState<Record<string, Record<string, number>>>({});
   const [suppliers, setSuppliers] = useState<SupplierLite[]>([]);
-  const [visibleSupplierIds, setVisibleSupplierIds] = useState<string[]>([]);
   const [stockQuery, setStockQuery] = useState('');
   const [stockCategory, setStockCategory] = useState('bottles');
   const [onlyLow, setOnlyLow] = useState(false);
@@ -117,9 +116,6 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
     setSupplierStock(data.supplierStock || {});
     setSupplierCosts(data.supplierCosts || {});
     setSuppliers(data.suppliers || []);
-    setVisibleSupplierIds((current) =>
-      current.length ? current : (data.suppliers || []).slice(0, 3).map((supplier: SupplierLite) => supplier.id)
-    );
     setBlobOk(Boolean(data.blobConfigured));
     setAiOk(Boolean(data.aiConfigured));
   }, []);
@@ -313,7 +309,6 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
   }, [items, stockQuery, stockCategory, onlyLow]);
 
   const lowCount = items.filter((it) => it.tracked !== false && it.available <= it.low_stock_threshold).length;
-  const visibleSuppliers = suppliers.filter((s) => visibleSupplierIds.includes(s.id));
 
   return (
     <>
@@ -476,38 +471,9 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
         </button>
         <span className="text-xs text-obsidian/45">
           {visibleItems.length} of {items.length}
+          {suppliers[0] ? ` · ${suppliers[0].name}` : ''}
         </span>
       </div>
-      {suppliers.length > 0 && (
-        <div className="mb-4 rounded-xl border border-obsidian/10 bg-white p-3">
-          <p className="text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40">Supplier columns</p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {suppliers.map((supplier) => {
-              const active = visibleSupplierIds.includes(supplier.id);
-              return (
-                <button
-                  key={supplier.id}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() =>
-                    setVisibleSupplierIds((current) =>
-                      active ? current.filter((id) => id !== supplier.id) : [...current, supplier.id].slice(-3)
-                    )
-                  }
-                  className={`rounded-full border px-3 py-2 text-xs font-semibold transition-colors ${
-                    active ? 'border-ember bg-ember text-white' : 'border-obsidian/12 text-obsidian/55 hover:border-ember/35'
-                  }`}
-                >
-                  {supplier.name}
-                </button>
-              );
-            })}
-          </div>
-          <p className="mt-2 text-[11px] text-obsidian/40">
-            Choose up to three suppliers. Expand a drink to see their stock, unit cost and margin.
-          </p>
-        </div>
-      )}
       <div className="hidden min-w-[980px] grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(0,.55fr))_auto] gap-3 border-x border-t border-obsidian/10 bg-paper px-4 py-3 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40 lg:grid">
         <span>SKU</span>
         <span className="text-right">On hand</span>
@@ -525,7 +491,7 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
             onSave={(patch) => saveStock(item.slug, patch)}
             onDelete={() => deleteStock(item)}
             onEdit={() => editItem(item)}
-            suppliers={visibleSuppliers}
+            suppliers={suppliers}
             supplierRows={supplierStock[item.slug] || []}
             supplierCosts={supplierCosts[item.slug] || {}}
             onSetSupplierStock={setSupplierStockQty}
@@ -924,7 +890,7 @@ function StockRow({
           </button>
           {suppliers.length > 0 && (
             <button type="button" onClick={() => setSuppliersOpen((v) => !v)} aria-expanded={suppliersOpen} className={btn}>
-              Suppliers
+              {suppliers[0]?.name || 'Stock'}
             </button>
           )}
           <button type="button" onClick={() => setGuideOpen((v) => !v)} aria-expanded={guideOpen} className={btn}>
@@ -949,8 +915,10 @@ function StockRow({
 
       {suppliersOpen && suppliers.length > 0 && (
         <div className="mt-3 border-t border-obsidian/10 pt-3">
-          <p className="mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40">Stock by supplier</p>
-          <div className="grid gap-2 sm:grid-cols-3">
+          <p className="mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40">
+            {suppliers[0]?.name || 'Nationwide'} stock &amp; cost
+          </p>
+          <div className="grid gap-2 sm:grid-cols-1 max-w-md">
             {suppliers.map((sup) => (
               <SupplierQtyField
                 key={sup.id}
@@ -965,7 +933,7 @@ function StockRow({
             ))}
           </div>
           <p className="mt-2 text-[11px] text-obsidian/40">
-            The SKU's on-hand is the sum of these shelves. Quotes here also set the cost the margin column uses.
+            On-hand and wholesale cost for the Nationwide partner. Quotes here also drive the margin column.
           </p>
         </div>
       )}

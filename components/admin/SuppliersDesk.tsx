@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
-import { Pencil, Plus, RefreshCw, Search, Trash2 } from 'lucide-react';
+import { Pencil, RefreshCw, Search } from 'lucide-react';
 import { formatNgn } from '@/lib/drinks/catalog';
 import { skuMargin } from '@/lib/suppliers/margin';
 import type { Supplier, SupplierInput } from '@/lib/suppliers/repo';
@@ -68,7 +68,7 @@ function ActivityList({ entries, showSupplier }: { entries: AuditRow[]; showSupp
 }
 
 export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?: () => void }) {
-  const { confirm, notify } = useDialogs();
+  const { notify } = useDialogs();
 
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [catalog, setCatalog] = useState<CatalogRow[]>([]);
@@ -76,7 +76,7 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [mode, setMode] = useState<'none' | 'create' | 'edit'>('none');
+  const [mode, setMode] = useState<'none' | 'edit'>('none');
   const [saving, setSaving] = useState(false);
   const [pane, setPane] = useState<Pane>('prices');
   const [draftCosts, setDraftCosts] = useState<Record<string, string>>({});
@@ -96,11 +96,15 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
       const catalogData = await catalogRes.json();
       if (!supplierRes.ok) throw new Error(supplierData.error || 'Unable to load suppliers.');
       if (!catalogRes.ok) throw new Error(catalogData.error || 'Unable to load SKU prices.');
-      const rows: Supplier[] = supplierData.suppliers || [];
+      // One active partner fills every order — inactive regionals stay out of the desk.
+      const rows: Supplier[] = ((supplierData.suppliers || []) as Supplier[]).filter((s) => s.active);
       setSuppliers(rows);
       setCatalog(catalogData.catalog || []);
       if (feedRes.ok) setFeed((await feedRes.json()).entries || []);
-      setSelectedId((current) => current || rows.find((s) => s.active)?.id || rows[0]?.id || '');
+      setSelectedId((current) => {
+        if (current && rows.some((s) => s.id === current)) return current;
+        return rows[0]?.id || '';
+      });
       setError('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to load suppliers.');
@@ -157,49 +161,25 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
   }, [catalog, selected]);
 
   async function submitSupplier(input: SupplierInput) {
+    if (!selected) return;
     setSaving(true);
     try {
-      const editing = mode === 'edit' && selected;
       const res = await fetch('/api/admin/suppliers', {
-        method: editing ? 'PATCH' : 'POST',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editing ? { id: selected.id, ...input } : input),
+        body: JSON.stringify({ id: selected.id, ...input }),
       });
       if (!res.ok) {
         setError(await readError(res, 'Unable to save supplier.'));
         return;
       }
-      const data = await res.json();
       setMode('none');
       setError('');
-      notify(editing ? 'Supplier updated.' : `${data.supplier?.name} created — issue them an access key below.`);
-      if (!editing && data.supplier?.id) setSelectedId(data.supplier.id);
+      notify('Nationwide partner updated.');
       await reloadAll();
     } finally {
       setSaving(false);
     }
-  }
-
-  async function removeSupplier(s: Supplier) {
-    const ok = await confirm({
-      title: 'Remove this supplier?',
-      message: (
-        <>
-          <strong>{s.name}</strong> is removed. If they already have sourced orders they are deactivated rather than deleted,
-          so the order history stays intact.
-        </>
-      ),
-      confirmLabel: 'Remove supplier',
-      tone: 'danger',
-    });
-    if (!ok) return;
-    const res = await fetch(`/api/admin/suppliers?id=${encodeURIComponent(s.id)}`, { method: 'DELETE' });
-    if (!res.ok) {
-      setError(await readError(res, 'Unable to remove supplier.'));
-      return;
-    }
-    if (selectedId === s.id) setSelectedId('');
-    await reloadAll();
   }
 
   async function saveCost(slug: string) {
@@ -241,10 +221,10 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
 
       <div className="grid gap-px overflow-hidden rounded-2xl border border-obsidian/10 bg-obsidian/10 sm:grid-cols-4">
         {[
-          ['Active suppliers', String(suppliers.filter((s) => s.active).length)],
-          ['With portal access', String(suppliers.filter((s) => s.hasAccessKey && s.portalEnabled).length)],
-          ['SKUs in catalog', String(catalog.length)],
-          ['Avg margin (selected)', selected && summary ? `${summary.avgMarginPct}%` : '—'],
+          ['Partner', selected?.name || '—'],
+          ['Portal', selected?.hasAccessKey && selected.portalEnabled ? 'Open' : 'Off'],
+          ['SKUs priced', selected && summary ? `${summary.priced}/${summary.total}` : '—'],
+          ['Avg margin', selected && summary ? `${summary.avgMarginPct}%` : '—'],
         ].map(([label, value]) => (
           <div key={label} className="bg-white p-4">
             <p className="text-[10px] uppercase tracking-wider text-obsidian/40">{label}</p>
@@ -253,223 +233,158 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
         ))}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">
-        <aside className="space-y-3">
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/40">Suppliers</h2>
-            <div className="flex items-center gap-2">
-              <button type="button" onClick={reloadAll} className="text-obsidian/50 hover:text-obsidian" title="Refresh">
-                <RefreshCw size={12} />
-              </button>
+      <section className="min-w-0 space-y-5">
+        {loading && !selected ? (
+          <p className="text-sm text-obsidian/45">Loading Nationwide partner…</p>
+        ) : !selected ? (
+          <div className="rounded-2xl border border-obsidian/10 bg-white p-8 text-center text-sm text-obsidian/50">
+            No active supplier. Seed Nationwide with <code className="text-xs">npx tsx lib/db/seed-suppliers.ts</code>.
+          </div>
+        ) : mode === 'edit' ? (
+          <SupplierForm initial={selected} saving={saving} onSubmit={submitSupplier} onCancel={() => setMode('none')} />
+        ) : (
+          <>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-obsidian">{selected.name}</h2>
+                  <button type="button" onClick={reloadAll} className="text-obsidian/40 hover:text-obsidian" title="Refresh">
+                    <RefreshCw size={14} />
+                  </button>
+                </div>
+                <p className="mt-1 text-sm text-obsidian/50">
+                  Single fulfilment partner · {selected.city}
+                  {selected.sameDay ? ' · same-day capable' : ''}
+                  {summary ? ` · ${summary.priced} of ${summary.total} SKUs priced` : ''}
+                </p>
+                <p className="text-xs text-obsidian/45">
+                  {[selected.contactName, selected.phone, selected.email].filter(Boolean).join(' · ') || 'No contact on file'}
+                </p>
+              </div>
               <button
                 type="button"
-                onClick={() => setMode((m) => (m === 'create' ? 'none' : 'create'))}
-                className="inline-flex items-center gap-1 text-[11px] font-bold text-ember hover:text-ember/80"
+                onClick={() => setMode('edit')}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-obsidian/15 px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/70 hover:border-ember hover:text-ember"
               >
-                <Plus size={12} /> Add
+                <Pencil size={12} /> Edit partner
               </button>
             </div>
-          </div>
 
-          {mode === 'create' && <SupplierForm saving={saving} onSubmit={submitSupplier} onCancel={() => setMode('none')} />}
+            <SupplierPortalPanel supplier={selected} onChanged={reloadAll} />
 
-          {loading && suppliers.length === 0 ? (
-            <p className="text-sm text-obsidian/45">Loading…</p>
-          ) : suppliers.length === 0 ? (
-            <p className="text-sm text-obsidian/45">Add your first wholesaler to start tracking costs per SKU.</p>
-          ) : (
-            <ul className="space-y-2">
-              {suppliers.map((s) => (
-                <li key={s.id}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedId(s.id);
-                      setMode('none');
-                    }}
-                    className={`w-full rounded-xl border p-3 text-left transition-colors ${
-                      selectedId === s.id ? 'border-ember bg-ember/[0.04]' : 'border-obsidian/10 bg-white hover:border-obsidian/20'
-                    }`}
-                  >
-                    <p className="flex items-center gap-2 text-sm font-semibold">
-                      <span className="truncate">{s.name}</span>
-                      {s.hasAccessKey && s.portalEnabled && (
-                        <span className="shrink-0 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-emerald-700">portal</span>
-                      )}
-                      {!s.active && <span className="shrink-0 text-[9px] font-black uppercase tracking-wider text-obsidian/35">inactive</span>}
-                    </p>
-                    <p className="truncate text-[11px] text-obsidian/45">
-                      {s.city} · {s.phone || s.contactName || 'No contact'}
-                    </p>
-                  </button>
-                </li>
+            <div className="flex gap-1 border-b border-obsidian/10">
+              {(['prices', 'activity', 'requests'] as Pane[]).map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setPane(p)}
+                  className={`-mb-px border-b-2 px-3 py-2 text-xs font-bold ${
+                    pane === p ? 'border-ember text-ember' : 'border-transparent text-obsidian/50 hover:text-obsidian'
+                  }`}
+                >
+                  {p === 'prices' ? 'Wholesale costs' : p === 'activity' ? `Activity (${activity.length})` : 'Bottle requests'}
+                </button>
               ))}
-            </ul>
-          )}
-
-          {feed.length > 0 && (
-            <div className="pt-4">
-              <h2 className="mb-2 text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/40">Latest across suppliers</h2>
-              <ul className="space-y-1.5 text-[12px] text-obsidian/65">
-                {feed.slice(0, 8).map((e) => (
-                  <li key={e.id} className="leading-snug">
-                    <span className="font-semibold text-obsidian">{e.supplierName}</span>{' '}
-                    <span className="text-obsidian/40">{e.actor === 'admin' ? '(desk)' : e.actor === 'system' ? '(system)' : ''}</span> {e.text}
-                  </li>
-                ))}
-              </ul>
             </div>
-          )}
-        </aside>
 
-        <section className="min-w-0 space-y-5">
-          {!selected ? (
-            <div className="rounded-2xl border border-obsidian/10 bg-white p-8 text-center text-sm text-obsidian/50">
-              Select a supplier to manage their portal, wholesale costs and activity.
-            </div>
-          ) : mode === 'edit' ? (
-            <SupplierForm initial={selected} saving={saving} onSubmit={submitSupplier} onCancel={() => setMode('none')} />
-          ) : (
-            <>
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <h2 className="text-xl font-bold text-obsidian">{selected.name}</h2>
-                  <p className="mt-1 text-sm text-obsidian/50">
-                    {selected.city}
-                    {selected.areas.length ? ` · ${selected.areas.join(', ')}` : ' · anywhere in city'}
-                    {selected.sameDay ? ' · same-day' : ''}
-                    {summary ? ` · ${summary.priced} of ${summary.total} SKUs priced` : ''}
-                  </p>
-                  <p className="text-xs text-obsidian/45">
-                    {[selected.contactName, selected.phone, selected.email].filter(Boolean).join(' · ') || 'No contact on file'}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button type="button" onClick={() => setMode('edit')} className="inline-flex items-center gap-1.5 rounded-lg border border-obsidian/15 px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/70 hover:border-ember hover:text-ember">
-                    <Pencil size={12} /> Edit
-                  </button>
-                  <button type="button" onClick={() => removeSupplier(selected)} className="grid h-9 w-9 place-items-center rounded-lg text-obsidian/35 hover:bg-red-50 hover:text-red-600" title="Remove supplier">
-                    <Trash2 size={15} />
-                  </button>
-                </div>
-              </div>
+            {pane === 'requests' ? (
+              <BottleRequestsPanel onChanged={reloadAll} />
+            ) : pane === 'activity' ? (
+              <>
+                <p className="text-sm text-obsidian/50">
+                  Shelf updates, orders and access — from the portal, the desk, or automatic routing.
+                </p>
+                <ActivityList entries={activity.length ? activity : feed} />
+              </>
+            ) : (
+              <>
+                <label className="relative block max-w-md">
+                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-obsidian/35" />
+                  <input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Search SKU…"
+                    className="w-full rounded-lg border border-obsidian/10 bg-white py-2.5 pl-10 pr-3 text-sm focus:border-ember focus:ring-0"
+                  />
+                </label>
 
-              <SupplierPortalPanel supplier={selected} onChanged={reloadAll} />
-
-              <div className="flex gap-1 border-b border-obsidian/10">
-                {(['prices', 'activity', 'requests'] as Pane[]).map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => setPane(p)}
-                    className={`-mb-px border-b-2 px-3 py-2 text-xs font-bold ${
-                      pane === p ? 'border-ember text-ember' : 'border-transparent text-obsidian/50 hover:text-obsidian'
-                    }`}
-                  >
-                    {p === 'prices' ? 'Wholesale costs' : p === 'activity' ? `Activity (${activity.length})` : 'Bottle requests'}
-                  </button>
-                ))}
-              </div>
-
-              {pane === 'requests' ? (
-                <BottleRequestsPanel onChanged={reloadAll} />
-              ) : pane === 'activity' ? (
-                <>
-                  <p className="text-sm text-obsidian/50">
-                    Everything done on this supplier&apos;s shelf, orders and access — by them in their portal, by the desk, or by routing.
-                  </p>
-                  <ActivityList entries={activity} />
-                </>
-              ) : (
-                <>
-                  <label className="relative block">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-obsidian/35" />
-                    <input
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      placeholder="Search SKU…"
-                      className="w-full rounded-lg border border-obsidian/10 bg-white py-2.5 pl-10 pr-3 text-sm focus:border-ember focus:ring-0"
-                    />
-                  </label>
-
-                  <div className="overflow-x-auto rounded-xl border border-obsidian/10 bg-white">
-                    <table className="w-full min-w-[720px] text-sm">
-                      <thead className="bg-paper text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/45">
-                        <tr>
-                          <th className="px-3 py-3 text-left">SKU</th>
-                          <th className="px-3 py-3 text-right">Retail</th>
-                          <th className="px-3 py-3 text-right">Supplier cost</th>
-                          <th className="px-3 py-3 text-right">Margin</th>
-                          <th className="px-3 py-3 text-right">Save</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-obsidian/8">
-                        {filteredCatalog.map((row) => {
-                          const savedCost = row.costs[selected.id];
-                          const draft = draftCosts[row.slug];
-                          const value = draft ?? (savedCost != null ? String(savedCost) : '');
-                          const dirty = draft != null && draft !== (savedCost != null ? String(savedCost) : '');
-                          const marginCost = value !== '' ? Number(value) : savedCost ?? row.defaultCostNgn;
-                          return (
-                            <tr key={row.slug} className="hover:bg-paper/60">
-                              <td className="px-3 py-2.5">
-                                <div className="flex items-center gap-3">
-                                  <span className="grid h-12 w-9 shrink-0 place-items-center overflow-hidden rounded-md bg-paper">
-                                    {row.imageUrl ? <Image src={row.imageUrl} alt="" width={36} height={48} className="h-12 w-9 object-contain" /> : <span className="h-6 w-2 rounded-sm bg-obsidian/10" />}
-                                  </span>
-                                  <div className="min-w-0">
-                                    <p className="truncate font-medium text-obsidian">{row.name}</p>
-                                    <p className="truncate font-mono text-[11px] text-obsidian/40">{row.slug}</p>
-                                  </div>
+                <div className="overflow-x-auto rounded-xl border border-obsidian/10 bg-white">
+                  <table className="w-full min-w-[720px] text-sm">
+                    <thead className="bg-paper text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/45">
+                      <tr>
+                        <th className="px-3 py-3 text-left">SKU</th>
+                        <th className="px-3 py-3 text-right">Retail</th>
+                        <th className="px-3 py-3 text-right">Nationwide cost</th>
+                        <th className="px-3 py-3 text-right">Margin</th>
+                        <th className="px-3 py-3 text-right">Save</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-obsidian/8">
+                      {filteredCatalog.map((row) => {
+                        const savedCost = row.costs[selected.id];
+                        const draft = draftCosts[row.slug];
+                        const value = draft ?? (savedCost != null ? String(savedCost) : '');
+                        const dirty = draft != null && draft !== (savedCost != null ? String(savedCost) : '');
+                        const marginCost = value !== '' ? Number(value) : savedCost ?? row.defaultCostNgn;
+                        return (
+                          <tr key={row.slug} className="hover:bg-paper/60">
+                            <td className="px-3 py-2.5">
+                              <div className="flex items-center gap-3">
+                                <span className="grid h-12 w-9 shrink-0 place-items-center overflow-hidden rounded-md bg-paper">
+                                  {row.imageUrl ? <Image src={row.imageUrl} alt="" width={36} height={48} className="h-12 w-9 object-contain" /> : <span className="h-6 w-2 rounded-sm bg-obsidian/10" />}
+                                </span>
+                                <div className="min-w-0">
+                                  <p className="truncate font-medium text-obsidian">{row.name}</p>
+                                  <p className="truncate font-mono text-[11px] text-obsidian/40">{row.slug}</p>
                                 </div>
-                              </td>
-                              <td className="px-3 py-3 text-right tabular-nums">{row.priceNgn ? formatNgn(row.priceNgn) : '—'}</td>
-                              <td className="px-3 py-3 text-right">
-                                {row.derived ? (
-                                  <span className="inline-block text-right" title="Summed from the bottles in the pack — quote those instead">
-                                    <span className="block text-sm font-semibold tabular-nums text-obsidian/70">{savedCost != null ? formatNgn(savedCost) : '—'}</span>
-                                    <span className="block text-[10px] font-bold uppercase tracking-wider text-obsidian/35">from bottles</span>
-                                  </span>
-                                ) : (
-                                  <input
-                                    type="number"
-                                    min={0}
-                                    inputMode="numeric"
-                                    value={value}
-                                    onChange={(e) => setDraftCosts((d) => ({ ...d, [row.slug]: e.target.value }))}
-                                    placeholder="Cost"
-                                    className="w-28 rounded border border-obsidian/15 px-2 py-1.5 text-right text-sm tabular-nums focus:border-ember focus:ring-0"
-                                  />
-                                )}
-                              </td>
-                              <td className="px-3 py-3 text-right">
-                                <MarginBadge retail={row.priceNgn} cost={marginCost} />
-                              </td>
-                              <td className="px-3 py-3 text-right">
-                                <button
-                                  type="button"
-                                  disabled={row.derived || !dirty || savingSlug === row.slug}
-                                  onClick={() => saveCost(row.slug)}
-                                  className="border border-obsidian/15 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.1em] hover:border-ember hover:text-ember disabled:opacity-35"
-                                >
-                                  {savingSlug === row.slug ? '…' : 'Save'}
-                                </button>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                  <p className="text-[11px] text-obsidian/45">
-                    Suppliers can also set these from their own portal. Saved costs sync to the Drinks tab as the default wholesale cost per SKU.
-                  </p>
-                </>
-              )}
-            </>
-          )}
-        </section>
-      </div>
+                              </div>
+                            </td>
+                            <td className="px-3 py-3 text-right tabular-nums">{row.priceNgn ? formatNgn(row.priceNgn) : '—'}</td>
+                            <td className="px-3 py-3 text-right">
+                              {row.derived ? (
+                                <span className="inline-block text-right" title="Summed from the bottles in the pack — quote those instead">
+                                  <span className="block text-sm font-semibold tabular-nums text-obsidian/70">{savedCost != null ? formatNgn(savedCost) : '—'}</span>
+                                  <span className="block text-[10px] font-bold uppercase tracking-wider text-obsidian/35">from bottles</span>
+                                </span>
+                              ) : (
+                                <input
+                                  type="number"
+                                  min={0}
+                                  inputMode="numeric"
+                                  value={value}
+                                  onChange={(e) => setDraftCosts((d) => ({ ...d, [row.slug]: e.target.value }))}
+                                  placeholder="Cost"
+                                  className="w-28 rounded border border-obsidian/15 px-2 py-1.5 text-right text-sm tabular-nums focus:border-ember focus:ring-0"
+                                />
+                              )}
+                            </td>
+                            <td className="px-3 py-3 text-right">
+                              <MarginBadge retail={row.priceNgn} cost={marginCost} />
+                            </td>
+                            <td className="px-3 py-3 text-right">
+                              <button
+                                type="button"
+                                disabled={row.derived || !dirty || savingSlug === row.slug}
+                                onClick={() => saveCost(row.slug)}
+                                className="border border-obsidian/15 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.1em] hover:border-ember hover:text-ember disabled:opacity-35"
+                              >
+                                {savingSlug === row.slug ? '…' : 'Save'}
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-[11px] text-obsidian/45">
+                  Costs sync to the Drinks tab as the wholesale cost per SKU. The partner can also update these from their portal.
+                </p>
+              </>
+            )}
+          </>
+        )}
+      </section>
     </div>
   );
 }

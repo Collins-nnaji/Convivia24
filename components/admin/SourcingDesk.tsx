@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { formatNgn } from '@/lib/drinks/catalog';
 import { marginSummary, orderMargin } from '@/lib/suppliers/margin';
-import { suggestSuppliers, type Supplier } from '@/lib/suppliers/repo';
+import type { Supplier } from '@/lib/suppliers/repo';
 import type { AdminOrder } from './types';
 
 function shortId(id: string) {
@@ -29,7 +29,8 @@ export default function SourcingDesk({
       const res = await fetch('/api/admin/suppliers');
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Unable to load suppliers.');
-      setSuppliers(data.suppliers || []);
+      const active = ((data.suppliers || []) as Supplier[]).filter((s) => s.active);
+      setSuppliers(active);
       setError('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to load suppliers.');
@@ -39,6 +40,8 @@ export default function SourcingDesk({
   useEffect(() => {
     loadSuppliers();
   }, [loadSuppliers]);
+
+  const partner = suppliers[0] || null;
 
   const summary = useMemo(
     () =>
@@ -60,8 +63,12 @@ export default function SourcingDesk({
   const unsourced = useMemo(() => live.filter((o) => o.supplierCostNgn == null), [live]);
 
   async function saveSourcing(order: AdminOrder) {
+    if (!partner) {
+      setError('No active Nationwide supplier is set up.');
+      return;
+    }
     const draft = drafts[order.id] || {
-      supplierId: order.supplierId || '',
+      supplierId: order.supplierId || partner.id,
       cost: order.supplierCostNgn?.toString() || '',
       note: order.sourcingNote || '',
     };
@@ -73,8 +80,8 @@ export default function SourcingDesk({
         body: JSON.stringify({
           action: 'source',
           orderId: order.id,
-          supplierId: draft.supplierId,
-          supplierCostNgn: draft.supplierId ? draft.cost : null,
+          supplierId: partner.id,
+          supplierCostNgn: draft.cost === '' ? null : draft.cost,
           sourcingNote: draft.note,
         }),
       });
@@ -128,7 +135,7 @@ export default function SourcingDesk({
       {/* ── Order sourcing ─────────────────────────────── */}
       <section>
         <p className="text-sm text-obsidian/50 mb-4">
-          Assign fulfilled orders to a supplier and record what they charged. Manage supplier contacts and per-SKU wholesale costs in the <strong>Suppliers</strong> tab.
+          Record what Nationwide charged for each order. Manage wholesale costs per SKU in the <strong>Supplier</strong> tab.
         </p>
         <h2 className="text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/40 mb-3">
           Assign orders ({unsourced.length} outstanding)
@@ -139,12 +146,12 @@ export default function SourcingDesk({
         ) : (
           <div className="overflow-x-auto rounded-xl border border-obsidian/10 bg-white">
           <div className="grid min-w-[900px] grid-cols-[1.4fr_.65fr_2fr] gap-4 border-b border-obsidian/10 bg-paper px-4 py-3 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40">
-            <span>Order &amp; contents</span><span className="text-right">Revenue / margin</span><span>Supplier, cost &amp; notes</span>
+            <span>Order &amp; contents</span><span className="text-right">Revenue / margin</span><span>Nationwide cost &amp; notes</span>
           </div>
           <ul className="min-w-[900px] divide-y divide-obsidian/8">
             {live.map((order) => {
               const draft = drafts[order.id] || {
-                supplierId: order.supplierId || '',
+                supplierId: order.supplierId || partner?.id || '',
                 cost: order.supplierCostNgn?.toString() || '',
                 note: order.sourcingNote || '',
               };
@@ -156,7 +163,6 @@ export default function SourcingDesk({
                 supplierCostNgn: draft.cost === '' ? null : Number(draft.cost),
                 refundedNgn: order.refundedNgn,
               });
-              const ranked = suggestSuppliers(suppliers, { area: order.area });
               const dirty = Boolean(drafts[order.id]);
 
               return (
@@ -200,30 +206,19 @@ export default function SourcingDesk({
 
                   <div>
                   <div className="grid grid-cols-[minmax(0,1fr)_10rem_auto] gap-2 items-start">
-                    <select
-                      aria-label="Supplier"
-                      value={draft.supplierId}
-                      onChange={(e) => setDraft({ supplierId: e.target.value })}
-                      className="border border-obsidian/15 px-3 py-2 text-sm bg-white"
-                    >
-                      <option value="">— not sourced —</option>
-                      {ranked.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.name}
-                          {s.reasons.length ? ` (${s.reasons.join(', ')})` : ''}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="rounded-lg border border-obsidian/10 bg-paper px-3 py-2 text-sm font-semibold text-obsidian">
+                      {partner?.name || 'Nationwide'}
+                    </div>
 
                     <input
                       type="number"
                       min={0}
                       step={1000}
                       inputMode="numeric"
-                      aria-label="Supplier cost in naira"
-                      placeholder="Supplier cost"
+                      aria-label="Nationwide cost in naira"
+                      placeholder="Cost"
                       value={draft.cost}
-                      disabled={!draft.supplierId}
+                      disabled={!partner}
                       onChange={(e) => setDraft({ cost: e.target.value })}
                       className="border border-obsidian/15 px-3 py-2 text-sm tabular-nums disabled:bg-obsidian/5"
                     />
@@ -231,7 +226,7 @@ export default function SourcingDesk({
                     <button
                       type="button"
                       onClick={() => saveSourcing(order)}
-                      disabled={savingId === order.id || !dirty}
+                      disabled={savingId === order.id || !dirty || !partner}
                       className="btn-brand text-[11px] px-4 py-2 disabled:opacity-40"
                     >
                       {savingId === order.id ? 'Saving…' : 'Save'}
@@ -247,7 +242,7 @@ export default function SourcingDesk({
 
                   {order.sourcedAt && !dirty && (
                     <p className="text-[11px] text-obsidian/40 mt-2">
-                      Sourced from {order.supplierName || 'a supplier'} on{' '}
+                      Costed via {order.supplierName || partner?.name || 'Nationwide'} on{' '}
                       {new Date(order.sourcedAt).toLocaleDateString()}.
                     </p>
                   )}

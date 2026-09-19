@@ -156,7 +156,7 @@ function AdminDesk() {
     { key: 'orders', label: 'Orders', count: pill(summary.ordersToFulfil), icon: <ShoppingBag size={17} /> },
     { key: 'sourcing', label: 'Order sourcing', count: pill(summary.ordersUnsourced), icon: <PackageSearch size={17} /> },
     { key: 'drinks', label: 'Drinks', count: pill(summary.lowStock), icon: <Wine size={17} /> },
-    { key: 'suppliers', label: 'Suppliers', count: pill(summary.bottleRequestsPending), icon: <Truck size={17} /> },
+    { key: 'suppliers', label: 'Supplier', count: pill(summary.bottleRequestsPending), icon: <Truck size={17} /> },
     {
       key: 'referrals',
       label: 'Referrals',
