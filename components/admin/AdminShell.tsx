@@ -14,9 +14,9 @@ export type AdminTab = {
 /**
  * Full-bleed admin chrome.
  *
- * Desktop gets a fixed sidebar and the content takes the rest of the viewport — the desk is a
- * working tool, so it is deliberately not constrained to the marketing site's reading width.
- * Below `lg` the sidebar becomes an off-canvas drawer behind a header button.
+ * Desktop gets a fixed sidebar under the site header, and the content takes the rest of the
+ * viewport — the desk is a working tool, so it is deliberately not constrained to the marketing
+ * site's reading width. Below `lg` the sidebar becomes an off-canvas drawer.
  */
 export default function AdminShell({
   tabs,
@@ -92,15 +92,15 @@ export default function AdminShell({
   );
 
   return (
-    <div className="min-h-screen bg-paper lg:flex">
-      {/* ── Desktop sidebar ─────────────────────────────────────── */}
-      <aside className="hidden lg:flex lg:h-screen lg:w-64 lg:shrink-0 lg:sticky lg:top-0 lg:flex-col border-r border-obsidian/8 bg-white">
+    <div className="min-h-screen bg-paper">
+      {/* ── Desktop sidebar. Fixed under the site header so it stays while the desk scrolls. */}
+      <aside className="fixed top-[4.5rem] bottom-0 left-0 z-30 hidden w-64 flex-col border-r border-obsidian/8 bg-white lg:flex">
         <div className="px-5 pt-6 pb-4">
           <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ember">Convivia24</p>
           <h1 className="mt-1 text-xl font-bold text-obsidian">{title}</h1>
           {subtitle && <div className="mt-1.5 text-[11px] leading-relaxed text-obsidian/45">{subtitle}</div>}
         </div>
-        <div className="flex-1 px-3 pb-6">{nav}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-6">{nav}</div>
       </aside>
 
       {/* ── Mobile drawer ───────────────────────────────────────── */}
@@ -132,9 +132,9 @@ export default function AdminShell({
         </div>
       )}
 
-      {/* ── Content ─────────────────────────────────────────────── */}
-      <div className="min-w-0 flex-1">
-        <header className="sticky top-0 z-40 border-b border-obsidian/8 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/75">
+      {/* ── Content. Offset by the fixed sidebar from `lg` up. ── */}
+      <div className="min-w-0 lg:pl-64">
+        <header className="sticky top-0 z-40 border-b border-obsidian/8 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/75 md:top-[4.5rem]">
           <div className="flex items-center gap-3 px-4 py-3 sm:px-6">
             <button
               type="button"

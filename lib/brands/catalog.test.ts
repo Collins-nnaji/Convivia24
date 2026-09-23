@@ -34,9 +34,12 @@ describe('brand pages', () => {
     }
   });
 
+  it('keeps every written-up house on the directory, even with no bottles right now', () => {
+    expect(BRANDS.map((b) => b.name).sort()).toEqual(Object.keys(BRAND_INFO).sort());
+  });
+
   it('lists only real, sellable bottles from that house, cheapest first', () => {
     for (const brand of BRANDS) {
-      expect(brand.products.length).toBeGreaterThan(0);
       for (const product of brand.products) {
         expect(product.brand).toBe(brand.name);
         expect(product.sample).toBeFalsy();
@@ -68,8 +71,15 @@ describe('brandStats', () => {
     const brand = getBrand('hennessy')!;
     const stats = brandStats(brand, 42);
     const byLabel = new Map(stats.map((s) => [s.label, s.value]));
-    expect(byLabel.get('Bottles stocked')).toBe(String(brand.products.length));
+    expect(byLabel.get('Bottles we carry')).toBe(String(brand.products.length));
     expect(byLabel.get('Followers')).toBe('42');
+  });
+
+  it('says restocking when the house has no bottles in the catalog', () => {
+    const empty = BRANDS.find((b) => b.products.length === 0);
+    expect(empty).toBeDefined();
+    const byLabel = new Map(brandStats(empty!, 0).map((s) => [s.label, s.value]));
+    expect(byLabel.get('Bottles')).toBe('Restocking');
   });
 
   it('derives years of heritage from the founding year', () => {

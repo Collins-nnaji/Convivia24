@@ -233,12 +233,11 @@ function PlanNightPlannerInner() {
     setCreating(true);
     setMessage('');
     setAdjustOpen(false);
-    const drinksBudget = Math.max(0, Math.round(totalBudget * 0.75));
     const drinkPlan = recommendDrinks({
       guests: groupSize,
       hours: 5,
       vibe: drinkVibe,
-      budgetNgn: drinksBudget,
+      budgetNgn: totalBudget,
       occasion: MOODS.find((item) => item.id === mood)?.label,
     });
     const fullPlan: DrinkPlan = {
@@ -433,7 +432,9 @@ function PlanNightPlannerInner() {
                         <span className="text-sm text-obsidian/40">₦</span>
                         <input type="number" min={20000} step={5000} value={totalBudget} onChange={(event) => setTotalBudget(Math.max(20000, Number(event.target.value) || 20000))} className="night-input border-0 pl-1 focus:ring-0" />
                       </div>
-                      <p className="mt-1 text-[11px] text-obsidian/40">About {formatNgn(budgetPerPerson)} per guest</p>
+                      <p className="mt-1 text-[11px] text-obsidian/40">
+                        About {formatNgn(budgetPerPerson)} per guest · drinks aim for {formatNgn(totalBudget)} (± ₦20,000)
+                      </p>
                     </Field>
                   </div>
 

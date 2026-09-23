@@ -23,8 +23,8 @@ import GuestCardStrip from '@/components/loyalty/GuestCardStrip';
 import RelatedProducts from '@/components/shop/RelatedProducts';
 import { formatNgn, relatedDrinks, type DrinkProduct } from '@/lib/drinks/catalog';
 import { findSellable } from '@/lib/catalog/sellable';
-import { pointsFromSpend } from '@/lib/loyalty/program';
-import { MIN_ORDER_BOTTLES, bottlesShort, orderBottleCount } from '@/lib/commerce/minimum-order';
+import { pointsFromOrderItems } from '@/lib/loyalty/program';
+import { catalogMinOrderQty, minimumOrderError } from '@/lib/commerce/minimum-order';
 import { eventsEnabled } from '@/lib/features';
 import { eventsFallbackHref } from '@/lib/nav';
 
@@ -32,8 +32,9 @@ export default function CartPage() {
   const { lines, subtotalNgn, setQty, remove } = useCart();
   const [discountPct, setDiscountPct] = useState(0);
 
-  const bottles = orderBottleCount(lines);
-  const short = bottlesShort(lines);
+  const bottles = lines.reduce((n, l) => n + l.qty, 0);
+  const minError = minimumOrderError(lines);
+  const short = minError ? 1 : 0;
 
   // The tier discount comes from the server's points record — the same source
   // the order is priced from — so the cart cannot promise a rate checkout wont
@@ -47,7 +48,10 @@ export default function CartPage() {
 
   const discountNgn = Math.round((subtotalNgn * discountPct) / 100);
   const totalNgn = Math.max(0, subtotalNgn - discountNgn);
-  const pointsEarned = pointsFromSpend(totalNgn);
+  const pointsEarned = pointsFromOrderItems(
+    lines.map((l) => ({ unitPriceNgn: l.priceNgn, qty: l.qty })),
+    totalNgn
+  );
 
   /** Suggestions come off whatever is already in the cart. */
   const suggestions = useMemo(() => {
@@ -162,7 +166,10 @@ export default function CartPage() {
                           type="button"
                           aria-label="Decrease"
                           className="p-2.5 text-obsidian/50 hover:text-obsidian"
-                          onClick={() => setQty(line.slug, line.qty - 1)}
+                          onClick={() => {
+                            const min = catalogMinOrderQty(line.slug);
+                            setQty(line.slug, line.qty <= min ? 0 : line.qty - 1);
+                          }}
                         >
                           <Minus size={13} />
                         </button>
@@ -259,13 +266,9 @@ export default function CartPage() {
                     Proceed to checkout
                   </span>
                   <p className="text-[12px] text-ember mt-3 leading-relaxed">
-                    Minimum order is {MIN_ORDER_BOTTLES} bottles — add {short} more.{' '}
+                    {minError}{' '}
                     <Link href="/shop" className="underline hover:no-underline">
                       Keep shopping
-                    </Link>
-                    , or take an{' '}
-                    <Link href="/shop?section=packages" className="underline hover:no-underline">
-                      event package
                     </Link>
                     .
                   </p>

@@ -22,11 +22,12 @@ export type ProductCardData = DrinkProduct & {
 
 export function ProductCard({ product }: { product: ProductCardData }) {
   const { addProduct } = useCart();
-  const [qty, setQty] = useState(1);
+  const minQty = Math.max(1, Math.min(24, Math.floor(product.minOrderQty ?? 1)));
+  const [qty, setQty] = useState(minQty);
   const tasteNote = tasteNoteForSlug(product.slug, product.tasteNote);
 
   function handleAdd() {
-    addProduct(product.slug, qty);
+    addProduct(product.slug, Math.max(minQty, qty));
   }
 
   const stockLabel =
@@ -92,7 +93,12 @@ export function ProductCard({ product }: { product: ProductCardData }) {
             </span>
           </span>
         )}
-        <p className="mt-1 text-sm font-bold text-obsidian sm:mt-1.5 sm:text-base">{formatNgn(product.priceNgn)}</p>
+        <p className="mt-1 text-sm font-bold text-obsidian sm:mt-1.5 sm:text-base">
+          {formatNgn(product.priceNgn)}
+          {minQty > 1 && (
+            <span className="ml-1.5 text-[11px] font-semibold text-obsidian/45">· min {minQty}</span>
+          )}
+        </p>
       </Link>
 
       <div className="mt-auto flex items-center gap-1 border-t border-obsidian/[0.06] bg-paper/30 px-2 py-2 sm:gap-2 sm:px-3 sm:py-2.5">
@@ -101,7 +107,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
             type="button"
             aria-label="Decrease quantity"
             className="p-1.5 text-obsidian/45 transition-colors hover:bg-obsidian/[0.04] hover:text-obsidian active:scale-95 sm:p-2"
-            onClick={() => setQty((q) => Math.max(1, q - 1))}
+            onClick={() => setQty((q) => Math.max(minQty, q - 1))}
           >
             <Minus size={13} />
           </button>

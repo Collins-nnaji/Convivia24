@@ -53,9 +53,9 @@ async function main() {
     const reserved = Math.min(Math.floor(onHand * 0.1), 5);
     const low = d.partyPack ? 4 : 8;
     await sql`
-      INSERT INTO inventory (slug, name, on_hand, reserved, low_stock_threshold, track_stock, active, price_ngn, category, brand, volume, abv, tagline, description, source, updated_at)
+      INSERT INTO inventory (slug, name, on_hand, reserved, low_stock_threshold, min_order_qty, track_stock, active, price_ngn, category, brand, volume, abv, tagline, description, source, updated_at)
       VALUES (
-        ${d.slug}, ${d.name}, ${onHand}, ${reserved}, ${low}, true, true,
+        ${d.slug}, ${d.name}, ${onHand}, ${reserved}, ${low}, ${Math.max(1, Math.min(24, Math.floor(d.minOrderQty ?? 1)))}, true, true,
         ${d.priceNgn}, ${d.category}, ${d.brand || null}, ${d.volume}, ${d.abv},
         ${d.tagline}, ${d.description}, 'seed', NOW()
       )
@@ -64,6 +64,7 @@ async function main() {
         on_hand = EXCLUDED.on_hand,
         reserved = EXCLUDED.reserved,
         low_stock_threshold = EXCLUDED.low_stock_threshold,
+        min_order_qty = EXCLUDED.min_order_qty,
         price_ngn = EXCLUDED.price_ngn,
         category = EXCLUDED.category,
         brand = EXCLUDED.brand,

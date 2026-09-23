@@ -9,6 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ListFilter,
+  Percent,
   RotateCcw,
   Search,
   SlidersHorizontal,
@@ -56,6 +57,32 @@ const SORT_OPTIONS: { key: SortKey; label: string; short: string }[] = [
   { key: 'name', label: 'Name A–Z', short: 'A–Z' },
 ];
 
+const ABV_BANDS = [
+  { key: '0', label: '0% — non-alcoholic', min: 0, max: 0 },
+  { key: 'under5', label: 'Under 5%', min: 0.01, max: 4.99 },
+  { key: '5-20', label: '5–20%', min: 5, max: 20 },
+  { key: '20-40', label: '20–40%', min: 20.01, max: 39.99 },
+  { key: '40plus', label: '40% and up', min: 40, max: 100 },
+] as const;
+
+type AbvBandKey = (typeof ABV_BANDS)[number]['key'];
+
+const SELECT_CLASS =
+  'w-full appearance-none rounded-lg border border-obsidian/10 bg-white py-1.5 pl-8 pr-7 font-wordmark text-[13px] font-semibold tracking-[0.1em] text-obsidian focus:border-ember focus:ring-0';
+
+/** Collapse catalog volumes into the shopper-facing size options. */
+function sizeBucket(volume: string): string {
+  const raw = volume.trim();
+  const upper = raw.toUpperCase();
+  if (/×|\bx\b|bottles?/i.test(raw)) return 'Packs';
+  if (upper === '33CL') return '33CL';
+  if (upper === '70CL') return '70CL';
+  if (upper === '75CL') return '75CL';
+  return raw || 'Other';
+}
+
+const SIZE_ORDER = ['33CL', '70CL', '75CL', 'Packs'];
+
 function parseSection(raw: string | null): ShopSection {
   if (raw === 'packages') return raw;
   return 'bottles';
@@ -84,6 +111,8 @@ export default function ShopCatalog() {
     return SORT_OPTIONS.some((o) => o.key === raw) ? (raw as SortKey) : 'recommended';
   });
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
+  const [abvBand, setAbvBand] = useState<AbvBandKey | ''>('');
+  const [size, setSize] = useState<string>('');
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   useEffect(() => {
@@ -188,9 +217,25 @@ export default function ShopCatalog() {
     [filtered]
   );
 
+  const availableSizes = useMemo(() => {
+    const found = new Set(filtered.map((d) => sizeBucket(d.volume)));
+    const ordered = SIZE_ORDER.filter((s) => found.has(s));
+    const rest = [...found].filter((s) => !SIZE_ORDER.includes(s)).sort();
+    const list = [...ordered, ...rest];
+    if (size && !list.includes(size)) list.push(size);
+    return list;
+  }, [filtered, size]);
+
   const refined = useMemo(() => {
     let list = filtered;
     if (maxPrice != null) list = list.filter((d) => d.priceNgn <= maxPrice);
+    if (abvBand) {
+      const band = ABV_BANDS.find((b) => b.key === abvBand);
+      if (band) list = list.filter((d) => d.abv >= band.min && d.abv <= band.max);
+    }
+    if (size) {
+      list = list.filter((d) => sizeBucket(d.volume) === size);
+    }
 
     const sorted = [...list];
     switch (sort) {
@@ -210,12 +255,15 @@ export default function ShopCatalog() {
         );
     }
     return sorted;
-  }, [filtered, maxPrice, sort]);
+  }, [filtered, maxPrice, abvBand, size, sort]);
 
-  const activeFilterCount = maxPrice != null ? 1 : 0;
+  const activeFilterCount =
+    (maxPrice != null ? 1 : 0) + (abvBand ? 1 : 0) + (size ? 1 : 0);
 
   function resetFilters() {
     setMaxPrice(null);
+    setAbvBand('');
+    setSize('');
     setSort('recommended');
     setCategory('all');
     setQuery('');
@@ -319,29 +367,26 @@ export default function ShopCatalog() {
         {section === 'bottles' && (
           <>
           <aside
-            className="fixed bottom-[5.25rem] top-[10.5rem] z-20 hidden w-72 overflow-y-auto rounded-2xl border border-ember/15 bg-paper/95 p-4 shadow-[0_12px_35px_rgba(15,15,15,0.08)] backdrop-blur-md lg:block xl:w-80"
+            className="fixed bottom-[5.25rem] top-[10.5rem] z-20 hidden w-72 overflow-hidden rounded-2xl border border-ember/15 bg-paper/95 p-2.5 shadow-[0_12px_35px_rgba(15,15,15,0.08)] backdrop-blur-md lg:flex lg:flex-col xl:w-80"
             style={{ left: 'max(1.25rem, calc((100vw - 1600px) / 2 + 1.25rem))' }}
             aria-label="Browse and refine drinks"
           >
-              <div className="mb-3 flex items-center justify-between gap-3 px-1">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-obsidian/70">Browse &amp; filter</p>
-                  <p className="mt-0.5 text-[11px] text-obsidian/40">Refine the bottle list</p>
-                </div>
+              <div className="mb-1.5 flex items-center justify-between gap-2 px-0.5">
+                <p className="font-wordmark text-[13px] font-bold tracking-[0.1em] text-obsidian/70">Browse &amp; filter</p>
                 <button
                   type="button"
                   onClick={resetFilters}
                   disabled={!hasRefinements}
                   aria-label="Clear all shop filters"
                   title="Clear all filters"
-                  className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-obsidian/10 bg-white text-obsidian/45 transition hover:border-ember/30 hover:text-ember disabled:cursor-default disabled:opacity-30"
+                  className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-obsidian/10 bg-white text-obsidian/45 transition hover:border-ember/30 hover:text-ember disabled:cursor-default disabled:opacity-30"
                 >
-                  <RotateCcw size={15} />
+                  <RotateCcw size={13} />
                 </button>
               </div>
-              <p className="mb-2 px-1 text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40">Category</p>
-              <div className="rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-obsidian/[0.06]">
-                <div className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible scrollbar-hide pb-0.5 lg:pb-0">
+              <p className="mb-1 px-0.5 font-wordmark text-[11px] font-semibold tracking-[0.1em] text-obsidian/40">Category</p>
+              <div className="min-h-0 flex-1 rounded-lg bg-white p-1 shadow-sm ring-1 ring-obsidian/[0.06]">
+                <div className="flex h-full flex-col justify-evenly gap-0">
                   <SidebarBtn active={category === 'all'} onClick={() => goCategory('all')}>
                     All
                   </SidebarBtn>
@@ -350,7 +395,7 @@ export default function ShopCatalog() {
                       key={cat}
                       active={category === cat}
                       onClick={() => goCategory(cat)}
-                      icon={<CategoryIcon category={cat} className="w-[18px] h-[18px] shrink-0" />}
+                      icon={<CategoryIcon category={cat} className="w-4 h-4 shrink-0" />}
                     >
                       {CATEGORY_LABELS[cat]}
                     </SidebarBtn>
@@ -358,15 +403,15 @@ export default function ShopCatalog() {
                 </div>
               </div>
 
-              <div className="mt-4 space-y-4">
+              <div className="mt-2 shrink-0 space-y-2">
                 <div>
-                  <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.14em] text-obsidian/70">Sort</p>
+                  <p className="mb-1 px-0.5 font-wordmark text-[11px] font-semibold tracking-[0.1em] text-obsidian/70">Sort</p>
                   <label className="relative block">
                     <span className="sr-only">Sort drinks by</span>
                     <ArrowUpDown
-                      size={14}
+                      size={13}
                       aria-hidden
-                      className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-obsidian/45"
+                      className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-obsidian/45"
                     />
                     <select
                       value={sort}
@@ -375,7 +420,7 @@ export default function ShopCatalog() {
                         setSort(next);
                         pushShop({ sort: next });
                       }}
-                      className="w-full appearance-none rounded-xl border border-obsidian/10 bg-white py-2.5 pl-9 pr-9 text-sm font-semibold text-obsidian focus:border-ember focus:ring-0"
+                      className={SELECT_CLASS}
                     >
                       {SORT_OPTIONS.map((o) => (
                         <option key={o.key} value={o.key}>
@@ -384,39 +429,90 @@ export default function ShopCatalog() {
                       ))}
                     </select>
                     <ChevronDown
-                      size={14}
+                      size={13}
                       aria-hidden
-                      className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-obsidian/45"
+                      className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-obsidian/45"
                     />
                   </label>
                 </div>
 
                 <div>
-                  <div className="mb-2 flex items-center justify-between gap-2 px-1">
-                    <p className="text-xs font-bold uppercase tracking-[0.14em] text-obsidian/70">Filters</p>
-                  </div>
-                  <div className="space-y-3 rounded-xl bg-white p-3 shadow-sm ring-1 ring-obsidian/[0.06]">
-                    <div>
-                      <p className="mb-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40">
-                        Max price
-                      </p>
-                      <input
-                        type="range"
-                        min={0}
-                        max={priceCeiling || 1}
-                        step={1000}
-                        value={maxPrice ?? priceCeiling}
-                        onChange={(e) => {
-                          const v = Number(e.target.value);
-                          setMaxPrice(v >= priceCeiling ? null : v);
-                        }}
-                        className="w-full accent-ember"
-                        aria-label="Maximum price"
-                      />
-                      <p className="mt-0.5 text-[11px] font-semibold text-obsidian/55">
-                        {maxPrice == null ? 'Any price' : `Up to ${formatNgn(maxPrice)}`}
-                      </p>
-                    </div>
+                  <p className="mb-1 px-0.5 font-wordmark text-[11px] font-semibold tracking-[0.1em] text-obsidian/70">Alcohol %</p>
+                  <label className="relative block">
+                    <span className="sr-only">Filter by alcohol percentage</span>
+                    <Percent
+                      size={13}
+                      aria-hidden
+                      className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-obsidian/45"
+                    />
+                    <select
+                      value={abvBand}
+                      onChange={(e) => setAbvBand((e.target.value || '') as AbvBandKey | '')}
+                      className={SELECT_CLASS}
+                    >
+                      <option value="">Any strength</option>
+                      {ABV_BANDS.map((band) => (
+                        <option key={band.key} value={band.key}>
+                          {band.label}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown
+                      size={13}
+                      aria-hidden
+                      className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-obsidian/45"
+                    />
+                  </label>
+                </div>
+
+                <div>
+                  <p className="mb-1 px-0.5 font-wordmark text-[11px] font-semibold tracking-[0.1em] text-obsidian/70">Size</p>
+                  <label className="relative block">
+                    <span className="sr-only">Filter by bottle size</span>
+                    <ListFilter
+                      size={13}
+                      aria-hidden
+                      className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-obsidian/45"
+                    />
+                    <select
+                      value={size}
+                      onChange={(e) => setSize(e.target.value)}
+                      className={SELECT_CLASS}
+                    >
+                      <option value="">Any size</option>
+                      {availableSizes.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown
+                      size={13}
+                      aria-hidden
+                      className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-obsidian/45"
+                    />
+                  </label>
+                </div>
+
+                <div>
+                  <p className="mb-1 px-0.5 font-wordmark text-[11px] font-semibold tracking-[0.1em] text-obsidian/70">Max price</p>
+                  <div className="rounded-lg bg-white px-2.5 py-2 shadow-sm ring-1 ring-obsidian/[0.06]">
+                    <input
+                      type="range"
+                      min={0}
+                      max={priceCeiling || 1}
+                      step={1000}
+                      value={maxPrice ?? priceCeiling}
+                      onChange={(e) => {
+                        const v = Number(e.target.value);
+                        setMaxPrice(v >= priceCeiling ? null : v);
+                      }}
+                      className="w-full accent-ember"
+                      aria-label="Maximum price"
+                    />
+                    <p className="mt-0.5 font-wordmark text-[12px] font-semibold leading-tight tracking-[0.08em] text-obsidian/55">
+                      {maxPrice == null ? 'Any price' : `Up to ${formatNgn(maxPrice)}`}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -567,9 +663,9 @@ export default function ShopCatalog() {
                 </div>
 
                 {filtersOpen && (
-                  <div className="mt-2 grid gap-3 border-t border-obsidian/[0.07] px-1.5 pt-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+                  <div className="mt-2 grid gap-3 border-t border-obsidian/[0.07] px-1.5 pt-3 sm:grid-cols-2">
                     <div>
-                      <p className="mb-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40">
+                      <p className="mb-1.5 font-wordmark text-[11px] font-semibold tracking-[0.1em] text-obsidian/40">
                         Max price
                       </p>
                       <input
@@ -585,11 +681,70 @@ export default function ShopCatalog() {
                         className="w-full accent-ember"
                         aria-label="Maximum price"
                       />
-                      <p className="mt-0.5 text-[11px] font-semibold text-obsidian/55">
+                      <p className="mt-0.5 font-wordmark text-[12px] font-semibold text-obsidian/55">
                         {maxPrice == null ? 'Any price' : `Up to ${formatNgn(maxPrice)}`}
                       </p>
                     </div>
-
+                    <div>
+                      <p className="mb-1.5 font-wordmark text-[11px] font-semibold tracking-[0.1em] text-obsidian/40">
+                        Alcohol %
+                      </p>
+                      <label className="relative block">
+                        <span className="sr-only">Filter by alcohol percentage</span>
+                        <Percent
+                          size={13}
+                          aria-hidden
+                          className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-obsidian/45"
+                        />
+                        <select
+                          value={abvBand}
+                          onChange={(e) => setAbvBand((e.target.value || '') as AbvBandKey | '')}
+                          className={SELECT_CLASS}
+                        >
+                          <option value="">Any strength</option>
+                          {ABV_BANDS.map((band) => (
+                            <option key={band.key} value={band.key}>
+                              {band.label}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown
+                          size={13}
+                          aria-hidden
+                          className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-obsidian/45"
+                        />
+                      </label>
+                    </div>
+                    <div>
+                      <p className="mb-1.5 font-wordmark text-[11px] font-semibold tracking-[0.1em] text-obsidian/40">
+                        Size
+                      </p>
+                      <label className="relative block">
+                        <span className="sr-only">Filter by bottle size</span>
+                        <ListFilter
+                          size={13}
+                          aria-hidden
+                          className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-obsidian/45"
+                        />
+                        <select
+                          value={size}
+                          onChange={(e) => setSize(e.target.value)}
+                          className={SELECT_CLASS}
+                        >
+                          <option value="">Any size</option>
+                          {availableSizes.map((s) => (
+                            <option key={s} value={s}>
+                              {s}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown
+                          size={13}
+                          aria-hidden
+                          className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-obsidian/45"
+                        />
+                      </label>
+                    </div>
                   </div>
                 )}
               </div>
@@ -683,14 +838,14 @@ function SidebarBtn({
     <button
       type="button"
       onClick={onClick}
-      className={`shrink-0 lg:shrink inline-flex w-full items-center gap-2.5 rounded-lg px-3 py-3 text-left text-[15px] font-medium leading-tight transition-all duration-150 ${
+      className={`inline-flex w-full items-center gap-2 rounded-md px-2 py-1 font-wordmark text-[13px] tracking-[0.1em] transition-all duration-150 ${
         active
-          ? 'bg-ember/[0.08] font-semibold text-obsidian ring-1 ring-ember/25'
-          : 'text-obsidian/80 hover:bg-obsidian/[0.04] hover:text-obsidian active:scale-[0.98]'
+          ? 'bg-ember/[0.08] font-bold text-ember ring-1 ring-ember/25'
+          : 'font-medium text-obsidian/65 hover:bg-obsidian/[0.04] hover:text-obsidian active:scale-[0.98]'
       }`}
     >
       {icon}
-      <span className="whitespace-nowrap">{children}</span>
+      <span className="truncate">{children}</span>
     </button>
   );
 }

@@ -4,7 +4,7 @@ import { preferTrackForCategory } from '@/lib/drinks/catalog';
 import { getCurrentUser } from '@/lib/auth/session';
 import { claimMember, loyaltyDiscountNgn, resolveMemberOwner } from '@/lib/loyalty/members';
 import { rateLimit, clientIp } from '@/lib/redis';
-import { reserveStockForOrder, releaseStockForOrder, resolveSellableProduct } from '@/lib/inventory';
+import { reserveStockForOrder, releaseStockForOrder, resolveSellableProduct, getInventory } from '@/lib/inventory';
 import { redeemGiftCardForOrder } from '@/lib/commerce/gift-cards';
 import { releaseOrderResources } from '@/lib/commerce/fulfillment';
 import { routeOrder, reserveSupplierStock } from '@/lib/suppliers/stock';
@@ -12,11 +12,8 @@ import { logSupplierAction } from '@/lib/suppliers/audit';
 import { expandPackLines } from '@/lib/packages/lines';
 import { readReferralCookie } from '@/lib/referrals/cookie';
 import { attributeOrder } from '@/lib/referrals/repo';
-import {
-  MIN_ORDER_BOTTLES,
-  minimumOrderError,
-  orderBottleCount,
-} from '@/lib/commerce/minimum-order';
+import { catalogMinOrderQty } from '@/lib/commerce/minimum-order';
+import { findSellable } from '@/lib/catalog/sellable';
 
 type IncomingItem = {
   slug: string;
@@ -154,17 +151,29 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+    // Authoritative check — inventory min_order_qty wins over the catalog default.
     if (items.length === 0) {
       return NextResponse.json({ error: 'Your cart is empty.' }, { status: 400 });
     }
-
-    // Authoritative check — the cart and checkout show this too, but the server decides.
-    const belowMinimum = minimumOrderError(items);
-    if (belowMinimum) {
-      return NextResponse.json(
-        { error: belowMinimum, minBottles: MIN_ORDER_BOTTLES, bottles: orderBottleCount(items) },
-        { status: 400 }
+    for (const item of items) {
+      const qty = Math.max(0, Math.floor(Number(item.qty) || 0));
+      const inv = await getInventory(item.slug).catch(() => null);
+      const min = Math.max(
+        1,
+        Math.min(24, Math.floor(Number(inv?.min_order_qty ?? catalogMinOrderQty(item.slug)) || 1))
       );
+      if (qty < min) {
+        const name = findSellable(item.slug)?.name || item.slug;
+        return NextResponse.json(
+          {
+            error: `${name}: minimum order is ${min}. You have ${qty} — add ${min - qty} more.`,
+            slug: item.slug,
+            minOrderQty: min,
+            qty,
+          },
+          { status: 400 }
+        );
+      }
     }
 
     const resolved: {

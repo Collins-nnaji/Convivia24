@@ -1,7 +1,7 @@
 /**
- * The Discover hub's sections. One list drives the landing list and the shell's back button.
+ * The Discover hub's sections. One list drives the rail and deep links.
  */
-export type DiscoverSectionKey = 'trivia' | 'taste' | 'rewards';
+export type DiscoverSectionKey = 'taste' | 'mix' | 'trivia' | 'rewards';
 
 export type DiscoverSection = {
   key: DiscoverSectionKey;
@@ -17,8 +17,14 @@ export const DISCOVER_SECTIONS: DiscoverSection[] = [
   {
     key: 'taste',
     href: '/discover/taste',
-    label: 'Taste & mix',
-    description: 'Your taste profile, the houses that fit it, and a bartender that mixes to it.',
+    label: 'Your taste',
+    description: 'Build your profile and see which houses fit you.',
+  },
+  {
+    key: 'mix',
+    href: '/discover/mix',
+    label: 'Cocktail maker',
+    description: 'Tell it what you have — get a measured recipe for tonight.',
   },
   {
     key: 'trivia',
@@ -30,7 +36,7 @@ export const DISCOVER_SECTIONS: DiscoverSection[] = [
     key: 'rewards',
     href: '/discover/rewards',
     label: 'Rewards',
-    description: 'Spend your points on bottles, shop credit, partner perks and merch.',
+    description: 'Spend your points on bottles and Convivia merch.',
   },
 ];
 

@@ -16,7 +16,7 @@ export default function RewardsPage() {
       <PageHeader
         eyebrow="Rewards shop"
         title="Spend your points"
-        lead="Redeem points for bottles, partner perks, shop credit and merchandise."
+        lead="Redeem points for bottles and Convivia merch. Your tier discount already comes off at checkout."
         action={
           balance !== null ? (
             <span className="inline-flex items-center gap-2 rounded-full bg-obsidian px-4 py-2.5 text-white">

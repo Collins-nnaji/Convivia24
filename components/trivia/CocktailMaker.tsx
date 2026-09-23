@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { GlassWater, LoaderCircle } from 'lucide-react';
-import type { TasteProfile } from '@/lib/trivia/taste';
+import { cocktailDefaults, type TasteProfile } from '@/lib/trivia/taste';
 
 type Recipe = {
   name: string;
@@ -18,47 +18,63 @@ type Recipe = {
 const inputClass = 'w-full rounded-xl border border-obsidian/12 bg-white px-3.5 py-3 text-sm text-obsidian focus:border-ember focus:ring-0';
 const COMMON_INGREDIENTS = ['Lime', 'Lemon', 'Pineapple juice', 'Orange juice', 'Tonic', 'Soda water', 'Ginger beer', 'Cola', 'Mint', 'Simple syrup'];
 
-/** Maps a taste profile onto the maker's base and style so the first recipe already fits. */
-export function cocktailDefaults(profile: TasteProfile | null): { spirit: string; style: string } {
-  if (!profile) return { spirit: 'gin', style: 'refreshing' };
-  const first = profile.spirits[0];
-  const spirit =
-    first === 'wines' || first === 'champagne' ? 'wine' : first && ['cognac', 'whisky', 'vodka', 'tequila'].includes(first) ? first : 'gin';
-  const f = new Set(profile.flavours);
-  const style = f.has('sweet')
-    ? 'sweet'
-    : f.has('citrus')
-      ? 'refreshing'
-      : f.has('rich') || f.has('oak') || f.has('smoky')
-        ? 'strong and spirit-forward'
-        : 'refreshing';
-  return { spirit, style };
-}
+export type CocktailPreset = {
+  spirit?: string | null;
+  style?: string | null;
+  ingredients?: string | null;
+};
 
 export default function CocktailMaker({
   profile = null,
   embedded = false,
+  preset = null,
 }: {
   /** Pre-fills base and style; changes re-seed the form until the drinker touches it. */
   profile?: TasteProfile | null;
   /** Skip the page wrapper — the parent owns the heading and spacing. */
   embedded?: boolean;
+  /** From a taste-page mix card — wins over profile defaults once. */
+  preset?: CocktailPreset | null;
 }) {
   const defaults = cocktailDefaults(profile);
-  const [spirit, setSpirit] = useState(defaults.spirit);
-  const [style, setStyle] = useState(defaults.style);
-  const [touched, setTouched] = useState(false);
+  const presetSpirit = preset?.spirit?.trim() || '';
+  const presetStyle = preset?.style?.trim() || '';
+  const presetIngredients = (preset?.ingredients || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  const [spirit, setSpirit] = useState(presetSpirit || defaults.spirit);
+  const [style, setStyle] = useState(presetStyle || defaults.style);
+  const [touched, setTouched] = useState(Boolean(presetSpirit || presetStyle));
+  const [servings, setServings] = useState(2);
+  const [ingredients, setIngredients] = useState('');
+  const [selectedIngredients, setSelectedIngredients] = useState<string[]>(() =>
+    presetIngredients.filter((item) => COMMON_INGREDIENTS.includes(item))
+  );
+  const [recipe, setRecipe] = useState<Recipe | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
   useEffect(() => {
     if (touched) return;
     setSpirit(defaults.spirit);
     setStyle(defaults.style);
   }, [defaults.spirit, defaults.style, touched]);
-  const [servings, setServings] = useState(2);
-  const [ingredients, setIngredients] = useState('');
-  const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
-  const [recipe, setRecipe] = useState<Recipe | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!presetSpirit && !presetStyle && presetIngredients.length === 0) return;
+    if (presetSpirit) setSpirit(presetSpirit);
+    if (presetStyle) setStyle(presetStyle);
+    if (presetIngredients.length) {
+      setSelectedIngredients(presetIngredients.filter((item) => COMMON_INGREDIENTS.includes(item)));
+      const custom = presetIngredients.filter((item) => !COMMON_INGREDIENTS.includes(item));
+      if (custom.length) setIngredients(custom.join(', '));
+    }
+    setTouched(true);
+    // Re-apply when the mix link changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [presetSpirit, presetStyle, preset?.ingredients]);
 
   async function generate() {
     setLoading(true);
@@ -92,11 +108,18 @@ export default function CocktailMaker({
             <>
               <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-ember">AI cocktail maker</p>
               <h1 className="mt-2 font-wordmark text-2xl text-obsidian sm:text-3xl">Build a drink from what you have</h1>
+              <p className="mt-1.5 text-[14px] leading-relaxed text-obsidian/60">
+                {profile && profile.spirits.length > 0
+                  ? 'Base and style are set from your taste profile — change anything.'
+                  : 'Choose a base, a mood and what you have. One measured recipe, scaled for your group.'}
+              </p>
             </>
           )}
-          <p className={`text-[14px] leading-relaxed text-obsidian/60 ${embedded ? '' : 'mt-1.5'}`}>
-            {profile && profile.spirits.length > 0 ? 'Base and style are set from your taste profile — change anything.' : 'Choose a base, a mood and what you have. One measured recipe, scaled for your group.'}
-          </p>
+          {embedded && profile && profile.spirits.length > 0 && (
+            <p className="text-[14px] leading-relaxed text-obsidian/60">
+              Base and style are set from your taste profile — change anything.
+            </p>
+          )}
 
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <label className="text-[13px] font-bold text-obsidian/60">Base

@@ -30,9 +30,16 @@ export type DrinkProduct = {
   /** Cheap SKU for checkout tests — hidden from party auto-plans. */
   sample?: boolean;
   servesHint?: string;
+  /**
+   * Smallest qty the customer may check out for this SKU alone.
+   * Expensive bottles stay at 1; cheap RTDs/cocktails often need 3+.
+   * Inventory `min_order_qty` overrides this when set in admin.
+   */
+  minOrderQty?: number;
 };
 
-export const SAMPLE_PAYMENT_SLUG = 'convivia-cocktail';
+/** Payment-smoke SKU — order at least its min qty in tests. */
+export const SAMPLE_PAYMENT_SLUG = 'mojito-fusion';
 
 /** Prefer Azure when `NEXT_PUBLIC_AZURE_DRINK_BASE` is set (private containers need SAS). */
 const AZURE_DRINK_BASE = (process.env.NEXT_PUBLIC_AZURE_DRINK_BASE || '').replace(/\/$/, '');
@@ -702,17 +709,46 @@ export const DRINKS: DrinkProduct[] = [
     featured: true,
   },
   {
-    slug: SAMPLE_PAYMENT_SLUG,
-    name: 'Convivia Cocktail',
+    slug: 'mojito-fusion',
+    name: 'Mojito Fusion',
     brand: 'Convivia',
     origin: 'Nigeria',
     category: 'cocktails',
     abv: 5,
     volume: '33CL',
-    priceNgn: 500,
-    tagline: 'House pour, cold and ready.',
-    description: 'Convivia house cocktail in a can — light, citrus-led, and easy to deliver for a small tab.',
-    image: pics('Convivia-Cocktail-Cherry-Lime.png'),
+    priceNgn: 1200,
+    tagline: 'Mint, citrus, cold.',
+    description: 'Convivia house mojito-style cocktail — light, minty and ready for cooler bags.',
+    image: '/Mojito fusion cocktail.png',
+    minOrderQty: 3,
+  },
+  {
+    slug: 'ruv-punch',
+    name: 'Ruv Punch',
+    brand: 'Convivia',
+    origin: 'Nigeria',
+    category: 'cocktails',
+    abv: 5,
+    volume: '33CL',
+    priceNgn: 1200,
+    tagline: 'Fruit-forward house punch.',
+    description: 'Bright punch cocktail from the Convivia bar — easy drinking for day parties.',
+    image: '/Ruv Punch cocktail.png',
+    minOrderQty: 3,
+  },
+  {
+    slug: 'passion-spiritz',
+    name: 'Passion Spiritz',
+    brand: 'Convivia',
+    origin: 'Nigeria',
+    category: 'cocktails',
+    abv: 5,
+    volume: '33CL',
+    priceNgn: 1200,
+    tagline: 'Passion fruit, easy sparkle.',
+    description: 'Passion-fruit house cocktail — tropical, lightly sparkling, built for delivery.',
+    image: '/passion spiritz cocktail.png',
+    minOrderQty: 3,
   },
   {
     slug: 'smirnoff-ice-pack',

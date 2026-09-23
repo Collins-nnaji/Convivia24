@@ -1,29 +1,26 @@
-import { DRINKS, formatNgn, getDrinkBySlug } from '@/lib/drinks/catalog';
-import { LOYALTY_PERKS, type LoyaltyTierId } from '@/lib/loyalty/program';
+import { DRINKS, getDrinkBySlug } from '@/lib/drinks/catalog';
+import { MERCH_SKUS } from '@/lib/loyalty/merch';
+import { NGN_PER_POINT, type LoyaltyTierId } from '@/lib/loyalty/program';
 
 /**
- * The rewards shop.
+ * The rewards shop — bottles and merch only.
  *
- * Anything with a cash value is priced off one published rate so the catalog
- * cannot drift into offering ₦15,000 for less than ₦5,000 costs. The rate comes
- * from the perks already in `LOYALTY_PERKS` — ₦5,000 shop credit at 2,000
- * points — and everything money-valued is derived from it rather than typed in
- * by hand.
+ * Shop credit lives at checkout as the tier discount, not as a redeemable here.
+ * Money-valued items are priced so points × NGN_PER_POINT never undercuts the
+ * naira value on the card.
  */
-export const NGN_PER_POINT = 2.5;
+export { NGN_PER_POINT };
 
 /** Points needed to redeem something worth `ngn`, rounded up to a clean 50. */
 export function pointsForNgn(ngn: number): number {
   return Math.ceil(ngn / NGN_PER_POINT / 50) * 50;
 }
 
-export type RewardCategory = 'bottles' | 'experiences' | 'credit' | 'merch';
+export type RewardCategory = 'bottles' | 'merch';
 
 export const REWARD_CATEGORIES: { id: RewardCategory | 'all'; label: string; icon: string }[] = [
   { id: 'all', label: 'All rewards', icon: 'LayoutGrid' },
   { id: 'bottles', label: 'Bottles', icon: 'Wine' },
-  { id: 'experiences', label: 'Experiences', icon: 'Ticket' },
-  { id: 'credit', label: 'Shop credit', icon: 'Wallet' },
   { id: 'merch', label: 'Merchandise', icon: 'Gift' },
 ];
 
@@ -37,6 +34,8 @@ export type Reward = {
   valueNgn?: number;
   /** Bottle rewards point at a real SKU so the shop image and name stay in sync. */
   drinkSlug?: string;
+  /** Merch rewards point at an inventory row for stock tracking. */
+  inventorySlug?: string;
   image?: string;
   /** Lowest tier that may redeem it — mirrors the perk gates in the programme. */
   minTier: LoyaltyTierId;
@@ -44,21 +43,6 @@ export type Reward = {
   /** Honest availability line. Nothing here claims a stock count we do not track. */
   availability: string;
 };
-
-/** Shop credit ladder, priced off the published rate. */
-const CREDIT_VALUES = [5_000, 10_000, 20_000];
-
-const CREDIT_REWARDS: Reward[] = CREDIT_VALUES.map((ngn, i) => ({
-  id: `credit-${ngn}`,
-  name: `${formatNgn(ngn)} shop credit`,
-  detail: 'Applied at checkout on your next order.',
-  category: 'credit',
-  costPoints: pointsForNgn(ngn),
-  valueNgn: ngn,
-  minTier: i === 0 ? 'guest' : i === 1 ? 'regular' : 'resident',
-  badge: i === 0 ? 'popular' : undefined,
-  availability: 'Always available',
-}));
 
 /**
  * Bottle rewards are drawn from the real shop catalog and capped at a price the
@@ -86,57 +70,21 @@ const BOTTLE_REWARDS: Reward[] = DRINKS.filter(
     availability: 'While stocked',
   }));
 
-/** The perks already in the programme, surfaced in the shop under their real costs. */
-const PERK_REWARDS: Reward[] = LOYALTY_PERKS.filter((p) => !p.id.startsWith('shop-')).map((p) => ({
-  id: `perk-${p.id}`,
-  name: p.name,
-  detail: p.detail,
-  category: 'experiences',
-  costPoints: p.cost,
-  minTier: p.minTier,
-  availability: 'At partner venues',
+const MERCH_REWARDS: Reward[] = MERCH_SKUS.map((m) => ({
+  id: m.rewardId,
+  name: m.name,
+  detail: m.detail,
+  category: 'merch' as const,
+  costPoints: pointsForNgn(m.valueNgn),
+  valueNgn: m.valueNgn,
+  inventorySlug: m.slug,
+  image: m.image,
+  minTier: 'guest' as const,
+  badge: 'new' as const,
+  availability: 'While stocked',
 }));
 
-const MERCH_REWARDS: Reward[] = [
-  {
-    id: 'merch-cap',
-    name: 'Convivia24 cap',
-    detail: 'Branded cap, one size.',
-    category: 'merch',
-    costPoints: pointsForNgn(8_000),
-    valueNgn: 8_000,
-    minTier: 'guest',
-    availability: 'While stocked',
-  },
-  {
-    id: 'merch-tee',
-    name: 'Convivia24 T-shirt',
-    detail: 'Branded tee, sizes S–XXL.',
-    category: 'merch',
-    costPoints: pointsForNgn(12_000),
-    valueNgn: 12_000,
-    minTier: 'guest',
-    availability: 'While stocked',
-  },
-  {
-    id: 'merch-glassware',
-    name: 'Tasting glass set',
-    detail: 'Two nosing glasses, boxed.',
-    category: 'merch',
-    costPoints: pointsForNgn(18_000),
-    valueNgn: 18_000,
-    minTier: 'regular',
-    badge: 'limited',
-    availability: 'While stocked',
-  },
-];
-
-export const REWARDS: Reward[] = [
-  ...CREDIT_REWARDS,
-  ...BOTTLE_REWARDS,
-  ...PERK_REWARDS,
-  ...MERCH_REWARDS,
-];
+export const REWARDS: Reward[] = [...BOTTLE_REWARDS, ...MERCH_REWARDS];
 
 export function getReward(id: string): Reward | undefined {
   return REWARDS.find((r) => r.id === id);

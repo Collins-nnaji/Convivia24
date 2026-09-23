@@ -19,12 +19,13 @@ import {
 import { useCart } from '@/components/cart/CartProvider';
 import BrandClaimDialog from '@/components/brands/BrandClaimDialog';
 import DrinkPlaceholder from '@/components/shop/DrinkPlaceholder';
-import Stars from '@/components/shop/Stars';
 import { BRAND_PILLARS, brandStats, type Brand } from '@/lib/brands/catalog';
 import type { Campaign } from '@/lib/brands/campaigns';
 import { formatNgn } from '@/lib/drinks/catalog';
 
 const PILLAR_ICONS = [ShieldCheck, Award, Truck, QrCode];
+
+type StockHint = { available?: number; tracked?: boolean };
 
 export default function BrandProfile({ brand, campaigns }: { brand: Brand; campaigns: Campaign[] }) {
   const pathname = usePathname();
@@ -34,6 +35,7 @@ export default function BrandProfile({ brand, campaigns }: { brand: Brand; campa
   const [signedIn, setSignedIn] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [stock, setStock] = useState<Record<string, StockHint>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -50,6 +52,25 @@ export default function BrandProfile({ brand, campaigns }: { brand: Brand; campa
       cancelled = true;
     };
   }, [brand.slug]);
+
+  useEffect(() => {
+    if (brand.products.length === 0) return;
+    let cancelled = false;
+    fetch('/api/shop/catalog')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled || !data?.products) return;
+        const next: Record<string, StockHint> = {};
+        for (const row of data.products as { slug: string; available?: number }[]) {
+          if (typeof row.available === 'number') next[row.slug] = { available: row.available, tracked: true };
+        }
+        setStock(next);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [brand.products]);
 
   async function toggleFollow() {
     setBusy(true);
@@ -198,55 +219,81 @@ export default function BrandProfile({ brand, campaigns }: { brand: Brand; campa
           <section id="brand-shop" className="bg-white border border-obsidian/8 scroll-mt-24">
             <div className="px-5 py-4 border-b border-obsidian/8 flex items-center justify-between gap-4">
               <h2 className="text-lg font-bold">Shop {brand.name}</h2>
-              <Link
-                href={`/shop?q=${encodeURIComponent(brand.name)}`}
-                className="text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/40 hover:text-ember inline-flex items-center gap-1 transition-colors"
-              >
-                View all products <ChevronRight size={13} />
-              </Link>
+              {brand.products.length > 0 && (
+                <Link
+                  href={`/shop?q=${encodeURIComponent(brand.name)}`}
+                  className="text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/40 hover:text-ember inline-flex items-center gap-1 transition-colors"
+                >
+                  View all products <ChevronRight size={13} />
+                </Link>
+              )}
             </div>
 
-            <ul className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 p-4 sm:p-5">
-              {brand.products.slice(0, 6).map((product, i) => (
-                <motion.li
-                  key={product.slug}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: Math.min(i, 5) * 0.05, duration: 0.3 }}
-                  className="border border-obsidian/8 hover:border-ember/35 transition-colors flex flex-col"
-                >
-                  <Link href={`/shop/${product.slug}`} className="relative block aspect-[3/4] bg-white overflow-hidden">
-                    {product.image ? (
-                      <Image src={product.image} alt={product.name} fill sizes="220px" className="object-contain p-3" />
-                    ) : (
-                      <DrinkPlaceholder
-                        category={product.category}
-                        name={product.name}
-                        className="absolute inset-0 w-full h-full"
-                        watermark={false}
-                      />
-                    )}
-                  </Link>
-                  <div className="p-3 flex-1 flex flex-col">
-                    <Link href={`/shop/${product.slug}`} className="block">
-                      <p className="text-[13px] font-semibold leading-snug line-clamp-2 hover:text-ember transition-colors">
-                        {product.name}
-                      </p>
-                    </Link>
-                    <p className="text-[11px] text-obsidian/40 mt-0.5">{product.volume}</p>
-                    <Stars value={0} size={11} className="mt-1.5" />
-                    <p className="font-bold mt-1.5">{formatNgn(product.priceNgn)}</p>
-                    <button
-                      type="button"
-                      onClick={() => addProduct(product.slug, 1)}
-                      className="mt-3 w-full py-2.5 btn-brand text-[10px] font-black uppercase tracking-[0.12em] inline-flex items-center justify-center gap-1.5"
+            {brand.products.length === 0 ? (
+              <p className="px-5 py-8 text-sm text-obsidian/55 leading-relaxed">
+                Nothing from {brand.name} is on the shelf right now. The house page stays up — check back when the
+                next drop lands, or follow for updates.
+              </p>
+            ) : (
+              <ul className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 p-4 sm:p-5">
+                {brand.products.slice(0, 6).map((product, i) => {
+                  const hint = stock[product.slug];
+                  const soldOut = typeof hint?.available === 'number' && hint.available <= 0;
+                  return (
+                    <motion.li
+                      key={product.slug}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: Math.min(i, 5) * 0.05, duration: 0.3 }}
+                      className="border border-obsidian/8 hover:border-ember/35 transition-colors flex flex-col"
                     >
-                      <Plus size={12} /> Add to cart
-                    </button>
-                  </div>
-                </motion.li>
-              ))}
-            </ul>
+                      <Link href={`/shop/${product.slug}`} className="relative block aspect-[3/4] bg-white overflow-hidden">
+                        {product.image ? (
+                          <Image src={product.image} alt={product.name} fill sizes="220px" className="object-contain p-3" />
+                        ) : (
+                          <DrinkPlaceholder
+                            category={product.category}
+                            name={product.name}
+                            className="absolute inset-0 w-full h-full"
+                            watermark={false}
+                          />
+                        )}
+                        {soldOut && (
+                          <span className="absolute left-2 bottom-2 z-10 rounded-md bg-obsidian/70 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
+                            Out of stock
+                          </span>
+                        )}
+                      </Link>
+                      <div className="p-3 flex-1 flex flex-col">
+                        <Link href={`/shop/${product.slug}`} className="block">
+                          <p className="text-[13px] font-semibold leading-snug line-clamp-2 hover:text-ember transition-colors">
+                            {product.name}
+                          </p>
+                        </Link>
+                        <p className="text-[11px] text-obsidian/40 mt-0.5">{product.volume}</p>
+                        <p className="font-bold mt-1.5">{formatNgn(product.priceNgn)}</p>
+                        {soldOut ? (
+                          <Link
+                            href={`/shop/${product.slug}`}
+                            className="mt-3 w-full py-2.5 text-center text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/45 ring-1 ring-obsidian/10"
+                          >
+                            Out of stock · notify
+                          </Link>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => addProduct(product.slug, 1)}
+                            className="mt-3 w-full py-2.5 btn-brand text-[10px] font-black uppercase tracking-[0.12em] inline-flex items-center justify-center gap-1.5"
+                          >
+                            <Plus size={12} /> Add to cart
+                          </button>
+                        )}
+                      </div>
+                    </motion.li>
+                  );
+                })}
+              </ul>
+            )}
           </section>
 
           <div className="space-y-6">
@@ -276,7 +323,7 @@ export default function BrandProfile({ brand, campaigns }: { brand: Brand; campa
             </span>
             <h2 className="font-bold mt-3">Earn on this house</h2>
             <p className="text-[12px] text-obsidian/50 mt-2 leading-relaxed">
-              Play the brand round, rate what you drink, and turn the points into rewards.
+              Play the brand round and turn the points into rewards.
             </p>
             <Link
               href="/discover/trivia#challenges"

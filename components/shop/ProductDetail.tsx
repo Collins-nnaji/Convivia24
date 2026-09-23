@@ -52,7 +52,8 @@ export default function ProductDetail({ product }: { product: DrinkProduct }) {
   const router = useRouter();
   const { addProduct } = useCart();
   const { saved, toggle } = useWishlist(product.slug);
-  const [qty, setQty] = useState(1);
+  const minQty = Math.max(1, Math.min(24, Math.floor(product.minOrderQty ?? 1)));
+  const [qty, setQty] = useState(minQty);
   const [added, setAdded] = useState(false);
   const [tab, setTab] = useState<Tab>('about');
   const availability = useAvailability(product.slug);
@@ -77,13 +78,13 @@ export default function ProductDetail({ product }: { product: DrinkProduct }) {
   }
 
   function handleAdd() {
-    addProduct(product.slug, qty);
+    addProduct(product.slug, Math.max(minQty, qty));
     setAdded(true);
     setTimeout(() => setAdded(false), 1600);
   }
 
   function buyNow() {
-    addProduct(product.slug, qty);
+    addProduct(product.slug, Math.max(minQty, qty));
     router.push('/cart');
   }
 
@@ -158,7 +159,7 @@ export default function ProductDetail({ product }: { product: DrinkProduct }) {
                     type="button"
                     aria-label="Decrease"
                     className="p-3 text-obsidian/50 hover:text-obsidian"
-                    onClick={() => setQty((q) => Math.max(1, q - 1))}
+                    onClick={() => setQty((q) => Math.max(minQty, q - 1))}
                   >
                     <Minus size={14} />
                   </button>
@@ -172,6 +173,9 @@ export default function ProductDetail({ product }: { product: DrinkProduct }) {
                     <Plus size={14} />
                   </button>
                 </div>
+                {minQty > 1 && (
+                  <p className="mt-2 text-[12px] text-obsidian/45">Minimum order: {minQty}</p>
+                )}
               </div>
 
               <div className="flex flex-col gap-2.5 sm:pt-6">

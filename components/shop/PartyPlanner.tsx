@@ -468,7 +468,7 @@ function PartyPlannerInner({ defaultOpen = false }: { defaultOpen?: boolean }) {
             <label className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-obsidian/10 bg-paper px-3 py-2.5">
               <span>
                 <span className="block text-sm font-semibold text-obsidian">Set a budget</span>
-                <span className="block text-xs text-obsidian/45">Keep the suggested basket under a cap</span>
+                <span className="block text-xs text-obsidian/45">Drinks aim for this spend (± ₦20,000)</span>
               </span>
               <input
                 type="checkbox"
@@ -745,7 +745,7 @@ function PartyPlannerInner({ defaultOpen = false }: { defaultOpen?: boolean }) {
                 onChange={(e) => setBudgetOn(e.target.checked)}
                 className="rounded border-obsidian/25 text-ember focus:ring-ember"
               />
-              <span className="text-base sm:text-sm text-obsidian/70">Cap the basket to a budget</span>
+              <span className="text-base sm:text-sm text-obsidian/70">Aim the basket at a budget (± ₦20,000)</span>
             </label>
             {budgetOn && (
               <div className="mt-4">
@@ -918,9 +918,16 @@ function PartyPlannerInner({ defaultOpen = false }: { defaultOpen?: boolean }) {
             />
           </dl>
 
-          {plan && budgetOn && budget > 0 && plan.totalNgn > budget && (
+          {plan && budgetOn && budget > 0 && plan.budget && !plan.budget.withinRange && (
             <p className="text-sm text-ember mb-5">
-              Still over {formatNgn(budget)} after trimming. Drop guests, hours, or switch vibe.
+              {plan.totalNgn > plan.budget.maxNgn
+                ? `Still above ${formatNgn(plan.budget.maxNgn)} after fitting. Drop guests, hours, or switch vibe.`
+                : `Still under ${formatNgn(plan.budget.minNgn)}. Add a bottle from the list below or raise the guest count.`}
+            </p>
+          )}
+          {plan && budgetOn && budget > 0 && plan.budget?.withinRange && (
+            <p className="text-sm text-obsidian/50 mb-5">
+              Basket is within {formatNgn(plan.budget.minNgn)} – {formatNgn(plan.budget.maxNgn)} of your {formatNgn(plan.budget.targetNgn)} target.
             </p>
           )}
 

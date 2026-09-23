@@ -43,11 +43,12 @@ function normalizeLines(raw: CartLine[]): CartLine[] {
       // Resolves shop bottles and event packages alike — packages are not in DRINKS.
       const product = findSellable(line.slug);
       if (!product) return null;
+      const min = Math.max(1, Math.min(24, Math.floor(product.minOrderQty ?? 1)));
       return {
         slug: product.slug,
         name: product.name,
         priceNgn: product.priceNgn,
-        qty: Math.max(1, Math.min(24, Number(line.qty) || 1)),
+        qty: Math.max(min, Math.min(24, Number(line.qty) || min)),
       } satisfies CartLine;
     })
     .filter(Boolean) as CartLine[];
@@ -131,7 +132,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addProduct = useCallback((slug: string, qty = 1) => {
     const product = findSellable(slug);
     if (!product) return;
-    const addQty = Math.max(1, Math.min(24, qty));
+    const min = Math.max(1, Math.min(24, Math.floor(product.minOrderQty ?? 1)));
+    const addQty = Math.max(min, Math.min(24, qty));
     setLines((prev) => {
       const existing = prev.find((l) => l.slug === slug);
       if (existing) {
@@ -139,7 +141,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           l.slug === slug
             ? {
                 ...l,
-                qty: Math.min(24, l.qty + addQty),
+                qty: Math.min(24, l.qty + Math.max(1, Math.min(24, qty))),
                 priceNgn: product.priceNgn,
                 name: product.name,
               }
@@ -162,8 +164,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setQty = useCallback((slug: string, qty: number) => {
+    const product = findSellable(slug);
+    const min = Math.max(1, Math.min(24, Math.floor(product?.minOrderQty ?? 1)));
     setLines((prev) => {
-      if (qty <= 0) return prev.filter((l) => l.slug !== slug);
+      if (qty < min) return prev.filter((l) => l.slug !== slug);
       return prev.map((l) => (l.slug === slug ? { ...l, qty: Math.min(24, qty) } : l));
     });
   }, []);

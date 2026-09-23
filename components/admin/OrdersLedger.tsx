@@ -11,6 +11,7 @@ import {
   type OrderStatus,
 } from '@/lib/commerce/status';
 import type { AdminOrder } from './types';
+import { adminInputClass } from './ui/Fields';
 import type { OrderFilters } from './useAdminOrders';
 
 type RangeKey = 'today' | '7d' | '30d' | 'month' | 'all' | 'custom';
@@ -99,6 +100,7 @@ export default function OrdersLedger({
   onRefund,
   onDelete,
   onEdit,
+  onRecordBank,
   renderTracking,
   onFilter,
   total,
@@ -113,6 +115,7 @@ export default function OrdersLedger({
   onRefund: (order: AdminOrder) => void;
   onDelete: (order: AdminOrder) => void;
   onEdit: (order: AdminOrder) => void;
+  onRecordBank: (order: AdminOrder, reference: string) => Promise<boolean>;
   /** The tracking form, injected so this component stays presentational. */
   renderTracking: (order: AdminOrder) => ReactNode;
   /** Filters are applied on the server; the ledger reports what the desk picked. */
@@ -536,8 +539,11 @@ export default function OrdersLedger({
                             </dd>
                             <dt className="text-obsidian/40">Payment</dt>
                             <dd>
-                              {o.paymentProvider || '—'}
-                              {o.paymentRef ? ` · ${o.paymentRef}` : ''}
+                              <BankTransfer
+                                order={o}
+                                busy={updatingOrder === o.id}
+                                onRecord={onRecordBank}
+                              />
                             </dd>
                             <dt className="text-obsidian/40">Routed to</dt>
                             <dd>
@@ -627,6 +633,99 @@ export default function OrdersLedger({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+const PAYMENT_LABELS: Record<string, string> = {
+  flutterwave: 'Flutterwave',
+  paystack: 'Paystack',
+  access_bank: 'Access Bank transfer',
+  manual: 'Not recorded',
+};
+
+function paymentLabel(provider: string | null): string {
+  if (!provider) return 'Not recorded';
+  return PAYMENT_LABELS[provider] ?? provider;
+}
+
+function BankTransfer({
+  order,
+  busy,
+  onRecord,
+}: {
+  order: AdminOrder;
+  busy: boolean;
+  onRecord: (order: AdminOrder, reference: string) => Promise<boolean>;
+}) {
+  const recorded = order.paymentProvider === 'access_bank';
+  const closed = order.status === 'cancelled' || order.status === 'refunded';
+  const [reference, setReference] = useState(recorded ? order.paymentRef ?? '' : '');
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    setReference(recorded ? order.paymentRef ?? '' : '');
+  }, [recorded, order.paymentRef, order.id]);
+
+  async function save() {
+    const ok = await onRecord(order, reference);
+    if (ok) setOpen(false);
+  }
+
+  return (
+    <div className="space-y-2">
+      <p>
+        {paymentLabel(order.paymentProvider)}
+        {order.paymentRef ? ` · ${order.paymentRef}` : ''}
+      </p>
+      {!closed && !open && (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="font-semibold text-ember hover:underline"
+        >
+          {recorded ? 'Update transfer reference' : 'Record Access Bank transfer'}
+        </button>
+      )}
+      {!closed && open && (
+        <div className="space-y-2 rounded-lg bg-white p-2 ring-1 ring-obsidian/10">
+          <label className="block text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40">
+            Transfer reference
+            <input
+              value={reference}
+              onChange={(e) => setReference(e.target.value)}
+              placeholder="From the Access Bank alert"
+              className={`${adminInputClass} mt-1 w-full py-1.5`}
+            />
+          </label>
+          <p className="text-[11px] leading-relaxed text-obsidian/45">
+            {`The customer paid the Access Bank account. This is credited in full, with no Flutterwave fee${
+              order.status === 'awaiting_payment' ? ', and the order is marked paid' : ''
+            }.${
+              order.paymentProvider === 'flutterwave' || order.paymentProvider === 'paystack'
+                ? ' Saving replaces the payment already on this order.'
+                : ''
+            }`}
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled={busy || reference.trim().length < 3}
+              onClick={save}
+              className="rounded-lg bg-obsidian px-2.5 py-1.5 text-[11px] font-bold text-white disabled:opacity-40"
+            >
+              {busy ? 'Saving…' : 'Save transfer'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="rounded-lg px-2.5 py-1.5 text-[11px] font-bold text-obsidian/50"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

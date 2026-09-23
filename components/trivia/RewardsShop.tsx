@@ -10,10 +10,8 @@ import {
   Gift,
   LayoutGrid,
   Lock,
-  Ticket,
   Trophy,
   Star,
-  Wallet,
   Wine,
   X,
 } from 'lucide-react';
@@ -31,7 +29,7 @@ import { formatNgn } from '@/lib/drinks/catalog';
 import ConviviumCard from '@/components/ConviviumCard';
 import { useUser } from '@/components/auth/AuthProvider';
 
-const ICONS = { LayoutGrid, Wine, Ticket, Wallet, Gift } as const;
+const ICONS = { LayoutGrid, Wine, Gift } as const;
 
 type Redemption = {
   id: string;
@@ -333,14 +331,7 @@ function RewardCard({
 }
 
 function CategoryMark({ category }: { category: RewardCategory }) {
-  const Icon =
-    category === 'bottles'
-      ? Wine
-      : category === 'credit'
-        ? Wallet
-        : category === 'experiences'
-          ? Ticket
-          : Gift;
+  const Icon = category === 'bottles' ? Wine : Gift;
   return <Icon size={34} className="text-ember/25" />;
 }
 

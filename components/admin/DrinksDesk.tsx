@@ -7,7 +7,9 @@ import Modal from './ui/Modal';
 import { CATEGORIES, CATEGORY_LABELS, formatNgn } from '@/lib/drinks/catalog';
 import { skuMargin } from '@/lib/suppliers/margin';
 import { derivedPackCost, isDerivedCostSku } from '@/lib/suppliers/pack-cost';
+import { DEFAULT_MARKUP, quoteRetail, type MarkupPolicy } from '@/lib/pricing/checkout-fees';
 import PriceListImport from './PriceListImport';
+import PricePolicyBar from './PricePolicyBar';
 import { useDialogs } from './ui/DialogProvider';
 import { AdminInput, AdminLabel, AdminSelect, AdminTextArea, adminInputClass } from './ui/Fields';
 import { readError } from './types';
@@ -18,6 +20,7 @@ type Item = {
   on_hand: number;
   reserved: number;
   low_stock_threshold: number;
+  min_order_qty: number;
   available: number;
   price_ngn: number | null;
   cost_ngn?: number | null;
@@ -104,6 +107,7 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
   const [stockQuery, setStockQuery] = useState('');
   const [stockCategory, setStockCategory] = useState('bottles');
   const [onlyLow, setOnlyLow] = useState(false);
+  const [policy, setPolicy] = useState<MarkupPolicy>(DEFAULT_MARKUP);
 
   const load = useCallback(async () => {
     const res = await fetch('/api/admin/inventory');
@@ -437,8 +441,9 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
         </div>
       </div>
       <p className="mb-3 text-sm text-obsidian/50">
-        Retail, wholesale cost and margin per SKU. Supplier-specific costs live in the Suppliers tab.
+        Retail, wholesale cost and margin per SKU. Suggested prices follow the markup and the Flutterwave and Access Bank fees.
       </p>
+      <PricePolicyBar onChange={setPolicy} />
 
       {/* Party packs outnumber bottles roughly two to one, so the list needs narrowing. */}
       <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -497,6 +502,7 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
             onSetSupplierStock={setSupplierStockQty}
             onSetSupplierCost={setSupplierCost}
             defaultCostOf={(slug) => items.find((i) => i.slug === slug)?.cost_ngn ?? null}
+            policy={policy}
           />
         ))}
         {visibleItems.length === 0 && (
@@ -726,6 +732,7 @@ function StockRow({
   onSetSupplierStock,
   onSetSupplierCost,
   defaultCostOf,
+  policy,
 }: {
   item: Item;
   saving: boolean;
@@ -739,11 +746,13 @@ function StockRow({
   onSetSupplierCost: (supplierId: string, slug: string, costNgn: number) => Promise<void>;
   /** Default cost of another SKU — lets a pack sum its bottles. */
   defaultCostOf: (slug: string) => number | null;
+  policy: MarkupPolicy;
 }) {
   const [onHand, setOnHand] = useState(String(item.on_hand));
   const [price, setPrice] = useState(item.price_ngn != null ? String(item.price_ngn) : '');
   const [cost, setCost] = useState(item.cost_ngn != null ? String(item.cost_ngn) : '');
   const [threshold, setThreshold] = useState(String(item.low_stock_threshold));
+  const [minOrder, setMinOrder] = useState(String(item.min_order_qty ?? 1));
   const [tasteNote, setTasteNote] = useState(item.taste_note || '');
   const [guideOpen, setGuideOpen] = useState(false);
   const [suppliersOpen, setSuppliersOpen] = useState(false);
@@ -754,8 +763,9 @@ function StockRow({
     setPrice(item.price_ngn != null ? String(item.price_ngn) : '');
     setCost(item.cost_ngn != null ? String(item.cost_ngn) : '');
     setThreshold(String(item.low_stock_threshold));
+    setMinOrder(String(item.min_order_qty ?? 1));
     setTasteNote(item.taste_note || '');
-  }, [item.on_hand, item.price_ngn, item.cost_ngn, item.low_stock_threshold, item.taste_note]);
+  }, [item.on_hand, item.price_ngn, item.cost_ngn, item.low_stock_threshold, item.min_order_qty, item.taste_note]);
 
   const derived = supplierRows.some((r) => r.onHand > 0 || r.reserved > 0);
   const dirty =
@@ -763,6 +773,7 @@ function StockRow({
     price !== (item.price_ngn != null ? String(item.price_ngn) : '') ||
     (!isDerivedCostSku(item.slug) && cost !== (item.cost_ngn != null ? String(item.cost_ngn) : '')) ||
     threshold !== String(item.low_stock_threshold) ||
+    minOrder !== String(item.min_order_qty ?? 1) ||
     tasteNote !== (item.taste_note || '');
 
   // Once any supplier holds this bottle, on-hand is the sum of their shelves — editing the SKU
@@ -778,6 +789,8 @@ function StockRow({
   // Margin is against what we would actually pay: the cheapest real quote, else the default cost.
   const effectiveCost = bestQuote ? bestQuote.cost : isPack ? packDefault : cost === '' ? null : Number(cost);
   const margin = skuMargin(price === '' ? null : Number(price), effectiveCost);
+  const quote = typeof effectiveCost === 'number' ? quoteRetail(effectiveCost, policy) : null;
+  const belowQuote = quote != null && price !== '' && Number(price) < quote.suggestedNgn;
   const lowStock = item.tracked !== false && item.available <= item.low_stock_threshold;
   const chips: { label: string; tone?: string }[] = [
     ...(item.tracked === false ? [{ label: 'Not tracked yet', tone: 'text-amber-700' }] : []),
@@ -813,7 +826,7 @@ function StockRow({
           </div>
         </div>
 
-        <div className="grid flex-1 grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="grid flex-1 grid-cols-2 gap-3 sm:grid-cols-5">
           {derived ? (
             <div>
               <AdminLabel hint={`${heldBySuppliers.length} supplier${heldBySuppliers.length === 1 ? '' : 's'}`}>On hand</AdminLabel>
@@ -852,8 +865,31 @@ function StockRow({
           ) : (
             <AdminInput label="Default cost" hint="until a supplier quotes" type="number" min={0} inputMode="numeric" value={cost} onChange={(e) => setCost(e.target.value)} placeholder="Wholesale" className={cell} />
           )}
-          <AdminInput label="Retail (NGN)" type="number" min={0} inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value)} className={cell} />
+          <div>
+            <AdminInput label="Retail (NGN)" type="number" min={0} inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value)} className={cell} />
+            {quote && String(quote.suggestedNgn) !== price && (
+              <button
+                type="button"
+                onClick={() => setPrice(String(quote.suggestedNgn))}
+                title={`Cost ${formatNgn(quote.costNgn)}, Access ${formatNgn(quote.nipNgn + quote.camfNgn + quote.smsNgn)}, markup ${formatNgn(quote.markupNgn)}, Flutterwave ${formatNgn(quote.flutterwaveNgn)}`}
+                className={`mt-1 text-left text-[11px] font-semibold ${belowQuote ? 'text-ember' : 'text-obsidian/55 hover:text-ember'}`}
+              >
+                Use {formatNgn(quote.suggestedNgn)}
+              </button>
+            )}
+          </div>
           <AdminInput label="Low at" type="number" min={0} inputMode="numeric" value={threshold} onChange={(e) => setThreshold(e.target.value)} className={cell} />
+          <AdminInput
+            label="Min order"
+            hint="checkout floor"
+            type="number"
+            min={1}
+            max={24}
+            inputMode="numeric"
+            value={minOrder}
+            onChange={(e) => setMinOrder(e.target.value)}
+            className={cell}
+          />
         </div>
 
         <div className="min-w-[88px] shrink-0 text-right">
@@ -878,6 +914,7 @@ function StockRow({
                 priceNgn: price === '' ? undefined : price,
                 ...(isPack ? {} : { costNgn: cost === '' ? null : cost }),
                 lowStockThreshold: threshold,
+                minOrderQty: minOrder,
                 tasteNote,
               })
             }

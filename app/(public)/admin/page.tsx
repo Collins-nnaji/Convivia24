@@ -14,11 +14,13 @@ import ReferralsDesk from '@/components/admin/ReferralsDesk';
 import GiftCardsDesk from '@/components/admin/GiftCardsDesk';
 import TriviaDesk from '@/components/admin/TriviaDesk';
 import ContentDesk from '@/components/admin/ContentDesk';
+import AccountingDesk from '@/components/admin/AccountingDesk';
+import AnalyticsDesk from '@/components/admin/AnalyticsDesk';
 import { useAdminOrders } from '@/components/admin/useAdminOrders';
 import { EMPTY_SUMMARY, type AdminSummary } from '@/components/admin/types';
-import { CalendarDays, Gift, LayoutDashboard, PackageSearch, Share2, ShoppingBag, Trophy, Truck, Wine } from 'lucide-react';
+import { BarChart3, CalendarDays, Gift, Landmark, LayoutDashboard, PackageSearch, Share2, ShoppingBag, Trophy, Truck, Wine } from 'lucide-react';
 
-const TAB_KEYS = ['overview', 'drinks', 'orders', 'sourcing', 'suppliers', 'referrals', 'giftcards', 'trivia', 'content'] as const;
+const TAB_KEYS = ['overview', 'accounting', 'analytics', 'drinks', 'orders', 'sourcing', 'suppliers', 'referrals', 'giftcards', 'trivia', 'content'] as const;
 type TabKey = (typeof TAB_KEYS)[number];
 
 function isTab(v: string): v is TabKey {
@@ -116,8 +118,7 @@ function AdminDesk() {
           <p className="mb-2 text-[10px] font-black uppercase tracking-[0.28em] text-ember">Convivia24</p>
           <h1 className="mb-4 text-2xl font-bold">Desk</h1>
           <p className="mb-6 text-sm text-obsidian/50">
-            Sign in with <code className="text-xs">ADMIN_PASSWORD</code>, or use a Neon Auth account listed in{' '}
-            <code className="text-xs">CONVIVIA_ADMIN_EMAILS</code>.
+            Enter the desk password, or sign in with your Convivia24 account if it has desk access.
           </p>
           <form onSubmit={login} className="space-y-4">
             <input
@@ -140,7 +141,7 @@ function AdminDesk() {
           <p className="mt-6 text-xs text-obsidian/40">
             Or{' '}
             <Link href="/signin?next=/admin" className="text-ember">
-              sign in with Neon Auth
+              sign in with your account
             </Link>
             .
           </p>
@@ -153,6 +154,8 @@ function AdminDesk() {
   const pill = (n: number) => (n > 0 ? n : undefined);
   const tabs: AdminTab[] = [
     { key: 'overview', label: 'Overview', icon: <LayoutDashboard size={17} /> },
+    { key: 'accounting', label: 'Accounting', icon: <Landmark size={17} /> },
+    { key: 'analytics', label: 'Analytics', icon: <BarChart3 size={17} /> },
     { key: 'orders', label: 'Orders', count: pill(summary.ordersToFulfil), icon: <ShoppingBag size={17} /> },
     { key: 'sourcing', label: 'Order sourcing', count: pill(summary.ordersUnsourced), icon: <PackageSearch size={17} /> },
     { key: 'drinks', label: 'Drinks', count: pill(summary.lowStock), icon: <Wine size={17} /> },
@@ -176,6 +179,8 @@ function AdminDesk() {
   return (
     <AdminShell title="Desk" subtitle={subtitle} tabs={tabs} active={tab} onSelect={go}>
       {tab === 'overview' && <OverviewDesk summary={summary} onGo={go} />}
+      {tab === 'accounting' && <AccountingDesk />}
+      {tab === 'analytics' && <AnalyticsDesk />}
       {tab === 'drinks' && <DrinksDesk onChanged={loadSummary} />}
       {tab === 'orders' && <OrdersDesk store={ordersStore} onChanged={loadSummary} />}
       {tab === 'sourcing' && (

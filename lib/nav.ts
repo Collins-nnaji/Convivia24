@@ -17,7 +17,6 @@ export function primaryNavLinks(): NavLink[] {
     label: 'Discover',
     href: '/discover',
     icon: 'gift',
-    accent: true,
   });
   links.push({ label: 'Brands', href: '/brands' });
   return links;

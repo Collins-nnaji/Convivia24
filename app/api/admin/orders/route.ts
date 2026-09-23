@@ -14,6 +14,7 @@ import { orderMargin } from '@/lib/suppliers/margin';
 import { getSupplier } from '@/lib/suppliers/repo';
 import { reconcileOrderPoints } from '@/lib/loyalty/members';
 import { DRINKS } from '@/lib/drinks/catalog';
+import { approveReferralForOrder } from '@/lib/referrals/repo';
 
 /** Statuses the desk can hand-set. System-only statuses (pending, awaiting_payment) are excluded. */
 const ADMIN_SETTABLE_STATUSES: OrderStatus[] = ORDER_STATUSES.filter(
@@ -235,6 +236,48 @@ export async function PATCH(req: NextRequest) {
       await recordOrderEvent(orderId, 'refunded', `Refunded ${formatNgn(amountNgn)}.`).catch(() => {});
       await notifyOrderStatus(orderId, 'refunded', `Refunded ${formatNgn(amountNgn)}.`);
       return NextResponse.json({ ok: true, orderId, status: 'refunded', refundedNgn: totalRefunded });
+    }
+
+    // A customer paid the Access Bank account directly. Flutterwave is not charged on that money.
+    // An order still waiting for checkout is marked paid, the same way a successful collection is.
+    if (body.action === 'bank_transfer') {
+      const reference =
+        typeof body.reference === 'string' ? body.reference.trim().replace(/\s+/g, ' ').slice(0, 80) : '';
+      if (reference.length < 3) {
+        return NextResponse.json({ error: 'Enter the Access Bank transfer reference.' }, { status: 400 });
+      }
+      const [order] = await sql`SELECT id, status FROM ritual_orders WHERE id = ${orderId} LIMIT 1`;
+      if (!order) return NextResponse.json({ error: 'Order not found.' }, { status: 404 });
+      const from = order.status as OrderStatus;
+      if (from === 'cancelled' || from === 'refunded' || from === 'pending') {
+        return NextResponse.json({ error: 'This order cannot take a bank transfer.' }, { status: 409 });
+      }
+      const [updated] = await sql`
+        UPDATE ritual_orders
+        SET
+          payment_provider = 'access_bank',
+          payment_ref = ${reference},
+          status = CASE WHEN status = 'awaiting_payment' THEN 'paid' ELSE status END,
+          updated_at = NOW()
+        WHERE id = ${orderId} AND status = ${from}
+        RETURNING id, status
+      `;
+      if (!updated) {
+        return NextResponse.json({ error: 'Order changed in the meantime. Reload and try again.' }, { status: 409 });
+      }
+      const note = `Access Bank transfer ${reference}.`;
+      await recordOrderEvent(orderId, updated.status as OrderStatus, note).catch(() => {});
+      if (from === 'awaiting_payment') {
+        await approveReferralForOrder(orderId);
+        await notifyOrderStatus(orderId, 'paid', note);
+      }
+      return NextResponse.json({
+        ok: true,
+        orderId,
+        status: updated.status,
+        paymentProvider: 'access_bank',
+        paymentRef: reference,
+      });
     }
 
     // Delivery details change without touching status — a typo in the address should not

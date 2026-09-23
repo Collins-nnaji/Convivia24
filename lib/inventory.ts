@@ -11,6 +11,8 @@ export type InventoryRow = {
   on_hand: number;
   reserved: number;
   low_stock_threshold: number;
+  /** Smallest qty a customer may check out for this SKU. */
+  min_order_qty: number;
   track_stock: boolean;
   active: boolean;
   image_url: string | null;
@@ -84,6 +86,7 @@ function mapRow(r: Record<string, unknown>): InventoryRow {
     on_hand: onHand,
     reserved,
     low_stock_threshold: Number(r.low_stock_threshold ?? 6),
+    min_order_qty: Math.max(1, Math.min(24, Math.floor(Number(r.min_order_qty ?? 1) || 1))),
     track_stock: r.track_stock !== false,
     active: r.active !== false,
     image_url: (r.image_url as string) || null,
@@ -206,6 +209,7 @@ export async function adminStockList(): Promise<AdminStockRow[]> {
     on_hand: 0,
     reserved: 0,
     low_stock_threshold: 6,
+    min_order_qty: Math.max(1, Math.min(24, Math.floor(d.minOrderQty ?? 1))),
     track_stock: true,
     active: true,
     image_url: d.image || null,
@@ -236,6 +240,7 @@ export async function adminStockList(): Promise<AdminStockRow[]> {
     return {
       ...r,
       tracked: true,
+      min_order_qty: r.min_order_qty || Math.max(1, Math.floor(d?.minOrderQty ?? 1)),
       image_url: r.image_url || d?.image || null,
       category: r.category || d?.category || null,
       brand: r.brand || d?.brand || null,
@@ -267,6 +272,7 @@ export async function editStockRow(
     priceNgn?: number | null;
     costNgn?: number | null;
     lowStockThreshold?: number;
+    minOrderQty?: number;
     active?: boolean;
     tasteNote?: string | null;
     tagline?: string | null;
@@ -307,6 +313,8 @@ export async function editStockRow(
     : undefined;
   const setCost = patch.costNgn !== undefined;
   const threshold = patch.lowStockThreshold != null ? Math.max(0, Math.floor(patch.lowStockThreshold)) : null;
+  const minOrderQty =
+    patch.minOrderQty != null ? Math.max(1, Math.min(24, Math.floor(patch.minOrderQty))) : null;
   const active = patch.active != null ? patch.active : null;
   const tasteNote = patch.tasteNote !== undefined ? (patch.tasteNote?.trim() || null) : null;
   const tagline = patch.tagline !== undefined ? (patch.tagline?.trim() || null) : null;
@@ -333,6 +341,7 @@ export async function editStockRow(
       price_ngn = COALESCE(${priceNgn}, price_ngn),
       cost_ngn = CASE WHEN ${setCost} THEN ${costNgn ?? null} ELSE cost_ngn END,
       low_stock_threshold = COALESCE(${threshold}, low_stock_threshold),
+      min_order_qty = COALESCE(${minOrderQty}, min_order_qty),
       active = COALESCE(${active}, active),
       taste_note = CASE WHEN ${setTaste} THEN ${tasteNote} ELSE taste_note END,
       tagline = CASE WHEN ${setTagline} THEN ${tagline} ELSE tagline END,
@@ -476,6 +485,7 @@ export async function shopCatalog(): Promise<
       lowStock: inv ? inv.available <= inv.low_stock_threshold : false,
       image: inv?.image_url || d.image,
       priceNgn: inv?.price_ngn && inv.price_ngn > 0 ? inv.price_ngn : d.priceNgn,
+      minOrderQty: inv?.min_order_qty ?? d.minOrderQty ?? 1,
       tasteNote: inv?.taste_note || TASTE_NOTES[d.slug] || null,
       rating: ratings[d.slug]?.average ?? 0,
       ratingCount: ratings[d.slug]?.count ?? 0,
@@ -484,7 +494,14 @@ export async function shopCatalog(): Promise<
 
   const catalogSlugs = new Set(DRINKS.map((d) => d.slug));
   const adminOnly = stock
-    .filter((s) => s.source === 'admin' && !catalogSlugs.has(s.slug) && s.price_ngn != null)
+    .filter(
+      (s) =>
+        s.source === 'admin' &&
+        !catalogSlugs.has(s.slug) &&
+        s.price_ngn != null &&
+        // Merch is fulfilled via rewards / desk — not listed next to bottles.
+        (s.category || '').toLowerCase() !== 'merch'
+    )
     .map((s) => ({
       slug: s.slug,
       name: s.name,
@@ -493,6 +510,7 @@ export async function shopCatalog(): Promise<
       abv: Number(s.abv ?? 0),
       volume: s.volume || '—',
       priceNgn: Number(s.price_ngn),
+      minOrderQty: s.min_order_qty || 1,
       tagline: s.tagline || 'Admin listed',
       description: s.description || s.tagline || '',
       image: s.image_url || undefined,

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import HeroGuestCard from '@/components/loyalty/HeroGuestCard';
+import HeroTriviaCard from '@/components/home/HeroTriviaCard';
 import TrustBadges from '@/components/shop/TrustBadges';
 import { eventsEnabled } from '@/lib/features';
 
@@ -115,8 +115,8 @@ export default function HomeHero() {
           <TrustBadges className="justify-center md:justify-start" />
         </div>
 
-        <div className="hidden md:block">
-          <HeroGuestCard />
+        <div className="md:block">
+          <HeroTriviaCard />
         </div>
       </div>
     </section>

@@ -83,6 +83,19 @@ export default function OrdersDesk({
     onChanged?.();
   }
 
+  async function recordBankTransfer(order: AdminOrder, reference: string) {
+    const data = await patch(order, { action: 'bank_transfer', reference }, 'Could not record the transfer.');
+    if (!data) return false;
+    patchOrder(order.id, {
+      status: data.status,
+      paymentProvider: data.paymentProvider,
+      paymentRef: data.paymentRef,
+    });
+    notify(`Recorded Access Bank transfer for ${order.fullName.split(' ')[0]}.`);
+    onChanged?.();
+    return true;
+  }
+
   async function saveTracking(order: AdminOrder, tracking: TrackingPatch) {
     const data = await patch(order, { action: 'tracking', ...tracking }, 'Could not save tracking info.');
     if (!data) return false;
@@ -158,6 +171,7 @@ export default function OrdersDesk({
         onRefund={setRefunding}
         onDelete={deleteOrder}
         onEdit={setEditing}
+        onRecordBank={recordBankTransfer}
         onFilter={(f) => reload(f)}
         total={total}
         hasMore={hasMore}

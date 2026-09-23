@@ -7,14 +7,13 @@ import {
   rewardsIn,
   sortRewards,
 } from './rewards';
-import { LOYALTY_PERKS, LOYALTY_TIERS } from './program';
+import { LOYALTY_TIERS } from './program';
 import { getDrinkBySlug } from '@/lib/drinks/catalog';
 
 describe('points pricing', () => {
-  it('prices money-valued rewards off the rate the programme already publishes', () => {
-    const shopCredit = LOYALTY_PERKS.find((p) => p.id === 'shop-5k')!;
-    expect(pointsForNgn(5_000)).toBe(shopCredit.cost);
-    expect(5_000 / shopCredit.cost).toBe(NGN_PER_POINT);
+  it('prices money-valued rewards off the published liability rate', () => {
+    expect(pointsForNgn(5_000)).toBe(2_000);
+    expect(5_000 / 2_000).toBe(NGN_PER_POINT);
   });
 
   it('rounds up to a clean 50 so no reward is priced in odd points', () => {
@@ -41,6 +40,25 @@ describe('rewards catalog', () => {
       expect(getReward(reward.id)).toBe(reward);
     }
     expect(getReward('not-a-reward')).toBeUndefined();
+  });
+
+  it('only offers bottles and merch — no shop credit or experiences', () => {
+    for (const reward of REWARDS) {
+      expect(['bottles', 'merch']).toContain(reward.category);
+    }
+    expect(rewardsIn('bottles').length).toBeGreaterThan(0);
+    expect(rewardsIn('merch').length).toBeGreaterThan(0);
+  });
+
+  it('ships the Convivia cap, tee and cups with their photos', () => {
+    const cap = getReward('merch-cap');
+    const tee = getReward('merch-tee');
+    const cups = getReward('merch-cups');
+    expect(cap?.image).toBe('/Convivia cap.png');
+    expect(tee?.image).toBe('/Convivia t shirt.png');
+    expect(cups?.image).toBe('/Convivia cups.png');
+    expect(cups?.detail).toMatch(/pack of 50/i);
+    expect(cups?.inventorySlug).toBe('convivia-cups-50');
   });
 
   it('gates every reward behind a tier the programme actually defines', () => {

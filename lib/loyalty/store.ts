@@ -1,12 +1,9 @@
 import {
-  LOYALTY_PERKS,
   POINTS_CHECKIN,
   POINTS_REVIEW,
   POINTS_RSVP,
   pointsFromSpend,
   shopDiscountPct,
-  tierForPoints,
-  type LoyaltyPerk,
 } from '@/lib/loyalty/program';
 import { redeemGiftCard } from '@/lib/loyalty/gift-cards';
 
@@ -133,29 +130,6 @@ export function earnReview(venueSlug: string, venueName: string): LoyaltyWallet 
   if (w.reviewed.includes(venueSlug)) return w;
   const next = { ...w, reviewed: [...w.reviewed, venueSlug] };
   return credit(next, POINTS_REVIEW, `Review · ${venueName}`);
-}
-
-export function redeemPerk(perkId: string): LoyaltyWallet | { error: string } {
-  const w = load();
-  if (!isEnrolled(w)) return { error: 'Activate your card first.' };
-  const perk: LoyaltyPerk | undefined = LOYALTY_PERKS.find((p) => p.id === perkId);
-  if (!perk) return { error: 'Unknown perk.' };
-  const tier = tierForPoints(w.points);
-  const rank = ['guest', 'regular', 'resident', 'patron'];
-  if (rank.indexOf(tier.id) < rank.indexOf(perk.minTier)) {
-    return { error: `Unlocks at ${perk.minTier} tier.` };
-  }
-  if (w.points < perk.cost) return { error: 'Not enough points.' };
-  let walletNgn = w.walletNgn;
-  if (perk.id === 'shop-5k') walletNgn += 5000;
-  if (perk.id === 'shop-15k') walletNgn += 15000;
-  const next: LoyaltyWallet = {
-    ...w,
-    points: w.points - perk.cost,
-    walletNgn,
-    redeemedPerkIds: [...w.redeemedPerkIds, perk.id],
-  };
-  return credit(next, -perk.cost, `Redeemed · ${perk.name}`);
 }
 
 export function applyGiftCode(code: string): LoyaltyWallet | { error: string } {

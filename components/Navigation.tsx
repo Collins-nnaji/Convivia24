@@ -175,7 +175,6 @@ export default function Navigation() {
               count={count}
               subtotalNgn={subtotalNgn}
               active={isActive('/cart')}
-              showSubtotal={false}
               showCounts={mounted}
             />
             {signedIn && user ? (
@@ -387,35 +386,31 @@ function CartButton({
   count,
   subtotalNgn,
   active,
-  showSubtotal = true,
   showCounts = true,
 }: {
   count: number;
   subtotalNgn: number;
   active: boolean;
-  showSubtotal?: boolean;
   showCounts?: boolean;
 }) {
+  const filled = showCounts && count > 0;
   return (
     <Link
       href="/cart"
       scroll
-      aria-label={`Cart, ${count} items`}
-      className={`relative ml-2 inline-flex items-center gap-2 px-2.5 py-2 text-base transition-colors ${
-        active ? 'font-bold text-obsidian' : 'font-semibold text-obsidian/55 hover:text-obsidian'
+      aria-label={filled ? `Cart, ${count} items, ${formatNgn(subtotalNgn)}` : 'Cart'}
+      className={`relative ml-1 inline-flex items-center gap-1.5 rounded-full px-2 py-1.5 transition-colors ${
+        active ? 'bg-obsidian/[0.06] text-obsidian' : 'text-obsidian/55 hover:bg-obsidian/[0.04] hover:text-obsidian'
       }`}
     >
-      <ShoppingBag size={20} strokeWidth={2.2} />
-      <span className="hidden sm:inline">Cart</span>
-      {showCounts && count > 0 && (
-        <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-ember text-white text-[10px] font-bold flex items-center justify-center leading-none">
-          {count}
-        </span>
-      )}
-      {showCounts && showSubtotal && count > 0 && (
-        <span className="hidden lg:inline text-xs text-obsidian/45 tabular-nums">
-          {formatNgn(subtotalNgn)}
-        </span>
+      <ShoppingBag size={18} strokeWidth={2.2} />
+      {filled && (
+        <>
+          <span className="min-w-[16px] h-4 px-1 rounded-full bg-ember text-white text-[9px] font-bold flex items-center justify-center leading-none">
+            {count}
+          </span>
+          <span className="text-[11px] font-semibold tabular-nums text-obsidian">{formatNgn(subtotalNgn)}</span>
+        </>
       )}
     </Link>
   );

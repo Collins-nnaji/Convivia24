@@ -6,7 +6,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Lock } from 'lucide-react';
 import { HouseGlyph } from '@/components/trivia/TriviaIcons';
 import FeaturedRound from '@/components/trivia/FeaturedRound';
-import ChallengesHub from '@/components/trivia/ChallengesHub';
 import TriviaRoundPlayer from '@/components/trivia/TriviaRound';
 import { useTriviaHub } from '@/components/trivia/use-hub';
 import type { TriviaRound } from '@/lib/trivia/catalog';
@@ -22,7 +21,6 @@ export default function TriviaSection() {
   const [playing, setPlaying] = useState<TriviaRound | null>(null);
   const [signInPrompt, setSignInPrompt] = useState(false);
   const [guestPlayApproved, setGuestPlayApproved] = useState(false);
-  const points = hub.standing?.points ?? null;
 
   function playLive() {
     if (!hub.signedIn && !guestPlayApproved) {
@@ -41,15 +39,6 @@ export default function TriviaSection() {
     else setSignInPrompt(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wantsLive, hub.loading]);
-
-  useEffect(() => {
-    if (playing) return;
-    if (window.location.hash !== '#challenges') return;
-    const el = document.getElementById('challenges');
-    if (!el) return;
-    const frame = requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }));
-    return () => cancelAnimationFrame(frame);
-  }, [playing]);
 
   useEffect(() => {
     if (!playing) return;
@@ -93,18 +82,6 @@ export default function TriviaSection() {
 
             <div className="space-y-4 p-4 sm:space-y-5 sm:p-6">
               <FeaturedRound round={live} match={scoreOf(live)} onPlay={playLive} />
-
-              <section id="challenges" className="scroll-mt-32">
-                <ChallengesHub
-                  meters={hub.meters}
-                  claimed={hub.claimed}
-                  weekStart={hub.weekStart}
-                  signedIn={hub.signedIn}
-                  points={points}
-                  onPlay={playLive}
-                />
-              </section>
-
               <PracticeRounds rounds={practice} scoreOf={scoreOf} onPlay={setPlaying} />
             </div>
           </motion.div>

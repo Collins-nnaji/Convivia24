@@ -37,8 +37,13 @@ export async function rateLimit(key: string, limit: number, windowSeconds: numbe
   try {
     const count = await r.incr(k);
     if (count === 1) await r.expire(k, windowSeconds);
+    const ok = count <= limit;
+    // Daily route counters for the admin analytics desk — never await so RL stays fast.
+    void import('@/lib/analytics/api-usage')
+      .then(({ recordApiUsage }) => recordApiUsage(key, !ok))
+      .catch(() => {});
     return {
-      ok: count <= limit,
+      ok,
       remaining: Math.max(0, limit - count),
       resetAt: (window + 1) * windowSeconds * 1000,
     };

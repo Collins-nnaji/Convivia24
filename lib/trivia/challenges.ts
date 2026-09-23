@@ -175,19 +175,11 @@ export const REWARD_TIERS: RewardTier[] = [
     cta: 'Explore',
   },
   {
-    id: 'shop-credit',
-    name: 'Shop Credit',
-    detail: 'Applied at checkout',
-    icon: 'Wallet',
-    category: 'credit',
-    cta: 'Redeem',
-  },
-  {
-    id: 'experiences',
-    name: 'Partner Perks',
-    detail: 'At partner venues',
+    id: 'merch',
+    name: 'Merchandise',
+    detail: 'Caps, tees and glassware',
     icon: 'Gift',
-    category: 'experiences',
+    category: 'merch',
     cta: 'Explore',
   },
 ];

@@ -49,7 +49,9 @@ export const TASTE_NOTES: Record<string, string> = {
   "ciroc-red-berry": "Grape vodka infused with berry — sweeter and fruitier than the Snap Frost original.",
   "ciroc-mango": "Tropical and juicy — mango up front over the same soft, grape-distilled base.",
   "prosecco-brut": "Pear and white flowers with a soft, fast fizz — lighter and less yeasty than Champagne.",
-  "convivia-cocktail": "Light, citrus-led house mix — easy, cold, and built for delivery.",
+  "mojito-fusion": "Mint, citrus, cold — an easy house mojito for cooler bags.",
+  "ruv-punch": "Fruit-forward punch cocktail — bright and built for day parties.",
+  "passion-spiritz": "Passion fruit with a light sparkle — tropical and delivery-ready.",
   "smirnoff-ice-pack": "Lemon-lime and vodka, lightly carbonated — sweet, cold, and built for a cooler bag.",
   "schweppes-tonic-pack": "Bitter quinine and light citrus — the classic gin partner, nothing fancy.",
 };

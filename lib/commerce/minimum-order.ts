@@ -1,51 +1,53 @@
-import { getDrinkBySlug } from '@/lib/drinks/catalog';
-import { getPackageBySlug, bottleCount } from '@/lib/packages/catalog';
+import { findSellable } from '@/lib/catalog/sellable';
 
 /**
- * Minimum order size, in bottles.
+ * Per-SKU checkout floors.
  *
- * Set to 1 so any single bottle (or package) can checkout. Counted across the whole cart
- * rather than per line — a customer may mix SKUs freely. Sample SKUs do not count.
+ * Expensive bottles stay at 1. Cheap cocktails / RTDs often need 3+ so a
+ * delivery run still makes sense. Admin can override via inventory.min_order_qty;
+ * the catalog value is the default when stock has never been edited.
  */
-export const MIN_ORDER_BOTTLES = 1;
 
-export type CountableLine = { slug: string; qty: number };
+export type CountableLine = { slug: string; qty: number; name?: string };
+
+/** Catalog default for a slug (packages and unknown SKUs → 1). */
+export function catalogMinOrderQty(slug: string): number {
+  const product = findSellable(slug);
+  const raw = product?.minOrderQty ?? 1;
+  return Math.max(1, Math.min(24, Math.floor(Number(raw) || 1)));
+}
+
+/** Clamp a requested qty into [min, 24]. */
+export function clampOrderQty(slug: string, qty: number, min = catalogMinOrderQty(slug)): number {
+  const units = Math.floor(Number(qty) || 0);
+  if (units <= 0) return 0;
+  return Math.max(min, Math.min(24, units));
+}
 
 /**
- * Bottles a single cart line represents.
- *
- * An event package is one line but many bottles, so it counts as its full contents — any package
- * clears the minimum on its own, which is the honest reading of what the customer is buying.
- *
- * Sample SKUs (if any) count for nothing — they are payment-test lines only, not deliverables.
+ * Customer-facing reason the cart cannot proceed, or null when every line
+ * meets its own minimum. Empty cart is called out separately.
  */
-export function bottleUnitsFor(slug: string, qty: number): number {
-  const units = Math.max(0, Math.floor(Number(qty) || 0));
-  if (!units) return 0;
-  if (getDrinkBySlug(slug)?.sample) return 0;
-  const pkg = getPackageBySlug(slug);
-  return pkg ? bottleCount(pkg) * units : units;
-}
-
-export function orderBottleCount(lines: CountableLine[]): number {
-  if (!Array.isArray(lines)) return 0;
-  return lines.reduce((n, l) => n + bottleUnitsFor(l?.slug, l?.qty), 0);
-}
-
-export function meetsMinimum(lines: CountableLine[]): boolean {
-  return orderBottleCount(lines) >= MIN_ORDER_BOTTLES;
-}
-
-/** How many more bottles are needed. Zero once the minimum is met. */
-export function bottlesShort(lines: CountableLine[]): number {
-  return Math.max(0, MIN_ORDER_BOTTLES - orderBottleCount(lines));
-}
-
-/** Customer-facing reason the order cannot proceed, or null when it can. */
 export function minimumOrderError(lines: CountableLine[]): string | null {
   if (!Array.isArray(lines) || lines.length === 0) return 'Your cart is empty.';
-  const short = bottlesShort(lines);
-  if (!short) return null;
-  const have = orderBottleCount(lines);
-  return `Minimum order is ${MIN_ORDER_BOTTLES} bottles. You have ${have} — add ${short} more.`;
+  for (const line of lines) {
+    if (!line?.slug) continue;
+    const min = catalogMinOrderQty(line.slug);
+    const qty = Math.max(0, Math.floor(Number(line.qty) || 0));
+    if (qty < min) {
+      const name = line.name || findSellable(line.slug)?.name || line.slug;
+      return `${name}: minimum order is ${min}. You have ${qty} — add ${min - qty} more.`;
+    }
+  }
+  return null;
+}
+
+/** True when every line clears its own floor (and the cart is not empty). */
+export function meetsMinimum(lines: CountableLine[]): boolean {
+  return minimumOrderError(lines) === null;
+}
+
+/** How many more units a single line needs. Zero once met. */
+export function lineShort(slug: string, qty: number): number {
+  return Math.max(0, catalogMinOrderQty(slug) - Math.max(0, Math.floor(Number(qty) || 0)));
 }

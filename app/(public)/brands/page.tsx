@@ -28,7 +28,7 @@ export default function BrandsPage() {
             <span className="brand-text">Brands</span>
           </h1>
           <p className="mt-1.5 text-[15px] font-semibold text-obsidian/65 sm:text-base">
-            {BRANDS.length} houses behind the bottles — history, style, and everything we carry.
+            {BRANDS.length} houses — history, style, and the bottles we carry when they are in.
           </p>
         </div>
       </header>
@@ -66,8 +66,14 @@ export default function BrandsPage() {
                     </span>
                     <span className="mt-auto pt-4 flex items-center justify-between gap-3">
                       <span className="text-[12px] text-obsidian/45">
-                        {brand.products.length} bottle{brand.products.length === 1 ? '' : 's'}
-                        {from && <> · from {formatNgn(from.priceNgn)}</>}
+                        {brand.products.length > 0 ? (
+                          <>
+                            {brand.products.length} bottle{brand.products.length === 1 ? '' : 's'}
+                            {from && <> · from {formatNgn(from.priceNgn)}</>}
+                          </>
+                        ) : (
+                          'Range between drops'
+                        )}
                       </span>
                       <ChevronRight
                         size={16}
@@ -81,16 +87,9 @@ export default function BrandsPage() {
           })}
         </ul>
 
-        <section className="mt-10 rounded-2xl border border-obsidian/10 bg-white p-5 sm:p-7">
-          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-ember">For brands</p>
-          <h2 className="mt-1 font-wordmark text-2xl text-obsidian sm:text-3xl">Sponsor a round</h2>
-          <p className="mt-1.5 max-w-xl text-[14px] leading-relaxed text-obsidian/60">
-            Put your house in front of Lagos drinkers with a trivia week, a prize bottle and a campaign page.
-          </p>
-          <div className="mt-5 max-w-2xl">
-            <BrandEnquiryForm />
-          </div>
-        </section>
+        <div className="mt-10">
+          <BrandEnquiryForm />
+        </div>
       </div>
     </section>
   );

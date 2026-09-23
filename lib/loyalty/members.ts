@@ -1,6 +1,6 @@
 import sql from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth/session';
-import { nextTier, pointsFromSpend, shopDiscountPct, tierForPoints } from '@/lib/loyalty/program';
+import { nextTier, pointsFromOrderItems, pointsFromSpend, shopDiscountPct, tierForPoints } from '@/lib/loyalty/program';
 
 /**
  * Server-side loyalty record. The browser wallet is fine for display, but a
@@ -152,6 +152,9 @@ export function loyaltyDiscountNgn(subtotalNgn: number, member: Member | null): 
  * Make an order's points match its fulfilment state. Delivery awards once;
  * cancellation/refund removes that exact award. The order column is the
  * idempotency receipt, so repeated status updates cannot duplicate either action.
+ *
+ * Points are earned off each line's price band so entry bottles stay lean and
+ * icon bottles can fund a richer award — then scaled if a tier discount cut the charge.
  */
 export async function reconcileOrderPoints(orderId: string): Promise<void> {
   const [order] = await sql`
@@ -165,8 +168,25 @@ export async function reconcileOrderPoints(orderId: string): Promise<void> {
   const delivered = order.status === 'delivered' || order.status === 'fulfilled';
   const reversed = order.status === 'cancelled' || order.status === 'refunded';
   if (!delivered && !reversed) return;
-  const chargedNgn = Number(order.total_ngn ?? order.subtotal_ngn);
-  const desired = delivered ? pointsFromSpend(chargedNgn) : 0;
+
+  let desired = 0;
+  if (delivered) {
+    const items = await sql`
+      SELECT unit_price_ngn, qty FROM ritual_order_items WHERE order_id = ${orderId}
+    `;
+    const chargedNgn = Number(order.total_ngn ?? order.subtotal_ngn);
+    desired =
+      items.length > 0
+        ? pointsFromOrderItems(
+            items.map((row) => ({
+              unitPriceNgn: Number(row.unit_price_ngn),
+              qty: Number(row.qty),
+            })),
+            chargedNgn
+          )
+        : pointsFromSpend(chargedNgn);
+  }
+
   const delta = desired - current;
   if (delta === 0) return;
   try {

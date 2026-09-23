@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, Megaphone } from 'lucide-react';
+import { Check, ChevronDown, Megaphone } from 'lucide-react';
 import {
   BUDGET_BANDS,
   BUDGET_LABELS,
@@ -10,10 +10,11 @@ import {
 } from '@/lib/trivia/enquiries';
 
 /**
- * Commercial enquiry form on the Brands page — sponsor a round, get poured at an event,
- * or get into a party package.
+ * Commercial enquiry form on the Brands page — closed by default so the directory
+ * stays the focus; open it when a brand wants to sponsor a round.
  */
 export default function BrandEnquiryForm() {
+  const [open, setOpen] = useState(false);
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -52,49 +53,44 @@ export default function BrandEnquiryForm() {
   const labelClass = 'text-[10px] uppercase tracking-wider text-obsidian/40';
 
   return (
-    <section id="brands" className="bg-paper border-t border-obsidian/10 py-14 sm:py-20 scroll-mt-20">
-      <div className="max-w-5xl mx-auto px-5 sm:px-8">
-        <div className="grid gap-10 lg:grid-cols-[1fr_1.15fr]">
-          <div>
-            <p className="inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.3em] text-ember mb-3">
-              <Megaphone size={12} /> For brands
-            </p>
-            <h2 className="font-wordmark text-base sm:text-lg text-obsidian mb-3">
-              Put your bottle in front of people already buying one.
-            </h2>
-            <p className="text-sm text-obsidian/60 leading-relaxed mb-5">
-              Every person here is planning a party or stocking a bar. Sponsor a trivia round, get
-              poured at our events, or ride along inside a party package — and reach them at the
-              moment they are choosing what to order.
-            </p>
-            <ul className="space-y-2.5 text-xs text-obsidian/55">
-              {[
-                'Sponsored rounds carry your brand story and a prize draw.',
-                'Sampling and pouring slots at Convivia24 nights.',
-                'Placement inside the event packages people order by name.',
-                'Straight shop listing with nationwide delivery behind it.',
-              ].map((line) => (
-                <li key={line} className="flex gap-2">
-                  <span className="text-ember mt-0.5">·</span>
-                  {line}
-                </li>
-              ))}
-            </ul>
-          </div>
+    <section id="brands-enquiry" className="rounded-2xl border border-obsidian/10 bg-white scroll-mt-20">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-start gap-3 px-5 py-5 text-left sm:px-7 sm:py-6"
+      >
+        <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full bg-ember/8 text-ember">
+          <Megaphone size={16} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[11px] font-bold uppercase tracking-[0.18em] text-ember">For brands</span>
+          <span className="mt-1 block font-wordmark text-xl text-obsidian sm:text-2xl">Sponsor a round</span>
+          <span className="mt-1.5 block text-[14px] leading-relaxed text-obsidian/55">
+            Trivia week, prize bottle, campaign page — reach people while they are choosing what to order.
+          </span>
+        </span>
+        <ChevronDown
+          size={18}
+          className={`mt-1 shrink-0 text-obsidian/35 transition-transform ${open ? 'rotate-180' : ''}`}
+        />
+      </button>
 
+      {open && (
+        <div className="border-t border-obsidian/8 px-5 pb-6 pt-5 sm:px-7 sm:pb-7">
           {sent ? (
-            <div className="bg-white border border-obsidian/10 p-6 self-start">
+            <div className="max-w-xl">
               <p className="inline-flex items-center gap-2 text-ember text-[10px] uppercase tracking-wider mb-2">
                 <Check size={14} /> Enquiry sent
               </p>
               <h3 className="font-semibold text-obsidian mb-2">We will be in touch.</h3>
               <p className="text-sm text-obsidian/55 leading-relaxed">
-                Someone from the team will reply to the email you gave us, usually within two working
-                days, with what we can do and what it costs.
+                Someone from the team will reply to the email you gave us, usually within two working days,
+                with what we can do and what it costs.
               </p>
             </div>
           ) : (
-            <form onSubmit={submit} className="bg-white border border-obsidian/10 p-6 space-y-5">
+            <form onSubmit={submit} className="max-w-2xl space-y-5">
               <div className="grid sm:grid-cols-2 gap-5">
                 <label className="block">
                   <span className={labelClass}>Brand</span>
@@ -169,7 +165,7 @@ export default function BrandEnquiryForm() {
             </form>
           )}
         </div>
-      </div>
+      )}
     </section>
   );
 }

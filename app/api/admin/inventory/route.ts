@@ -76,6 +76,9 @@ export async function POST(req: NextRequest) {
         if (body.lowStockThreshold != null && body.lowStockThreshold !== '') {
           patch.lowStockThreshold = Number(body.lowStockThreshold);
         }
+        if (body.minOrderQty != null && body.minOrderQty !== '') {
+          patch.minOrderQty = Number(body.minOrderQty);
+        }
         if (typeof body.active === 'boolean') patch.active = body.active;
         if (body.tasteNote !== undefined) patch.tasteNote = body.tasteNote == null ? null : String(body.tasteNote);
         if (body.tagline !== undefined) patch.tagline = body.tagline == null ? null : String(body.tagline);

@@ -65,7 +65,7 @@ function PlayChallengeCard({
       </div>
       <div className="min-w-0 flex-1">
         <p className={`font-bold truncate ${compact ? 'text-[13px]' : 'text-sm'}`}>
-          {round.brand} Challenge
+          {round.brand} trivia
         </p>
         <p className={`text-obsidian/50 mt-0.5 ${compact ? 'text-[11px]' : 'text-[12px]'}`}>
           {round.questions.length} questions · {compact ? '250 pts' : 'earn 250 pts'}
@@ -83,8 +83,7 @@ function PlayChallengeCard({
           compact ? 'px-3.5 py-2.5' : 'px-4 sm:px-5 py-3 gap-1.5'
         }`}
       >
-        <span className="hidden sm:inline">Take the challenge</span>
-        <span className="sm:hidden">Play</span>
+        Play
         <ChevronRight size={14} />
       </button>
     </motion.div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, Suspense, useEffect, useMemo, useState } from 'react';
+import { FormEvent, Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -23,9 +23,9 @@ import { useUser } from '@/components/auth/AuthProvider';
 import DrinkPhoto from '@/components/shop/DrinkPhoto';
 import { findSellable } from '@/lib/catalog/sellable';
 import { formatNgn } from '@/lib/drinks/catalog';
-import { pointsFromSpend } from '@/lib/loyalty/program';
+import { pointsFromOrderItems } from '@/lib/loyalty/program';
 import { isEnrolled } from '@/lib/loyalty/store';
-import { MIN_ORDER_BOTTLES, bottlesShort, orderBottleCount } from '@/lib/commerce/minimum-order';
+import { minimumOrderError } from '@/lib/commerce/minimum-order';
 
 const PENDING_ORDER_KEY = 'convivia_pending_order';
 
@@ -91,12 +91,14 @@ function CheckoutForm() {
   const [enrolled, setEnrolled] = useState(false);
   const [giftCardCode, setGiftCardCode] = useState('');
 
-  const bottles = orderBottleCount(lines);
-  const short = bottlesShort(lines);
+  const minError = minimumOrderError(lines);
 
   const discountNgn = Math.round((subtotalNgn * discountPct) / 100);
   const payableNgn = Math.max(0, subtotalNgn - discountNgn);
-  const pointsEarned = useMemo(() => pointsFromSpend(payableNgn), [payableNgn]);
+  const pointsEarned = pointsFromOrderItems(
+    lines.map((l) => ({ unitPriceNgn: l.priceNgn, qty: l.qty })),
+    payableNgn
+  );
 
   // The order is filed under the session email, so the form must show that address and no other.
   useEffect(() => {
@@ -128,8 +130,8 @@ function CheckoutForm() {
 
   async function placeOrder() {
     if (lines.length === 0) return;
-    if (short > 0) {
-      setError(`Minimum order is ${MIN_ORDER_BOTTLES} bottles. You have ${bottles} — add ${short} more.`);
+    if (minError) {
+      setError(minError);
       return;
     }
     setPhase('creating');
@@ -261,16 +263,11 @@ function CheckoutForm() {
     );
   }
 
-  if (short > 0) {
+  if (minError) {
     return (
       <Shell>
-        <h1 className="text-3xl font-bold mb-3">
-          Add {short} more bottle{short === 1 ? '' : 's'}
-        </h1>
-        <p className="text-sm text-obsidian/55 mb-6 leading-relaxed max-w-lg">
-          Minimum order is {MIN_ORDER_BOTTLES} bottles and your cart has {bottles}. Mix anything you like —
-          bottles, packs and mixers all count.
-        </p>
+        <h1 className="text-3xl font-bold mb-3">Almost there</h1>
+        <p className="text-sm text-obsidian/55 mb-6 leading-relaxed max-w-lg">{minError}</p>
         <div className="flex flex-wrap gap-4">
           <Link href="/shop" className="text-[11px] font-black uppercase tracking-[0.2em] text-ember">
             Shop drinks →

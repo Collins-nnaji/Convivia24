@@ -47,11 +47,15 @@ describe('catalog integrity', () => {
     expect(preferTrackForCategory('whisky')).toBe('spirit');
   });
 
-  it('includes the Convivia Cocktail as a deliverable canned cocktail', () => {
-    const cocktail = getDrinkBySlug('convivia-cocktail');
-    expect(cocktail?.name).toBe('Convivia Cocktail');
-    expect(cocktail?.priceNgn).toBe(500);
-    expect(cocktail?.sample).toBeFalsy();
+  it('includes Convivia house cocktails at ₦1,200 with a 3-unit minimum', () => {
+    for (const slug of ['mojito-fusion', 'ruv-punch', 'passion-spiritz'] as const) {
+      const cocktail = getDrinkBySlug(slug);
+      expect(cocktail?.category).toBe('cocktails');
+      expect(cocktail?.priceNgn).toBe(1200);
+      expect(cocktail?.minOrderQty).toBe(3);
+      expect(cocktail?.image).toBeTruthy();
+    }
+    expect(getDrinkBySlug('convivia-cocktail')).toBeUndefined();
   });
 
   it('searchDrinks matches by name case-insensitively', () => {

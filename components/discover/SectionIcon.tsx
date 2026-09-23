@@ -16,7 +16,6 @@ export function SectionIcon({ section, size = 40, className = '' }: { section: D
   };
   switch (section) {
     case 'trivia':
-      // A question card with a tick — the round you play.
       return (
         <svg {...common}>
           <rect x="8" y="6" width="32" height="36" rx="4" />
@@ -26,7 +25,18 @@ export function SectionIcon({ section, size = 40, className = '' }: { section: D
         </svg>
       );
     case 'taste':
-      // A coupe glass with a stirrer — profile and mixing in one.
+      // A palate with marks — what you like.
+      return (
+        <svg {...common}>
+          <path d="M24 8c-8.5 0-15 6-15 14.5S15.5 38 24 38c2.2 0 3.2-1.4 3.2-3.2 0-1.4 1.1-2.3 2.4-2.3h2.9c5.3 0 9.5-4 9.5-9.5C42 15 34.5 8 24 8z" />
+          <circle cx="16.5" cy="20" r="2.2" fill="currentColor" stroke="none" />
+          <circle cx="24" cy="16.5" r="2.2" fill="currentColor" stroke="none" />
+          <circle cx="31.5" cy="20" r="2.2" fill="currentColor" stroke="none" />
+          <circle cx="21" cy="26.5" r="2.2" fill="currentColor" stroke="none" />
+        </svg>
+      );
+    case 'mix':
+      // A coupe with a stirrer — the bartender.
       return (
         <svg {...common}>
           <path d="M10 10h28l-2 6c-1.5 4.5-6 8-12 8s-10.5-3.5-12-8z" />
@@ -37,7 +47,6 @@ export function SectionIcon({ section, size = 40, className = '' }: { section: D
         </svg>
       );
     case 'rewards':
-      // A ribboned gift — the shop you spend points in.
       return (
         <svg {...common}>
           <rect x="8" y="18" width="32" height="24" rx="3" />

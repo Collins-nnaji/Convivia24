@@ -15,7 +15,7 @@ const card: Variants = {
 };
 
 /**
- * Discover is one screen: the three sections sit in a rail on the left and the chosen one fills
+ * Discover is one screen: the sections sit in a rail on the left and the chosen one fills
  * the right. Each section keeps its own URL so the browser back button and deep links still work;
  * the rail just highlights whichever route is open.
  */

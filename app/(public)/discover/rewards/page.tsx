@@ -4,7 +4,7 @@ import { absoluteUrl } from '@/lib/seo';
 
 export const metadata: Metadata = {
   title: 'Rewards shop',
-  description: 'Spend Convivia24 points on bottles, shop credit, partner perks and merchandise.',
+  description: 'Spend Convivia24 points on bottles and Convivia merch. Adults 18+.',
   alternates: { canonical: absoluteUrl('/discover/rewards') },
 };
 

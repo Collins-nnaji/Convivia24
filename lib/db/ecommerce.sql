@@ -52,6 +52,10 @@ ALTER TABLE inventory ADD COLUMN IF NOT EXISTS taste_note TEXT;
 ALTER TABLE inventory ADD COLUMN IF NOT EXISTS cost_ngn INTEGER
   CHECK (cost_ngn IS NULL OR cost_ngn >= 0);
 
+-- Per-SKU checkout floor. Cheap cocktails often need 3; premium bottles stay at 1.
+ALTER TABLE inventory ADD COLUMN IF NOT EXISTS min_order_qty INTEGER NOT NULL DEFAULT 1
+  CHECK (min_order_qty >= 1 AND min_order_qty <= 24);
+
 CREATE TABLE IF NOT EXISTS supplier_sku_prices (
   supplier_id   UUID NOT NULL REFERENCES suppliers(id) ON DELETE CASCADE,
   slug          TEXT NOT NULL,
@@ -112,3 +116,12 @@ ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS routed_out_of_city BOOLEAN NO
 -- What the routed supplier quoted for this order, so margin is visible before manual sourcing.
 ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS routed_cost_ngn INTEGER
   CHECK (routed_cost_ngn IS NULL OR routed_cost_ngn >= 0);
+
+-- Shelf markup for the drinks desk. Fees stay in code (Flutterwave + Access); this is the part we set.
+CREATE TABLE IF NOT EXISTS pricing_policy (
+  id               TEXT PRIMARY KEY,
+  markup_pct       NUMERIC NOT NULL DEFAULT 15 CHECK (markup_pct >= 0 AND markup_pct <= 500),
+  markup_flat_ngn  INTEGER NOT NULL DEFAULT 0 CHECK (markup_flat_ngn >= 0),
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+INSERT INTO pricing_policy (id) VALUES ('default') ON CONFLICT (id) DO NOTHING;

@@ -254,3 +254,24 @@ function strengthFor(picked: number, max: number): number {
   // One pick out of the allowed maximum is the most decisive answer there is.
   return Math.round((1 - (picked - 1) / Math.max(1, max)) * 40 + 60);
 }
+
+/** Maps a taste profile onto the cocktail maker's base and style. */
+export function cocktailDefaults(profile: TasteProfile | null): { spirit: string; style: string } {
+  if (!hasTasteProfile(profile)) return { spirit: 'gin', style: 'refreshing' };
+  const first = profile.spirits[0];
+  const spirit =
+    first === 'wines' || first === 'champagne'
+      ? 'wine'
+      : first && ['cognac', 'whisky', 'vodka', 'tequila'].includes(first)
+        ? first
+        : 'gin';
+  const f = new Set(profile.flavours);
+  const style = f.has('sweet')
+    ? 'sweet'
+    : f.has('citrus')
+      ? 'refreshing'
+      : f.has('rich') || f.has('oak') || f.has('smoky')
+        ? 'strong and spirit-forward'
+        : 'refreshing';
+  return { spirit, style };
+}

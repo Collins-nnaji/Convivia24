@@ -3,8 +3,8 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import ConviviumCard from '@/components/ConviviumCard';
-import { enroll, getWallet, isEnrolled, redeemPerk } from '@/lib/loyalty/store';
-import { LOYALTY_PERKS, LOYALTY_TIERS, nextTier, tierForPoints } from '@/lib/loyalty/program';
+import { enroll, getWallet, isEnrolled } from '@/lib/loyalty/store';
+import { LOYALTY_TIERS, nextTier, tierForPoints } from '@/lib/loyalty/program';
 import { formatNgn } from '@/lib/drinks/catalog';
 import { eventsEnabled } from '@/lib/features';
 import { eventsFallbackHref } from '@/lib/nav';
@@ -32,16 +32,6 @@ export default function GuestCardPanel() {
     e.preventDefault();
     setWallet(enroll(name, email));
     setMsg('Your Guest Card is live.');
-  }
-
-  function onRedeem(id: string) {
-    const result = redeemPerk(id);
-    if ('error' in result) {
-      setMsg(result.error);
-      return;
-    }
-    setWallet(result);
-    setMsg('Perk unlocked.');
   }
 
   return (
@@ -80,7 +70,7 @@ export default function GuestCardPanel() {
           <form onSubmit={onEnroll} className="bg-white border border-obsidian/8 p-6 space-y-4 shadow-sm">
             <h2 className="font-bold">Activate your card</h2>
             <p className="text-sm text-obsidian/50">
-              Perks at partner rooms, discounts on drops, and gift cards issued from the partner desk.
+              Tier discounts at checkout, and gift cards issued from the partner desk.
             </p>
             <input
               required
@@ -103,30 +93,18 @@ export default function GuestCardPanel() {
           </form>
         ) : (
           <>
-            <div>
-              <h2 className="font-bold mb-3">Redeem perks</h2>
-              <ul className="space-y-2">
-                {LOYALTY_PERKS.map((p) => (
-                  <li
-                    key={p.id}
-                    className="flex items-center justify-between gap-4 bg-white border border-obsidian/8 p-4"
-                  >
-                    <div>
-                      <p className="text-sm font-semibold">{p.name}</p>
-                      <p className="text-[11px] text-obsidian/45">
-                        {p.detail} · {p.cost.toLocaleString()} pts
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => onRedeem(p.id)}
-                      className="shrink-0 px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] border border-obsidian/15 hover:border-ember hover:text-ember"
-                    >
-                      Redeem
-                    </button>
-                  </li>
-                ))}
-              </ul>
+            <div className="bg-white border border-obsidian/8 p-5">
+              <h2 className="font-bold mb-2">Spend your points</h2>
+              <p className="text-sm text-obsidian/60">
+                Bottles and Convivia merch live in the rewards shop. Your tier discount already comes off at checkout —
+                no shop credit to redeem.
+              </p>
+              <Link
+                href="/discover/rewards"
+                className="mt-4 inline-flex text-[11px] font-black uppercase tracking-[0.14em] text-ember"
+              >
+                Open rewards →
+              </Link>
             </div>
 
             <div className="bg-white border border-obsidian/8 p-5">
@@ -176,7 +154,7 @@ export default function GuestCardPanel() {
             </div>
           </>
         )}
-        {msg && <p className="text-sm text-ember">{msg}</p>}
+        {msg && <p className="text-sm text-obsidian/60">{msg}</p>}
       </div>
     </div>
   );

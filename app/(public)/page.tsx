@@ -4,7 +4,6 @@ import Link from 'next/link';
 import DrinkPlaceholder from '@/components/shop/DrinkPlaceholder';
 import DrinkPhoto from '@/components/shop/DrinkPhoto';
 import HomeHero from '@/components/home/HomeHero';
-import HomeTriviaCard from '@/components/home/HomeTriviaCard';
 import { formatEventWhen, isTonight } from '@/lib/events/catalog';
 import { useEventFeed } from '@/lib/events/use-feed';
 import { eventsEnabled } from '@/lib/features';
@@ -102,8 +101,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      <HomeTriviaCard />
 
       {!eventsEnabled && (
         <section className="bg-white py-10 sm:py-16 border-t border-obsidian/5">
