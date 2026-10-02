@@ -10,7 +10,7 @@ import Footer from '@/components/Footer';
 
 export default function PublicShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '/';
-  // The footer belongs to the home page only — every other page ends on its own content.
+  // Consumer pages share a footer, including during route loading.
   const showFooter = !pathname.startsWith('/admin') && !pathname.startsWith('/supplier');
   return (
     <CartProvider>
@@ -28,8 +28,10 @@ export default function PublicShell({ children }: { children: React.ReactNode })
           id="app-scroll"
           className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch] md:overflow-visible md:min-h-fit md:flex-none"
         >
-          <main className="relative z-0">{children}</main>
-          {showFooter && <Footer />}
+          <div className="flex min-h-full flex-col md:min-h-[calc(100dvh-4.5rem)]">
+            <main className="relative z-0 flex-1">{children}</main>
+            {showFooter && <Footer />}
+          </div>
         </div>
         <Suspense fallback={null}>
           <MobileTabBar />

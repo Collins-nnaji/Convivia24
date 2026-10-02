@@ -194,7 +194,7 @@ export default function Navigation() {
         </div>
       </header>
 
-      <div className="h-16 md:h-[4.5rem]" />
+      <div className="h-16 shrink-0 md:h-[4.5rem]" />
 
       <AnimatePresence>
         {open && (

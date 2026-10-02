@@ -1,6 +1,7 @@
 import './globals.css';
 import { Montserrat, Outfit } from 'next/font/google';
 import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 import AuthProvider from '@/components/auth/AuthProvider';
 import {
   SITE_DESCRIPTION,
@@ -150,6 +151,21 @@ export default function RootLayout({
       </head>
       <body className={`${outfit.variable} ${montserrat.variable} font-sans bg-paper text-obsidian antialiased`} suppressHydrationWarning>
         <AuthProvider>{children}</AuthProvider>
+        <Script
+          id="google-analytics-init"
+          strategy="afterInteractive"
+        >
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-S64FF0R15W');
+          `}
+        </Script>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-S64FF0R15W"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );

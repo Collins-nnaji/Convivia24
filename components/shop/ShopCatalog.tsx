@@ -331,36 +331,7 @@ export default function ShopCatalog() {
             <ChevronDown size={15} className="pointer-events-none absolute right-3 text-obsidian/45" />
           </label>
         )}
-        {section === 'packages' && (
-          <div
-            className="flex gap-1 overflow-x-auto scrollbar-hide border-b border-obsidian/10"
-            role="tablist"
-            aria-label="Package occasions"
-          >
-            {PACKAGE_OCCASION_ORDER.map((occ) => {
-              if (!EVENT_PACKAGES.some((p) => p.occasion === occ)) return null;
-              return (
-                <button
-                  key={occ}
-                  type="button"
-                  role="tab"
-                  aria-selected={packageOccasion === occ}
-                  onClick={() => goPackageOccasion(occ)}
-                  className={`relative shrink-0 px-4 py-3 font-wordmark text-xs sm:text-sm transition-colors ${
-                    packageOccasion === occ
-                      ? 'text-obsidian'
-                      : 'text-obsidian/45 hover:text-obsidian/75'
-                  }`}
-                >
-                  {OCCASION_LABELS[occ]}
-                  {packageOccasion === occ && (
-                    <span className="absolute inset-x-3 bottom-0 h-0.5 bg-ember" aria-hidden />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        )}
+
       </div>
 
       <div className="flex flex-col lg:flex-row gap-4 lg:gap-5">
@@ -534,6 +505,37 @@ export default function ShopCatalog() {
               Packages
             </ChipBtn>
           </div>
+
+          {section === 'packages' && (
+            <div
+              className="mb-5 flex gap-2 overflow-x-auto scrollbar-hide border-b border-obsidian/10"
+              role="tablist"
+              aria-label="Package occasions"
+            >
+              {PACKAGE_OCCASION_ORDER.map((occ) => {
+                if (!EVENT_PACKAGES.some((p) => p.occasion === occ)) return null;
+                return (
+                  <button
+                    key={occ}
+                    type="button"
+                    role="tab"
+                    aria-selected={packageOccasion === occ}
+                    onClick={() => goPackageOccasion(occ)}
+                    className={`relative shrink-0 px-4 py-3 text-sm font-semibold transition-colors ${
+                      packageOccasion === occ
+                        ? 'text-obsidian'
+                        : 'text-obsidian/70 hover:text-obsidian'
+                    }`}
+                  >
+                    {OCCASION_LABELS[occ]}
+                    {packageOccasion === occ && (
+                      <span className="absolute inset-x-3 bottom-0 h-0.5 bg-ember" aria-hidden />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           {section === 'packages' && (
             <PackageBrowse

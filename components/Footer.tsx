@@ -11,7 +11,7 @@ const footerLinks = [
 
 export default function Footer() {
   return (
-    <footer className="bg-obsidian border-t border-white/10 mt-auto">
+    <footer className="bg-obsidian border-t border-white/10 mt-auto shrink-0">
       <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-6 sm:pt-7 pb-[calc(1.5rem+4rem+env(safe-area-inset-bottom))] md:pb-7">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-4 min-w-0">
