@@ -25,12 +25,33 @@ export function redisConfigured(): boolean {
 
 export interface RateLimit { ok: boolean; remaining: number; resetAt: number }
 
+// A bounded per-instance fallback for non-sensitive endpoints when Redis is unavailable.
+const localLimits = new Map<string, { count: number; resetAt: number }>();
+function localRateLimit(key: string, limit: number, windowSeconds: number): RateLimit {
+  const now = Date.now();
+  for (const [storedKey, entry] of localLimits) {
+    if (entry.resetAt <= now) localLimits.delete(storedKey);
+  }
+  let entry = localLimits.get(key);
+  if (!entry) {
+    if (localLimits.size >= 10000) return { ok: false, remaining: 0, resetAt: now + windowSeconds * 1000 };
+    entry = { count: 0, resetAt: now + windowSeconds * 1000 };
+    localLimits.set(key, entry);
+  }
+  entry.count++;
+  return { ok: entry.count <= limit, remaining: Math.max(0, limit - entry.count), resetAt: entry.resetAt };
+}
+
 /**
  * Allow `limit` requests per `windowSeconds` for `key`. Returns ok=true when
  * Upstash isn't configured (so requests aren't accidentally blocked in dev).
  */
-export async function rateLimit(key: string, limit: number, windowSeconds: number): Promise<RateLimit> {
+export async function rateLimit(key: string, limit: number, windowSeconds: number, options?: { fallback?: 'local' }): Promise<RateLimit> {
+  const unavailable = () => options?.fallback === 'local'
+    ? localRateLimit(key, limit, windowSeconds)
+    : { ok: process.env.NODE_ENV !== 'production', remaining: 0, resetAt: Date.now() + windowSeconds * 1000 };
   const r = redis();
+  if (!r && options?.fallback === 'local') return unavailable();
   if (!r) return { ok: process.env.NODE_ENV !== 'production', remaining: process.env.NODE_ENV === 'production' ? 0 : limit, resetAt: Date.now() + windowSeconds * 1000 };
   const window = Math.floor(Date.now() / 1000 / windowSeconds);
   const k = `rl:${key}:${window}`;
@@ -48,7 +69,7 @@ export async function rateLimit(key: string, limit: number, windowSeconds: numbe
       resetAt: (window + 1) * windowSeconds * 1000,
     };
   } catch {
-    return { ok: process.env.NODE_ENV !== 'production', remaining: 0, resetAt: Date.now() + windowSeconds * 1000 };
+    return unavailable();
   }
 }
 

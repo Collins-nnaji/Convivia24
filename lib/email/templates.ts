@@ -37,6 +37,8 @@ function wrap(title: string, body: string): string {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <meta name="supported-color-schemes" content="light" />
   <title>${escapeHtml(title)} · Convivia24</title>
 </head>
 <body style="margin:0;padding:0;background:#fafaf8;font-family:Helvetica,Arial,sans-serif;color:#0a0a0a;">
@@ -47,7 +49,7 @@ function wrap(title: string, body: string): string {
           <!-- Brand header with real Convivia24 logo (PNG — works in Gmail/Outlook) -->
           <tr>
             <td style="padding:20px 28px;background:#ffffff;border-bottom:3px solid #8B2A22;">
-              <a href="${site}" style="text-decoration:none;display:inline-block;">
+              <a href="${site}" style="text-decoration:none;display:inline-block;padding:12px;border-radius:6px;background-color:#ffffff;background-image:linear-gradient(#ffffff,#ffffff);">
                 <img
                   src="${wordmark}"
                   alt="Convivia24"
@@ -80,7 +82,7 @@ function wrap(title: string, body: string): string {
             <td style="padding:20px 28px;border-top:1px solid #ece8e4;background:#fafaf8;">
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
                 <tr>
-                  <td valign="middle" style="width:40px;">
+                  <td valign="middle" bgcolor="#ffffff" style="width:40px;padding:6px;background-color:#ffffff;background-image:linear-gradient(#ffffff,#ffffff);border-radius:6px;">
                     <img
                       src="${mark}"
                       alt="Convivia24"
@@ -352,13 +354,13 @@ export function inventoryDigestEmail(opts: {
     html: wrap(
       opts.isTest ? 'Inventory update (test)' : 'Daily inventory update',
       `<p style="margin:0 0 16px;line-height:1.55;font-size:15px;color:#3a3532;">
-         Stock snapshot for ${escapeHtml(dateLabel)}.
+         Physical stock snapshot for ${escapeHtml(dateLabel)}. Convivia packs are calculated from their component bottles and excluded from stock totals and restock alerts.
          ${opts.isTest ? ' This is a one-off test — daily digests can use the same template later.' : ''}
        </p>
        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 20px;font-size:14px;">
          <tr>
            <td style="padding:12px;background:#fafaf8;border:1px solid #ece8e4;text-align:center;">
-             <p style="margin:0;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#6b6560;">Active SKUs</p>
+             <p style="margin:0;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#6b6560;">Stocked SKUs</p>
              <p style="margin:6px 0 0;font-size:22px;font-weight:700;color:#0a0a0a;">${tracked.length}</p>
            </td>
            <td style="width:8px;"></td>

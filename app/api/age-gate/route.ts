@@ -4,8 +4,11 @@ import { rateLimit, clientIp } from '@/lib/redis';
 
 /** Sets the signed, httpOnly age-verification cookie middleware checks on every gated request. */
 export async function POST(req: NextRequest) {
-  const rl = await rateLimit(`age-gate:${clientIp(req)}`, 20, 60);
-  if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  const rl = await rateLimit(`age-gate:${clientIp(req)}`, 20, 60, { fallback: 'local' });
+  if (!rl.ok) return NextResponse.json(
+    { error: 'Too many attempts. Please wait a minute and try again.' },
+    { status: 429, headers: { 'Retry-After': String(Math.max(1, Math.ceil((rl.resetAt - Date.now()) / 1000))) } }
+  );
 
   const { value, maxAgeSeconds } = await signAgeToken();
   const res = NextResponse.json({ ok: true });

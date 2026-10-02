@@ -20,6 +20,7 @@ export type SendEmailInput = {
   text?: string;
   bcc?: string | string[];
   replyTo?: string;
+  attachments?: { filename: string; content: string; content_id?: string; content_type?: string }[];
 };
 
 function configured(): { url: string; key: string; from: string; replyTo?: string } | null {
@@ -69,6 +70,7 @@ export async function sendEmail(input: SendEmailInput): Promise<{ sent: boolean;
         subject: input.subject,
         html: input.html,
         text: input.text,
+        attachments: input.attachments,
       }),
     });
     const body = (await res.json().catch(() => ({}))) as { id?: string; message?: string; error?: { message?: string } };

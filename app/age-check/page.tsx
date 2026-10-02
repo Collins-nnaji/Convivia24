@@ -1,12 +1,12 @@
 'use client';
 
 import { Suspense, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 function AgeCheckInner() {
-  const router = useRouter();
   const params = useSearchParams();
-  const next = params.get('next') || '/';
+  const requestedNext = params.get('next') || '/';
+  const next = requestedNext.startsWith('/') && !requestedNext.startsWith('//') && !requestedNext.includes('\\') ? requestedNext : '/';
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -15,11 +15,14 @@ function AgeCheckInner() {
     setError('');
     try {
       const res = await fetch('/api/age-gate', { method: 'POST' });
-      if (!res.ok) throw new Error();
-      router.replace(next);
-      router.refresh();
-    } catch {
-      setError('Could not verify right now. Please try again.');
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || 'Could not verify right now. Please try again.');
+      }
+      // Start a fresh request with the signed cookie, avoiding previously prefetched redirects.
+      window.location.replace(next);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not verify right now. Please try again.');
       setLoading(false);
     }
   }
@@ -48,7 +51,7 @@ function AgeCheckInner() {
           </a>
           .
         </p>
-        {error && <p className="text-sm text-ember mb-4">{error}</p>}
+        {error && <p role="alert" className="text-sm text-ember mb-4">{error}</p>}
         <div className="flex flex-col sm:flex-row gap-3">
           <button
             type="button"

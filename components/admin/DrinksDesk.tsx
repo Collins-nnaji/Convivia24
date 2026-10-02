@@ -793,7 +793,7 @@ function StockRow({
   const belowQuote = quote != null && price !== '' && Number(price) < quote.suggestedNgn;
   const lowStock = item.tracked !== false && item.available <= item.low_stock_threshold;
   const chips: { label: string; tone?: string }[] = [
-    ...(item.tracked === false ? [{ label: 'Not tracked yet', tone: 'text-amber-700' }] : []),
+    ...(item.tracked === false ? [{ label: isPack ? 'Stock comes from bottles' : 'Not tracked yet', tone: isPack ? 'text-obsidian/60' : 'text-amber-700' }] : []),
     ...(item.brand ? [{ label: item.brand }] : []),
     ...(item.reserved > 0 ? [{ label: `${item.reserved} reserved` }] : []),
     ...(lowStock ? [{ label: 'Low', tone: 'text-amber-700' }] : []),

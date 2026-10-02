@@ -1,5 +1,5 @@
 /**
- * Send Resend template tests to ADMIN_NOTIFY_EMAIL.
+ * Send branded order/delivery tests to all recipients together, or use --inventory.
  * Run: npx tsx lib/email/send-test-emails.ts
  */
 import { readFileSync } from 'fs';
@@ -26,61 +26,64 @@ for (const file of ['.env.local', '.env']) {
 }
 
 async function main() {
-  const { sendEmail, adminNotifyEmail, resendConfigured } = await import('./resend');
-  const { adminSuccessfulOrderEmail } = await import('./templates');
-  const { sendInventoryDigest } = await import('./inventory-digest');
-
-  if (!resendConfigured()) {
-    console.error('Resend is not configured (RESEND_API_KEY / RESEND_FROM).');
-    process.exit(1);
+  const { sendEmail, resendConfigured } = await import('./resend');
+  const { adminEmails, normaliseEmails } = await import('../admin-emails');
+  const { adminSuccessfulOrderEmail, orderStatusEmail } = await import('./templates');
+  if (process.argv.includes('--inventory')) {
+    const { sendInventoryDigest } = await import('./inventory-digest');
+    const result = await sendInventoryDigest({ isTest: true });
+    console.log(JSON.stringify(result));
+    if (!result.sent) process.exitCode = 1;
+    return;
   }
 
-  const admins = adminNotifyEmail();
-  if (!admins) {
-    console.error('ADMIN_NOTIFY_EMAIL is empty.');
-    process.exit(1);
+  if (!resendConfigured()) throw new Error('Resend is not configured (RESEND_API_KEY / RESEND_FROM).');
+
+  const admins = adminEmails();
+  const notify = normaliseEmails(process.env.ADMIN_NOTIFY_EMAIL);
+  const recipients = normaliseEmails(...admins, ...notify);
+  if (!recipients.length) throw new Error('No test recipients configured.');
+
+  const runId = new Date().toISOString();
+  const orderId = 'TEST-' + runId.replace(/[^0-9]/g, '');
+  const lines = [
+    { name: 'Hennessy VS 70cl', qty: 2, unitPriceNgn: 65000 },
+    { name: 'Jameson Original 70cl', qty: 1, unitPriceNgn: 35000 },
+    { name: 'Party Pack · House Warm', qty: 1, unitPriceNgn: 20000 },
+  ];
+  const notice = 'TEST ONLY — Sample order for email verification. No payment, order or delivery has been created. No action is required.';
+  const mails = [
+    { kind: 'order', ...adminSuccessfulOrderEmail({
+      fullName: 'Test Customer', email: 'customer@example.com',
+      orderId, status: 'paid (test)', totalNgn: 185000, lines,
+    }) },
+    { kind: 'delivery', ...orderStatusEmail({
+      fullName: 'Test Customer', orderId, status: 'out_for_delivery',
+      subtotalNgn: 185000, lines, note: notice,
+      courierName: 'Convivia24 Demo Courier',
+      etaAt: new Date(Date.now() + 45 * 60 * 1000).toISOString(),
+    }) },
+  ];
+
+  let failures = 0;
+  for (const mail of mails) {
+    const result = await sendEmail({
+      to: recipients, subject: `[TEST ONLY] ${mail.subject}`,
+      html: mail.html.replace(
+        '<!-- Title -->',
+        `<tr><td style="padding:16px 28px;background:#fff4db;color:#704900;font-size:13px;line-height:1.5;font-weight:bold;">${notice}</td></tr><!-- Title -->`
+      ),
+      text: `${notice}\n\n${mail.text}`,
+      idempotencyKey: `email-test:${runId}:${mail.kind}`,
+    });
+    console.log(JSON.stringify({ to: recipients, template: mail.kind, ...result }));
+    if (!result.sent) failures++;
+    await new Promise(resolve => setTimeout(resolve, 600));
   }
-
-  console.log('Sending to:', Array.isArray(admins) ? admins.join(', ') : admins);
-  console.log('From:', process.env.RESEND_FROM);
-
-  // 1) Successful drinks order (admin ops template)
-  const orderMail = adminSuccessfulOrderEmail({
-    fullName: 'Test Customer',
-    email: 'customer@example.com',
-    phone: '+2348012345678',
-    orderId: 'test-order-convivia24-001',
-    status: 'paid',
-    totalNgn: 185000,
-    lines: [
-      { name: 'Hennessy VS 70cl', qty: 2, unitPriceNgn: 65000 },
-      { name: 'Jameson Original 70cl', qty: 1, unitPriceNgn: 35000 },
-      { name: 'Party Pack · House Warm', qty: 1, unitPriceNgn: 20000 },
-    ],
-  });
-
-  const orderResult = await sendEmail({
-    to: admins,
-    subject: `[TEST] ${orderMail.subject}`,
-    html: orderMail.html,
-    text: `[TEST] ${orderMail.text}`,
-  });
-  console.log('Order success email:', orderResult.sent ? `OK (${orderResult.id})` : `FAIL — ${orderResult.error}`);
-
-  // 2) Inventory digest (future daily mail)
-  const invResult = await sendInventoryDigest({ isTest: true });
-  console.log(
-    'Inventory digest:',
-    invResult.sent
-      ? `OK · ${invResult.skuCount} SKUs · ${invResult.lowCount} low · ${invResult.recipientCount} recipients`
-      : `FAIL — ${invResult.error}`
-  );
-
-  if (!orderResult.sent || !invResult.sent) process.exit(1);
-  console.log('Done. Check the admin inboxes.');
+  if (failures) process.exitCode = 1;
 }
 
 main().catch((err) => {
   console.error(err);
-  process.exit(1);
+  process.exitCode = 1;
 });

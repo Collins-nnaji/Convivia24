@@ -1,4 +1,5 @@
 import sql from '@/lib/db';
+import { getPackageBySlug } from '@/lib/packages/catalog';
 import { DRINKS, type DrinkCategory, type DrinkProduct } from '@/lib/drinks/catalog';
 import { findSellable } from '@/lib/catalog/sellable';
 import { allRatingAggregates } from '@/lib/drinks/reviews';
@@ -239,7 +240,7 @@ export async function adminStockList(): Promise<AdminStockRow[]> {
     const d = catalogBySlug.get(r.slug);
     return {
       ...r,
-      tracked: true,
+      tracked: r.track_stock && !getPackageBySlug(r.slug) && r.category !== 'party-packs',
       min_order_qty: r.min_order_qty || Math.max(1, Math.floor(d?.minOrderQty ?? 1)),
       image_url: r.image_url || d?.image || null,
       category: r.category || d?.category || null,
