@@ -26,3 +26,9 @@ describe('lagosDayKey', () => {
     expect(lagosDayKey(new Date('2026-03-15T12:00:00+01:00'))).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 });
+
+describe('month-to-date API counters', () => {
+  it('starts the day window at the beginning of the Lagos month', () => {
+    expect(apiUsageDaysForPeriod('mtd', new Date('2026-10-02T12:00:00+01:00'))).toBe(2);
+  });
+});

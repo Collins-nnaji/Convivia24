@@ -14,6 +14,7 @@ export type ApiDayStat = {
 
 export type ApiUsageReport = {
   configured: boolean;
+  error?: string;
   totalHits: number;
   totalBlocked: number;
   routes: ApiRouteStat[];

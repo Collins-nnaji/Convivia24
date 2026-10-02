@@ -18,7 +18,7 @@ import ReadinessDesk from '@/components/admin/ReadinessDesk';
 import RefundsDesk from '@/components/admin/RefundsDesk';
 import SupportDesk from '@/components/admin/SupportDesk';
 import StaffDesk from '@/components/admin/StaffDesk';
-import { hasAdminPermission, type StaffRole, type AdminPermission } from '@/lib/admin-permissions';
+import { hasAdminPermission, STAFF_ROLES, type StaffRole, type AdminPermission } from '@/lib/admin-permissions';
 import OperationsDesk from '@/components/admin/OperationsDesk';
 import DeliveryDesk from '@/components/admin/DeliveryDesk';
 import AccountingDesk from '@/components/admin/AccountingDesk';
@@ -29,6 +29,12 @@ import { BarChart3, CalendarDays, Gift, Landmark, LayoutDashboard, PackageSearch
 
 const TAB_KEYS = ['overview', 'accounting', 'analytics', 'drinks', 'orders', 'sourcing', 'suppliers', 'referrals', 'giftcards', 'trivia', 'content', 'delivery', 'operations', 'staff', 'support', 'refunds', 'readiness'] as const;
 type TabKey = (typeof TAB_KEYS)[number];
+const TAB_PERMISSIONS: Record<TabKey, AdminPermission> = {
+  overview: 'read', analytics: 'read', accounting: 'finance', orders: 'orders', sourcing: 'orders',
+  drinks: 'inventory', suppliers: 'inventory', referrals: 'finance', giftcards: 'finance',
+  trivia: 'content', content: 'content', delivery: 'operations', operations: 'read',
+  staff: 'owner', support: 'operations', refunds: 'finance', readiness: 'owner',
+};
 
 function isTab(v: string): v is TabKey {
   return (TAB_KEYS as readonly string[]).includes(v);
@@ -52,6 +58,7 @@ export default function AdminPage() {
 function AdminDesk() {
   /** null = still checking the cookie; false = show the sign-in form. */
   const [authed, setAuthed] = useState<boolean | null>(null);
+  const [summaryError, setSummaryError] = useState('');
   const [password, setPassword] = useState('');
   const [loginMsg, setLoginMsg] = useState('');
   const [loggingIn, setLoggingIn] = useState(false);
@@ -62,14 +69,14 @@ function AdminDesk() {
 
   /** Counts for the sidebar + overview. The one call that runs on mount; every write re-runs it. */
   const loadSummary = useCallback(async () => {
-    const res = await fetch('/api/admin/summary');
-    if (res.status === 401) {
-      setAuthed(false);
-      return false;
-    }
-    if (res.ok) { const data = await res.json(); setSummary(data); setStaffRole(data.staffRole || 'owner'); }
-    setAuthed(true);
-    return true;
+    setSummaryError('');
+    try {
+      const res = await fetch('/api/admin/summary', { cache: 'no-store' });
+      if (res.status === 401) { setAuthed(false); return false; }
+      const data = await res.json();
+      if (!res.ok || !STAFF_ROLES.includes(data.staffRole)) throw new Error(data.error || 'Could not verify desk access. Refresh and retry.');
+      setSummary(data); setStaffRole(data.staffRole); setAuthed(true); return true;
+    } catch (err) { setSummaryError(err instanceof Error ? err.message : 'Could not load desk access.'); return false; }
   }, []);
 
   useEffect(() => {
@@ -108,13 +115,13 @@ function AdminDesk() {
       return;
     }
     setPassword('');
-    await loadSummary();
+    if (!await loadSummary()) setLoginMsg('Signed in, but desk access could not be verified. Try again.');
   }
 
   if (authed === null) {
     return (
       <section className="min-h-[70vh] bg-paper px-5 py-16">
-        <p className="text-center text-sm text-obsidian/40">Opening the desk…</p>
+        {summaryError ? <div className="mx-auto max-w-lg space-y-4 rounded-xl bg-white p-6"><p role="alert" className="text-sm text-ember">{summaryError}</p><button className="btn-brand px-4 py-2" onClick={() => void loadSummary()}>Retry opening desk</button></div> : <p className="text-center text-sm text-obsidian/40">Opening the desk…</p>}
       </section>
     );
   }
@@ -191,7 +198,8 @@ function AdminDesk() {
       : 'No orders yet today';
 
   return (
-    <AdminShell title="Desk" subtitle={subtitle} tabs={tabs.filter(t => hasAdminPermission(staffRole, ({ overview: 'read', analytics: 'read', accounting: 'finance', orders: 'orders', sourcing: 'orders', drinks: 'inventory', suppliers: 'inventory', referrals: 'finance', giftcards: 'finance', trivia: 'content', content: 'content', delivery: 'operations', operations: 'read', staff: 'owner', support: 'operations', refunds: 'finance', readiness: 'owner' } as Record<string, AdminPermission>)[t.key]))} active={tab} onSelect={go}>
+    <AdminShell title="Desk" subtitle={subtitle} tabs={tabs.filter(t => hasAdminPermission(staffRole, TAB_PERMISSIONS[t.key as TabKey]))} active={tab} onSelect={go}>
+      {hasAdminPermission(staffRole, TAB_PERMISSIONS[tab]) ? <>
       {tab === 'overview' && <OverviewDesk summary={summary} onGo={go} />}
       {tab === 'readiness' && <ReadinessDesk />}
       {tab === 'refunds' && <RefundsDesk />}
@@ -217,6 +225,7 @@ function AdminDesk() {
       {tab === 'giftcards' && <GiftCardsDesk onChanged={loadSummary} />}
       {tab === 'trivia' && <TriviaDesk onChanged={loadSummary} />}
       {tab === 'content' && <ContentDesk onChanged={loadSummary} />}
+      </> : <div className="space-y-3 rounded-xl bg-white p-5"><p role="alert">Your staff role does not have access to this section.</p><button className="btn-brand px-4 py-2" onClick={() => go('overview')}>Open overview</button></div>}
     </AdminShell>
   );
 }

@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   try {
     const period = parseAnalyticsPeriod(req.nextUrl.searchParams.get('period'));
     const report = await buildAnalyticsReport(period);
-    return NextResponse.json(report);
+    return NextResponse.json(report, { headers: { 'Cache-Control': 'no-store' } });
   } catch (err) {
     captureApiError(err, { route: 'admin/analytics GET' });
     const { status, error } = apiErrorResponse(err, 'Unable to load analytics.');

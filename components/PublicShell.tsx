@@ -11,7 +11,8 @@ import Footer from '@/components/Footer';
 export default function PublicShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '/';
   // Consumer pages share a footer, including during route loading.
-  const showFooter = !pathname.startsWith('/admin') && !pathname.startsWith('/supplier');
+  const isStaffArea = pathname.startsWith('/admin') || pathname.startsWith('/supplier');
+  const showFooter = !isStaffArea;
   return (
     <CartProvider>
       <RouteScrollReset />
@@ -33,9 +34,9 @@ export default function PublicShell({ children }: { children: React.ReactNode })
             {showFooter && <Footer />}
           </div>
         </div>
-        <Suspense fallback={null}>
+        {!isStaffArea && <Suspense fallback={null}>
           <MobileTabBar />
-        </Suspense>
+        </Suspense>}
       </div>
     </CartProvider>
   );

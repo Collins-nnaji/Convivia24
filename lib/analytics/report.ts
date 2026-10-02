@@ -30,7 +30,7 @@ export async function buildAnalyticsReport(period: PeriodKey): Promise<Analytics
   const to = range.to;
   const apiDays = apiUsageDaysForPeriod(period);
 
-  const one = <T,>(p: Promise<T[]>) => p.then((rows) => rows[0] ?? ({} as T)).catch(() => ({} as T));
+  const one = <T,>(p: Promise<T[]>) => p.then((rows) => rows[0] ?? ({} as T));
 
   const [ordersRow, statusRows, trendRows, skuRows, engageRow, loyaltyRow, stockRow, api] =
     await Promise.all([
@@ -52,7 +52,7 @@ export async function buildAnalyticsReport(period: PeriodKey): Promise<Analytics
         WHERE created_at >= ${from}::timestamptz AND created_at < ${to}::timestamptz
         GROUP BY status
         ORDER BY count DESC
-      `.catch(() => [] as { status: string; count: number }[]),
+      `,
       sql`
         SELECT
           to_char(created_at AT TIME ZONE 'Africa/Lagos', 'YYYY-MM-DD') AS day,
@@ -66,7 +66,7 @@ export async function buildAnalyticsReport(period: PeriodKey): Promise<Analytics
         WHERE created_at >= ${from}::timestamptz AND created_at < ${to}::timestamptz
         GROUP BY 1
         ORDER BY 1
-      `.catch(() => [] as { day: string; orders: number; revenue: number }[]),
+      `,
       sql`
         SELECT
           i.kit_slug AS sku,
@@ -81,7 +81,7 @@ export async function buildAnalyticsReport(period: PeriodKey): Promise<Analytics
         GROUP BY i.kit_slug
         ORDER BY qty DESC
         LIMIT 12
-      `.catch(() => [] as { sku: string; name: string; qty: number; revenue: number }[]),
+      `,
       one(
         sql`
           SELECT

@@ -52,6 +52,13 @@ describe('admin readiness', () => {
   });
 });
 describe('delivery configuration', () => {
+  it('reports duplicate courier names instead of silently overwriting the existing courier', async () => {
+    mocks.sql.mockRejectedValueOnce({ code: '23505' });
+    const response = await delivery(request({ kind: 'provider', name: 'Existing courier', contact: '08012345678', active: true }));
+    expect(response.status).toBe(409);
+    expect((await response.json()).error).toContain('already exists');
+    expect(mocks.sql.mock.calls[0][0].join('')).not.toContain('DO UPDATE');
+  });
   it('updates an existing zone by ID when its name or fee changes', async () => {
     mocks.sql.mockResolvedValueOnce([{ id }]).mockResolvedValueOnce([]);
     expect((await delivery(request({ kind: 'zone', id, city: 'Lagos', name: 'Renamed area', feeNgn: 2500, estimate: 'Same day', active: true }))).status).toBe(200);
@@ -63,7 +70,7 @@ describe('delivery configuration', () => {
     expect(mocks.sql).toHaveBeenCalledTimes(1);
   });
   it('rejects fractional delivery fees', async () => {
-    expect((await delivery(request({ kind: 'zone', city: 'Lagos', name: 'Zone', feeNgn: 2.5, estimate: 'Same day' }))).status).toBe(400);
+    expect((await delivery(request({ kind: 'zone', city: 'Lagos', name: 'Zone', feeNgn: 2.5, estimate: 'Same day', active: true }))).status).toBe(400);
     expect(mocks.sql).not.toHaveBeenCalled();
   });
   it('lists only cities represented by enabled zones to customers', async () => {

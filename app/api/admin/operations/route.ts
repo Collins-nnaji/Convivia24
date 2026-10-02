@@ -7,7 +7,7 @@ export async function GET() {
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const [outlets, wholesale, rewards] = await Promise.all([
-      sql`SELECT id, venue_name, email, approval_status FROM partner_outlets ORDER BY created_at DESC LIMIT 200`,
+      sql`SELECT id, venue_name, email, contact, area, venue_kind, seats, target_margin_pct, approval_status, created_at, updated_at FROM partner_outlets ORDER BY created_at DESC LIMIT 200`,
       sql`SELECT w.*, o.venue_name FROM partner_wholesale_orders w JOIN partner_outlets o ON o.id = w.outlet_id ORDER BY w.created_at DESC LIMIT 200`,
       sql`SELECT r.*, m.email FROM reward_redemptions r LEFT JOIN loyalty_members m ON m.owner_id = r.owner_id ORDER BY r.created_at DESC LIMIT 200`,
     ]);

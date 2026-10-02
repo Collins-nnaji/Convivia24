@@ -122,3 +122,109 @@ test('partner operations hides finance and approval actions from operations staf
   await page.getByLabel('Fulfillment or cancellation note').fill('Collected by customer');
   await expect(page.getByRole('button', { name: 'Confirm fulfilled', exact: true })).toBeEnabled();
 });
+
+const analyticsFixture = {
+  period: '30d', range: { from: '2026-10-01T00:00:00Z', to: '2026-10-02T12:00:00Z', label: 'Last 30 days' },
+  commerce: { orders: 3, revenueNgn: 30000, aovNgn: 10000, refundedNgn: 0, byStatus: [{ status: 'paid', count: 3 }], trend: [{ day: '2026-10-01', orders: 1, revenueNgn: 10000 }, { day: '2026-10-02', orders: 2, revenueNgn: 20000 }], topSkus: [{ sku: 'drink', name: 'Test drink', qty: 3, revenueNgn: 30000 }] },
+  engagement: { triviaEntries: 2, triviaWins: 1, brandEnquiries: 0, restockAlerts: 1, productReviews: 2 },
+  loyalty: { members: 4, pointsOutstanding: 200, pointsLiabilityNgn: 100, pointsAwardedInPeriod: 20 },
+  inventory: { activeSkus: 2, lowStock: 1, onHandUnits: 25 },
+  api: { configured: true, totalHits: 100, totalBlocked: 5, routes: [{ route: 'orders:create', hits: 100, blocked: 5 }], days: [{ day: '2026-10-01', hits: 100, blocked: 5 }] },
+  systems: { redis: true, ai: false, blob: true, flutterwave: true },
+};
+test('analytics charts expose exact values and tables work across views', async ({ page }) => {
+  await enter(page, true);
+  await page.route('**/api/admin/analytics?*', route => route.fulfill({ json: analyticsFixture }));
+  await page.goto('/admin#analytics');
+  await expect(page.getByRole('table', { name: 'Daily commerce values' })).toContainText('₦20,000');
+  await page.screenshot({ path: `/tmp/convivia-admin-analytics-${page.viewportSize()?.width}.png`, fullPage: true });
+  await page.getByRole('button', { name: '2026-10-01: ₦10,000', exact: true }).focus();
+  await expect(page.getByRole('group', { name: /Net revenue chart/ })).toBeVisible();
+  await page.getByRole('combobox', { name: 'Chart measure', exact: true }).selectOption('orders');
+  await expect(page.getByRole('button', { name: '2026-10-02: 2', exact: true })).toBeVisible();
+  await page.getByRole('group', { name: /Collected orders chart/ }).scrollIntoViewIfNeeded();
+  await page.screenshot({ path: `/tmp/convivia-admin-chart-${page.viewportSize()?.width}.png` });
+  await page.getByRole('button', { name: 'Commerce', exact: true }).click();
+  await expect(page.getByRole('table', { name: 'Top products' })).toContainText('Test drink');
+  await page.getByRole('button', { name: 'API usage', exact: true }).click();
+  await expect(page.getByRole('table', { name: 'API route usage' })).toContainText('5.0%');
+  await page.getByRole('button', { name: 'Engagement', exact: true }).click();
+  await expect(page.getByRole('table', { name: 'Customer engagement values' })).toContainText('Product reviews');
+});
+
+test('adding another courier stays in delivery settings and saves its contact', async ({ page }) => {
+  await enter(page, true);
+  const providers: Record<string, unknown>[] = []; let saved: Record<string, unknown> | null = null;
+  await page.route('**/api/admin/delivery', route => {
+    if (route.request().method() === 'POST') {
+      saved = route.request().postDataJSON(); providers.push({ id: 'courier-new', name: saved?.name, contact: saved?.contact, active: true });
+      return route.fulfill({ json: { saved: providers[0] } });
+    }
+    return route.fulfill({ json: { zones: [], providers } });
+  });
+  await page.goto('/admin#delivery');
+  await page.getByRole('button', { name: 'Add courier', exact: true }).click();
+  await expect(page).toHaveURL(/#delivery$/);
+  await page.getByLabel('Provider name').fill('Second courier');
+  await page.getByLabel('Provider contact').fill('08012345678');
+  await page.getByRole('button', { name: 'Add courier provider', exact: true }).click();
+  await expect(page.getByRole('status')).toContainText('Delivery settings saved.');
+  await expect(page.getByText('Second courier · Enabled')).toBeVisible();
+  expect(saved).toMatchObject({ kind: 'provider', name: 'Second courier', contact: '08012345678', active: true });
+});
+
+test('partner onboarding displays the full submitted venue details', async ({ page }) => {
+  await enter(page, true);
+  await page.route('**/api/admin/operations', route => route.fulfill({ json: { outlets: [{ id: 'venue', venue_name: 'New partner', email: 'venue@example.com', contact: '08055555555', area: 'Victoria Island', venue_kind: 'lounge', seats: 80, target_margin_pct: 72, approval_status: 'pending', created_at: '2026-10-01T12:00:00Z' }], wholesale: [], rewards: [] } }));
+  await page.goto('/admin#operations');
+  await expect(page.getByText('Onboarding details', { exact: true })).toBeVisible();
+  await expect(page.getByText('08055555555', { exact: true })).toBeVisible();
+  await expect(page.getByText('Victoria Island', { exact: true })).toBeVisible();
+  await expect(page.getByText('80', { exact: true })).toBeVisible();
+});
+
+test('malformed admin records show a recoverable error instead of a crashed page', async ({ page }) => {
+  await enter(page, true);
+  await page.route('**/api/admin/staff', route => route.fulfill({ json: { staff: null, audit: [] } }));
+  await page.goto('/admin#staff');
+  await expect(page.getByRole('alert').filter({ hasText: 'incomplete records' })).toBeVisible();
+  await page.route('**/api/admin/staff', route => route.fulfill({ json: { staff: [], audit: [] } }));
+  await page.getByRole('button', { name: 'Refresh', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Grant staff access' })).toBeVisible();
+});
+
+test('analytics ignores a late response from the previous reporting period', async ({ page }) => {
+  await enter(page, true);
+  await page.route('**/api/admin/analytics?*', async route => {
+    const period = new URL(route.request().url()).searchParams.get('period');
+    if (period === '30d') await new Promise(resolve => setTimeout(resolve, 800));
+    return route.fulfill({ json: { ...analyticsFixture, period, range: { ...analyticsFixture.range, label: period === '7d' ? 'Last 7 days' : 'Last 30 days' } } });
+  });
+  await page.goto('/admin#analytics');
+  const slow = page.waitForResponse(response => response.url().includes('/api/admin/analytics?period=30d'));
+  await page.getByRole('combobox', { name: 'Reporting period', exact: true }).selectOption('7d');
+  await expect(page.getByText(/Last 7 days ·/)).toBeVisible();
+  await slow;
+  await expect(page.getByText(/Last 30 days ·/)).not.toBeVisible();
+  await expect(page.getByRole('combobox', { name: 'Reporting period', exact: true })).toHaveValue('7d');
+});
+
+test('admin summary failure shows retry instead of assuming owner access', async ({ page }) => {
+  await enter(page, true);
+  await page.route('**/api/admin/summary', route => route.fulfill({ status: 500, json: { error: 'Desk database unavailable.' } }));
+  await page.goto('/admin#staff');
+  await expect(page.getByRole('alert').filter({ hasText: 'Desk database unavailable.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Grant staff access' })).not.toBeVisible();
+  await page.route('**/api/admin/summary', route => route.fulfill({ json: { staffRole: 'owner', todayOrders: 0, todayRevenueNgn: 0 } }));
+  await page.route('**/api/admin/staff', route => route.fulfill({ json: { staff: [], audit: [] } }));
+  await page.getByRole('button', { name: 'Retry opening desk' }).click();
+  await expect(page.getByRole('heading', { name: 'Grant staff access' })).toBeVisible();
+});
+
+test('bookmarked owner-only sections stay protected for operations staff', async ({ page }) => {
+  await enter(page, true);
+  await page.route('**/api/admin/summary', route => route.fulfill({ json: { staffRole: 'operations', todayOrders: 0, todayRevenueNgn: 0 } }));
+  await page.goto('/admin#staff');
+  await expect(page.getByRole('alert').filter({ hasText: 'Your staff role does not have access' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Grant staff access' })).not.toBeVisible();
+});

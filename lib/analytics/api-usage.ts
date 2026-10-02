@@ -78,7 +78,7 @@ export async function readApiUsage(dayCount: number): Promise<ApiUsageReport> {
     return { configured: false, totalHits: 0, totalBlocked: 0, routes: [], days: [] };
   }
 
-  const days = Math.max(1, Math.min(90, Math.floor(dayCount)));
+  const days = Math.max(1, Math.min(45, Math.floor(dayCount)));
   const today = lagosDayKey();
   const dayKeys: string[] = [];
   for (let i = days - 1; i >= 0; i--) dayKeys.push(addLagosDays(today, -i));
@@ -129,12 +129,13 @@ export async function readApiUsage(dayCount: number): Promise<ApiUsageReport> {
       days: dayStats,
     };
   } catch {
-    return { configured: true, totalHits: 0, totalBlocked: 0, routes: [], days: [] };
+    return { configured: true, error: 'API counters could not be read. Check the Redis connection and refresh.', totalHits: 0, totalBlocked: 0, routes: [], days: [] };
   }
 }
 
 /** Map a period key to how many Lagos days of API counters to load. */
-export function apiUsageDaysForPeriod(period: string): number {
+export function apiUsageDaysForPeriod(period: string, now = new Date()): number {
+  if (period === 'mtd') return Number(lagosDayKey(now).slice(-2));
   if (period === '7d') return 7;
   if (period === '90d') return 90;
   if (period === 'ytd' || period === 'all') return 90;
