@@ -32,7 +32,7 @@ export async function PATCH(req: NextRequest) {
     if (b.action === 'approve') {
       const priceNgn = Number(b.priceNgn);
       if (!Number.isFinite(priceNgn) || priceNgn <= 0) return NextResponse.json({ error: 'Set a retail price to list it.' }, { status: 400 });
-      const request = await approveBottleRequest(id, { priceNgn, slug: typeof b.slug === 'string' ? b.slug : null, note: typeof b.note === 'string' ? b.note : null });
+      const request = await approveBottleRequest(id, { actorLabel: `${gate.actorLabel} (${gate.actor})`, priceNgn, slug: typeof b.slug === 'string' ? b.slug : null, note: typeof b.note === 'string' ? b.note : null });
       if (!request) return NextResponse.json({ error: 'Request not found or already decided.' }, { status: 404 });
       await invalidateCatalog();
       return NextResponse.json({ request });

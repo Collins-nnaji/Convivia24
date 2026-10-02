@@ -122,7 +122,7 @@ export async function upsertAdminProduct(input: {
   brandHistory?: string;
   brandStyle?: string;
   imageUrl?: string | null;
-}): Promise<InventoryRow> {
+}, actor: MovementActor = { kind: 'system' }): Promise<InventoryRow> {
   const slug = input.slug
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
@@ -139,11 +139,14 @@ export async function upsertAdminProduct(input: {
   }
 
   const rows = await sql`
+    WITH previous AS MATERIALIZED (
+      SELECT * FROM inventory WHERE slug = ${slug} FOR UPDATE
+    ), changed AS (
     INSERT INTO inventory (
       slug, name, on_hand, reserved, low_stock_threshold, track_stock, active,
       image_url, category, brand, volume, abv, price_ngn, tagline, description, taste_note, source, updated_at
     ) VALUES (
-      ${slug},
+      (SELECT ${slug}::text FROM (SELECT count(*) FROM previous) lock_previous),
       ${input.name},
       ${Math.max(0, Math.floor(input.onHand))},
       0,
@@ -178,10 +181,14 @@ export async function upsertAdminProduct(input: {
       source = 'admin',
       updated_at = NOW()
     RETURNING *
-  `;
-  await sql`
-    INSERT INTO inventory_movements (slug, delta_on_hand, reason, note)
-    VALUES (${slug}, ${Math.max(0, Math.floor(input.onHand))}, 'admin_upload', 'Admin stock upsert')
+    ), logged AS (
+      INSERT INTO inventory_movements (slug, delta_on_hand, reason, note, actor, actor_label)
+      SELECT c.slug, c.on_hand - COALESCE(p.on_hand, 0), 'admin_upload',
+        'Product saved. Retail (NGN): ' || COALESCE(p.price_ngn::text, ${DRINKS.find(d => d.slug === slug)?.priceNgn?.toString() ?? 'unset'}) || ' → ' || c.price_ngn::text,
+        ${actor.kind}, ${actor.label || null}
+      FROM changed c LEFT JOIN previous p ON p.slug = c.slug
+      RETURNING id
+    ) SELECT * FROM changed
   `;
   return mapRow(rows[0]);
 }
@@ -283,7 +290,8 @@ export async function editStockRow(
     brandFounded?: string;
     brandHistory?: string;
     brandStyle?: string;
-  }
+  },
+  actor: MovementActor = { kind: 'system' }
 ): Promise<InventoryRow | null> {
   const existing = await getInventory(slug);
   if (!existing) {
@@ -337,6 +345,9 @@ export async function editStockRow(
   }
 
   const rows = await sql`
+    WITH previous AS MATERIALIZED (
+      SELECT * FROM inventory WHERE slug = ${slug} FOR UPDATE
+    ), changed AS (
     UPDATE inventory SET
       on_hand = COALESCE(${onHand}, on_hand),
       price_ngn = COALESCE(${priceNgn}, price_ngn),
@@ -349,15 +360,25 @@ export async function editStockRow(
       description = CASE WHEN ${setDescription} THEN ${description} ELSE description END,
       brand = CASE WHEN ${setBrand} THEN ${brand} ELSE brand END,
       updated_at = NOW()
-    WHERE slug = ${slug}
+    WHERE slug = ${slug} AND EXISTS (SELECT 1 FROM previous)
     RETURNING *
+    ), logged AS (
+      INSERT INTO inventory_movements (slug, delta_on_hand, reason, note, actor, actor_label)
+      SELECT c.slug, c.on_hand - p.on_hand, 'adjust',
+        concat_ws('; ',
+          CASE WHEN c.price_ngn IS DISTINCT FROM p.price_ngn THEN
+            'Retail (NGN): ' || COALESCE(p.price_ngn::text, 'unset') || ' → ' || COALESCE(c.price_ngn::text, 'unset') END,
+          CASE WHEN c.cost_ngn IS DISTINCT FROM p.cost_ngn THEN
+            'Cost (NGN): ' || COALESCE(p.cost_ngn::text, 'unset') || ' → ' || COALESCE(c.cost_ngn::text, 'unset') END,
+          CASE WHEN c.on_hand IS DISTINCT FROM p.on_hand THEN 'On hand: ' || p.on_hand::text || ' → ' || c.on_hand::text END
+        ), ${actor.kind}, ${actor.label || null}
+      FROM changed c JOIN previous p ON p.slug = c.slug
+      WHERE c.price_ngn IS DISTINCT FROM p.price_ngn OR c.cost_ngn IS DISTINCT FROM p.cost_ngn OR c.on_hand IS DISTINCT FROM p.on_hand
+      RETURNING id
+    ) SELECT * FROM changed
   `;
   if (!rows[0]) return null;
   const row = mapRow(rows[0]);
-  if (onHand != null) {
-    const previous = existing?.on_hand ?? 0;
-    await logMovement(slug, { onHand: onHand - previous }, 'adjust', 'Desk set on-hand', undefined, { kind: 'admin', label: 'desk' });
-  }
   return row;
 }
 

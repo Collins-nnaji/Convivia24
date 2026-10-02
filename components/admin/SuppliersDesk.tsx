@@ -60,7 +60,7 @@ function ActivityList({ entries, showSupplier }: { entries: AuditRow[]; showSupp
           </span>
           {showSupplier && <span className="font-semibold text-obsidian">{e.supplierName}</span>}
           <span className="text-obsidian/70">{e.text}</span>
-          {e.actor === 'supplier' && e.actorLabel && <span className="text-xs text-obsidian/35">({e.actorLabel})</span>}
+          {e.actorLabel && <span className="text-xs text-obsidian/35">({e.actorLabel})</span>}
         </li>
       ))}
     </ul>

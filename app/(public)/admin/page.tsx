@@ -1,4 +1,4 @@
-import { redirect, notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth/session';
 import { requireAdmin } from '@/lib/admin';
 import AdminPage from '@/components/admin/AdminPage';
@@ -6,8 +6,10 @@ import AdminPage from '@/components/admin/AdminPage';
 export const metadata = { title: 'Staff desk | Convivia24', robots: { index: false, follow: false } };
 
 export default async function StaffAdminPage() {
-  if (!(await getCurrentUser())) redirect('/signin?next=/admin');
+  const user = await getCurrentUser();
+  if (!user) redirect('/signin?next=/admin');
+  if (!user.emailVerified) redirect('/verify-email?next=/admin');
   const gate = await requireAdmin('read');
-  if (!gate.ok) notFound();
+  if (!gate.ok) return <section className="min-h-[70vh] bg-paper px-5 py-16"><h1 className="text-2xl font-bold">Staff access required</h1><p className="mt-4">Signed in as {user.email}. This account has not been granted staff access. Ask an owner to add it in Staff &amp; audit.</p></section>;
   return <AdminPage />;
 }

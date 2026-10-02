@@ -660,10 +660,12 @@ const REASON_LABEL: Record<string, string> = {
   manual: 'Manual',
   admin_upload: 'Uploaded',
   sync: 'Synced',
+  'cost.set': 'Supplier cost changed',
+  'cost.remove': 'Supplier cost removed',
 };
 
 /** The national ledger for one SKU — what moved, why, and which order did it. */
-function StockHistory({ slug }: { slug: string }) {
+function StockHistory({ slug, saving, item }: { slug: string; saving: boolean; item: Item }) {
   const [rows, setRows] = useState<Movement[] | null>(null);
   const [error, setError] = useState('');
   useEffect(() => {
@@ -681,7 +683,7 @@ function StockHistory({ slug }: { slug: string }) {
     return () => {
       live = false;
     };
-  }, [slug]);
+  }, [slug, saving, item]);
 
   if (error) return <p className="text-xs text-ember">{error}</p>;
   if (rows === null) return <p className="text-xs text-obsidian/40">Loading…</p>;
@@ -703,14 +705,14 @@ function StockHistory({ slug }: { slug: string }) {
         {rows.map((m) => (
           <tr key={m.id}>
             <td className="py-1.5 tabular-nums text-obsidian/50">
-              {new Date(m.createdAt).toLocaleString('en-NG', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}
+              {new Date(m.createdAt).toLocaleString('en-NG', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit' })}
             </td>
             <td className="py-1.5 font-semibold text-obsidian/70">{REASON_LABEL[m.reason] ?? m.reason}</td>
-            <td className="py-1.5 text-obsidian/55">{m.actor === 'supplier' ? m.supplierName || 'Supplier' : m.actor === 'admin' ? 'Desk' : 'System'}</td>
+            <td className="py-1.5 text-obsidian/55">{m.actor === 'supplier' ? m.supplierName || 'Supplier' : m.actor === 'admin' ? m.actorLabel || 'Desk' : 'System'}</td>
             <td className={`py-1.5 text-right tabular-nums ${m.deltaOnHand < 0 ? 'text-red-600' : m.deltaOnHand > 0 ? 'text-emerald-700' : 'text-obsidian/30'}`}>{delta(m.deltaOnHand)}</td>
             <td className={`py-1.5 text-right tabular-nums ${m.deltaReserved !== 0 ? 'text-obsidian/70' : 'text-obsidian/30'}`}>{delta(m.deltaReserved)}</td>
             <td className="py-1.5 pl-3 text-obsidian/50">
-              {m.note || '—'}
+              {m.supplierName && <span>{m.supplierName}: </span>}{m.note || '—'}
               {m.orderId && <span className="ml-1 font-mono text-[10px] text-obsidian/35">{m.orderId.slice(0, 8).toUpperCase()}</span>}
             </td>
           </tr>
@@ -977,8 +979,8 @@ function StockRow({
 
       {historyOpen && (
         <div className="border-t border-obsidian/10 pt-3">
-          <p className="mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40">Stock history</p>
-          <StockHistory slug={item.slug} />
+          <p className="mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40">Stock &amp; price history</p>
+          <StockHistory slug={item.slug} saving={saving} item={item} />
         </div>
       )}
 

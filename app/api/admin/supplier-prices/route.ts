@@ -4,7 +4,6 @@ import { apiErrorResponse } from '@/lib/db';
 import { rateLimit, clientIp } from '@/lib/redis';
 import { captureApiError } from '@/lib/sentry';
 import { invalidateCatalog } from '@/lib/shop/catalog-cache';
-import { logSupplierAction } from '@/lib/suppliers/audit';
 import {
   DerivedCostError,
   deleteSupplierSkuPrice,
@@ -46,15 +45,12 @@ export async function POST(req: NextRequest) {
 
     let price;
     try {
-      price = await upsertSupplierSkuPrice(supplierId, slug, costNgn);
+      price = await upsertSupplierSkuPrice(supplierId, slug, costNgn, `${gate.actorLabel} (${gate.actor})`);
     } catch (err) {
       if (err instanceof DerivedCostError) return NextResponse.json({ error: err.message }, { status: 400 });
       throw err;
     }
     await invalidateCatalog();
-    await logSupplierAction({
-      supplierId, actor: 'admin', actorLabel: 'desk', action: 'cost.set', skuSlug: slug, detail: { to: Math.round(costNgn) },
-    });
     return NextResponse.json({ price });
   } catch (err) {
     captureApiError(err, { route: 'admin/supplier-prices POST' });
@@ -72,9 +68,8 @@ export async function DELETE(req: NextRequest) {
     if (!supplierId || !slug) {
       return NextResponse.json({ error: 'Supplier and SKU are required.' }, { status: 400 });
     }
-    await deleteSupplierSkuPrice(supplierId, slug);
+    await deleteSupplierSkuPrice(supplierId, slug, `${gate.actorLabel} (${gate.actor})`);
     await invalidateCatalog();
-    await logSupplierAction({ supplierId, actor: 'admin', actorLabel: 'desk', action: 'cost.remove', skuSlug: slug });
     return NextResponse.json({ ok: true });
   } catch (err) {
     captureApiError(err, { route: 'admin/supplier-prices DELETE' });

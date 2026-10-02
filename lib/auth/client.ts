@@ -33,7 +33,7 @@ export async function signInWithGoogle(callbackURL = '/'): Promise<void> {
   const { data, error } = await authClient.signIn.social({
     provider: 'google',
     callbackURL: absoluteUrl(callbackURL),
-    errorCallbackURL: absoluteUrl('/signin?error=1'),
+    errorCallbackURL: absoluteUrl(`/signin?error=1&next=${encodeURIComponent(safeReturnPath(callbackURL))}`),
   });
   if (error) throw new Error(error.message || 'Could not start Google sign-in.');
   if (data && 'url' in data && data.url) {

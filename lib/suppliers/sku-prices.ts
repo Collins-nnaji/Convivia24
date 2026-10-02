@@ -79,17 +79,29 @@ export class DerivedCostError extends Error {
 export async function upsertSupplierSkuPrice(
   supplierId: string,
   slug: string,
-  costNgn: number
+  costNgn: number,
+  actorLabel?: string
 ): Promise<SupplierSkuPrice> {
   if (isDerivedCostSku(slug)) throw new DerivedCostError(slug);
   const cost = Math.max(0, Math.floor(costNgn));
   const rows = await sql`
+    WITH previous AS MATERIALIZED (
+      SELECT cost_ngn FROM supplier_sku_prices WHERE supplier_id = ${supplierId}::uuid AND slug = ${slug} FOR UPDATE
+    ), changed AS (
     INSERT INTO supplier_sku_prices (supplier_id, slug, cost_ngn)
-    VALUES (${supplierId}, ${slug}, ${cost})
+    VALUES ((SELECT ${supplierId}::uuid FROM (SELECT count(*) FROM previous) lock_previous), ${slug}, ${cost})
     ON CONFLICT (supplier_id, slug) DO UPDATE SET
       cost_ngn = EXCLUDED.cost_ngn,
       updated_at = NOW()
     RETURNING supplier_id, slug, cost_ngn, updated_at
+    ), logged AS (
+      INSERT INTO supplier_audit_log (supplier_id, sku_slug, actor, actor_label, action, detail)
+      SELECT c.supplier_id, c.slug, 'admin', ${actorLabel || null}, 'cost.set',
+        jsonb_build_object('from', p.cost_ngn, 'to', c.cost_ngn)
+      FROM changed c LEFT JOIN previous p ON true
+      WHERE ${Boolean(actorLabel)} AND c.cost_ngn IS DISTINCT FROM p.cost_ngn
+      RETURNING id
+    ) SELECT * FROM changed
   `;
   await syncDefaultCostFromSuppliers(slug);
   const row = rows[0];
@@ -101,8 +113,16 @@ export async function upsertSupplierSkuPrice(
   };
 }
 
-export async function deleteSupplierSkuPrice(supplierId: string, slug: string): Promise<void> {
-  await sql`DELETE FROM supplier_sku_prices WHERE supplier_id = ${supplierId} AND slug = ${slug}`;
+export async function deleteSupplierSkuPrice(supplierId: string, slug: string, actorLabel?: string): Promise<void> {
+  await sql`
+    WITH removed AS (
+      DELETE FROM supplier_sku_prices WHERE supplier_id = ${supplierId}::uuid AND slug = ${slug}
+      RETURNING *
+    )
+    INSERT INTO supplier_audit_log (supplier_id, sku_slug, actor, actor_label, action, detail)
+    SELECT supplier_id, slug, 'admin', ${actorLabel || null}, 'cost.remove', jsonb_build_object('from', cost_ngn, 'to', null)
+    FROM removed WHERE ${Boolean(actorLabel)}
+  `;
   await syncDefaultCostFromSuppliers(slug);
 }
 

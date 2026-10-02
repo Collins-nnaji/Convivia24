@@ -171,7 +171,7 @@ export async function PATCH(req: NextRequest) {
     const failed: { slug: string; error: string }[] = [];
     for (const u of updates) {
       try {
-        const row = await editStockRow(u.slug, { priceNgn: u.priceNgn });
+        const row = await editStockRow(u.slug, { priceNgn: u.priceNgn }, { kind: 'admin', label: `${gate.actorLabel} (${gate.actor})` });
         if (row) applied.push({ slug: u.slug, priceNgn: u.priceNgn });
         else failed.push({ slug: u.slug, error: 'Unknown SKU.' });
       } catch (err) {

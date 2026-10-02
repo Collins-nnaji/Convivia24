@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ error: 'Nothing to update.' }, { status: 400 });
         }
         try {
-          const row = await editStockRow(slug, patch);
+          const row = await editStockRow(slug, patch, { kind: 'admin', label: `${gate.actorLabel} (${gate.actor})` });
           if (!row) return NextResponse.json({ error: 'Unknown SKU.' }, { status: 404 });
           await invalidateCatalog();
           if (patch.onHand != null || patch.active === true) notifyRestockAlerts(slug).catch(() => {});
@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
         await invalidateCatalog();
         notifyRestockAlerts(slug).catch(() => {});
         await logSupplierAction({
-          supplierId, actor: 'admin', actorLabel: 'desk', action: 'stock.set', skuSlug: slug,
+          supplierId, actor: 'admin', actorLabel: `${gate.actorLabel} (${gate.actor})`, action: 'stock.set', skuSlug: slug,
           detail: { from: before?.onHand ?? null, to: Math.floor(onHand) },
         });
         return NextResponse.json({ ok: true, rows: await stockForSlug(slug) });
@@ -277,7 +277,7 @@ Return JSON:
       brandHistory: brandHistory || undefined,
       brandStyle: brandStyle || undefined,
       imageUrl,
-    });
+    }, { kind: 'admin', label: `${gate.actorLabel} (${gate.actor})` });
 
     await invalidateCatalog();
     notifyRestockAlerts(item.slug).catch(() => {});

@@ -14,9 +14,17 @@ export async function GET(req: NextRequest) {
     const limit = Math.min(200, Math.max(1, Number(url.searchParams.get('limit') || 50) || 50));
     const rows = await sql`
       SELECT m.id, m.delta_on_hand, m.delta_reserved, m.reason, m.order_id, m.note, m.created_at, m.actor, m.actor_label, s.name AS supplier_name
-      FROM inventory_movements m LEFT JOIN suppliers s ON s.id = m.supplier_id
-      WHERE m.slug = ${slug}
-      ORDER BY m.created_at DESC
+      FROM (
+        SELECT id, delta_on_hand, delta_reserved, reason, order_id, note, created_at, actor, actor_label, supplier_id
+        FROM inventory_movements WHERE slug = ${slug}
+        UNION ALL
+        SELECT id, 0, 0, action, order_id,
+          'Supplier cost (NGN): ' || CASE WHEN detail ? 'from' THEN COALESCE(detail->>'from', 'unset') ELSE 'not recorded' END || ' → ' ||
+          CASE WHEN action = 'cost.remove' THEN 'unset' ELSE COALESCE(detail->>'to', 'unset') END,
+          created_at, actor, actor_label, supplier_id
+        FROM supplier_audit_log WHERE sku_slug = ${slug} AND action IN ('cost.set', 'cost.remove')
+      ) m LEFT JOIN suppliers s ON s.id = m.supplier_id
+      ORDER BY m.created_at DESC, m.id DESC
       LIMIT ${limit}
     `;
     return NextResponse.json({

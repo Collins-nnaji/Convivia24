@@ -97,7 +97,7 @@ export async function listBottleRequests(opts: { supplierId?: string; status?: B
  * Approve: the bottle becomes a real SKU at the retail price the desk sets, the supplier's
  * declared stock and quote go on their shelf, and the shop lists it.
  */
-export async function approveBottleRequest(id: string, opts: { priceNgn: number; slug?: string | null; note?: string | null }): Promise<BottleRequest | null> {
+export async function approveBottleRequest(id: string, opts: { priceNgn: number; slug?: string | null; note?: string | null; actorLabel?: string }): Promise<BottleRequest | null> {
   const [r] = await sql`SELECT * FROM supplier_bottle_requests WHERE id = ${id} AND status = 'pending' LIMIT 1`;
   if (!r) return null;
   const req = map(r);
@@ -110,16 +110,16 @@ export async function approveBottleRequest(id: string, opts: { priceNgn: number;
     brand: req.brand || undefined,
     volume: req.volume || undefined,
     abv: req.abv ?? undefined,
-  });
+  }, { kind: 'admin', label: opts.actorLabel });
   if (req.onHand > 0) await setSupplierStock(req.supplierId, product.slug, req.onHand);
-  if (req.costNgn != null) await upsertSupplierSkuPrice(req.supplierId, product.slug, req.costNgn);
+  if (req.costNgn != null) await upsertSupplierSkuPrice(req.supplierId, product.slug, req.costNgn, opts.actorLabel);
   const rows = await sql`
     UPDATE supplier_bottle_requests
     SET status = 'approved', created_slug = ${product.slug}, decision_note = ${opts.note?.trim() || null}, decided_at = NOW()
     WHERE id = ${id}
     RETURNING *, (SELECT name FROM suppliers WHERE id = supplier_id) AS supplier_name
   `;
-  await logSupplierAction({ supplierId: req.supplierId, actor: 'admin', actorLabel: 'desk', action: 'stock.set', skuSlug: product.slug, detail: { skuName: req.name, from: null, to: req.onHand, approvedRequest: true } });
+  await logSupplierAction({ supplierId: req.supplierId, actor: 'admin', actorLabel: opts.actorLabel, action: 'stock.set', skuSlug: product.slug, detail: { skuName: req.name, from: null, to: req.onHand, approvedRequest: true } });
   return map(rows[0]);
 }
 
