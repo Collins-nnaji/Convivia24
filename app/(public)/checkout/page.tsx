@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, Suspense, useEffect, useState } from 'react';
+import { Children, cloneElement, isValidElement, FormEvent, Suspense, useEffect, useId, useRef, useState, type ReactElement } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -36,7 +36,12 @@ const PENDING_ORDER_KEY = 'convivia_pending_order';
  */
 const STEPS = ['Delivery', 'Review', 'Payment'] as const;
 
+type DeliveryZone = { id: string; city: string; name: string; feeNgn: number; estimate: string };
+
+type SavedAddress = { id: string; label: string; full_name: string; phone: string; address_line1: string; address_line2: string; city: string; area: string };
+
 type Details = {
+  deliveryZoneId: string;
   fullName: string;
   email: string;
   phone: string;
@@ -50,6 +55,7 @@ type Details = {
 };
 
 const EMPTY_DETAILS: Details = {
+  deliveryZoneId: '',
   fullName: '',
   email: '',
   phone: '',
@@ -84,17 +90,45 @@ function CheckoutForm() {
    * under way while we were still creating the order locally. Nothing here mentions processing a
    * payment until Flutterwave has actually been handed the customer.
    */
+  const requestKey = useRef<{ fingerprint: string; key: string } | null>(null);
   const [phase, setPhase] = useState<'idle' | 'creating' | 'starting' | 'redirecting'>('idle');
   const loading = phase !== 'idle';
   const [error, setError] = useState('');
   const [discountPct, setDiscountPct] = useState(0);
   const [enrolled, setEnrolled] = useState(false);
   const [giftCardCode, setGiftCardCode] = useState('');
+  const [addresses, setAddresses] = useState<SavedAddress[]>([]);
+  useEffect(() => {
+    if (!user?.id) { setAddresses([]); return; }
+    fetch('/api/account/settings').then(res => res.ok ? res.json() : null).then(data => setAddresses(data?.addresses || [])).catch(() => {});
+  }, [user?.id]);
+  const [zones, setZones] = useState<DeliveryZone[]>([]);
+  const [deliveryError, setDeliveryError] = useState('');
+  useEffect(() => {
+    fetch('/api/delivery').then(async (res) => { const data = await res.json(); if (!res.ok) throw new Error(data.error); setZones(data.zones); }).catch(() => setDeliveryError('Delivery options could not load. Please refresh and try again.'));
+  }, []);
+  const selectedZone = zones.find((zone) => zone.id === details.deliveryZoneId);
+  const deliveryFeeNgn = Number(selectedZone?.feeNgn || 0);
+
+  const [quote, setQuote] = useState<{ totalNgn: number; subtotalNgn: number; loyaltyDiscountNgn: number; giftCardAppliedNgn: number } | null>(null);
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  useEffect(() => {
+    if (!details.deliveryZoneId || !user || !lines.length) { setQuote(null); return; }
+    const controller = new AbortController();
+    setQuoteLoading(true); setQuote(null);
+    const timer = setTimeout(() => {
+      fetch('/api/checkout/quote', { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: controller.signal, body: JSON.stringify({ items: lines.map(line => ({ slug: line.slug, qty: line.qty })), deliveryZoneId: details.deliveryZoneId, giftCardCode }) })
+        .then(async res => { const data = await res.json(); if (!res.ok) throw new Error(data.error); setQuote(data); setError(''); })
+        .catch(err => { if (!controller.signal.aborted) setError(err instanceof Error ? err.message : 'Could not calculate total.'); })
+        .finally(() => { if (!controller.signal.aborted) setQuoteLoading(false); });
+    }, 300);
+    return () => { clearTimeout(timer); controller.abort(); };
+  }, [details.deliveryZoneId, giftCardCode, lines, user]);
 
   const minError = minimumOrderError(lines);
 
-  const discountNgn = Math.round((subtotalNgn * discountPct) / 100);
-  const payableNgn = Math.max(0, subtotalNgn - discountNgn);
+  const discountNgn = quote?.loyaltyDiscountNgn ?? Math.round((subtotalNgn * discountPct) / 100);
+  const payableNgn = quote?.totalNgn ?? Math.max(0, subtotalNgn - discountNgn) + deliveryFeeNgn;
   const pointsEarned = pointsFromOrderItems(
     lines.map((l) => ({ unitPriceNgn: l.priceNgn, qty: l.qty })),
     payableNgn
@@ -118,18 +152,20 @@ function CheckoutForm() {
   }, []);
 
   function set<K extends keyof Details>(key: K, value: Details[K]) {
-    setDetails((prev) => ({ ...prev, [key]: value }));
+    setDetails((prev) => ({ ...prev, [key]: value, ...(key === 'city' ? { deliveryZoneId: '' } : {}) }));
   }
 
   function submitDetails(e: FormEvent) {
     e.preventDefault();
     setError('');
+    if (!selectedZone) { setError(deliveryError || 'Choose a supported delivery zone.'); return; }
     setStep(1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   async function placeOrder() {
     if (lines.length === 0) return;
+    if (!quote || quoteLoading) { setError('Wait for your confirmed checkout total before paying.'); return; }
     if (minError) {
       setError(minError);
       return;
@@ -139,17 +175,24 @@ function CheckoutForm() {
 
     const payload = {
       ...details,
+      expectedTotalNgn: quote.totalNgn,
       eventId: eventId || undefined,
       giftCardCode: giftCardCode.trim() || undefined,
       items: lines.map((l) => ({ slug: l.slug, qty: l.qty })),
     };
 
+    const fingerprint = JSON.stringify(payload);
+    if (requestKey.current?.fingerprint !== fingerprint) {
+      try { const stored = JSON.parse(sessionStorage.getItem('convivia_checkout_request') || 'null'); requestKey.current = stored?.fingerprint === fingerprint ? stored : { fingerprint, key: crypto.randomUUID() }; }
+      catch { requestKey.current = { fingerprint, key: crypto.randomUUID() }; }
+      sessionStorage.setItem('convivia_checkout_request', JSON.stringify(requestKey.current));
+    }
     let orderId: string | null = null;
 
     try {
       const orderRes = await fetch('/api/orders', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': requestKey.current.key },
         body: JSON.stringify(payload),
       });
       const orderData = await orderRes.json();
@@ -186,11 +229,7 @@ function CheckoutForm() {
         return;
       }
       if (!payRes.ok) {
-        await fetch('/api/orders', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orderId }),
-        });
+
         sessionStorage.removeItem(PENDING_ORDER_KEY);
         setError(payData.error || 'Payment could not start. Your cart is intact — try again.');
         return;
@@ -205,15 +244,7 @@ function CheckoutForm() {
       }
       router.push(`/checkout/success?order=${orderId}`);
     } catch {
-      if (orderId) {
-        await fetch('/api/orders', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orderId }),
-        }).catch(() => {});
-        sessionStorage.removeItem(PENDING_ORDER_KEY);
-      }
-      setError('Something went wrong. Please try again.');
+      setError('Payment could not be started. Your order is saved; retry to continue payment.');
     } finally {
       // A redirect owns the page from here — leave the overlay in place.
       setPhase((p) => (p === 'redirecting' ? p : 'idle'));
@@ -329,6 +360,9 @@ function CheckoutForm() {
           <div className="min-w-0 space-y-6">
             {step === 0 ? (
               <DeliveryStep
+                zones={zones}
+                addresses={addresses}
+                onAddress={(address) => setDetails(previous => ({ ...previous, deliveryMode: 'address', fullName: address.full_name, phone: address.phone, addressLine1: address.address_line1, addressLine2: address.address_line2 || '', city: address.city, area: address.area, deliveryZoneId: '' }))}
                 details={details}
                 onChange={set}
                 onSubmit={submitDetails}
@@ -351,7 +385,7 @@ function CheckoutForm() {
             <ul className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 p-5 sm:p-6 bg-white border border-obsidian/8">
               <Assurance icon={Wine} label="100% authentic" detail="Original products only" />
               <Assurance icon={Lock} label="Secure checkout" detail="Your data is protected" />
-              <Assurance icon={Truck} label="Nationwide delivery" detail="Across Nigeria" />
+              <Assurance icon={Truck} label="Delivery in Lagos, Abuja, and Port Harcourt" detail="Enabled delivery zones" />
               <Assurance icon={QrCode} label="Scan to verify" detail="Every order, checkable" />
             </ul>
           </div>
@@ -399,7 +433,7 @@ function CheckoutForm() {
               <dl className="px-5 py-4 border-t border-obsidian/8 space-y-2.5 text-sm">
                 <div className="flex justify-between gap-4">
                   <dt className="text-obsidian/50">Subtotal</dt>
-                  <dd className="tabular-nums">{formatNgn(subtotalNgn)}</dd>
+                  <dd className="tabular-nums">{formatNgn(quote?.subtotalNgn ?? subtotalNgn)}</dd>
                 </div>
                 {discountNgn > 0 && (
                   <div className="flex justify-between gap-4">
@@ -409,12 +443,12 @@ function CheckoutForm() {
                 )}
                 <div className="flex justify-between gap-4 text-[12px]">
                   <dt className="text-obsidian/40">Delivery</dt>
-                  <dd className="text-obsidian/50">Quoted after your address</dd>
+                  <dd className="text-obsidian/50">{selectedZone ? formatNgn(deliveryFeeNgn) : 'Choose a delivery zone'}</dd>
                 </div>
                 {giftCardCode.trim() && (
                   <div className="flex justify-between gap-4 text-[12px]">
                     <dt className="text-obsidian/40">Gift card</dt>
-                    <dd className="text-obsidian/50">Applied at payment</dd>
+                    <dd className="text-obsidian/50">{quote ? '−' + formatNgn(quote.giftCardAppliedNgn) : 'Checking…'}</dd>
                   </div>
                 )}
               </dl>
@@ -424,6 +458,7 @@ function CheckoutForm() {
                 <span className="font-logo font-black text-2xl tabular-nums">{formatNgn(payableNgn)}</span>
               </div>
 
+              {quoteLoading && <p className="px-5 pb-3 text-sm" role="status">Checking current prices and gift credit…</p>}
               {pointsEarned > 0 && (
                 <p className="px-5 pb-4 inline-flex items-center gap-1.5 text-[12px] text-obsidian/50">
                   You&apos;ll earn
@@ -515,22 +550,29 @@ function Field({
   children: React.ReactNode;
   optional?: boolean;
 }) {
+  const id = useId();
   return (
-    <label className="block">
-      <span className="text-[11px] font-semibold text-obsidian/60 block mb-1.5">
+    <div className="block">
+      <label htmlFor={id} className="text-[11px] font-semibold text-obsidian/60 block mb-1.5">
         {label} {optional && <span className="text-obsidian/30 font-normal">(optional)</span>}
-      </span>
-      {children}
-    </label>
+      </label>
+      {Children.map(children, child => isValidElement(child) && ['input', 'select', 'textarea'].includes(String(child.type)) ? cloneElement(child as ReactElement<{ id?: string }>, { id }) : child)}
+    </div>
   );
 }
 
 function DeliveryStep({
+  addresses,
+  onAddress,
+  zones,
   details,
   onChange,
   onSubmit,
   error,
 }: {
+  addresses: SavedAddress[];
+  onAddress: (address: SavedAddress) => void;
+  zones: DeliveryZone[];
   details: Details;
   onChange: <K extends keyof Details>(key: K, value: Details[K]) => void;
   onSubmit: (e: FormEvent) => void;
@@ -550,6 +592,7 @@ function DeliveryStep({
       </div>
 
       <div className="p-5 sm:p-6 space-y-5">
+        {addresses.length > 0 && <Field label="Saved address"><select className={inputClass} defaultValue="" onChange={event => { const address = addresses.find(item => item.id === event.target.value); if (address) onAddress(address); }}><option value="">Choose a saved address</option>{addresses.map(address => <option key={address.id} value={address.id}>{address.label} · {address.address_line1}, {address.city}</option>)}</select></Field>}
         <div className="flex gap-2">
           {(['address', 'venue'] as const).map((mode) => (
             <button
@@ -626,13 +669,17 @@ function DeliveryStep({
 
         <div className="grid sm:grid-cols-2 gap-4">
           <Field label="City">
-            <input
-              required
-              value={details.city}
-              onChange={(e) => onChange('city', e.target.value)}
-              className={inputClass}
-              placeholder="Lagos, Abuja, Port Harcourt…"
-            />
+            <select required value={details.city} onChange={(e) => onChange('city', e.target.value)} className={inputClass}>
+              <option value="">Choose a city</option>
+              {['Lagos', 'Abuja', 'Port Harcourt'].map(city => <option key={city}>{city}</option>)}
+            </select>
+          </Field>
+          <Field label="Delivery zone">
+            <select required value={details.deliveryZoneId} onChange={(e) => onChange('deliveryZoneId', e.target.value)} className={inputClass}>
+              <option value="">Choose a supported zone</option>
+              {zones.filter(zone => zone.city === details.city).map(zone => <option key={zone.id} value={zone.id}>{zone.name} · {formatNgn(Number(zone.feeNgn))} · {zone.estimate}</option>)}
+            </select>
+            {details.city && !zones.some(zone => zone.city === details.city) && <p className="mt-2 text-sm text-ember">Delivery is not available in this city yet.</p>}
           </Field>
           <Field label="Area / neighbourhood">
             <input

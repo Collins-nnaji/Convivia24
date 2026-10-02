@@ -6,7 +6,7 @@ import { listVenues, createVenue, updateVenue, deleteVenue } from '@/lib/venues/
 import { LAGOS_AREAS } from '@/lib/geo/lagos';
 
 export async function GET() {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
 
   try {
@@ -19,7 +19,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
   if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
   if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
@@ -55,7 +55,7 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
   if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });

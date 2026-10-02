@@ -26,28 +26,7 @@ export type PartnerApplicationInput = {
   payload: OutletApplicationPayload | BrandApplicationPayload;
 };
 
-let tableReady: Promise<void> | null = null;
-
-function ensureTable() {
-  if (!tableReady) {
-    tableReady = sql`
-      CREATE TABLE IF NOT EXISTS partner_applications (
-        id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        kind            TEXT NOT NULL CHECK (kind IN ('outlet', 'brand')),
-        contact_name    TEXT NOT NULL,
-        email           TEXT NOT NULL,
-        phone           TEXT,
-        company_name    TEXT NOT NULL,
-        payload         JSONB NOT NULL DEFAULT '{}',
-        notes           TEXT,
-        status          TEXT NOT NULL DEFAULT 'new'
-                          CHECK (status IN ('new', 'reviewed', 'approved', 'declined')),
-        created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
-      )
-    `.then(() => undefined);
-  }
-  return tableReady;
-}
+async function ensureTable(): Promise<void> {}
 
 export function validatePartnerApplication(input: PartnerApplicationInput): string | null {
   if (!input.contactName.trim()) return 'Contact name is required.';

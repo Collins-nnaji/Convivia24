@@ -2,6 +2,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 const footerLinks = [
+  { label: 'Delivery & returns', href: '/delivery-and-returns' },
+  { label: 'Support', href: '/support' },
   { label: 'Brands', href: '/brands' },
   { label: 'Contact', href: '/contact' },
   { label: 'Refer & earn', href: '/shop/refer-and-earn' },
@@ -24,7 +26,7 @@ export default function Footer() {
               />
             </Link>
             <p className="hidden sm:block text-[10px] text-white/40 truncate">
-              Plan the night · invite friends · order drinks · nationwide · 18+
+              Plan the night · invite friends · order drinks · Lagos, Abuja & Port Harcourt · 18+
             </p>
           </div>
 

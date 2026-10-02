@@ -6,11 +6,11 @@ import { absoluteUrl } from '@/lib/seo';
 export const metadata: Metadata = {
   title: 'Shop drinks & party packs',
   description:
-    'Order spirits, Champagne, mixers, and ready-made party packs with nationwide delivery across Nigeria. Adults 18+.',
+    'Order spirits, Champagne, mixers, and ready-made party packs with delivery in Lagos, Abuja, and Port Harcourt. Adults 18+.',
   alternates: { canonical: absoluteUrl('/shop') },
   openGraph: {
     title: 'Shop drinks | Convivia24',
-    description: 'Bottles and party packages delivered nationwide across Nigeria.',
+    description: 'Bottles and party packages delivered in Lagos, Abuja, and Port Harcourt.',
     url: absoluteUrl('/shop'),
   },
 };

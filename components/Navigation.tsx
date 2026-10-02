@@ -89,7 +89,7 @@ export default function Navigation() {
                 active={isActive(href)}
                 icon={icon ? NAV_ICONS[icon] : undefined}
                 accent={accent}
-                children={children}
+                subLinks={children}
               />
             ))}
 
@@ -306,7 +306,7 @@ function DesktopNavLink({
   active,
   icon: Icon,
   accent,
-  children,
+  subLinks,
 }: {
   href: string;
   label: string;
@@ -314,7 +314,7 @@ function DesktopNavLink({
   icon?: typeof Gift;
   accent?: boolean;
   /** Renders a hover menu of the link's sub-destinations. */
-  children?: { label: string; href: string }[];
+  subLinks?: { label: string; href: string }[];
 }) {
   const [open, setOpen] = useState(false);
 
@@ -344,7 +344,7 @@ function DesktopNavLink({
     </Link>
   );
 
-  if (!children || children.length === 0) return link;
+  if (!subLinks || subLinks.length === 0) return link;
 
   return (
     <div
@@ -365,7 +365,7 @@ function DesktopNavLink({
             exit={{ opacity: 0, y: -4 }}
             className="absolute left-0 top-full w-48 bg-white border border-obsidian/10 shadow-lg py-2 z-50"
           >
-            {children.map((child) => (
+            {subLinks.map((child) => (
               <Link
                 key={child.href}
                 href={child.href}

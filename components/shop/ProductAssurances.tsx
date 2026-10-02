@@ -7,7 +7,7 @@ import { Headset, QrCode, ShieldCheck, Truck } from 'lucide-react';
  * thresholds or a returns window until those policies exist in the terms.
  */
 const ITEMS = [
-  { icon: Truck, label: 'Nationwide delivery', detail: 'Across Nigeria' },
+  { icon: Truck, label: 'Delivery in Lagos, Abuja, and Port Harcourt', detail: 'Supported delivery zones' },
   { icon: ShieldCheck, label: 'Secure payments', detail: 'Encrypted checkout' },
   { icon: QrCode, label: 'Scan to verify', detail: 'Every order, checkable' },
   { icon: Headset, label: 'Dedicated support', detail: "We're here to help" },

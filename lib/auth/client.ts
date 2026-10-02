@@ -4,6 +4,7 @@
 // mounted by lib/auth/server.ts's `auth.handler()`, so session cookies are
 // always first-party regardless of where the upstream Neon Auth host lives.
 
+import { safeReturnPath } from './redirect';
 import { createAuthClient } from '@neondatabase/auth/next';
 
 export const authClient = createAuthClient();
@@ -15,7 +16,8 @@ export interface SessionUser {
   image: string | null;
 }
 
-function toSessionUser(u: { id: string; email: string; name?: string | null; image?: string | null }): SessionUser {
+function toSessionUser(u: { id: string; email?: string; name?: string | null; image?: string | null }): SessionUser {
+  if (!u.email) throw new Error('This account needs an email address to use Convivia24.');
   return { id: u.id, email: u.email, name: u.name ?? null, image: u.image ?? null };
 }
 
@@ -23,7 +25,7 @@ function absoluteUrl(path: string): string {
   // Neon Auth runs on a separate host from this app, so callback URLs must be
   // absolute — a relative path resolves against the auth server's own origin,
   // not ours, and gets rejected by its host validation.
-  return new URL(path, window.location.origin).toString();
+  return new URL(safeReturnPath(path), window.location.origin).toString();
 }
 
 /** Start a Google sign-in. Redirects the browser to Google then back to `callbackURL`. */

@@ -11,6 +11,7 @@ type GiftCard = {
   id: string;
   code: string;
   valueNgn: number;
+  balanceNgn?: number;
   status: 'active' | 'redeemed' | 'void';
   issuedBy: string;
   note: string | null;
@@ -128,7 +129,7 @@ export default function GiftCardsDesk({ onChanged }: { onChanged?: () => void })
       title: 'Void this gift card?',
       message: (
         <>
-          <code className="text-xs">{card.code}</code> stops working immediately and its {formatNgn(card.valueNgn)} is lost. The row stays for the record.
+          <code className="text-xs">{card.code}</code> stops working immediately and its {formatNgn(card.balanceNgn ?? card.valueNgn)} is lost. The row stays for the record.
         </>
       ),
       confirmLabel: 'Void card',
@@ -279,7 +280,7 @@ export default function GiftCardsDesk({ onChanged }: { onChanged?: () => void })
                       </button>
                     </span>
                   </td>
-                  <td className="px-3 py-2.5 text-right font-semibold tabular-nums">{formatNgn(c.valueNgn)}</td>
+                  <td className="px-3 py-2.5 text-right font-semibold tabular-nums">{formatNgn(c.balanceNgn ?? c.valueNgn)}</td>
                   <td className="px-3 py-2.5">
                     <span className={`px-2 py-1 text-[10px] font-black uppercase tracking-[0.1em] ${t.cls}`}>{t.label}</span>
                     {c.status === 'redeemed' && c.redeemedOrderId && (

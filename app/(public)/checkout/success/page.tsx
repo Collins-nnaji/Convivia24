@@ -65,14 +65,14 @@ function SuccessBody() {
         }
 
         if (data.status === 'paid' || data.status === 'fulfilled' || data.verified === true) {
-          if (mode === 'manual' || data.mode === 'manual') {
+          if (data.mode === 'manual') {
             clear();
             sessionStorage.removeItem('convivia_pending_order');
             applyLoyalty(data.subtotalNgn);
             setState({
               phase: 'manual',
               orderId: data.orderId,
-              subtotalNgn: data.subtotalNgn,
+              subtotalNgn: data.totalNgn ?? data.subtotalNgn,
             });
             return;
           }
@@ -82,19 +82,19 @@ function SuccessBody() {
           setState({
             phase: 'paid',
             orderId: data.orderId,
-            subtotalNgn: data.subtotalNgn,
+            subtotalNgn: data.totalNgn ?? data.subtotalNgn,
           });
           return;
         }
 
-        if (mode === 'manual' || data.mode === 'manual') {
+        if (data.mode === 'manual') {
           clear();
           sessionStorage.removeItem('convivia_pending_order');
           applyLoyalty(data.subtotalNgn);
           setState({
             phase: 'manual',
             orderId: data.orderId,
-            subtotalNgn: data.subtotalNgn,
+            subtotalNgn: data.totalNgn ?? data.subtotalNgn,
           });
           return;
         }
@@ -184,7 +184,7 @@ function SuccessBody() {
         <p className="text-obsidian/60 leading-relaxed mb-6">
           {isManual
             ? 'Order saved. Our team will confirm payment and a delivery window shortly.'
-            : 'Payment confirmed. We’ll follow up with nationwide delivery timing.'}
+            : 'Payment confirmed. We’ll follow up with delivery in Lagos, Abuja, and Port Harcourt timing.'}
         </p>
         {typeof state.subtotalNgn === 'number' && (
           <p className="text-2xl font-bold text-obsidian mb-2">{formatNgn(state.subtotalNgn)}</p>

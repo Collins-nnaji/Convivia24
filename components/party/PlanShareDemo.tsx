@@ -48,7 +48,7 @@ export default function PlanShareDemo() {
           >
             <div className="bg-white px-6 pt-5 pb-4 border-b-[3px] border-ember">
               <p className="font-wordmark text-[13px] text-obsidian tracking-[0.18em]">Convivia24</p>
-              <p className="text-[10px] text-obsidian/40 mt-1">Drink supply plan · nationwide delivery · 18+</p>
+              <p className="text-[10px] text-obsidian/40 mt-1">Drink supply plan · delivery in Lagos, Abuja, and Port Harcourt · 18+</p>
             </div>
             <div className="px-6 py-5">
               <p className="font-serif text-2xl sm:text-3xl text-obsidian leading-tight">Tolu’s birthday</p>

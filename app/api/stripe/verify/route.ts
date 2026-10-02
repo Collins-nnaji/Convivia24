@@ -1,4 +1,6 @@
+import { reconcilePayment } from '@/lib/payments/reconcile';
 import { NextRequest, NextResponse } from 'next/server';
+import { getCurrentUser } from '@/lib/auth/session';
 import sql, { apiErrorResponse } from '@/lib/db';
 import { approveReferralForOrder } from '@/lib/referrals/repo';
 import { notifyOrderStatus } from '@/lib/commerce/notify';
@@ -12,6 +14,8 @@ import {
 /** Verify Flutterwave payment (or confirm manual/awaiting status) for an order. */
 export async function GET(req: NextRequest) {
   try {
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: 'Sign in to verify your order.' }, { status: 401 });
     const orderId = req.nextUrl.searchParams.get('orderId')?.trim() || '';
     const reference =
       req.nextUrl.searchParams.get('reference')?.trim() ||
@@ -28,39 +32,40 @@ export async function GET(req: NextRequest) {
       ? await sql`
           SELECT id, email, full_name, subtotal_ngn, total_ngn, loyalty_owner_id,
                  loyalty_points_awarded, status, payment_ref, payment_provider
-          FROM ritual_orders WHERE id = ${orderId} LIMIT 1
+          FROM ritual_orders WHERE id = ${orderId} AND LOWER(email) = ${user.email.trim().toLowerCase()} LIMIT 1
         `
       : await sql`
           SELECT id, email, full_name, subtotal_ngn, total_ngn, loyalty_owner_id,
                  loyalty_points_awarded, status, payment_ref, payment_provider
-          FROM ritual_orders WHERE payment_ref = ${reference} LIMIT 1
+          FROM ritual_orders WHERE payment_ref = ${reference} AND LOWER(email) = ${user.email.trim().toLowerCase()} LIMIT 1
         `;
 
     if (!order) {
       return NextResponse.json({ error: 'Order not found.' }, { status: 404 });
     }
 
-    if (order.status === 'paid' || order.status === 'fulfilled') {
+    if (['paid', 'processing', 'packed', 'out_for_delivery', 'delivered', 'fulfilled'].includes(String(order.status))) {
       return NextResponse.json({
         ok: true,
         orderId: order.id,
         status: order.status,
         subtotalNgn: order.subtotal_ngn,
+        totalNgn: Number(order.total_ngn ?? order.subtotal_ngn),
         verified: true,
       });
     }
 
-    if (order.status === 'cancelled') {
+    if (['cancelled', 'refunded'].includes(String(order.status))) {
       return NextResponse.json({
         ok: true,
         orderId: order.id,
-        status: 'cancelled',
+        status: order.status,
         verified: false,
       });
     }
 
     const secret = flutterwaveSecret();
-    const refToVerify = reference || (order.payment_ref as string | null);
+    const refToVerify = order.payment_ref as string | null;
     const provider = String(order.payment_provider || '');
 
     if (secret && (refToVerify || transactionId) && (provider === 'flutterwave' || provider === 'paystack')) {
@@ -69,28 +74,17 @@ export async function GET(req: NextRequest) {
         transactionId,
       });
       const chargedNgn = Number(order.total_ngn ?? order.subtotal_ngn);
-      const paid = flutterwavePaid(verifyData, chargedNgn);
+      const paid = flutterwavePaid(verifyData, chargedNgn, String(order.payment_ref || ''));
 
       if (paid) {
-        const storedRef = verifyData?.tx_ref || refToVerify;
-        const [flipped] = await sql`
-          UPDATE ritual_orders
-          SET status = 'paid', payment_provider = 'flutterwave', payment_ref = ${storedRef}, updated_at = NOW()
-          WHERE id = ${order.id as string} AND status NOT IN ('paid', 'fulfilled')
-          RETURNING id
-        `;
-        await recordOrderEvent(order.id as string, 'paid').catch(() => {});
-        await approveReferralForOrder(order.id as string);
-        if (flipped) {
-          await notifyOrderStatus(order.id as string, 'paid');
-        }
+        const reconciled = await reconcilePayment(String(order.id), verifyData);
         return NextResponse.json({
           ok: true,
           orderId: order.id,
-          status: 'paid',
+          status: reconciled?.status || order.status,
           subtotalNgn: order.subtotal_ngn,
           totalNgn: chargedNgn,
-          verified: true,
+          verified: reconciled?.verified === true,
         });
       }
 
@@ -99,6 +93,7 @@ export async function GET(req: NextRequest) {
         orderId: order.id,
         status: order.status,
         subtotalNgn: order.subtotal_ngn,
+        totalNgn: Number(order.total_ngn ?? order.subtotal_ngn),
         verified: false,
         flutterwaveStatus: verifyData?.status || 'unknown',
       });
@@ -110,7 +105,8 @@ export async function GET(req: NextRequest) {
         orderId: order.id,
         status: order.status,
         subtotalNgn: order.subtotal_ngn,
-        verified: order.payment_provider === 'manual',
+        totalNgn: Number(order.total_ngn ?? order.subtotal_ngn),
+        verified: false,
         mode: order.payment_provider === 'manual' ? 'manual' : 'pending',
       });
     }
@@ -120,6 +116,7 @@ export async function GET(req: NextRequest) {
       orderId: order.id,
       status: order.status,
       subtotalNgn: order.subtotal_ngn,
+        totalNgn: Number(order.total_ngn ?? order.subtotal_ngn),
       verified: false,
     });
   } catch (err) {

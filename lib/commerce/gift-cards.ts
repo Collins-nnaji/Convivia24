@@ -8,6 +8,7 @@ export type GiftCard = {
   id: string;
   code: string;
   valueNgn: number;
+  balanceNgn: number;
   status: 'active' | 'redeemed' | 'void';
   issuedBy: string;
   note: string | null;
@@ -28,6 +29,7 @@ function mapRow(r: Record<string, unknown>): GiftCard {
     id: String(r.id),
     code: String(r.code),
     valueNgn: Number(r.value_ngn),
+    balanceNgn: Number(r.balance_ngn ?? r.value_ngn),
     status: r.status as GiftCard['status'],
     issuedBy: String(r.issued_by),
     note: (r.note as string) || null,
@@ -42,7 +44,7 @@ function mapRow(r: Record<string, unknown>): GiftCard {
   };
 }
 
-function generateCode(): string {
+export function generateCode(): string {
   // 4 groups of 4 base32-ish chars from real randomness — not guessable,
   // unlike the old Math.random()-in-the-browser codes.
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I ambiguity
@@ -63,9 +65,9 @@ export async function issueGiftCard(
 ): Promise<GiftCard> {
   const code = generateCode();
   const rows = await sql`
-    INSERT INTO gift_cards (code, value_ngn, issued_by, note, recipient_name, recipient_email, expires_at)
+    INSERT INTO gift_cards (code, value_ngn, balance_ngn, issued_by, note, recipient_name, recipient_email, expires_at)
     VALUES (
-      ${code}, ${Math.max(1, Math.floor(valueNgn))}, ${issuedBy}, ${note || null},
+      ${code}, ${Math.max(1, Math.floor(valueNgn))}, ${Math.max(1, Math.floor(valueNgn))}, ${issuedBy}, ${note || null},
       ${opts.recipientName?.trim() || null}, ${opts.recipientEmail?.trim().toLowerCase() || null},
       ${opts.expiresAt ? new Date(opts.expiresAt).toISOString() : null}::timestamptz
     )
@@ -92,7 +94,7 @@ export async function giftCardStats(): Promise<GiftCardStats> {
   const [r] = await sql`
     SELECT
       COUNT(*) FILTER (WHERE status = 'active' AND (expires_at IS NULL OR expires_at > NOW()))::int AS active_count,
-      COALESCE(SUM(value_ngn) FILTER (WHERE status = 'active' AND (expires_at IS NULL OR expires_at > NOW())), 0)::bigint AS active_ngn,
+      COALESCE(SUM(balance_ngn) FILTER (WHERE status = 'active' AND (expires_at IS NULL OR expires_at > NOW())), 0)::bigint AS active_ngn,
       COUNT(*) FILTER (WHERE status = 'redeemed')::int AS redeemed_count,
       COALESCE(SUM(value_ngn) FILTER (WHERE status = 'redeemed'), 0)::bigint AS redeemed_ngn,
       COUNT(*) FILTER (WHERE status = 'void')::int AS void_count,
@@ -135,7 +137,7 @@ export async function sendGiftCardEmail(card: GiftCard, opts: { message?: string
       ${opts.message ? `<p style="margin:0 0 16px;line-height:1.55;font-size:15px;color:#3a3532;">${escapeHtml(opts.message)}</p>` : ''}
       <p style="margin:0 0 8px;font-size:15px;color:#3a3532;">Here is your gift card code. Enter it at checkout and the value comes straight off your order.</p>
       <p style="margin:16px 0;padding:14px 18px;background:#f6f1ea;border-radius:12px;font-family:ui-monospace,Menlo,monospace;font-size:22px;letter-spacing:0.08em;font-weight:700;color:#0a0a0a;text-align:center;">${card.code}</p>
-      <p style="margin:0;font-size:15px;color:#3a3532;">Worth <strong>${formatNgn(card.valueNgn)}</strong> · single use.</p>
+      <p style="margin:0;font-size:15px;color:#3a3532;">Worth <strong>${formatNgn(card.valueNgn)}</strong> · reusable until the balance is spent.</p>
       ${expiry}
       <p style="margin:18px 0 0;font-size:14px;"><a href="${appUrl()}/shop" style="color:#c2410c;font-weight:700;">Shop drinks →</a></p>
     `,
@@ -197,8 +199,5 @@ export async function redeemGiftCardForOrder(
 
 /** Releases a card back to active if its order never completed (e.g. checkout failed). */
 export async function releaseGiftCard(orderId: string): Promise<void> {
-  await sql`
-    UPDATE gift_cards SET status = 'active', redeemed_order_id = NULL, redeemed_at = NULL
-    WHERE redeemed_order_id = ${orderId} AND status = 'redeemed'
-  `;
+  await sql`SELECT c24_release_gift_credit(${orderId}::uuid)`;
 }

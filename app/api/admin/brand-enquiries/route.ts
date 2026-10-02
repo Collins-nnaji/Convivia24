@@ -8,7 +8,7 @@ import { listBrandEnquiries, setBrandEnquiryStatus } from '@/lib/trivia/enquirie
 const STATUSES = ['new', 'contacted', 'won', 'closed'] as const;
 
 export async function GET() {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     return NextResponse.json({ enquiries: await listBrandEnquiries() });
@@ -20,7 +20,7 @@ export async function GET() {
 }
 
 export async function PATCH(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);

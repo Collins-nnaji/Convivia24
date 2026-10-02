@@ -46,7 +46,7 @@ export async function syncInventoryRollup(slug: string): Promise<void> {
     FROM (
       SELECT
         COALESCE(SUM(ss.on_hand), 0)::int  AS total_on_hand,
-        COALESCE(SUM(ss.reserved), 0)::int AS total_reserved
+        COALESCE((SELECT SUM(r.qty) FROM order_stock_reservations r WHERE r.slug = ${slug} AND r.state = 'reserved'), 0)::int AS total_reserved
       FROM supplier_stock ss
       JOIN suppliers sup ON sup.id = ss.supplier_id AND sup.active
       WHERE ss.slug = ${slug}
@@ -377,6 +377,8 @@ export type SupplierOrder = {
   riderPhone: string | null;
   etaAt: string | null;
   trackingNote: string | null;
+  deliveryProof: string | null;
+  recipientAgeChecked: boolean;
   outOfCity: boolean;
   /** What we expect to pay this supplier — their own quote at routing time, or the sourced cost. */
   costNgn: number | null;
@@ -394,7 +396,7 @@ export async function supplierOrders(supplierId: string, opts: { limit?: number 
   const rows = await sql`
     SELECT
       o.id, o.status, o.full_name, o.phone, o.address_line1, o.address_line2, o.area, o.city, o.notes,
-      o.courier_name, o.rider_phone, o.eta_at, o.tracking_note, o.routed_out_of_city,
+      o.courier_name, o.rider_phone, o.eta_at, o.tracking_note, o.delivery_proof, o.recipient_age_checked, o.routed_out_of_city,
       COALESCE(o.supplier_cost_ngn, o.routed_cost_ngn) AS cost_ngn, o.created_at,
       COALESCE(
         json_agg(json_build_object('slug', i.kit_slug, 'name', i.kit_name, 'qty', i.qty) ORDER BY i.created_at)
@@ -432,6 +434,8 @@ export async function supplierOrders(supplierId: string, opts: { limit?: number 
     riderPhone: (r.rider_phone as string) || null,
     etaAt: r.eta_at ? String(r.eta_at) : null,
     trackingNote: (r.tracking_note as string) || null,
+    deliveryProof: (r.delivery_proof as string) || null,
+    recipientAgeChecked: r.recipient_age_checked === true,
     outOfCity: r.routed_out_of_city === true,
     costNgn: r.cost_ngn == null ? null : Number(r.cost_ngn),
     createdAt: String(r.created_at),

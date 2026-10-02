@@ -168,7 +168,7 @@ export default function ContactPage() {
               }}
               icon={Building2}
               title="I'm a brand"
-              body="Spirit houses, importers, and producers — enquire about Convivia24 distributing your portfolio nationwide."
+              body="Spirit houses, importers, and producers — enquire about Convivia24 distributing your portfolio in Lagos, Abuja and Port Harcourt."
             />
           </div>
 
@@ -290,7 +290,7 @@ export default function ContactPage() {
                         label="Markets / regions"
                         name="regions"
                         required
-                        placeholder="Lagos, Abuja, nationwide…"
+                        placeholder="Lagos, Abuja, Port Harcourt…"
                       />
                       <Field
                         label="Portfolio size (optional)"
@@ -374,7 +374,7 @@ export default function ContactPage() {
 
             <div className="mt-8 grid sm:grid-cols-3 gap-4">
               <MiniPillar icon={Package} title="Wholesale" body="Cases and party packs at partner rates." />
-              <MiniPillar icon={Truck} title="Distribution" body="Nationwide delivery into events and homes." />
+              <MiniPillar icon={Truck} title="Distribution" body="Delivery in Lagos, Abuja, and Port Harcourt into events and homes." />
               <MiniPillar icon={Store} title="Discovery" body="Shop, packages, and planner reach." />
             </div>
           </div>

@@ -222,7 +222,7 @@ export async function approveReferralForOrder(orderId: string): Promise<void> {
   try {
     const [row] = await sql`
       SELECT a.id, a.commission_pct, a.status,
-             o.total_ngn, o.subtotal_ngn, o.refunded_ngn
+             o.total_ngn, o.subtotal_ngn, o.delivery_fee_ngn, o.refunded_ngn
       FROM referral_attributions a
       JOIN ritual_orders o ON o.id = a.order_id
       WHERE a.order_id = ${orderId}
@@ -233,7 +233,7 @@ export async function approveReferralForOrder(orderId: string): Promise<void> {
 
     const collected = Math.max(
       0,
-      Number(row.total_ngn ?? row.subtotal_ngn ?? 0) - Number(row.refunded_ngn ?? 0)
+      Number(row.total_ngn ?? row.subtotal_ngn ?? 0) - Number(row.delivery_fee_ngn ?? 0) - Number(row.refunded_ngn ?? 0)
     );
     const owed = commissionNgn(collected, Number(row.commission_pct));
 
@@ -243,7 +243,7 @@ export async function approveReferralForOrder(orderId: string): Promise<void> {
           commission_ngn = ${owed},
           status = 'approved',
           approved_at = COALESCE(approved_at, NOW())
-      WHERE id = ${row.id}
+      WHERE id = ${row.id} AND status IN ('pending','approved')
     `;
   } catch (err) {
     captureApiError(err, { route: 'referrals/approveReferralForOrder', orderId });

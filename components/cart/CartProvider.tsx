@@ -10,6 +10,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import type { DrinkProduct } from '@/lib/drinks/catalog';
 import { findSellable } from '@/lib/catalog/sellable';
 import { useUser } from '@/components/auth/AuthProvider';
 import CartToast from '@/components/cart/CartToast';
@@ -37,18 +38,22 @@ type CartContextValue = {
 const STORAGE_KEY = 'convivia_drinks_cart';
 const CartContext = createContext<CartContextValue | null>(null);
 
-function normalizeLines(raw: CartLine[]): CartLine[] {
+function normalizeLines(raw: CartLine[], catalog: Map<string, DrinkProduct> = new Map()): CartLine[] {
   return raw
     .map((line) => {
       // Resolves shop bottles and event packages alike — packages are not in DRINKS.
-      const product = findSellable(line.slug);
-      if (!product) return null;
+      const product = catalog.get(line.slug) || findSellable(line.slug);
+      if (!product) {
+        // Preserve persisted live-only products until the server catalog loads.
+        if (typeof line.slug !== 'string' || !line.slug || !Number.isFinite(line.qty)) return null;
+        return { slug: line.slug, name: line.name || line.slug, priceNgn: Number.isFinite(line.priceNgn) ? line.priceNgn : 0, qty: Math.max(1, Math.min(24, Math.floor(line.qty))) };
+      }
       const min = Math.max(1, Math.min(24, Math.floor(product.minOrderQty ?? 1)));
       return {
         slug: product.slug,
         name: product.name,
         priceNgn: product.priceNgn,
-        qty: Math.max(min, Math.min(24, Number(line.qty) || min)),
+        qty: Math.max(min, Math.min(24, Math.floor(Number(line.qty)) || min)),
       } satisfies CartLine;
     })
     .filter(Boolean) as CartLine[];
@@ -73,6 +78,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { user, loading: authLoading } = useUser();
   const syncedForUser = useRef<string | null>(null);
+  const [cartUser, setCartUser] = useState<string | null>(null);
+  const catalog = useRef(new Map<string, DrinkProduct>());
+
+  useEffect(() => {
+    fetch('/api/shop/catalog').then((res) => res.ok ? res.json() : null).then((data) => {
+      if (!Array.isArray(data?.products)) return;
+      catalog.current = new Map(data.products.map((product: DrinkProduct) => [product.slug, product]));
+      setLines((previous) => normalizeLines(previous, catalog.current));
+    }).catch(() => {});
+  }, []);
 
   const dismissToast = useCallback(() => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -96,41 +111,49 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (!hydrated || authLoading) return;
     if (!user) {
       syncedForUser.current = null;
+      setCartUser(null);
       return;
     }
     if (syncedForUser.current === user.id) return;
     syncedForUser.current = user.id;
 
+    let cancelled = false;
     fetch('/api/cart')
-      .then((res) => (res.ok ? res.json() : null))
+      .then((res) => { if (!res.ok) throw new Error('Cart unavailable'); return res.json(); })
       .then((data) => {
+        if (cancelled) return;
+        const previousOwner = localStorage.getItem('convivia_cart_owner');
         const serverItems = Array.isArray(data?.items) ? (data.items as CartLine[]) : [];
         if (serverItems.length > 0) {
-          setLines(normalizeLines(serverItems));
-        } else if (lines.length > 0) {
-          fetch('/api/cart', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ items: lines }),
-          }).catch(() => {});
-        }
+          setLines((previous) => {
+            const merged = new Map((previousOwner ? [] : previous).map((line) => [line.slug, line]));
+            for (const line of serverItems) {
+              const local = merged.get(line.slug);
+              merged.set(line.slug, { ...line, qty: Math.min(24, line.qty + (local?.qty || 0)) });
+            }
+            return normalizeLines([...merged.values()], catalog.current);
+          });
+        } else if (previousOwner && previousOwner !== user.id) setLines([]);
+        localStorage.setItem('convivia_cart_owner', user.id);
+        setCartUser(user.id);
       })
-      .catch(() => {});
+      .catch(() => { syncedForUser.current = null; });
+    return () => { cancelled = true; };
     // Only re-run when sign-in state changes — not on every cart edit.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, authLoading, user]);
 
   useEffect(() => {
-    if (!hydrated || authLoading || !user || syncedForUser.current !== user.id) return;
+    if (!hydrated || authLoading || !user || cartUser !== user.id) return;
     fetch('/api/cart', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ items: lines }),
     }).catch(() => {});
-  }, [lines, hydrated, authLoading, user]);
+  }, [lines, hydrated, authLoading, user, cartUser]);
 
   const addProduct = useCallback((slug: string, qty = 1) => {
-    const product = findSellable(slug);
+    const product = catalog.current.get(slug) || findSellable(slug);
     if (!product) return;
     const min = Math.max(1, Math.min(24, Math.floor(product.minOrderQty ?? 1)));
     const addQty = Math.max(min, Math.min(24, qty));
@@ -164,7 +187,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setQty = useCallback((slug: string, qty: number) => {
-    const product = findSellable(slug);
+    const product = catalog.current.get(slug) || findSellable(slug);
     const min = Math.max(1, Math.min(24, Math.floor(product?.minOrderQty ?? 1)));
     setLines((prev) => {
       if (qty < min) return prev.filter((l) => l.slug !== slug);
@@ -179,7 +202,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const clear = useCallback(() => setLines([]), []);
 
   const refreshPrices = useCallback(() => {
-    setLines((prev) => normalizeLines(prev));
+    setLines((prev) => normalizeLines(prev, catalog.current));
   }, []);
 
   const value = useMemo<CartContextValue>(() => {

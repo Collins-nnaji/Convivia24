@@ -19,7 +19,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(payload);
   } catch (err) {
     captureApiError(err, { route: 'shop/catalog' });
-    // Fallback to static-only if DB down
+    if (process.env.NODE_ENV === 'production') {
+      const { status, error } = apiErrorResponse(err, 'The catalog is temporarily unavailable.');
+      return NextResponse.json({ error, products: [] }, { status });
+    }
     try {
       const { DRINKS } = await import('@/lib/drinks/catalog');
       return NextResponse.json({ products: DRINKS, degraded: true });

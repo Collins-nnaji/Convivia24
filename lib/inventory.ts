@@ -398,53 +398,17 @@ export async function reserveStockForOrder(
   lines: StockLine[],
   orderId: string
 ): Promise<{ error: string } | null> {
-  const reservedSoFar: StockLine[] = [];
-  for (const line of lines) {
-    const rows = await sql`
-      UPDATE inventory
-      SET reserved = reserved + ${line.qty}, updated_at = NOW()
-      WHERE slug = ${line.slug} AND track_stock = true AND (on_hand - reserved) >= ${line.qty}
-      RETURNING slug
-    `;
-    if (rows.length > 0) {
-      reservedSoFar.push(line);
-      await logMovement(line.slug, { reserved: line.qty }, 'reserve', `Reserved for order ${orderId}`, orderId);
-      continue;
-    }
-
-    const [existing] = await sql`SELECT name, track_stock FROM inventory WHERE slug = ${line.slug} LIMIT 1`;
-    if (!existing || existing.track_stock === false) continue; // not stock-tracked — nothing to reserve
-
-    for (const r of reservedSoFar) {
-      await sql`UPDATE inventory SET reserved = GREATEST(0, reserved - ${r.qty}), updated_at = NOW() WHERE slug = ${r.slug}`;
-      await logMovement(r.slug, { reserved: -r.qty }, 'release', `Rolled back — ${line.slug} unavailable`, orderId);
-    }
-    return { error: `${existing.name || line.slug} doesn't have enough stock right now.` };
-  }
-  return null;
+  const [result] = await sql`SELECT c24_reserve_stock(${orderId}::uuid, ${JSON.stringify(lines)}::jsonb) AS error`;
+  return result?.error ? { error: String(result.error) } : null;
 }
 
-/** Releases reserved-but-not-yet-fulfilled stock — order cancelled or refunded. */
-export async function releaseStockForOrder(lines: StockLine[], orderId: string): Promise<void> {
-  for (const l of lines) {
-    await sql`
-      UPDATE inventory SET reserved = GREATEST(0, reserved - ${l.qty}), updated_at = NOW()
-      WHERE slug = ${l.slug} AND track_stock = true
-    `;
-    await logMovement(l.slug, { reserved: -l.qty }, 'release', `Released — order ${orderId}`, orderId);
-  }
+/** Complete the recorded reservation once, regardless of retries. */
+export async function releaseStockForOrder(_lines: StockLine[], orderId: string): Promise<void> {
+  await sql`SELECT c24_finish_stock(${orderId}::uuid, false)`;
 }
 
-/** Consumes stock for good — order actually left the building (delivered/fulfilled). */
-export async function fulfillStockForOrder(lines: StockLine[], orderId: string): Promise<void> {
-  for (const l of lines) {
-    await sql`
-      UPDATE inventory
-      SET on_hand = GREATEST(0, on_hand - ${l.qty}), reserved = GREATEST(0, reserved - ${l.qty}), updated_at = NOW()
-      WHERE slug = ${l.slug} AND track_stock = true
-    `;
-    await logMovement(l.slug, { onHand: -l.qty, reserved: -l.qty }, 'fulfill', `Fulfilled — order ${orderId}`, orderId);
-  }
+export async function fulfillStockForOrder(_lines: StockLine[], orderId: string): Promise<void> {
+  await sql`SELECT c24_finish_stock(${orderId}::uuid, true)`;
 }
 
 /** Merge static catalog + admin inventory into shop products with live stock. */
@@ -460,8 +424,9 @@ export async function shopCatalog(): Promise<
 > {
   let stock: InventoryRow[] = [];
   try {
-    stock = await listInventory(true);
-  } catch {
+    stock = await listInventory(false);
+  } catch (error) {
+    if (process.env.NODE_ENV === 'production') throw error;
     stock = [];
   }
 
@@ -475,7 +440,7 @@ export async function shopCatalog(): Promise<
   }
   const bySlug = new Map(stock.map((s) => [s.slug, s]));
 
-  const fromCatalog = DRINKS.map((d) => {
+  const fromCatalog = DRINKS.filter((d) => bySlug.get(d.slug)?.active !== false).map((d) => {
     const inv = bySlug.get(d.slug);
     const available = inv ? inv.available : undefined;
     return {
@@ -496,7 +461,7 @@ export async function shopCatalog(): Promise<
   const adminOnly = stock
     .filter(
       (s) =>
-        s.source === 'admin' &&
+        s.active &&
         !catalogSlugs.has(s.slug) &&
         s.price_ngn != null &&
         // Merch is fulfilled via rewards / desk — not listed next to bottles.
@@ -524,4 +489,9 @@ export async function shopCatalog(): Promise<
     }));
 
   return [...adminOnly, ...fromCatalog];
+}
+
+/** Resolve published product pages from the same catalog as the storefront. */
+export async function publishedProduct(slug: string): Promise<DrinkProduct | undefined> {
+  return (await shopCatalog()).find((product) => product.slug === slug);
 }

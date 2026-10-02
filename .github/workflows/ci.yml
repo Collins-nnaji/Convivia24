@@ -9,10 +9,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      # The Neon HTTP driver only connects when a route actually runs a query —
-      # `next build` never does, so a placeholder is enough to let build-time
-      # code that merely reads process.env.DATABASE_URL succeed.
-      DATABASE_URL: postgres://user:pass@localhost:5432/db
+      DATABASE_URL: ''
+      NEON_AUTH_BASE_URL: ''
+      NEON_AUTH_COOKIE_SECRET: ci-validation-secret-at-least-32-characters
+      NEXT_PUBLIC_APP_URL: https://convivia24.example
+      NEXT_PUBLIC_EVENTS_ENABLED: 'true'
     steps:
       - uses: actions/checkout@v4
 
@@ -24,11 +25,28 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Lint
+        run: npm run lint
+
       - name: Typecheck
-        run: npx tsc --noEmit
+        run: npm run typecheck
 
       - name: Test
         run: npm test
 
+      - name: Install browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser journeys
+        run: npm run test:browser
+
       - name: Build
-        run: npm run build
+        run: npm run build -- --webpack
+
+      - name: Retain failed browser traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-traces
+          path: test-results
+          retention-days: 7

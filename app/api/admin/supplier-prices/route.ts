@@ -13,7 +13,7 @@ import {
 } from '@/lib/suppliers/sku-prices';
 
 export async function GET() {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('inventory');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const catalog = await listSupplierCatalog();
@@ -26,7 +26,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('inventory');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const rl = await rateLimit(`admin:${clientIp(req)}`, 60, 60);
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('inventory');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const supplierId = new URL(req.url).searchParams.get('supplierId') || '';

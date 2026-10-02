@@ -36,7 +36,7 @@ function readInput(body: Record<string, unknown>): SupplierInput {
 }
 
 export async function GET() {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('inventory');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const suppliers = await listSuppliers();
@@ -49,7 +49,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('inventory');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('inventory');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
@@ -121,7 +121,7 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('inventory');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const id = new URL(req.url).searchParams.get('id');

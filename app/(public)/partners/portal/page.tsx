@@ -15,6 +15,7 @@ type Outlet = {
   area: string | null;
   points: number;
   lifetimePoints: number;
+  approvalStatus: string;
 };
 
 type InventoryRow = { slug: string; onHand: number };
@@ -25,6 +26,7 @@ export default function PartnerPortalPage() {
   const [outlet, setOutlet] = useState<Outlet | null>(null);
   const [signedIn, setSignedIn] = useState(true);
   const [inventory, setInventory] = useState<InventoryRow[]>([]);
+  const [orders, setOrders] = useState<{ id: string; status: string; totalNgn: number; pointsEarned: number; trackingReference?: string }[]>([]);
   const [giftCards, setGiftCards] = useState<GiftCard[]>([]);
   const [tab, setTab] = useState<'pricing' | 'stock' | 'wholesale' | 'card'>('card');
   const [cart, setCart] = useState<Record<string, number>>({});
@@ -45,6 +47,7 @@ export default function PartnerPortalPage() {
       setOutlet(data.outlet);
       setInventory(data.inventory || []);
       setGiftCards(data.giftCards || []);
+      setOrders(data.orders || []);
       if (new URLSearchParams(window.location.search).get('tab') === 'pricing') setTab('pricing');
     }
     setReady(true);
@@ -96,10 +99,11 @@ export default function PartnerPortalPage() {
       return;
     }
     setInventory(data.inventory || []);
-    setOutlet((o) => (o ? { ...o, points: o.points + data.order.pointsEarned, lifetimePoints: o.lifetimePoints + data.order.pointsEarned } : o));
+
     setCart({});
-    setMsg(`Wholesale drop placed. ${data.order.pointsEarned.toLocaleString()} Premium points banked.`);
+    setMsg(`Wholesale order submitted for payment confirmation. ${data.order.pointsEarned.toLocaleString()} Premium points will be awarded after receipt.`);
     setTab('stock');
+    await load();
   }
 
   async function convert(id: string) {
@@ -285,6 +289,7 @@ export default function PartnerPortalPage() {
           </div>
         )}
 
+        {orders.length > 0 && <section className="my-6 rounded-xl border bg-white p-4"><h2 className="font-bold mb-3">Wholesale orders</h2>{orders.map(order => <div key={order.id} className="flex flex-wrap items-center justify-between gap-3 border-t py-3"><span>{order.id.slice(0, 8)} · {formatNgn(order.totalNgn)} · {order.status}{order.trackingReference ? ` · ${order.trackingReference}` : ''}</span>{order.status === 'dispatched' && <button className="btn-brand px-3 py-2" onClick={async () => { const res = await fetch('/api/partners/wholesale', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'receive', orderId: order.id }) }); const data = await res.json(); if (!res.ok) setMsg(data.error || 'Could not confirm receipt.'); else { setMsg('Receipt confirmed. Stock and points updated.'); await load(); } }}>Confirm received</button>}</div>)}</section>}
         {tab === 'wholesale' && (
           <>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
@@ -318,7 +323,7 @@ export default function PartnerPortalPage() {
               </p>
               <button
                 type="button"
-                disabled={wholesaleTotal <= 0}
+                disabled={wholesaleTotal <= 0 || outlet.approvalStatus !== 'approved'}
                 onClick={restock}
                 className="px-6 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em] disabled:opacity-50"
               >

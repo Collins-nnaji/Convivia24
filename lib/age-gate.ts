@@ -14,7 +14,9 @@ function secret(): string {
   // configured yet (e.g. a fresh local checkout) — real deployments should
   // set NEON_AUTH_COOKIE_SECRET, which this reuses rather than requiring a
   // second dedicated secret env var.
-  return s && s.length >= 32 ? s : 'convivia24-age-gate-unconfigured-fallback-secret';
+  if (s && s.length >= 32) return s;
+  if (process.env.NODE_ENV === 'production') throw new Error('NEON_AUTH_COOKIE_SECRET must contain at least 32 characters.');
+  return 'convivia24-age-gate-unconfigured-fallback-secret';
 }
 
 function bufToHex(buf: ArrayBuffer): string {

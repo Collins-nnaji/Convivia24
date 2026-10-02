@@ -13,7 +13,7 @@ import { aiConfigured } from '@/lib/ai/azure';
 const STATUSES = ['entered', 'won', 'claimed', 'void'];
 
 export async function GET(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
 
   const rounds = TRIVIA_ROUNDS.flatMap((r) => {
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
   if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
   if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
@@ -87,7 +87,7 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
   if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });

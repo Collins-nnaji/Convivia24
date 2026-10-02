@@ -226,7 +226,7 @@ export default function ProductDetail({ product }: { product: DrinkProduct }) {
 
             <ul className="grid grid-cols-2 gap-x-5 gap-y-4 mt-7 p-5 bg-white border border-obsidian/8">
               <Promise icon={ShieldCheck} label="Secure payment" detail="Encrypted checkout" />
-              <Promise icon={Truck} label="Nationwide delivery" detail="Across Nigeria" />
+              <Promise icon={Truck} label="Delivery in Lagos, Abuja, and Port Harcourt" detail="Supported delivery zones" />
               <Promise icon={Wine} label="Authentic products" detail="No parallel imports" />
               <Promise icon={QrCode} label="Scan to verify" detail="Every order, checkable" />
             </ul>
@@ -506,7 +506,7 @@ function DeliveryPanel() {
       <div>
         <h3 className="text-obsidian font-semibold mb-1.5">Delivery</h3>
         <p>
-          We deliver nationwide across Nigeria. Delivery estimates given at checkout are indicative — give us
+          We deliver in Lagos, Abuja, and Port Harcourt. Delivery estimates given at checkout are indicative — give us
           a reachable phone number and an accurate address or venue so the driver can find you. Failed
           attempts may incur a redelivery fee.
         </p>

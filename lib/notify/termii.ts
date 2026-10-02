@@ -52,6 +52,7 @@ export async function sendSms(
   try {
     const res = await fetch(`${cfg.url}/sms/send`, {
       method: 'POST',
+      signal: AbortSignal.timeout(5000),
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         api_key: cfg.key,

@@ -15,7 +15,7 @@ import { captureApiError } from '@/lib/sentry';
 
 /** Campaigns and brand-ownership claims, for the Convivia24 desk. */
 export async function GET() {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
 
   const brands = BRANDS.map((b) => ({ slug: b.slug, name: b.name }));
@@ -46,7 +46,7 @@ function parseTasks(value: unknown): CampaignTask[] {
 }
 
 export async function POST(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
   if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
 
 /** Approve or reject a brand-ownership claim. */
 export async function PATCH(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
   if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
@@ -107,7 +107,7 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
   if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });

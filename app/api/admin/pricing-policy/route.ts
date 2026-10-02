@@ -5,7 +5,7 @@ import { getPricingPolicy, savePricingPolicy } from '@/lib/pricing/policy';
 import { captureApiError } from '@/lib/sentry';
 
 export async function GET() {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('inventory');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const policy = await getPricingPolicy();
@@ -18,7 +18,7 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('inventory');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const body = await req.json().catch(() => ({}));

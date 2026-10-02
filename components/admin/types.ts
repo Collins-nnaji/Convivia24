@@ -17,6 +17,11 @@ export type AdminOrder = {
   city?: string | null;
   notes: string | null;
   courierName: string | null;
+  courierReference?: string | null;
+  trackingUrl?: string | null;
+  deliveryProof?: string | null;
+  recipientAgeChecked?: boolean;
+  courierCostNgn?: number | null;
   riderPhone: string | null;
   etaAt: string | null;
   trackingNote: string | null;

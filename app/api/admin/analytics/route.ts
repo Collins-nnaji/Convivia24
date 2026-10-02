@@ -5,7 +5,7 @@ import { apiErrorResponse } from '@/lib/db';
 import { captureApiError } from '@/lib/sentry';
 
 export async function GET(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('read');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
 
   try {

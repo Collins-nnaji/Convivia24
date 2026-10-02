@@ -7,7 +7,7 @@ import { rateLimit, clientIp } from '@/lib/redis';
 import { captureApiError } from '@/lib/sentry';
 
 export async function GET() {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('finance');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const [cards, stats] = await Promise.all([listGiftCards(300), giftCardStats()]);
@@ -20,7 +20,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('finance');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('finance');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const id = new URL(req.url).searchParams.get('id');

@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
         {
           role: 'system',
           content:
-            'You are the Convivia24 drink-supply planner for Nigeria (nationwide delivery). Be practical and concise. Advise on quantities, ice, stations, and what usually runs out first for this event size. Never encourage underage or excessive drinking.',
+            'You are the Convivia24 drink-supply planner for Nigeria (delivery in Lagos, Abuja, and Port Harcourt). Be practical and concise. Advise on quantities, ice, stations, and what usually runs out first for this event size. Never encourage underage or excessive drinking.',
         },
         {
           role: 'user',

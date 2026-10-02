@@ -28,6 +28,7 @@ export function apiErrorResponse(err: unknown, fallback = 'Something went wrong.
   if (err instanceof DatabaseUnavailableError) {
     return { status: 503 as const, error: err.message };
   }
+  if (err && typeof err === 'object' && 'code' in err && err.code === 'P0001') return { status: 409 as const, error: err instanceof Error ? err.message : fallback };
   console.error(err);
   return { status: 500 as const, error: fallback };
 }

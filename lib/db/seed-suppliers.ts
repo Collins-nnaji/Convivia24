@@ -75,7 +75,7 @@ async function main() {
     await sql`
       UPDATE suppliers
       SET city = ${NATIONWIDE.city}, same_day = ${NATIONWIDE.sameDay}, active = true,
-          notes = ${'Single fulfilment partner for nationwide delivery'}, updated_at = NOW()
+          notes = ${'Single fulfilment partner for delivery in Lagos, Abuja, and Port Harcourt'}, updated_at = NOW()
       WHERE id = ${id}::uuid
     `;
     console.log(`· ${NATIONWIDE.name} — already present, refreshed`);
@@ -84,7 +84,7 @@ async function main() {
       INSERT INTO suppliers (name, city, same_day, active, notes)
       VALUES (
         ${NATIONWIDE.name}, ${NATIONWIDE.city}, ${NATIONWIDE.sameDay}, true,
-        ${'Single fulfilment partner for nationwide delivery'}
+        ${'Single fulfilment partner for delivery in Lagos, Abuja, and Port Harcourt'}
       )
       RETURNING id
     `;

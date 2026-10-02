@@ -5,7 +5,7 @@ import { absoluteUrl } from '@/lib/seo';
 export const metadata: Metadata = {
   title: 'Contact',
   description:
-    'Contact Convivia24 — email support, outlet wholesale enquiries, and brand distribution enquiries. Nationwide drinks supply across Nigeria. Adults 18+.',
+    'Contact Convivia24 — email support, outlet wholesale enquiries, and brand distribution enquiries. Drinks supply in Lagos, Abuja and Port Harcourt. Adults 18+.',
   alternates: { canonical: absoluteUrl('/contact') },
   openGraph: {
     title: 'Contact | Convivia24',

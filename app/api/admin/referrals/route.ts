@@ -1,6 +1,7 @@
+import sql from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
-import { issueGiftCard } from '@/lib/commerce/gift-cards';
+import { generateCode } from '@/lib/commerce/gift-cards';
 import { apiErrorResponse } from '@/lib/db';
 import { rateLimit, clientIp } from '@/lib/redis';
 import { captureApiError } from '@/lib/sentry';
@@ -13,7 +14,7 @@ import {
 } from '@/lib/referrals/repo';
 
 export async function GET() {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('finance');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const [partners, attributions] = await Promise.all([listPartners(), listAttributions()]);
@@ -26,7 +27,7 @@ export async function GET() {
 }
 
 export async function PATCH(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('finance');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
@@ -41,18 +42,22 @@ export async function PATCH(req: NextRequest) {
         return NextResponse.json({ error: 'attributionId is required.' }, { status: 400 });
       }
 
-      let payoutRef = typeof body.payoutRef === 'string' ? body.payoutRef.trim() || null : null;
-      let giftCardCode: string | null = null;
+      const payoutRef = typeof body.payoutRef === 'string' ? body.payoutRef.trim() || null : null;
+      const giftCardCode: string | null = null;
 
       if (body.asGiftCard === true) {
-        const amountNgn = Number(body.amountNgn);
-        if (!Number.isFinite(amountNgn) || amountNgn <= 0) {
-          return NextResponse.json({ error: 'A gift card needs a positive amount.' }, { status: 400 });
-        }
-        const card = await issueGiftCard('admin', amountNgn, `Referral payout ${attributionId}`);
-        giftCardCode = card.code;
-        payoutRef = payoutRef || `giftcard:${card.code}`;
+        const code = generateCode();
+        const [issued] = await sql`
+          WITH payable AS (
+            UPDATE referral_attributions SET status = 'paid',payout_ref = ${'giftcard:' + code},paid_at = NOW()
+            WHERE id = ${attributionId}::uuid AND status = 'approved' AND commission_ngn > 0 RETURNING commission_ngn
+          ) INSERT INTO gift_cards(code,value_ngn,balance_ngn,issued_by,note)
+            SELECT ${code},commission_ngn,commission_ngn,'admin',${'Referral payout ' + attributionId} FROM payable RETURNING code
+        `;
+        if (!issued) return NextResponse.json({ error: 'Only an approved commission can be paid.' }, { status: 409 });
+        return NextResponse.json({ ok: true, giftCardCode: code, payoutRef: 'giftcard:' + code });
       }
+      if (!payoutRef) return NextResponse.json({ error: 'Record the bank payout reference.' }, { status: 400 });
 
       const ok = await markCommissionPaid(attributionId, payoutRef);
       if (!ok) {

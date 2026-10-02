@@ -1,3 +1,5 @@
+import sql from '@/lib/db';
+import { hasAdminPermission, type AdminPermission, type StaffRole } from '@/lib/admin-permissions';
 import { cookies } from 'next/headers';
 import { createHash, createHmac, timingSafeEqual } from 'crypto';
 import { getCurrentUser } from '@/lib/auth/session';
@@ -40,24 +42,31 @@ function verifySessionToken(token: string, password: string): boolean {
   return constantTimeEqual(sig, sign(expiresAt, password));
 }
 
-export async function isAdmin(): Promise<boolean> {
+export async function adminIdentity(): Promise<{ actor: string; role: StaffRole } | null> {
   const user = await getCurrentUser();
-  if (user?.email && adminEmails().includes(user.email.toLowerCase())) return true;
-
+  if (user?.email) {
+    if (adminEmails().includes(user.email.toLowerCase())) return { actor: user.id, role: 'owner' };
+    const [staff] = await sql`SELECT role FROM admin_staff WHERE email = ${user.email.trim().toLowerCase()} AND active`;
+    if (staff) return { actor: user.id, role: staff.role as StaffRole };
+  }
+  if (process.env.NODE_ENV === 'production' && process.env.ALLOW_SHARED_ADMIN !== 'true') return null;
   const password = process.env.ADMIN_PASSWORD;
-  if (!password) return false;
-  const jar = await cookies();
-  const token = jar.get(ADMIN_COOKIE)?.value;
-  if (!token) return false;
-  return verifySessionToken(token, password);
+  if (!password) return null;
+  const token = (await cookies()).get(ADMIN_COOKIE)?.value;
+  return token && verifySessionToken(token, password) ? { actor: 'shared-admin', role: 'owner' } : null;
 }
 
-export async function requireAdmin(): Promise<{ ok: true } | { ok: false; status: number; error: string }> {
-  if (await isAdmin()) return { ok: true };
-  return { ok: false, status: 401, error: 'Admin access required.' };
+export async function isAdmin(): Promise<boolean> { return Boolean(await adminIdentity()); }
+
+export async function requireAdmin(permission: AdminPermission = 'owner'): Promise<{ ok: true; actor: string; role: StaffRole } | { ok: false; status: number; error: string }> {
+  const identity = await adminIdentity();
+  if (!identity) return { ok: false, status: 401, error: 'Admin access required.' };
+  if (!hasAdminPermission(identity.role, permission)) return { ok: false, status: 403, error: 'Your staff role cannot perform this action.' };
+  return { ok: true, ...identity };
 }
 
 export async function setAdminSession(password: string): Promise<boolean> {
+  if (process.env.NODE_ENV === 'production' && process.env.ALLOW_SHARED_ADMIN !== 'true') return false;
   const expected = process.env.ADMIN_PASSWORD;
   if (!expected || !constantTimeEqual(password, expected)) return false;
 
@@ -66,6 +75,7 @@ export async function setAdminSession(password: string): Promise<boolean> {
   const jar = await cookies();
   jar.set(ADMIN_COOKIE, token, {
     httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
     maxAge: SESSION_MAX_AGE_SECONDS,

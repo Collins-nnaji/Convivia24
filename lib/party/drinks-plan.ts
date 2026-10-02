@@ -574,7 +574,7 @@ export function recommendDrinks(input: {
 
     const categoryPours = Math.max(1, Math.round(servingsEstimate * share));
     const avgServings = products.reduce((n, p) => n + servingsPerUnit(p), 0) / products.length;
-    let totalUnits = Math.max(1, Math.round(categoryPours / avgServings));
+    const totalUnits = Math.max(1, Math.round(categoryPours / avgServings));
 
     // Intimate nights should not buy one of everything at qty 1 across 7 categories.
     if (guests <= 12 && category === 'champagne' && vibe !== 'dining' && vibe !== 'nightlife') {

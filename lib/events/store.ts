@@ -105,33 +105,7 @@ function makeId(title: string): string {
   return `${base || 'event'}-${suffix}`;
 }
 
-let tableReady: Promise<void> | null = null;
-
-function ensureNightEventsTable() {
-  if (!tableReady) {
-    tableReady = sql`
-      CREATE TABLE IF NOT EXISTS night_events (
-        id            TEXT PRIMARY KEY,
-        title         TEXT NOT NULL,
-        venue_slug    TEXT NOT NULL,
-        tag           TEXT NOT NULL DEFAULT 'Lounge',
-        blurb         TEXT NOT NULL DEFAULT '',
-        expected      TEXT NOT NULL DEFAULT '',
-        cover_ngn     INTEGER,
-        starts_at     TIMESTAMPTZ NOT NULL,
-        ends_at       TIMESTAMPTZ NOT NULL,
-        published     BOOLEAN NOT NULL DEFAULT true,
-        created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
-      )
-    `
-      .then(() =>
-        sql`CREATE INDEX IF NOT EXISTS idx_night_events_published ON night_events(published, starts_at)`
-      )
-      .then(() => undefined);
-  }
-  return tableReady;
-}
+async function ensureNightEventsTable(): Promise<void> {}
 
 export async function listEvents(publishedOnly = false): Promise<StoredEvent[]> {
   await ensureNightEventsTable();

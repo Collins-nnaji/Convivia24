@@ -1,14 +1,14 @@
+import { AGE_GATE_COOKIE, verifyAgeToken } from '@/lib/age-gate';
+import { createHash, randomUUID } from 'crypto';
+import { notifyOrderStatus } from '@/lib/commerce/notify';
 import { NextRequest, NextResponse } from 'next/server';
 import sql, { apiErrorResponse } from '@/lib/db';
 import { preferTrackForCategory } from '@/lib/drinks/catalog';
 import { getCurrentUser } from '@/lib/auth/session';
 import { claimMember, loyaltyDiscountNgn, resolveMemberOwner } from '@/lib/loyalty/members';
 import { rateLimit, clientIp } from '@/lib/redis';
-import { reserveStockForOrder, releaseStockForOrder, resolveSellableProduct, getInventory } from '@/lib/inventory';
-import { redeemGiftCardForOrder } from '@/lib/commerce/gift-cards';
-import { releaseOrderResources } from '@/lib/commerce/fulfillment';
-import { routeOrder, reserveSupplierStock } from '@/lib/suppliers/stock';
-import { logSupplierAction } from '@/lib/suppliers/audit';
+import { resolveSellableProduct, getInventory } from '@/lib/inventory';
+import { routeOrder } from '@/lib/suppliers/stock';
 import { expandPackLines } from '@/lib/packages/lines';
 import { readReferralCookie } from '@/lib/referrals/cookie';
 import { attributeOrder } from '@/lib/referrals/repo';
@@ -89,6 +89,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    if (!await verifyAgeToken(req.cookies.get(AGE_GATE_COOKIE)?.value)) return NextResponse.json({ error: 'Confirm you are 18+ before ordering.' }, { status: 403 });
     const rl = await rateLimit(`orders:create:${clientIp(req)}`, 10, 60);
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests. Please try again shortly.' }, { status: 429 });
 
@@ -130,7 +131,14 @@ export async function POST(req: NextRequest) {
       notesRaw,
     ].filter(Boolean);
     const notes = notesParts.join(' · ') || null;
-    const items = Array.isArray(body.items) ? (body.items as IncomingItem[]) : [];
+    const incoming = Array.isArray(body.items) ? body.items : [];
+    if (incoming.length > 100 || incoming.some((item: IncomingItem) => !item || typeof item.slug !== 'string' || !Number.isInteger(item.qty) || item.qty < 1 || item.qty > 24)) {
+      return NextResponse.json({ error: 'Each product needs a whole quantity between 1 and 24.' }, { status: 400 });
+    }
+    const grouped = new Map<string, number>();
+    for (const item of incoming as IncomingItem[]) grouped.set(item.slug, (grouped.get(item.slug) || 0) + item.qty);
+    const items = [...grouped].map(([slug, qty]) => ({ slug, qty }));
+    if (items.some((item) => item.qty > 24)) return NextResponse.json({ error: 'Maximum quantity is 24 per product.' }, { status: 400 });
     const giftCardCode = typeof body.giftCardCode === 'string' ? body.giftCardCode.trim() : '';
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -143,7 +151,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'A phone number is required for delivery.' }, { status: 400 });
     }
     if (!city) {
-      return NextResponse.json({ error: 'City is required for nationwide delivery.' }, { status: 400 });
+      return NextResponse.json({ error: 'City is required for delivery in Lagos, Abuja, and Port Harcourt.' }, { status: 400 });
     }
     if (!addressLine1) {
       return NextResponse.json(
@@ -151,6 +159,12 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+    const zoneId = typeof body.deliveryZoneId === 'string' ? body.deliveryZoneId : '';
+    if (!/^[0-9a-f-]{36}$/i.test(zoneId)) return NextResponse.json({ error: 'Choose a supported delivery zone.' }, { status: 400 });
+    const [zone] = await sql`SELECT id, city, fee_ngn FROM delivery_zones WHERE id = ${zoneId}::uuid AND active`;
+    if (!zone || String(zone.city).toLowerCase() !== city.toLowerCase()) return NextResponse.json({ error: 'Delivery is not available for this city and zone.' }, { status: 400 });
+    const deliveryFeeNgn = Number(zone.fee_ngn);
+
     // Authoritative check — inventory min_order_qty wins over the catalog default.
     if (items.length === 0) {
       return NextResponse.json({ error: 'Your cart is empty.' }, { status: 400 });
@@ -207,100 +221,32 @@ export async function POST(req: NextRequest) {
       ? await claimMember(loyaltyOwnerId, { email, name: fullName })
       : null;
     const discount = loyaltyDiscountNgn(subtotal, member);
-    const total = Math.max(0, subtotal - discount.ngn);
 
-    const [order] = await sql`
-      INSERT INTO ritual_orders (
-        email, full_name, phone, address_line1, address_line2, city, area, notes,
-        subtotal_ngn, loyalty_discount_ngn, total_ngn, loyalty_owner_id, status
-      ) VALUES (
-        ${email}, ${fullName}, ${phone}, ${addressLine1}, ${addressLine2},
-        ${city}, ${area}, ${notes},
-        ${subtotal}, ${discount.ngn}, ${total}, ${member ? loyaltyOwnerId : null}, 'pending'
-      )
-      RETURNING id, subtotal_ngn, status
-    `;
-
-    const orderId = order.id as string;
-
-    // Referral attribution is best-effort — attributeOrder swallows its own errors so a referral
-    // problem can never stop someone buying drinks. Commission stays at zero until the order is paid.
+    const requestKey = req.headers.get('idempotency-key') || '';
+    if (!/^[0-9a-f-]{36}$/i.test(requestKey)) return NextResponse.json({ error: 'A checkout request key is required.' }, { status: 400 });
+    const expectedTotalNgn = body.expectedTotalNgn;
+    if (!Number.isSafeInteger(expectedTotalNgn) || expectedTotalNgn < 0) return NextResponse.json({ error: 'Review the checkout total first.' }, { status: 400 });
+    const fingerprint = createHash('sha256').update(JSON.stringify({ fullName, phone, addressLine1, addressLine2, city, area, notes, items, giftCardCode, zoneId, expectedTotalNgn })).digest('hex');
+    const stockLines = expandPackLines(resolved.map((r) => ({ slug: r.slug, qty: r.qty })));
+    const [order] = await sql`SELECT * FROM c24_create_order(
+      ${randomUUID()}::uuid, ${email}, ${requestKey}::uuid, ${fingerprint},
+      ${JSON.stringify({ fullName, phone, addressLine1, addressLine2, city, area, notes, deliveryZoneId: zoneId, expectedTotalNgn })}::jsonb,
+      ${JSON.stringify(resolved)}::jsonb, ${JSON.stringify(stockLines)}::jsonb,
+      ${discount.ngn}::integer, ${member ? loyaltyOwnerId : null}, ${giftCardCode}
+    )`;
+    const orderId = String(order.id);
+    const finalTotal = Number(order.total_ngn);
+    const giftCardAppliedNgn = Number(order.gift_card_discount_ngn || 0);
     const refCode = await readReferralCookie();
     if (refCode) await attributeOrder(orderId, refCode);
-
-    try {
-      for (const r of resolved) {
-        await sql`
-          INSERT INTO ritual_order_items (order_id, kit_slug, kit_name, prefer_track, unit_price_ngn, qty)
-          VALUES (${orderId}, ${r.slug}, ${r.name}, ${r.preferTrack}, ${r.unitPrice}, ${r.qty})
-        `;
-      }
-    } catch (err) {
-      await sql`DELETE FROM ritual_orders WHERE id = ${orderId}`;
-      throw err;
-    }
-
-    // Reserve stock before this order can be paid for — two shoppers can't
-    // both walk away with the last bottle. Roll the whole order back if any
-    // tracked line is out of stock, rather than silently overselling it.
-    // Packs reserve and route as the bottles inside them — a pack row holds no stock itself.
-    const stockLines = expandPackLines(resolved.map((r) => ({ slug: r.slug, qty: r.qty })));
-    const reservationError = await reserveStockForOrder(stockLines, orderId);
-    if (reservationError) {
-      await sql`DELETE FROM ritual_orders WHERE id = ${orderId}`;
-      return NextResponse.json({ error: reservationError.error }, { status: 409 });
-    }
-
-    /**
-     * Route the order to the supplier who will actually fill it.
-     *
-     * Best-effort: reservation has already succeeded against the national rollup, so a routing
-     * miss must not fail the order — it just leaves `routed_supplier_id` null for the desk to
-     * source by hand, which is exactly what happened before routing existed.
-     */
     try {
       const decision = await routeOrder(city, stockLines);
-      if (decision) {
-        await reserveSupplierStock(decision.supplierId, stockLines);
-        await sql`
-          UPDATE ritual_orders
-          SET routed_supplier_id = ${decision.supplierId}::uuid,
-              routed_out_of_city = ${decision.outOfCity},
-              routed_cost_ngn = ${decision.expectedCostNgn}
-          WHERE id = ${orderId}
-        `;
-        await logSupplierAction({
-          supplierId: decision.supplierId,
-          actor: 'system',
-          actorLabel: 'routing',
-          action: 'order.routed',
-          orderId,
-          detail: { outOfCity: decision.outOfCity, expectedCostNgn: decision.expectedCostNgn, lines: stockLines },
-        });
+      if (decision && !decision.outOfCity) {
+        await sql`SELECT c24_assign_supplier(${orderId}::uuid, ${decision.supplierId}::uuid)`;
+        await sql`UPDATE ritual_orders SET routed_cost_ngn = ${decision.expectedCostNgn} WHERE id = ${orderId}`;
       }
-    } catch (err) {
-      console.error('Order routing failed', err);
-    }
-
-    let finalTotal = total;
-    let giftCardAppliedNgn = 0;
-    if (giftCardCode) {
-      const redemption = await redeemGiftCardForOrder(giftCardCode, orderId);
-      if ('error' in redemption) {
-        await releaseStockForOrder(stockLines, orderId);
-        await sql`DELETE FROM ritual_orders WHERE id = ${orderId}`;
-        return NextResponse.json({ error: redemption.error }, { status: 400 });
-      }
-      giftCardAppliedNgn = Math.min(redemption.valueNgn, finalTotal);
-      finalTotal = Math.max(0, finalTotal - giftCardAppliedNgn);
-      await sql`
-        UPDATE ritual_orders
-        SET total_ngn = ${finalTotal}, gift_card_discount_ngn = ${giftCardAppliedNgn}, gift_card_id = ${redemption.id}
-        WHERE id = ${orderId}
-      `;
-    }
-
-    // Confirmation email is sent only after payment succeeds (Flutterwave webhook / verify).
+    } catch (err) { console.error('Order needs staff sourcing', err); }
+    if (order.status === 'paid') await notifyOrderStatus(orderId, 'paid');
 
     return NextResponse.json({
       ok: true,
@@ -310,7 +256,8 @@ export async function POST(req: NextRequest) {
       loyaltyDiscountNgn: discount.ngn,
       giftCardAppliedNgn,
       totalNgn: finalTotal,
-      status: 'pending',
+      deliveryFeeNgn,
+      status: order.status,
     });
   } catch (err) {
     const { status, error } = apiErrorResponse(err, 'Unable to place order. Please try again.');
@@ -332,18 +279,11 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'orderId is required.' }, { status: 400 });
     }
 
-    const [order] = await sql`
-      UPDATE ritual_orders
-      SET status = 'cancelled', updated_at = NOW()
-      WHERE id = ${orderId} AND LOWER(email) = ${email} AND status IN ('pending', 'awaiting_payment')
-      RETURNING id, status
-    `;
-
-    if (!order) {
-      return NextResponse.json({ error: 'Order not found or cannot be cancelled.' }, { status: 404 });
-    }
-
-    await releaseOrderResources(order.id as string);
+    const [order] = await sql`SELECT id, status FROM ritual_orders WHERE id = ${orderId}::uuid AND LOWER(email) = ${email} AND status IN ('pending', 'awaiting_payment')`;
+    if (!order) return NextResponse.json({ error: 'Order not found or cannot be cancelled.' }, { status: 404 });
+    const [result] = await sql`SELECT c24_transition_order(${orderId}::uuid, ${order.status}, 'cancelled', '{}'::jsonb, 'Cancelled by customer') AS changed`;
+    if (!result.changed) return NextResponse.json({ error: 'Order changed; refresh before cancelling.' }, { status: 409 });
+    order.status = 'cancelled';
 
     return NextResponse.json({ ok: true, orderId: order.id, status: order.status });
   } catch (err) {

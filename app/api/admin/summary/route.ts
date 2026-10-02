@@ -33,7 +33,7 @@ export type AdminSummary = {
  * detail lazily, so this is the one cheap call the shell makes on mount.
  */
 export async function GET() {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('read');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const one = <T,>(p: Promise<T[]>) => p.then((rows) => rows[0] ?? ({} as T)).catch(() => ({} as T));
@@ -93,7 +93,7 @@ export async function GET() {
       blobConfigured: blobConfigured(),
       aiConfigured: aiConfigured(),
     };
-    return NextResponse.json(summary);
+    return NextResponse.json({ ...summary, staffRole: gate.role });
   } catch (err) {
     captureApiError(err, { route: 'admin/summary GET' });
     const { status, error } = apiErrorResponse(err, 'Unable to load the desk summary.');

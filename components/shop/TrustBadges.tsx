@@ -1,7 +1,7 @@
 import { Zap, ShieldCheck, QrCode } from 'lucide-react';
 
 const ITEMS = [
-  { icon: Zap, label: 'Nationwide delivery', detail: 'Across Nigeria' },
+  { icon: Zap, label: 'Delivery in Lagos, Abuja, and Port Harcourt', detail: 'Supported delivery zones' },
   { icon: ShieldCheck, label: '100% original', detail: 'No parallel imports' },
   { icon: QrCode, label: 'Scan to verify', detail: 'Every order, checkable' },
 ];

@@ -244,7 +244,7 @@ async function position() {
 }
 
 export async function GET(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('finance');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
 
   const requested = req.nextUrl.searchParams.get('period') || '30d';

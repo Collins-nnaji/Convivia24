@@ -1,3 +1,4 @@
+import sql from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import {
   requireSignedInOutlet,
@@ -20,7 +21,7 @@ export async function GET() {
     const [inventory, orders, giftCards] = await Promise.all([
       getPartnerInventory(outlet.id),
       listWholesaleOrders(outlet.id),
-      listGiftCardsIssuedBy(outlet.venueName),
+      listGiftCardsIssuedBy('outlet:' + outlet.id),
     ]);
     return NextResponse.json({ outlet, inventory, orders, giftCards });
   } catch (err) {
@@ -39,6 +40,13 @@ export async function POST(req: NextRequest) {
     if ('error' in outlet) return NextResponse.json({ error: outlet.error }, { status: 401 });
 
     const body = await req.json().catch(() => ({}));
+
+    if (body.action === 'receive') {
+      const id = String(body.orderId || '');
+      if (!/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: 'Valid order ID required.' }, { status: 400 });
+      await sql`SELECT c24_receive_wholesale(${id}::uuid, ${outlet.id}::uuid)`;
+      return NextResponse.json({ ok: true });
+    }
 
     if (body.action === 'set-on-hand') {
       const slug = String(body.slug || '');

@@ -1,6 +1,8 @@
 # Convivia24 — Drinks to the party, club & lounge
 
-Lagos drink ordering and delivery for **parties, clubs, and lounges**. Age 18+.
+Lagos, Abuja, and Port Harcourt drink ordering and delivery for **parties, clubs, and lounges**. Age 18+.
+
+Launch implementation and remaining release gates: [November launch checklist](docs/NOVEMBER-LAUNCH.md). Native mobile is excluded.
 
 ## Product surfaces
 
@@ -42,11 +44,11 @@ npm run dev
 ### Env
 
 - `DATABASE_URL` — Neon (waitlist / orders)
-- `FLUTTERWAVE_SECRET_KEY` — optional; without it, checkout uses concierge follow-up
+- `FLUTTERWAVE_SECRET_KEY` — required for online payment; production manual fallback requires `ALLOW_MANUAL_PAYMENTS=true`
 - `FLUTTERWAVE_SECRET_HASH` — webhook `verif-hash` from the Flutterwave dashboard
 - `NEXT_PUBLIC_APP_URL` — Flutterwave redirect origin
 - `RESEND_API_KEY` — enables transactional email (order received, paid, status updates, waitlist);
-  without it, `lib/email/resend.ts` no-ops and checkout/orders still work normally
+  without it, queued order notices remain retryable and launch readiness reports missing configuration
 - `RESEND_FROM` — e.g. `"Convivia24 <orders@yourdomain.com>"`, required alongside `RESEND_API_KEY`
 - `RESEND_API_URL` — optional, defaults to `https://api.resend.com`
 - `ADMIN_NOTIFY_EMAIL` — optional; comma-separated list BCC'd on every "order received" email as an ops copy
@@ -56,7 +58,7 @@ npm run dev
 - `TERMII_SENDER_ID` — optional, your registered Termii sender ID; falls back to Termii's shared "N-Alert" ID
 - `TERMII_API_URL` — optional, defaults to `https://api.ng.termii.com/api`
 - `NEON_AUTH_COOKIE_SECRET` — signs the age-gate cookie (`lib/age-gate.ts`) in addition to Neon Auth's own
-  session; without it, age-gate signing falls back to a fixed non-secret string (fine for local dev, not prod)
+  session; required in production (32+ characters); local development has a fallback
 
 ## Catalog & cart
 

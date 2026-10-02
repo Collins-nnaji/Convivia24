@@ -6,7 +6,7 @@ import { describeAudit, listSupplierAudit } from '@/lib/suppliers/audit';
 
 /** GET ?supplierId=&limit= — who changed what on which supplier's shelf, newest first. */
 export async function GET(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('inventory');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const url = new URL(req.url);

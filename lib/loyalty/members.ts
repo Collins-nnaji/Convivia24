@@ -1,6 +1,6 @@
 import sql from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth/session';
-import { nextTier, pointsFromOrderItems, pointsFromSpend, shopDiscountPct, tierForPoints } from '@/lib/loyalty/program';
+import { nextTier, pointsFromSpend, shopDiscountPct, tierForPoints } from '@/lib/loyalty/program';
 
 /**
  * Server-side loyalty record. The browser wallet is fine for display, but a
@@ -129,22 +129,22 @@ export type MemberStanding = {
 
 export function standingFor(member: Member | null): MemberStanding {
   const points = member?.points ?? 0;
-  const tier = tierForPoints(points);
-  const upcoming = nextTier(points);
+  const tier = tierForPoints(member?.lifetimePoints ?? 0);
+  const upcoming = nextTier(member?.lifetimePoints ?? 0);
   return {
     claimed: Boolean(member),
     points,
     tierId: tier.id,
     tierName: tier.name,
-    discountPct: member ? shopDiscountPct(points) : 0,
+    discountPct: member ? shopDiscountPct(member?.lifetimePoints ?? 0) : 0,
     nextTierName: upcoming?.name ?? null,
-    pointsToNextTier: upcoming ? Math.max(0, upcoming.minPoints - points) : 0,
+    pointsToNextTier: upcoming ? Math.max(0, upcoming.minPoints - (member?.lifetimePoints ?? 0)) : 0,
   };
 }
 
 /** The discount a member's tier takes off a subtotal, in naira. */
 export function loyaltyDiscountNgn(subtotalNgn: number, member: Member | null): { pct: number; ngn: number } {
-  const pct = member ? shopDiscountPct(member.points) : 0;
+  const pct = member ? shopDiscountPct(member.lifetimePoints) : 0;
   return { pct, ngn: Math.round(Math.max(0, subtotalNgn) * (pct / 100)) };
 }
 
@@ -157,65 +157,8 @@ export function loyaltyDiscountNgn(subtotalNgn: number, member: Member | null): 
  * icon bottles can fund a richer award — then scaled if a tier discount cut the charge.
  */
 export async function reconcileOrderPoints(orderId: string): Promise<void> {
-  const [order] = await sql`
-    SELECT id, status, loyalty_owner_id, loyalty_points_awarded, subtotal_ngn, total_ngn
-    FROM ritual_orders WHERE id = ${orderId} LIMIT 1
-  `;
-  if (!order) return;
-  const ownerId = (order.loyalty_owner_id as string) || '';
-  if (!ownerId) return;
-  const current = Number(order.loyalty_points_awarded ?? 0);
-  const delivered = order.status === 'delivered' || order.status === 'fulfilled';
-  const reversed = order.status === 'cancelled' || order.status === 'refunded';
-  if (!delivered && !reversed) return;
+  await sql`SELECT c24_sync_order_points(${orderId}::uuid)`;
 
-  let desired = 0;
-  if (delivered) {
-    const items = await sql`
-      SELECT unit_price_ngn, qty FROM ritual_order_items WHERE order_id = ${orderId}
-    `;
-    const chargedNgn = Number(order.total_ngn ?? order.subtotal_ngn);
-    desired =
-      items.length > 0
-        ? pointsFromOrderItems(
-            items.map((row) => ({
-              unitPriceNgn: Number(row.unit_price_ngn),
-              qty: Number(row.qty),
-            })),
-            chargedNgn
-          )
-        : pointsFromSpend(chargedNgn);
-  }
-
-  const delta = desired - current;
-  if (delta === 0) return;
-  try {
-    const claimed = await sql`
-      UPDATE ritual_orders SET loyalty_points_awarded = ${desired}
-      WHERE id = ${orderId} AND loyalty_points_awarded = ${current}
-      RETURNING id
-    `;
-    if (claimed.length === 0) return;
-    if (delta > 0) {
-      await awardPoints(ownerId, delta);
-    } else {
-      await sql`
-        UPDATE loyalty_members
-        SET
-          points = GREATEST(0, points + ${delta}),
-          lifetime_points = GREATEST(0, lifetime_points + ${delta}),
-          updated_at = NOW()
-        WHERE owner_id = ${ownerId}
-      `;
-    }
-  } catch {
-    // Put the receipt back so a later profile/order refresh can retry the credit or reversal.
-    await sql`
-      UPDATE ritual_orders SET loyalty_points_awarded = ${current}
-      WHERE id = ${orderId} AND loyalty_points_awarded = ${desired}
-    `.catch(() => {});
-    /* loyalty reconciliation must never prevent an operational status update */
-  }
 }
 
 /** Backwards-compatible name for older call sites; only delivered orders now receive points. */

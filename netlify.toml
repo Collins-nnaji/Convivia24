@@ -8,7 +8,7 @@
 
 # Remote hosts the Netlify Image CDN may fetch from (bottle shots on Azure Blob and the CDN).
 [images]
-  remote_images = ["https://.*"]
+  remote_images = ["https://[a-z0-9-]+\\.blob\\.core\\.windows\\.net/.*"]
 
 [build.environment]
   CI = "false"

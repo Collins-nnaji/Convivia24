@@ -11,7 +11,7 @@ import Footer from '@/components/Footer';
 export default function PublicShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '/';
   // The footer belongs to the home page only — every other page ends on its own content.
-  const showFooter = pathname === '/';
+  const showFooter = !pathname.startsWith('/admin') && !pathname.startsWith('/supplier');
   return (
     <CartProvider>
       <RouteScrollReset />

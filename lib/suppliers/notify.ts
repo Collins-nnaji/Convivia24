@@ -18,7 +18,7 @@ function escapeHtml(s: string): string {
  * never at checkout, because an unpaid order must not have a supplier pulling bottles.
  * Best-effort: no email on file, or a mail hiccup, never fails the payment webhook.
  */
-export async function notifySupplierOfPaidOrder(orderId: string): Promise<void> {
+export async function notifySupplierOfPaidOrder(orderId: string, jobId = orderId): Promise<void> {
   try {
     const [row] = await sql`
       SELECT
@@ -63,8 +63,8 @@ export async function notifySupplierOfPaidOrder(orderId: string): Promise<void> 
       `,
     });
     if (row.supplier_email) {
-      const result = await sendEmail({ to: String(row.supplier_email), subject, html });
-      if (!result.sent) console.error('Supplier order notification failed:', result.error);
+      const result = await sendEmail({ to: String(row.supplier_email), subject, html, idempotencyKey: jobId + ":supplier" });
+      if (!result.sent) throw new Error(result.error || 'Supplier notification failed');
     }
 
     // Suppliers live on their phones — a text lands even when the email waits until morning.
@@ -75,6 +75,6 @@ export async function notifySupplierOfPaidOrder(orderId: string): Promise<void> 
       await sendSms(normalizeNgPhone(String(row.supplier_phone)), text).catch((err) => console.error('Supplier SMS failed', err));
     }
   } catch (err) {
-    console.error('notifySupplierOfPaidOrder failed', err);
+    throw err;
   }
 }

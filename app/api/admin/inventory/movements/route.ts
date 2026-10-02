@@ -5,7 +5,7 @@ import { captureApiError } from '@/lib/sentry';
 
 /** GET ?slug=&limit= — the national stock ledger for one SKU: reserves, releases, fulfils, edits. */
 export async function GET(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('inventory');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const url = new URL(req.url);

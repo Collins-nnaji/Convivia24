@@ -247,12 +247,14 @@ function TrackingForm({
 }: {
   order: SupplierOrder;
   saving: boolean;
-  onSave: (t: { courierName: string; riderPhone: string; etaAt: string | null; trackingNote: string }) => Promise<boolean>;
+  onSave: (t: { courierName: string; riderPhone: string; etaAt: string | null; trackingNote: string; deliveryProof: string; recipientAgeChecked: boolean }) => Promise<boolean>;
 }) {
   const [courierName, setCourierName] = useState(order.courierName || '');
   const [riderPhone, setRiderPhone] = useState(order.riderPhone || '');
   const [eta, setEta] = useState(order.etaAt ? toLocalInput(order.etaAt) : '');
   const [trackingNote, setTrackingNote] = useState(order.trackingNote || '');
+  const [deliveryProof, setDeliveryProof] = useState(order.deliveryProof || '');
+  const [recipientAgeChecked, setRecipientAgeChecked] = useState(order.recipientAgeChecked || false);
 
   return (
     <div className="space-y-3">
@@ -262,6 +264,8 @@ function TrackingForm({
         <AdminInput label="Rider phone" value={riderPhone} onChange={(e) => setRiderPhone(e.target.value)} placeholder="+234…" />
         <AdminInput label="ETA" type="datetime-local" value={eta} onChange={(e) => setEta(e.target.value)} />
         <AdminInput label="Note" value={trackingNote} onChange={(e) => setTrackingNote(e.target.value)} placeholder="Optional" />
+        <AdminInput label="Delivery receipt / recipient" value={deliveryProof} onChange={e => setDeliveryProof(e.target.value)} />
+        <label className="text-sm"><input type="checkbox" checked={recipientAgeChecked} onChange={e => setRecipientAgeChecked(e.target.checked)} /> Recipient verified as 18+ at handover</label>
       </div>
       <button
         type="button"
@@ -271,7 +275,7 @@ function TrackingForm({
             courierName,
             riderPhone,
             etaAt: eta ? new Date(eta).toISOString() : null,
-            trackingNote,
+            trackingNote, deliveryProof, recipientAgeChecked,
           })
         }
         className="rounded-lg border border-obsidian/15 px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/70 hover:border-ember hover:text-ember disabled:opacity-40"

@@ -34,12 +34,12 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
  * not run twice.
  */
 export const ORDER_TRANSITIONS: Record<OrderStatus, readonly OrderStatus[]> = {
-  pending: [],
-  awaiting_payment: [],
-  paid: ['processing', 'packed', 'out_for_delivery', 'delivered', 'cancelled', 'refunded'],
-  processing: ['packed', 'out_for_delivery', 'delivered', 'cancelled', 'refunded'],
-  packed: ['out_for_delivery', 'delivered', 'cancelled', 'refunded'],
-  out_for_delivery: ['delivered', 'cancelled', 'refunded'],
+  pending: ['cancelled'],
+  awaiting_payment: ['cancelled'],
+  paid: ['processing', 'packed', 'out_for_delivery', 'delivered', 'refunded'],
+  processing: ['packed', 'out_for_delivery', 'delivered', 'refunded'],
+  packed: ['out_for_delivery', 'delivered', 'refunded'],
+  out_for_delivery: ['delivered', 'refunded'],
   delivered: ['refunded'],
   fulfilled: ['refunded'],
   cancelled: [],
@@ -51,4 +51,4 @@ export function canTransition(from: OrderStatus, to: OrderStatus): boolean {
 }
 
 /** Statuses that close an order for good. */
-export const TERMINAL_ORDER_STATUSES: readonly OrderStatus[] = ['delivered', 'fulfilled', 'cancelled', 'refunded'];
+export const TERMINAL_ORDER_STATUSES: readonly OrderStatus[] = ['delivered', 'fulfilled', 'refunded'];

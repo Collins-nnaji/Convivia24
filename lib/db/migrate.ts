@@ -92,6 +92,7 @@ async function migrate() {
 
   const sql = neon(process.env.DATABASE_URL);
   const schemaFiles = [
+    'lib/db/bootstrap.sql',
     'lib/db/schema.sql',
     'lib/db/venues-migration.sql',
     // Inventory, supplier pricing and per-supplier stock. All statements are IF NOT EXISTS /
@@ -101,6 +102,7 @@ async function migrate() {
     'lib/db/suppliers-portal.sql',
     // Gift card recipients/expiry and the trivia raffle log.
     'lib/db/desk-raffle-giftcards.sql',
+    'lib/db/launch-readiness.sql',
   ];
   const schema = schemaFiles
     .map(f => readFileSync(join(process.cwd(), f), 'utf-8'))
@@ -113,22 +115,10 @@ async function migrate() {
 
   console.log(`Running migration (${statements.length} statements)…`);
 
-  for (let i = 0; i < statements.length; i++) {
-    const stmt = statements[i];
-    try {
-      await sql.query(stmt);
-      console.log(`  [${i + 1}/${statements.length}] OK`);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      if (stmt.toLowerCase().includes('drop') && msg.includes('does not exist')) {
-        console.log(`  [${i + 1}/${statements.length}] SKIP`);
-      } else {
-        console.error(`  [${i + 1}/${statements.length}] FAIL: ${msg}`);
-        throw err;
-      }
-    }
-  }
-
+  await sql.transaction([
+    ...statements.map(statement => sql.query(statement)),
+    sql`INSERT INTO schema_migrations(name) VALUES('2026-10-launch-readiness') ON CONFLICT(name) DO NOTHING`,
+  ]);
   console.log('Migration complete.');
 }
 

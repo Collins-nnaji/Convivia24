@@ -37,6 +37,7 @@ type Redemption = {
   rewardName: string;
   pointsSpent: number;
   code: string;
+  status?: string;
   createdAt: string;
 };
 
@@ -351,7 +352,7 @@ function RedemptionHistory({ redemptions }: { redemptions: Redemption[] }) {
               <p className="text-[11px] text-obsidian/40 mt-0.5">
                 {new Date(r.createdAt).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}
                 {' · '}
-                {r.pointsSpent.toLocaleString()} pts
+                {r.pointsSpent.toLocaleString()} pts · {r.status || 'issued'}
               </p>
             </div>
             <p className="font-mono text-sm font-bold text-ember shrink-0">{r.code}</p>

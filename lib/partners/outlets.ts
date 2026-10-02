@@ -7,8 +7,9 @@ import {
   wholesalePriceNgn,
   type PricingItem,
 } from '@/lib/partners/pricing';
+import { resolveSellableProduct } from '@/lib/inventory';
 import { DRINKS } from '@/lib/drinks/catalog';
-import { issueGiftCard } from '@/lib/commerce/gift-cards';
+import { generateCode } from '@/lib/commerce/gift-cards';
 
 export type Outlet = {
   id: string;
@@ -22,6 +23,7 @@ export type Outlet = {
   targetMarginPct: number;
   points: number;
   lifetimePoints: number;
+  approvalStatus: string;
 };
 
 export type OutletInput = {
@@ -62,6 +64,7 @@ function mapOutlet(r: Record<string, unknown>): Outlet {
     targetMarginPct: Number(r.target_margin_pct ?? DEFAULT_TARGET_MARGIN),
     points: Number(r.points ?? 0),
     lifetimePoints: Number(r.lifetime_points ?? 0),
+    approvalStatus: String(r.approval_status || 'pending'),
   };
 }
 
@@ -195,6 +198,8 @@ export type WholesaleOrder = {
   totalNgn: number;
   pointsEarned: number;
   createdAt: string;
+  status: string;
+  trackingReference?: string | null;
 };
 
 export async function getPartnerInventory(outletId: string): Promise<PartnerInventoryRow[]> {
@@ -213,7 +218,7 @@ export async function setPartnerOnHand(outletId: string, slug: string, onHand: n
 
 export async function listWholesaleOrders(outletId: string, limit = 30): Promise<WholesaleOrder[]> {
   const rows = await sql`
-    SELECT id, items, total_ngn, points_earned, created_at
+    SELECT id, items, total_ngn, points_earned, created_at, status, tracking_reference
     FROM partner_wholesale_orders WHERE outlet_id = ${outletId}
     ORDER BY created_at DESC LIMIT ${limit}
   `;
@@ -223,6 +228,7 @@ export async function listWholesaleOrders(outletId: string, limit = 30): Promise
     totalNgn: Number(r.total_ngn),
     pointsEarned: Number(r.points_earned),
     createdAt: String(r.created_at),
+    status: String(r.status), trackingReference: r.tracking_reference as string | null,
   }));
 }
 
@@ -231,37 +237,26 @@ export async function placeWholesaleOrder(
   outletId: string,
   items: { slug: string; qty: number }[]
 ): Promise<WholesaleOrder | { error: string }> {
-  const resolved = items
-    .map((item) => {
-      const drink = DRINKS.find((d) => d.slug === item.slug);
-      if (!drink) return null;
-      const qty = Math.max(1, Math.min(48, Math.floor(item.qty)));
-      return { slug: drink.slug, name: drink.name, qty, unitNgn: wholesalePriceNgn(drink.priceNgn) };
-    })
-    .filter((r): r is { slug: string; name: string; qty: number; unitNgn: number } => r !== null);
-
-  if (resolved.length === 0) return { error: 'Select bottles to restock.' };
+  const [outlet] = await sql`SELECT approval_status FROM partner_outlets WHERE id = ${outletId}`;
+  if (outlet?.approval_status !== 'approved') return { error: 'Your outlet must be approved before ordering wholesale.' };
+  if (!items.length || items.length > 100 || items.some(item => !item || typeof item.slug !== 'string' || !Number.isInteger(item.qty) || item.qty < 1 || item.qty > 48)) return { error: 'Select valid bottles and whole quantities between 1 and 48.' };
+  const grouped = new Map<string, number>();
+  for (const item of items) grouped.set(item.slug, (grouped.get(item.slug) || 0) + item.qty);
+  const resolved = [];
+  for (const [slug, qty] of grouped) {
+    if (qty > 48) return { error: 'Maximum wholesale quantity is 48 per product.' };
+    const product = await resolveSellableProduct(slug);
+    if (!product) return { error: 'A selected product is unavailable.' };
+    resolved.push({ slug, name: product.name, qty, unitNgn: wholesalePriceNgn(product.priceNgn) });
+  }
 
   const totalNgn = resolved.reduce((n, r) => n + r.unitNgn * r.qty, 0);
   const pointsEarned = Math.floor(totalNgn / 50);
 
   const [order] = await sql`
-    INSERT INTO partner_wholesale_orders (outlet_id, items, total_ngn, points_earned)
-    VALUES (${outletId}, ${JSON.stringify(resolved)}::jsonb, ${totalNgn}, ${pointsEarned})
-    RETURNING id, items, total_ngn, points_earned, created_at
-  `;
-
-  for (const r of resolved) {
-    await sql`
-      INSERT INTO partner_inventory (outlet_id, slug, on_hand, updated_at)
-      VALUES (${outletId}, ${r.slug}, ${r.qty}, NOW())
-      ON CONFLICT (outlet_id, slug) DO UPDATE SET on_hand = partner_inventory.on_hand + ${r.qty}, updated_at = NOW()
-    `;
-  }
-
-  await sql`
-    UPDATE partner_outlets SET points = points + ${pointsEarned}, lifetime_points = lifetime_points + ${pointsEarned}
-    WHERE id = ${outletId}
+    INSERT INTO partner_wholesale_orders (outlet_id, items, total_ngn, points_earned, status)
+    VALUES (${outletId}, ${JSON.stringify(resolved)}::jsonb, ${totalNgn}, ${pointsEarned}, 'awaiting_payment')
+    RETURNING id, items, total_ngn, points_earned, created_at, status
   `;
 
   return {
@@ -270,6 +265,7 @@ export async function placeWholesaleOrder(
     totalNgn: Number(order.total_ngn),
     pointsEarned: Number(order.points_earned),
     createdAt: String(order.created_at),
+    status: String(order.status),
   };
 }
 
@@ -282,14 +278,17 @@ export async function convertPartnerPerk(
   if (!conv) return { error: 'Unknown conversion.' };
   if (outlet.points < conv.points) return { error: 'Not enough Premium points.' };
 
-  // Guarded UPDATE doubles as the atomic spend — a double-submit can't drain points twice.
-  const [row] = await sql`
-    UPDATE partner_outlets SET points = points - ${conv.points}
-    WHERE id = ${outlet.id} AND points >= ${conv.points}
-    RETURNING points
+  if (outlet.approvalStatus !== 'approved') return { error: 'Your outlet must be approved before converting points.' };
+  const code = generateCode();
+  const [result] = await sql`
+    WITH spent AS (
+      UPDATE partner_outlets SET points = points - ${conv.points}
+      WHERE id = ${outlet.id} AND points >= ${conv.points} AND approval_status = 'approved' RETURNING points
+    ), issued AS (
+      INSERT INTO gift_cards(code,value_ngn,balance_ngn,issued_by,note)
+      SELECT ${code},${conv.valueNgn},${conv.valueNgn},${'outlet:' + outlet.id},${'Partner perk conversion'} FROM spent RETURNING code,value_ngn
+    ) SELECT issued.*,spent.points FROM issued CROSS JOIN spent
   `;
-  if (!row) return { error: 'Not enough Premium points.' };
-
-  const card = await issueGiftCard(outlet.venueName, conv.valueNgn, `Partner perk conversion · ${outlet.venueName}`);
-  return { code: card.code, valueNgn: card.valueNgn, pointsRemaining: Number(row.points) };
+  if (!result) return { error: 'Not enough Premium points or outlet not approved.' };
+  return { code: String(result.code), valueNgn: Number(result.value_ngn), pointsRemaining: Number(result.points) };
 }

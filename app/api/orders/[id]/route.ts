@@ -18,7 +18,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
         o.id, o.status, o.subtotal_ngn, o.loyalty_discount_ngn, o.gift_card_discount_ngn,
         o.total_ngn, o.loyalty_points_awarded, o.loyalty_owner_id, o.full_name, o.phone,
         o.address_line1, o.address_line2, o.city, o.area, o.notes,
-        o.courier_name, o.rider_phone, o.eta_at, o.tracking_note, o.created_at,
+        o.delivery_fee_ngn, o.tracking_url, o.courier_reference, o.courier_name, o.rider_phone, o.eta_at, o.tracking_note, o.created_at,
         COALESCE(
           json_agg(
             json_build_object(
@@ -61,6 +61,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
         city: String(o.city || ''),
         area: (o.area as string) || null,
         notes: (o.notes as string) || null,
+        deliveryFeeNgn: Number(o.delivery_fee_ngn || 0), trackingUrl: o.tracking_url, courierReference: o.courier_reference,
         courierName: (o.courier_name as string) || null,
         riderPhone: (o.rider_phone as string) || null,
         etaAt: o.eta_at ? new Date(o.eta_at as string).toISOString() : null,

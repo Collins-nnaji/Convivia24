@@ -32,6 +32,9 @@ export type TrackedOrder = {
   loyaltyDiscountNgn: number;
   giftCardDiscountNgn: number;
   totalNgn: number;
+  deliveryFeeNgn?: number;
+  trackingUrl?: string | null;
+  courierReference?: string | null;
   pointsAwarded: number;
   claimable?: boolean;
   pointsIfClaimed?: number;
@@ -130,6 +133,13 @@ export default function OrderTracking({ orderId }: { orderId: string }) {
 
 /** The view itself, given an order. Split out so it can be rendered from data. */
 export function OrderTrackingView({ order, steps, onOrderChange }: { order: TrackedOrder; steps: TrackingStepView[]; onOrderChange?: (o: TrackedOrder) => void }) {
+  const [paymentBusy, setPaymentBusy] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
+  async function resumePayment() {
+    setPaymentBusy(true); setPaymentError('');
+    try { const res = await fetch('/api/stripe/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId: order.id }) }); const data = await res.json(); if (!res.ok) throw new Error(data.error); window.location.href = data.redirectUrl || `/checkout/success?order=${order.id}`; }
+    catch (err) { setPaymentError(err instanceof Error ? err.message : 'Payment unavailable.'); setPaymentBusy(false); }
+  }
   const [copied, setCopied] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [claimError, setClaimError] = useState('');
@@ -166,6 +176,7 @@ export function OrderTrackingView({ order, steps, onOrderChange }: { order: Trac
   return (
     <section className="bg-paper min-h-[70vh]">
       <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
+        <div className="flex flex-wrap gap-3 mb-4"><Link href={`/orders/${order.id}/receipt`} className="text-sm text-ember">Order receipt</Link>{['pending','awaiting_payment'].includes(order.status) && <button disabled={paymentBusy} onClick={resumePayment} className="btn-brand px-4 py-2 text-sm">{paymentBusy ? 'Opening payment…' : 'Continue payment'}</button>}</div>{paymentError && <p role="alert" className="text-ember mb-4">{paymentError}</p>}
         <nav aria-label="Breadcrumb" className="mb-5">
           <ol className="flex items-center gap-1.5 text-[12px] text-obsidian/40 flex-wrap">
             <li>
@@ -336,6 +347,7 @@ export function OrderTrackingView({ order, steps, onOrderChange }: { order: Trac
               </ul>
             </section>
 
+            <section className="bg-white border p-5"><Link href={`/support?order=${order.id}`} className="text-ember font-semibold">Report a problem with this order</Link>{order.trackingUrl && <a href={order.trackingUrl} target="_blank" rel="noopener noreferrer" className="ml-4 text-ember">Track with courier</a>}</section>
             <section className="bg-ember/[0.04] border border-ember/15 p-5 sm:p-6 flex items-center gap-5 flex-wrap">
               <span className="w-12 h-12 rounded-full bg-ember/10 flex items-center justify-center shrink-0">
                 <Users size={20} className="text-ember" />
@@ -399,6 +411,7 @@ export function OrderTrackingView({ order, steps, onOrderChange }: { order: Trac
                     <dd className="text-ember tabular-nums">−{formatNgn(order.giftCardDiscountNgn)}</dd>
                   </div>
                 )}
+                <div className="flex justify-between gap-4"><dt className="text-obsidian/50">Delivery</dt><dd>{formatNgn(Number(order.deliveryFeeNgn || 0))}</dd></div>
                 <div className="flex justify-between items-baseline gap-4 pt-3 border-t border-obsidian/10">
                   <dt className="font-semibold">Total</dt>
                   <dd className="font-logo font-black text-xl tabular-nums">{formatNgn(order.totalNgn)}</dd>

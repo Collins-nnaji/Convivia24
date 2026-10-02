@@ -2,10 +2,10 @@
   "name": "convivia24",
   "version": "0.1.0",
   "private": true,
-  "description": "Nightlife commerce — drinks delivery nationwide across Nigeria, events, venues, Guest Card, and partner wholesale. Adults 18+.",
+  "description": "Nightlife commerce \u2014 drinks delivery nationwide across Nigeria, events, venues, Guest Card, and partner wholesale. Adults 18+.",
   "dependencies": {
     "@azure/storage-blob": "^12.33.0",
-    "@neondatabase/auth": "^0.4.2-beta",
+    "@neondatabase/auth": "^0.5.0-beta",
     "@neondatabase/serverless": "^1.0.2",
     "@sentry/nextjs": "^10.57.0",
     "@tailwindcss/forms": "^0.5.10",
@@ -27,18 +27,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint app components lib tests proxy.ts",
     "test": "vitest run",
     "test:integration": "vitest run tests/",
     "cap:sync": "cap sync",
     "cap:android": "cap open android",
-    "cap:ios": "cap open ios"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+    "cap:ios": "cap open ios",
+    "typecheck": "tsc --noEmit",
+    "test:browser": "playwright test",
+    "db:migrate": "tsx lib/db/migrate.ts"
   },
   "browserslist": {
     "production": [
@@ -58,15 +55,20 @@
     "@capacitor/cli": "^8.5.0",
     "@capacitor/core": "^8.5.0",
     "@capacitor/ios": "^8.5.0",
+    "@electric-sql/pglite": "^0.5.8",
     "@netlify/functions": "^6.0.0",
     "@netlify/plugin-nextjs": "^5.15.8",
+    "@playwright/test": "^1.63.0",
     "@types/qrcode": "^1.5.6",
     "@types/react": "19.2.9",
     "autoprefixer": "^10.4.15",
     "concurrently": "^8.2.2",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.1.1",
     "nodemon": "^3.1.9",
     "postcss": "^8.4.31",
     "tailwindcss": "^3.3.3",
+    "tsx": "^4.23.15",
     "typescript": "~5.7.0",
     "vitest": "^4.1.11"
   }

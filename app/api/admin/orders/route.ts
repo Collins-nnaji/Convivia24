@@ -1,3 +1,4 @@
+import { refundCompleted } from '@/lib/payments/flutterwave';
 import { NextRequest, NextResponse } from 'next/server';
 import sql, { apiErrorResponse } from '@/lib/db';
 import { requireAdmin } from '@/lib/admin';
@@ -26,7 +27,7 @@ const ADMIN_SETTABLE_STATUSES: OrderStatus[] = ORDER_STATUSES.filter(
  * "all time" and the CSV are actually complete.
  */
 export async function GET(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('orders');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const url = new URL(req.url);
@@ -43,7 +44,7 @@ export async function GET(req: NextRequest) {
 
     const [{ total }] = await sql`
       SELECT COUNT(*)::int AS total FROM ritual_orders o
-      WHERE o.status != 'pending'
+      WHERE o.status != 'pending' AND o.archived_at IS NULL
         AND (${from}::timestamptz IS NULL OR o.created_at >= ${from}::timestamptz)
         AND (${to}::timestamptz IS NULL OR o.created_at < ${to}::timestamptz)
         AND (${status}::text IS NULL OR o.status = ${status})
@@ -67,7 +68,7 @@ export async function GET(req: NextRequest) {
         o.area,
         o.city,
         o.notes,
-        o.courier_name,
+        o.courier_reference, o.tracking_url, o.delivery_proof, o.recipient_age_checked, o.courier_cost_ngn, o.courier_name,
         o.rider_phone,
         o.eta_at,
         o.tracking_note,
@@ -97,7 +98,7 @@ export async function GET(req: NextRequest) {
       LEFT JOIN inventory inv ON inv.slug = i.kit_slug
       LEFT JOIN suppliers s ON s.id = o.supplier_id
       LEFT JOIN suppliers rs ON rs.id = o.routed_supplier_id
-      WHERE o.status != 'pending'
+      WHERE o.status != 'pending' AND o.archived_at IS NULL
         AND (${from}::timestamptz IS NULL OR o.created_at >= ${from}::timestamptz)
         AND (${to}::timestamptz IS NULL OR o.created_at < ${to}::timestamptz)
         AND (${status}::text IS NULL OR o.status = ${status})
@@ -131,6 +132,7 @@ export async function GET(req: NextRequest) {
         city: o.city,
         notes: o.notes,
         courierName: o.courier_name,
+        courierReference: o.courier_reference, trackingUrl: o.tracking_url, deliveryProof: o.delivery_proof, recipientAgeChecked: o.recipient_age_checked, courierCostNgn: o.courier_cost_ngn,
         riderPhone: o.rider_phone,
         etaAt: o.eta_at,
         trackingNote: o.tracking_note,
@@ -167,7 +169,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('orders');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
@@ -178,64 +180,35 @@ export async function PATCH(req: NextRequest) {
     if (!orderId) return NextResponse.json({ error: 'orderId is required.' }, { status: 400 });
 
     // Refund is its own action — it calls out to Flutterwave and always lands on status=refunded.
+    if (body.action === 'refund' || body.action === 'bank_transfer') {
+      const financialGate = await requireAdmin('finance');
+      if (financialGate.ok === false) return NextResponse.json({ error: financialGate.error }, { status: financialGate.status });
+    }
     if (body.action === 'refund') {
-      const [order] = await sql`
-        SELECT id, status, total_ngn, subtotal_ngn, payment_provider, payment_ref, refunded_ngn
-        FROM ritual_orders WHERE id = ${orderId} LIMIT 1
-      `;
-      if (!order) return NextResponse.json({ error: 'Order not found.' }, { status: 404 });
-      if (!canTransition(order.status as OrderStatus, 'refunded')) {
-        return NextResponse.json(
-          { error: `A ${ORDER_STATUS_LABELS[order.status as OrderStatus].toLowerCase()} order cannot be refunded.` },
-          { status: 400 }
-        );
+      const [purchase] = await sql`SELECT total_ngn,payment_provider FROM ritual_orders WHERE id=${orderId}::uuid`;
+      if (purchase?.payment_provider === 'gift_card' && Number(purchase.total_ngn) === 0) {
+        await sql`SELECT c24_refund_gift_order(${orderId}::uuid,${gate.actor},${String(body.reason || '').slice(0,500)})`;
+        return NextResponse.json({ ok: true, refundedNgn: 0, status: 'refunded', pending: false });
       }
-      const alreadyNgn = Number(order.refunded_ngn ?? 0);
-      const remainingNgn = Math.max(0, Number(order.total_ngn ?? order.subtotal_ngn) - alreadyNgn);
-      const requested = body.amountNgn == null || body.amountNgn === '' ? remainingNgn : Math.round(Number(body.amountNgn));
-      if (!Number.isFinite(requested) || requested <= 0) {
-        return NextResponse.json({ error: 'Refund amount must be more than zero.' }, { status: 400 });
+      if (purchase?.payment_provider === 'flutterwave' && Number(body.amountNgn) < 100) return NextResponse.json({ error: 'Flutterwave refunds require at least NGN 100.' }, { status: 400 });
+      const requestId = String(body.requestId || '');
+      if (!/^[0-9a-f-]{36}$/i.test(requestId)) return NextResponse.json({ error: 'A refund request key is required.' }, { status: 400 });
+      const amountNgn = Number(body.amountNgn);
+      if (!Number.isSafeInteger(amountNgn) || amountNgn <= 0) return NextResponse.json({ error: 'Enter a positive whole refund amount.' }, { status: 400 });
+      const [refund] = await sql`SELECT * FROM c24_request_refund(${requestId}::uuid,${orderId}::uuid,${amountNgn}::integer,${gate.actor},${String(body.reason || '').slice(0,500)})`;
+      if (refund.provider_reference || refund.status !== 'requested') return NextResponse.json({ ok: true, refundId: requestId, refundStatus: refund.status, pending: refund.status !== 'completed' });
+      const [order] = await sql`SELECT payment_ref FROM ritual_orders WHERE id = ${orderId}::uuid`;
+      // Claim the external submission once. A crash or ambiguous network error requires reconciliation, never an automatic second charge.
+      const [claimed] = await sql`UPDATE order_refunds SET status = 'pending',updated_at=NOW() WHERE id=${requestId}::uuid AND status='requested' RETURNING id`;
+      if (!claimed) return NextResponse.json({ ok: true, refundId: requestId, refundStatus: 'pending', pending: true });
+      if (refund.provider === 'flutterwave') {
+        if (amountNgn < 100) return NextResponse.json({ error: 'Flutterwave refunds require at least NGN 100; this request needs staff reconciliation.' }, { status: 400 });
+        const result = await refundFlutterwave(String(order.payment_ref),amountNgn);
+        if ('error' in result) { await sql`UPDATE order_refunds SET reason=COALESCE(reason,'') || ${' · Provider response: ' + result.error} WHERE id=${requestId}::uuid`; return NextResponse.json({ error: 'Refund response requires reconciliation. Do not submit a second request.' }, { status: 502 }); }
+        await sql`UPDATE order_refunds SET provider_reference=${result.refundRef} WHERE id=${requestId}::uuid`;
+        if (refundCompleted(result.status)) await sql`SELECT c24_complete_refund(${requestId}::uuid,${result.refundRef})`;
       }
-      if (requested > remainingNgn) {
-        return NextResponse.json({ error: `Only ${formatNgn(remainingNgn)} is left to refund on this order.` }, { status: 400 });
-      }
-      const amountNgn = requested;
-      const partial = amountNgn < remainingNgn;
-      let refundRef = 'manual';
-      if (
-        (order.payment_provider === 'flutterwave' || order.payment_provider === 'paystack') &&
-        order.payment_ref
-      ) {
-        const result = await refundFlutterwave(order.payment_ref as string, amountNgn);
-        if ('error' in result) return NextResponse.json({ error: result.error }, { status: 502 });
-        refundRef = result.refundRef;
-      }
-      const totalRefunded = alreadyNgn + amountNgn;
-      if (partial) {
-        // Money back for part of the order (a broken bottle, a missing mixer) — the order itself
-        // carries on: status, stock and points are untouched, only the refunded total moves.
-        await sql`
-          UPDATE ritual_orders
-          SET refund_ref = ${refundRef}, refunded_ngn = ${totalRefunded}, updated_at = NOW()
-          WHERE id = ${orderId}
-        `;
-        const note = `Partial refund of ${formatNgn(amountNgn)}${typeof body.reason === 'string' && body.reason.trim() ? ` — ${body.reason.trim().slice(0, 200)}` : ''}.`;
-        await recordOrderEvent(orderId, order.status as OrderStatus, note).catch(() => {});
-        await notifyOrderStatus(orderId, order.status as OrderStatus, note);
-        return NextResponse.json({ ok: true, orderId, status: order.status, refundedNgn: totalRefunded, partial: true });
-      }
-      await sql`
-        UPDATE ritual_orders
-        SET status = 'refunded', refund_ref = ${refundRef}, refunded_ngn = ${totalRefunded}, updated_at = NOW()
-        WHERE id = ${orderId}
-      `;
-      await releaseOrderResources(orderId);
-      await reconcileOrderPoints(orderId);
-      // Stamp the transition like every other status change, so the customer's tracking page
-      // shows the refund instead of stopping at the last delivery step.
-      await recordOrderEvent(orderId, 'refunded', `Refunded ${formatNgn(amountNgn)}.`).catch(() => {});
-      await notifyOrderStatus(orderId, 'refunded', `Refunded ${formatNgn(amountNgn)}.`);
-      return NextResponse.json({ ok: true, orderId, status: 'refunded', refundedNgn: totalRefunded });
+      return NextResponse.json({ ok: true, refundId: requestId, refundStatus: 'pending', pending: true });
     }
 
     // A customer paid the Access Bank account directly. Flutterwave is not charged on that money.
@@ -246,11 +219,11 @@ export async function PATCH(req: NextRequest) {
       if (reference.length < 3) {
         return NextResponse.json({ error: 'Enter the Access Bank transfer reference.' }, { status: 400 });
       }
-      const [order] = await sql`SELECT id, status FROM ritual_orders WHERE id = ${orderId} LIMIT 1`;
+      const [order] = await sql`SELECT id, status, payment_provider FROM ritual_orders WHERE id = ${orderId} LIMIT 1`;
       if (!order) return NextResponse.json({ error: 'Order not found.' }, { status: 404 });
       const from = order.status as OrderStatus;
-      if (from === 'cancelled' || from === 'refunded' || from === 'pending') {
-        return NextResponse.json({ error: 'This order cannot take a bank transfer.' }, { status: 409 });
+      if (from !== 'awaiting_payment' || order.payment_provider !== 'manual') {
+        return NextResponse.json({ error: 'Only an unpaid manual-payment order can be confirmed by bank transfer.' }, { status: 409 });
       }
       const [updated] = await sql`
         UPDATE ritual_orders
@@ -349,6 +322,7 @@ export async function PATCH(req: NextRequest) {
       const sourcingNote =
         typeof body.sourcingNote === 'string' ? body.sourcingNote.trim().slice(0, 500) || null : null;
 
+      await sql`SELECT c24_assign_supplier(${orderId}::uuid, ${clearing ? null : supplierId}::uuid)`;
       const [sourced] = await sql`
         UPDATE ritual_orders
         SET
@@ -395,7 +369,7 @@ export async function PATCH(req: NextRequest) {
     const result = await applyOrderStatus(orderId, status, {
       note: typeof body.note === 'string' ? body.note : null,
       tracking,
-      actor: { kind: 'admin' },
+      actor: { kind: 'admin', label: gate.actor },
     });
     if (result.ok === false) return NextResponse.json({ error: result.error }, { status: result.httpStatus });
     return NextResponse.json({ ok: true, orderId: result.orderId, status: result.status });
@@ -407,7 +381,7 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('orders');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const id = new URL(req.url).searchParams.get('id');
@@ -425,11 +399,8 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    // gift_cards.redeemed_order_id has no ON DELETE rule; everything else cascades or nulls.
-    await sql`UPDATE gift_cards SET redeemed_order_id = NULL WHERE redeemed_order_id = ${id}`;
-    await sql`DELETE FROM order_events WHERE order_id = ${id}`;
-    await sql`DELETE FROM ritual_order_items WHERE order_id = ${id}`;
-    await sql`DELETE FROM ritual_orders WHERE id = ${id}`;
+    await sql`UPDATE ritual_orders SET archived_at=NOW() WHERE id=${id}::uuid`;
+    await sql`INSERT INTO admin_audit(actor,action,subject) VALUES(${gate.actor},'order.archived',${id})`;
     return NextResponse.json({ ok: true });
   } catch (err) {
     captureApiError(err, { route: 'admin/orders DELETE' });

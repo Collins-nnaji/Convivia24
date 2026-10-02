@@ -61,7 +61,7 @@ Rules:
  * Accepts `{ text }` (pasted) or `{ imageBase64 }` (a scanned/photographed list).
  */
 export async function POST(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('inventory');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const rl = await rateLimit(`admin:price-list:${clientIp(req)}`, 12, 60);
@@ -145,7 +145,7 @@ export async function POST(req: NextRequest) {
 
 /** PATCH — apply the rows the admin confirmed. Only price is touched; stock is left alone. */
 export async function PATCH(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('inventory');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);

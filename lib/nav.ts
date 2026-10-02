@@ -1,3 +1,4 @@
+import { eventsEnabled } from '@/lib/features';
 export type NavLink = {
   label: string;
   href: string;
@@ -19,6 +20,7 @@ export function primaryNavLinks(): NavLink[] {
     icon: 'gift',
   });
   links.push({ label: 'Brands', href: '/brands' });
+  if (eventsEnabled) links.push({ label: 'Events & venues', href: '/events' });
   return links;
 }
 

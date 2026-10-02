@@ -12,7 +12,7 @@ export function flutterwaveWebhookHash(): string | null {
   return hash || null;
 }
 
-type FlwVerifyData = {
+export type FlwVerifyData = {
   id?: number;
   tx_ref?: string;
   flw_ref?: string;
@@ -27,6 +27,7 @@ async function flwFetch(path: string, init: RequestInit = {}) {
   if (!secret) throw new Error('Flutterwave is not configured.');
   const res = await fetch(`${FLW_API}${path}`, {
     ...init,
+    signal: init.signal || AbortSignal.timeout(5000),
     headers: {
       Authorization: `Bearer ${secret}`,
       'Content-Type': 'application/json',
@@ -100,14 +101,17 @@ export async function verifyFlutterwavePayment(opts: {
   }
 }
 
-export function flutterwavePaid(data: FlwVerifyData | null, chargedNgn: number): boolean {
+export function flutterwavePaid(data: FlwVerifyData | null, chargedNgn: number, expectedReference: string): boolean {
   if (!data) return false;
   const status = String(data.status || '').toLowerCase();
   if (status !== 'successful' && status !== 'completed') return false;
-  return Math.round(Number(data.amount)) === Math.round(chargedNgn);
+  return Number.isFinite(chargedNgn) && chargedNgn > 0
+    && Number(data.amount) === chargedNgn
+    && data.currency === 'NGN'
+    && !!expectedReference && data.tx_ref === expectedReference;
 }
 
-export async function refundFlutterwave(txRef: string, amountNgn: number): Promise<{ refundRef: string } | { error: string }> {
+export async function refundFlutterwave(txRef: string, amountNgn: number): Promise<{ refundRef: string; status: string } | { error: string }> {
   try {
     const verified = await verifyFlutterwavePayment({ txRef });
     const id = verified?.id;
@@ -119,9 +123,19 @@ export async function refundFlutterwave(txRef: string, amountNgn: number): Promi
     if (!res.ok || data?.status !== 'success') {
       return { error: data?.message || 'Flutterwave refund failed.' };
     }
-    return { refundRef: String(data?.data?.id ?? id) };
+    return { refundRef: String(data?.data?.id ?? id), status: String(data?.data?.status || 'processing') };
   } catch (err) {
     console.error('Flutterwave refund error', err);
     return { error: 'Could not reach Flutterwave.' };
   }
+}
+
+export function refundCompleted(status: string): boolean {
+  return ['completed-bank-transfer','completed-momo','completed-mpgs','completed-offline','completed-preauth'].includes(status);
+}
+export async function fetchFlutterwaveRefund(reference: string): Promise<{ status: string; amount: number; transactionId: string } | null> {
+  if (!/^\d+$/.test(reference)) return null;
+  const { res, data } = await flwFetch(`/refunds/${reference}`);
+  if (!res.ok || data?.status !== 'success') return null;
+  return { status: String(data.data?.status || ''), amount: Number(data.data?.amount_refunded ?? data.data?.AmountRefunded ?? data.data?.amount), transactionId: String(data.data?.tx_id ?? data.data?.TransactionId ?? data.data?.transaction_id ?? '') };
 }

@@ -7,7 +7,7 @@ import { approveBottleRequest, declineBottleRequest, listBottleRequests } from '
 import { invalidateCatalog } from '@/lib/shop/catalog-cache';
 
 export async function GET(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('inventory');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const status = (new URL(req.url).searchParams.get('status') || 'all') as 'pending' | 'approved' | 'declined' | 'all';
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
 /** PATCH { id, action: 'approve', priceNgn, slug?, note? } | { id, action: 'decline', note? } */
 export async function PATCH(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('inventory');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);

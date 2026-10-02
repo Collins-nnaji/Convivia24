@@ -12,6 +12,7 @@
 
 export type SendEmailInput = {
   to: string | string[];
+  idempotencyKey?: string;
   subject: string;
   html: string;
   text?: string;
@@ -55,7 +56,9 @@ export async function sendEmail(input: SendEmailInput): Promise<{ sent: boolean;
       headers: {
         Authorization: `Bearer ${cfg.key}`,
         'Content-Type': 'application/json',
+        ...(input.idempotencyKey ? { 'Idempotency-Key': input.idempotencyKey } : {}),
       },
+      signal: AbortSignal.timeout(5000),
       body: JSON.stringify({
         from: cfg.from,
         to,

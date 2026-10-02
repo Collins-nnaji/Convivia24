@@ -8,7 +8,7 @@ import { DrawError, eligibleEntries, getDraw, listDraws, notifyRunnersUp, notify
 
 /** GET ?round=&week= — draw history plus who is currently eligible for that round/week. */
 export async function GET(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const url = new URL(req.url);
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
  * POST { action: 'notify', id, who: 'winner' | 'others', message? } — (re)send the emails.
  */
 export async function POST(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const rl = await rateLimit(`admin:${clientIp(req)}`, 20, 60);

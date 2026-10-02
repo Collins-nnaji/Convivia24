@@ -12,24 +12,8 @@ export interface Profile {
   onboarded_at: string | null;
 }
 
-let schemaReady: Promise<void> | null = null;
-
-export function ensureSchema(): Promise<void> {
-  if (!schemaReady) {
-    schemaReady = (async () => {
-      await sql`
-        CREATE TABLE IF NOT EXISTS user_profiles (
-          user_id      TEXT PRIMARY KEY,
-          data         JSONB NOT NULL DEFAULT '{}'::jsonb,
-          onboarded_at TIMESTAMPTZ,
-          created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-          updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
-        )
-      `;
-    })().catch((err) => { schemaReady = null; throw err; });
-  }
-  return schemaReady;
-}
+/** Tables are installed by the migration runner, never by customer requests. */
+export async function ensureSchema(): Promise<void> {}
 
 export async function getProfile(userId: string): Promise<Profile> {
   await ensureSchema();

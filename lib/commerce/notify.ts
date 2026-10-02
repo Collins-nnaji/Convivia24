@@ -31,24 +31,24 @@ async function notifyAdminsOfSuccessfulOrder(opts: {
   lines: EmailLine[];
   totalNgn: number;
   status: string;
+  idempotencyKey?: string;
 }): Promise<void> {
   const admins = adminNotifyEmail();
   if (!admins) return;
   const { subject, html, text } = adminSuccessfulOrderEmail(opts);
-  const result = await sendEmail({ to: admins, subject, html, text });
-  if (!result.sent) console.error('Admin order notification failed:', result.error);
+  const result = await sendEmail({ to: admins, subject, html, text, idempotencyKey: opts.idempotencyKey });
+  if (!result.sent) throw new Error(result.error || 'Admin notification failed');
 }
 
 /**
  * Customer order confirmation — only call after payment is confirmed (paid).
  * Best-effort — never throws, so a mail hiccup can't fail a webhook.
  */
-export async function notifyOrderReceived(orderId: string): Promise<void> {
+export async function notifyOrderReceived(orderId: string, jobId = orderId + ':paid'): Promise<void> {
   try {
     const data = await loadOrderForNotify(orderId);
     if (!data) return;
     const { order, lines } = data;
-    if (String(order.status) !== 'paid') return;
 
     const totalNgn = Number(order.total_ngn ?? order.subtotal_ngn);
     const { subject, html, text } = orderReceivedEmail({
@@ -57,12 +57,14 @@ export async function notifyOrderReceived(orderId: string): Promise<void> {
       lines,
       subtotalNgn: totalNgn,
     });
-    await sendEmail({
+    const sent = await sendEmail({
+      idempotencyKey: jobId + ':customer',
       to: order.email as string,
       subject,
       html,
       text,
     });
+    if (!sent.sent) throw new Error(sent.error || 'Customer notification failed');
     await notifyAdminsOfSuccessfulOrder({
       fullName: order.full_name as string,
       email: order.email as string,
@@ -71,13 +73,14 @@ export async function notifyOrderReceived(orderId: string): Promise<void> {
       lines,
       totalNgn,
       status: 'paid',
+      idempotencyKey: jobId + ':admin',
     });
   } catch (err) {
-    console.error('notifyOrderReceived failed', err);
+    throw err;
   }
 }
 
-export async function notifyOrderStatus(orderId: string, status: OrderStatus, note?: string | null): Promise<void> {
+export async function deliverOrderStatus(orderId: string, status: OrderStatus, note?: string | null, jobId = orderId + ':' + status): Promise<void> {
   try {
     const data = await loadOrderForNotify(orderId);
     if (!data) return;
@@ -86,8 +89,8 @@ export async function notifyOrderStatus(orderId: string, status: OrderStatus, no
 
     // Paid → confirmation mail (not a separate "awaiting payment" style notice).
     if (status === 'paid') {
-      await notifyOrderReceived(orderId);
-      await notifySupplierOfPaidOrder(orderId);
+      await notifyOrderReceived(orderId, jobId);
+      await notifySupplierOfPaidOrder(orderId, jobId);
       return;
     }
 
@@ -102,8 +105,12 @@ export async function notifyOrderStatus(orderId: string, status: OrderStatus, no
       riderPhone: (order.rider_phone as string) || null,
       etaAt: order.eta_at ? new Date(order.eta_at as string).toISOString() : null,
     });
-    await sendEmail({ to: order.email as string, subject, html, text });
+    const result = await sendEmail({ to: order.email as string, subject, html, text, idempotencyKey: jobId + ':customer' });
+    if (!result.sent) throw new Error(result.error || 'Notification failed');
   } catch (err) {
-    console.error('notifyOrderStatus failed', err);
+    throw err;
   }
 }
+
+/** Status changes queue their notices in the same DB transaction through a trigger. */
+export async function notifyOrderStatus(_orderId: string, _status: OrderStatus, _note?: string | null): Promise<void> {}

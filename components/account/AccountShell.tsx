@@ -18,21 +18,24 @@ import {
   User,
 } from 'lucide-react';
 import { useUser } from '@/components/auth/AuthProvider';
+import AccountSettings from '@/components/account/AccountSettings';
 import AccountOverview from '@/components/account/AccountOverview';
 import TasteProfilePanel from '@/components/account/TasteProfilePanel';
 import SavedBottles from '@/components/account/SavedBottles';
 import { useTriviaHub } from '@/components/trivia/use-hub';
 
-type Section = 'overview' | 'taste' | 'saved';
+type Section = 'overview' | 'taste' | 'saved' | 'settings';
 
 /** In-page sections, and the places the account links out to. */
 const SECTIONS: { id: Section; label: string; icon: typeof User }[] = [
+  { id: 'settings', label: 'Settings & addresses', icon: User },
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'taste', label: 'Taste profile', icon: FlaskConical },
   { id: 'saved', label: 'Saved bottles', icon: Heart },
 ];
 
 const LINKS: { href: string; label: string; icon: typeof User }[] = [
+  { href: '/support', label: 'Support', icon: User },
   { href: '/orders', label: 'Orders', icon: Package },
   { href: '/discover/trivia#challenges', label: 'Challenges', icon: Target },
   { href: '/discover/rewards', label: 'Rewards shop', icon: Gift },
@@ -48,7 +51,7 @@ export default function AccountShell() {
 
   const sectionParam = params.get('section');
   const section: Section =
-    sectionParam === 'taste' || sectionParam === 'saved' ? sectionParam : 'overview';
+    sectionParam === 'taste' || sectionParam === 'saved' || sectionParam === 'settings' ? sectionParam : 'overview';
 
   function selectSection(next: Section) {
     router.replace(next === 'overview' ? '/my-account' : `/my-account?section=${next}`, { scroll: false });
@@ -145,6 +148,7 @@ export default function AccountShell() {
           {section === 'taste' && (
             <TasteProfilePanel hub={hub} editing={editing} onEditing={setEditing} />
           )}
+          {section === 'settings' && <AccountSettings />}
           {section === 'saved' && <SavedBottles />}
         </div>
       </div>

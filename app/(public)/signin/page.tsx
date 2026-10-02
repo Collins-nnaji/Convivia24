@@ -5,12 +5,13 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CalendarHeart, Wind, MessageCircle } from 'lucide-react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
+import { safeReturnPath } from '@/lib/auth/redirect';
 import { signInWithGoogle, signInWithEmail, signUpWithEmail } from '@/lib/auth/client';
 import { useUser } from '@/components/auth/AuthProvider';
 
 const PERKS = [
   { icon: CalendarHeart, text: 'Plan parties and send personal RSVP invite links.' },
-  { icon: Wind, text: 'Order drinks to homes, clubs, and lounges nationwide.' },
+  { icon: Wind, text: 'Order drinks to homes, clubs, and lounges in Lagos, Abuja, and Port Harcourt.' },
   { icon: MessageCircle, text: 'Guest Card perks and partner desks on one account.' },
 ];
 
@@ -25,7 +26,7 @@ function SignInInner() {
   const [formLoading, setFormLoading] = useState(false);
   const [error, setError] = useState(params.get('error') ? 'Sign-in was cancelled or failed. Please try again.' : '');
 
-  const next = params.get('next') || '/';
+  const next = safeReturnPath(params.get('next'));
   const busy = googleLoading || formLoading;
 
   // Already signed in → bounce to destination.
@@ -140,6 +141,7 @@ function SignInInner() {
             </button>
           </form>
 
+          {mode === 'signin' && <Link href="/forgot-password" className="mt-4 inline-block text-sm text-ember">Forgot password?</Link>}
           {error && <p className="text-red-500 text-xs mt-4">{error}</p>}
 
           <p className="text-center text-obsidian/55 text-xs mt-5">

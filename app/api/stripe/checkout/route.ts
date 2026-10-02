@@ -1,5 +1,7 @@
+import { AGE_GATE_COOKIE, verifyAgeToken } from '@/lib/age-gate';
 import { NextRequest, NextResponse } from 'next/server';
 import sql, { apiErrorResponse } from '@/lib/db';
+import { getCurrentUser } from '@/lib/auth/session';
 import { rateLimit, clientIp } from '@/lib/redis';
 import { flutterwaveSecret, initializeFlutterwavePayment } from '@/lib/payments/flutterwave';
 
@@ -10,9 +12,12 @@ import { flutterwaveSecret, initializeFlutterwavePayment } from '@/lib/payments/
  */
 export async function POST(req: NextRequest) {
   try {
+    if (!await verifyAgeToken(req.cookies.get(AGE_GATE_COOKIE)?.value)) return NextResponse.json({ error: 'Confirm you are 18+ before ordering.' }, { status: 403 });
     const rl = await rateLimit(`checkout:${clientIp(req)}`, 15, 60);
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests. Please try again shortly.' }, { status: 429 });
 
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: 'Sign in to pay for your order.' }, { status: 401 });
     const body = await req.json();
     const orderId = typeof body.orderId === 'string' ? body.orderId.trim() : '';
     if (!orderId) {
@@ -22,7 +27,7 @@ export async function POST(req: NextRequest) {
     const [order] = await sql`
       SELECT id, email, full_name, phone, subtotal_ngn, total_ngn, status, payment_ref
       FROM ritual_orders
-      WHERE id = ${orderId}
+      WHERE id = ${orderId} AND LOWER(email) = ${user.email.trim().toLowerCase()}
       LIMIT 1
     `;
 
@@ -30,25 +35,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Order not found.' }, { status: 404 });
     }
 
-    if (order.status === 'paid' || order.status === 'fulfilled') {
+    if (['paid', 'processing', 'packed', 'out_for_delivery', 'delivered', 'fulfilled'].includes(String(order.status))) {
       return NextResponse.json({ ok: true, alreadyPaid: true, orderId });
     }
 
-    if (order.status === 'cancelled') {
+    if (!['pending', 'awaiting_payment'].includes(String(order.status))) {
       return NextResponse.json({ error: 'This order was cancelled. Please checkout again.' }, { status: 400 });
     }
 
     const secret = flutterwaveSecret();
     const origin =
       process.env.NEXT_PUBLIC_APP_URL ||
-      req.headers.get('origin') ||
       'http://localhost:3000';
 
     if (!secret) {
+      if (process.env.NODE_ENV === 'production' && process.env.ALLOW_MANUAL_PAYMENTS !== 'true') {
+        return NextResponse.json({ error: 'Payments are temporarily unavailable.' }, { status: 503 });
+      }
       await sql`
         UPDATE ritual_orders
         SET status = 'awaiting_payment', payment_provider = 'manual', updated_at = NOW()
-        WHERE id = ${orderId}
+        WHERE id = ${orderId} AND status IN ('pending', 'awaiting_payment')
       `;
       return NextResponse.json({
         ok: true,
@@ -61,9 +68,13 @@ export async function POST(req: NextRequest) {
     }
 
     const chargeableNgn = Number(order.total_ngn ?? order.subtotal_ngn);
-    const txRef =
-      (order.payment_ref as string) ||
-      `convivia_${orderId.replace(/-/g, '').slice(0, 24)}_${Date.now().toString(36)}`;
+    const txRef = `convivia_${orderId}`;
+    const [claimed] = await sql`
+      UPDATE ritual_orders SET status = 'awaiting_payment', payment_provider = 'flutterwave',
+        payment_ref = ${txRef}, updated_at = NOW()
+      WHERE id = ${orderId} AND status IN ('pending', 'awaiting_payment') RETURNING id
+    `;
+    if (!claimed) return NextResponse.json({ error: 'Order changed. Reload and try again.' }, { status: 409 });
 
     const init = await initializeFlutterwavePayment({
       txRef,
@@ -86,7 +97,7 @@ export async function POST(req: NextRequest) {
         payment_provider = 'flutterwave',
         payment_ref = ${init.txRef},
         updated_at = NOW()
-      WHERE id = ${orderId}
+      WHERE id = ${orderId} AND status = 'awaiting_payment'
     `;
 
     return NextResponse.json({

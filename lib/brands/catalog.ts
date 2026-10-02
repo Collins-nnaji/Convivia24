@@ -88,6 +88,6 @@ export function brandStats(brand: Brand, followers: number): BrandStat[] {
 export const BRAND_PILLARS = [
   { title: 'Original stock', detail: 'Sourced through authorised channels. No parallel imports.' },
   { title: 'Written up honestly', detail: 'Tasting notes and house history, not marketing copy.' },
-  { title: 'Nationwide delivery', detail: 'To homes, parties, clubs and lounges across Nigeria.' },
+  { title: 'Delivery in Lagos, Abuja, and Port Harcourt', detail: 'To homes, parties, clubs and lounges in supported zones.' },
   { title: 'Scan to verify', detail: 'Every order ships with a checkable authenticity stamp.' },
 ];

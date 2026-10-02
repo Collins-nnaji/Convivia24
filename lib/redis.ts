@@ -31,7 +31,7 @@ export interface RateLimit { ok: boolean; remaining: number; resetAt: number }
  */
 export async function rateLimit(key: string, limit: number, windowSeconds: number): Promise<RateLimit> {
   const r = redis();
-  if (!r) return { ok: true, remaining: limit, resetAt: 0 };
+  if (!r) return { ok: process.env.NODE_ENV !== 'production', remaining: process.env.NODE_ENV === 'production' ? 0 : limit, resetAt: Date.now() + windowSeconds * 1000 };
   const window = Math.floor(Date.now() / 1000 / windowSeconds);
   const k = `rl:${key}:${window}`;
   try {
@@ -48,7 +48,7 @@ export async function rateLimit(key: string, limit: number, windowSeconds: numbe
       resetAt: (window + 1) * windowSeconds * 1000,
     };
   } catch {
-    return { ok: true, remaining: limit, resetAt: 0 };
+    return { ok: process.env.NODE_ENV !== 'production', remaining: 0, resetAt: Date.now() + windowSeconds * 1000 };
   }
 }
 

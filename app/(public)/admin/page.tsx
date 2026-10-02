@@ -14,13 +14,20 @@ import ReferralsDesk from '@/components/admin/ReferralsDesk';
 import GiftCardsDesk from '@/components/admin/GiftCardsDesk';
 import TriviaDesk from '@/components/admin/TriviaDesk';
 import ContentDesk from '@/components/admin/ContentDesk';
+import ReadinessDesk from '@/components/admin/ReadinessDesk';
+import RefundsDesk from '@/components/admin/RefundsDesk';
+import SupportDesk from '@/components/admin/SupportDesk';
+import StaffDesk from '@/components/admin/StaffDesk';
+import { hasAdminPermission, type StaffRole, type AdminPermission } from '@/lib/admin-permissions';
+import OperationsDesk from '@/components/admin/OperationsDesk';
+import DeliveryDesk from '@/components/admin/DeliveryDesk';
 import AccountingDesk from '@/components/admin/AccountingDesk';
 import AnalyticsDesk from '@/components/admin/AnalyticsDesk';
 import { useAdminOrders } from '@/components/admin/useAdminOrders';
 import { EMPTY_SUMMARY, type AdminSummary } from '@/components/admin/types';
 import { BarChart3, CalendarDays, Gift, Landmark, LayoutDashboard, PackageSearch, Share2, ShoppingBag, Trophy, Truck, Wine } from 'lucide-react';
 
-const TAB_KEYS = ['overview', 'accounting', 'analytics', 'drinks', 'orders', 'sourcing', 'suppliers', 'referrals', 'giftcards', 'trivia', 'content'] as const;
+const TAB_KEYS = ['overview', 'accounting', 'analytics', 'drinks', 'orders', 'sourcing', 'suppliers', 'referrals', 'giftcards', 'trivia', 'content', 'delivery', 'operations', 'staff', 'support', 'refunds', 'readiness'] as const;
 type TabKey = (typeof TAB_KEYS)[number];
 
 function isTab(v: string): v is TabKey {
@@ -49,6 +56,7 @@ function AdminDesk() {
   const [loginMsg, setLoginMsg] = useState('');
   const [loggingIn, setLoggingIn] = useState(false);
   const [tab, setTab] = useState<TabKey>('overview');
+  const [staffRole, setStaffRole] = useState<StaffRole>('owner');
   const [summary, setSummary] = useState<AdminSummary>(EMPTY_SUMMARY);
   const ordersStore = useAdminOrders();
 
@@ -59,7 +67,7 @@ function AdminDesk() {
       setAuthed(false);
       return false;
     }
-    if (res.ok) setSummary(await res.json());
+    if (res.ok) { const data = await res.json(); setSummary(data); setStaffRole(data.staffRole || 'owner'); }
     setAuthed(true);
     return true;
   }, []);
@@ -153,6 +161,12 @@ function AdminDesk() {
   // Counts are "needs attention", never "rows in the table" — a pill should mean there is work.
   const pill = (n: number) => (n > 0 ? n : undefined);
   const tabs: AdminTab[] = [
+    { key: 'readiness', label: 'Launch readiness', icon: <LayoutDashboard size={17} /> },
+    { key: 'refunds', label: 'Refunds & exceptions', icon: <Landmark size={17} /> },
+    { key: 'support', label: 'Customer support', icon: <Gift size={17} /> },
+    { key: 'staff', label: 'Staff & audit', icon: <LayoutDashboard size={17} /> },
+    { key: 'operations', label: 'Partners & rewards', icon: <Gift size={17} /> },
+    { key: 'delivery', label: 'Delivery settings', icon: <Truck size={17} /> },
     { key: 'overview', label: 'Overview', icon: <LayoutDashboard size={17} /> },
     { key: 'accounting', label: 'Accounting', icon: <Landmark size={17} /> },
     { key: 'analytics', label: 'Analytics', icon: <BarChart3 size={17} /> },
@@ -177,8 +191,14 @@ function AdminDesk() {
       : 'No orders yet today';
 
   return (
-    <AdminShell title="Desk" subtitle={subtitle} tabs={tabs} active={tab} onSelect={go}>
+    <AdminShell title="Desk" subtitle={subtitle} tabs={tabs.filter(t => hasAdminPermission(staffRole, ({ overview: 'read', analytics: 'read', accounting: 'finance', orders: 'orders', sourcing: 'orders', drinks: 'inventory', suppliers: 'inventory', referrals: 'finance', giftcards: 'finance', trivia: 'content', content: 'content', delivery: 'operations', operations: 'read', staff: 'owner', support: 'operations', refunds: 'finance', readiness: 'owner' } as Record<string, AdminPermission>)[t.key]))} active={tab} onSelect={go}>
       {tab === 'overview' && <OverviewDesk summary={summary} onGo={go} />}
+      {tab === 'readiness' && <ReadinessDesk />}
+      {tab === 'refunds' && <RefundsDesk />}
+      {tab === 'support' && <SupportDesk />}
+      {tab === 'staff' && <StaffDesk />}
+      {tab === 'operations' && <OperationsDesk />}
+      {tab === 'delivery' && <DeliveryDesk />}
       {tab === 'accounting' && <AccountingDesk />}
       {tab === 'analytics' && <AnalyticsDesk />}
       {tab === 'drinks' && <DrinksDesk onChanged={loadSummary} />}

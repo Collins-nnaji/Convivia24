@@ -120,7 +120,7 @@ export async function renderPlanSharePng(input: PlanShareInput): Promise<Blob> {
 
   ctx.fillStyle = '#6b6560';
   ctx.font = '11px system-ui, sans-serif';
-  ctx.fillText('Drink supply plan · nationwide delivery · 18+', PAD, 86);
+  ctx.fillText('Drink supply plan · delivery in Lagos, Abuja, and Port Harcourt · 18+', PAD, 86);
 
   let y = 128;
   ctx.fillStyle = '#0a0a0a';

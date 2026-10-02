@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { formatNgn } from '@/lib/drinks/catalog';
 import { ORDER_STATUS_LABELS, type OrderStatus } from '@/lib/commerce/status';
 import OrdersLedger from './OrdersLedger';
@@ -11,9 +11,8 @@ import { readError, type AdminOrder } from './types';
 import type { useAdminOrders } from './useAdminOrders';
 
 /** Couriers the desk dispatches with. */
-const COURIERS = ['GIG Logistics', 'Kwik', 'Gokada', 'Sendbox', 'Bolt Courier', 'In-house rider'];
 
-type TrackingPatch = { courierName?: string; riderPhone?: string; etaAt?: string | null; trackingNote?: string };
+type TrackingPatch = { courierName?: string; riderPhone?: string; etaAt?: string | null; trackingNote?: string; courierReference?: string; trackingUrl?: string; deliveryProof?: string; recipientAgeChecked?: boolean; courierCostNgn?: number | null };
 
 /** ISO → value for <input type="datetime-local"> in the browser's own zone. */
 function toLocalInput(iso: string): string {
@@ -112,8 +111,9 @@ export default function OrdersDesk({
   async function refundOrder(order: AdminOrder, amountNgn: number, reason: string) {
     const remaining = order.totalNgn - order.refundedNgn;
     const partial = amountNgn < remaining;
-    const data = await patch(order, { action: 'refund', amountNgn, reason }, 'Could not refund this order.');
+    const data = await patch(order, { action: 'refund', amountNgn, reason, requestId: crypto.randomUUID() }, 'Could not refund this order.');
     if (!data) return false;
+    if (data.pending) { notify('Refund requested. Track completion in the refund queue.'); return true; }
     patchOrder(order.id, partial ? { refundedNgn: data.refundedNgn } : { status: 'refunded', refundedNgn: data.refundedNgn });
     notify(`${partial ? 'Partially refunded' : 'Refunded'} ${formatNgn(amountNgn)}.`);
     onChanged?.();
@@ -217,7 +217,7 @@ function RefundDialog({ order, busy, onClose, onConfirm }: { order: AdminOrder; 
   const [amount, setAmount] = useState(String(remaining));
   const [reason, setReason] = useState('');
   const n = Number(amount);
-  const valid = Number.isFinite(n) && n > 0 && n <= remaining;
+  const valid = Number.isSafeInteger(n) && (n > 0 && n <= remaining || n === 0 && order.paymentProvider === 'gift_card');
   const partial = valid && n < remaining;
   return (
     <Modal
@@ -225,7 +225,7 @@ function RefundDialog({ order, busy, onClose, onConfirm }: { order: AdminOrder; 
       size="sm"
       tone="danger"
       title={`Refund ${order.fullName.split(' ')[0]}'s order`}
-      description={`${formatNgn(remaining)} is refundable${order.refundedNgn > 0 ? ` (${formatNgn(order.refundedNgn)} already returned)` : ''}. Money goes back through Flutterwave; this cannot be undone.`}
+      description={`${formatNgn(remaining)} is refundable${order.refundedNgn > 0 ? ` (${formatNgn(order.refundedNgn)} already returned)` : ''}. Flutterwave refunds are reconciled with the provider. Bank refunds need staff evidence; gift credit is restored.`}
       onClose={onClose}
       footer={
         <>
@@ -243,7 +243,7 @@ function RefundDialog({ order, busy, onClose, onConfirm }: { order: AdminOrder; 
         </div>
         <AdminInput label="Amount (NGN)" type="number" min={1} max={remaining} value={amount} onChange={(e) => setAmount(e.target.value)} />
         <AdminInput label="Reason" hint={partial ? 'shown to the customer' : 'optional'} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g. one bottle arrived broken" />
-        {partial && <p className="text-[12px] text-obsidian/55">Partial: the order keeps its status, stock and points. Only the refunded total changes.</p>}
+        {partial && <p className="text-[12px] text-obsidian/55">Partial: the order stays open. Its refundable balance and earned points adjust when the refund completes.</p>}
       </div>
     </Modal>
   );
@@ -298,6 +298,13 @@ function TrackingForm({
   onSave: (patch: TrackingPatch) => Promise<boolean>;
 }) {
   const [open, setOpen] = useState(false);
+  const [providers, setProviders] = useState<string[]>([]);
+  const [courierReference, setCourierReference] = useState(order.courierReference || '');
+  const [trackingUrl, setTrackingUrl] = useState(order.trackingUrl || '');
+  const [deliveryProof, setDeliveryProof] = useState(order.deliveryProof || '');
+  const [recipientAgeChecked, setRecipientAgeChecked] = useState(order.recipientAgeChecked || false);
+  const [courierCost, setCourierCost] = useState(order.courierCostNgn == null ? '' : String(order.courierCostNgn));
+  useEffect(() => { fetch('/api/admin/delivery').then(res => res.ok ? res.json() : null).then(data => setProviders(data?.providers?.filter((p: { active: boolean }) => p.active).map((p: { name: string }) => p.name) || [])).catch(() => {}); }, []);
   const [courierName, setCourierName] = useState(order.courierName || '');
   const [riderPhone, setRiderPhone] = useState(order.riderPhone || '');
   const [etaLocal, setEtaLocal] = useState(order.etaAt ? toLocalInput(order.etaAt) : '');
@@ -322,13 +329,18 @@ function TrackingForm({
         value={courierName}
         onChange={setCourierName}
         placeholder="Choose a courier…"
-        options={COURIERS}
+        options={[...new Set([...providers, ...(courierName ? [courierName] : [])])]}
       />
       <AdminInput label="Rider phone" value={riderPhone} onChange={(e) => setRiderPhone(e.target.value)} placeholder="+234…" />
       <AdminInput label="ETA" type="datetime-local" value={etaLocal} onChange={(e) => setEtaLocal(e.target.value)} />
       <AdminField label="Tracking note">
         <AdminInput value={trackingNote} onChange={(e) => setTrackingNote(e.target.value)} placeholder="Optional" />
       </AdminField>
+      <AdminInput label="Booking reference" value={courierReference} onChange={(e) => setCourierReference(e.target.value)} />
+      <AdminInput label="Tracking URL (HTTPS)" value={trackingUrl} onChange={(e) => setTrackingUrl(e.target.value)} />
+      <AdminInput label="Courier cost (NGN)" type="number" min={0} step={1} value={courierCost} onChange={(e) => setCourierCost(e.target.value)} />
+      <AdminInput label="Delivery proof / receipt" value={deliveryProof} onChange={(e) => setDeliveryProof(e.target.value)} />
+      <label className="text-sm sm:col-span-4"><input type="checkbox" checked={recipientAgeChecked} onChange={(e) => setRecipientAgeChecked(e.target.checked)} /> Recipient age checked at delivery</label>
       <div className="flex gap-2 sm:col-span-4">
         <button
           type="button"
@@ -336,6 +348,7 @@ function TrackingForm({
           onClick={async () => {
             const ok = await onSave({
               courierName,
+              courierReference, trackingUrl, deliveryProof, recipientAgeChecked, courierCostNgn: courierCost === '' ? null : Number(courierCost),
               riderPhone,
               etaAt: etaLocal ? fromLocalInput(etaLocal) : null,
               trackingNote,

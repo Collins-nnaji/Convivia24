@@ -15,7 +15,7 @@ import { chat, aiConfigured } from '@/lib/ai/azure';
 import { listSupplierCatalog } from '@/lib/suppliers/sku-prices';
 
 export async function GET() {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('inventory');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const [items, supplierStock, suppliers, supplierCatalog] = await Promise.all([
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: true });
       }
       if (body.action === 'adjust') {
-        const gate = await requireAdmin();
+        const gate = await requireAdmin('inventory');
         if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
         const slug = String(body.slug || '');
         if (!slug) return NextResponse.json({ error: 'Slug is required.' }, { status: 400 });
@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
         }
       }
       if (body.action === 'supplier-stock') {
-        const gate = await requireAdmin();
+        const gate = await requireAdmin('inventory');
         if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
         const slug = String(body.slug || '');
         const supplierId = String(body.supplierId || '');
@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
       }
 
       if (body.action === 'delete') {
-        const gate = await requireAdmin();
+        const gate = await requireAdmin('inventory');
         if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
         const slug = String(body.slug || '');
         if (!slug) return NextResponse.json({ error: 'Slug is required.' }, { status: 400 });
@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: true });
       }
       if (body.action === 'ai-product-copy') {
-        const gate = await requireAdmin();
+        const gate = await requireAdmin('inventory');
         if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
         if (!aiConfigured()) return NextResponse.json({ error: 'Azure OpenAI not configured' }, { status: 503 });
         const name = String(body.name || '').trim();
@@ -199,7 +199,7 @@ Return JSON:
         return NextResponse.json({ copy });
       }
       if (body.action === 'ai-list') {
-        const gate = await requireAdmin();
+        const gate = await requireAdmin('inventory');
         if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
         if (!aiConfigured()) return NextResponse.json({ error: 'Azure OpenAI not configured' }, { status: 503 });
         const items = await listInventory(true);
@@ -227,7 +227,7 @@ Return JSON:
     }
 
     // Multipart product upload
-    const gate = await requireAdmin();
+    const gate = await requireAdmin('inventory');
     if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
 
     const form = await req.formData();

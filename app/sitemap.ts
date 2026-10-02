@@ -1,14 +1,16 @@
 import type { MetadataRoute } from 'next';
-import { DRINKS } from '@/lib/drinks/catalog';
+import { shopCatalog } from '@/lib/inventory';
 import { EVENT_PACKAGES } from '@/lib/packages/catalog';
 import { eventsEnabled } from '@/lib/features';
 import { absoluteUrl } from '@/lib/seo';
 
-const MVP_PATHS = ['/', '/shop', '/party-planner', '/discover', '/contact', '/guest-card', '/convivium', '/privacy-policy', '/terms-of-use'];
+export const dynamic = 'force-dynamic';
+
+const MVP_PATHS = ['/', '/shop', '/party-planner', '/discover', '/contact', '/guest-card', '/convivium', '/privacy-policy', '/terms-of-use', '/brands', '/discover/trivia', '/discover/taste', '/discover/mix', '/discover/rewards', '/delivery-and-returns'];
 
 const FULL_PATHS = [...MVP_PATHS, '/events', '/venues', '/circles'];
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const paths = eventsEnabled ? FULL_PATHS : MVP_PATHS;
 
@@ -27,7 +29,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
           : 0.6,
   }));
 
-  const products: MetadataRoute.Sitemap = DRINKS.map((d) => ({
+  const products: MetadataRoute.Sitemap = (await shopCatalog()).map((d) => ({
     url: absoluteUrl(`/shop/${d.slug}`),
     lastModified: now,
     changeFrequency: 'weekly' as const,

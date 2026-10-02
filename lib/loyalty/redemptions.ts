@@ -1,5 +1,6 @@
+import { randomBytes } from 'crypto';
 import sql from '@/lib/db';
-import { getMember, refundPoints, spendPoints } from '@/lib/loyalty/members';
+import { getMember } from '@/lib/loyalty/members';
 import { LOYALTY_TIERS, tierForPoints } from '@/lib/loyalty/program';
 import type { Reward } from '@/lib/loyalty/rewards';
 
@@ -45,9 +46,7 @@ function mapRow(r: Record<string, unknown>): Redemption {
 
 /** Claim reference the member quotes, e.g. CV24-RW-8KQ2. */
 function makeCode(): string {
-  const body = Math.random().toString(36).slice(2, 6).toUpperCase();
-  const tail = Math.random().toString(36).slice(2, 6).toUpperCase();
-  return `CV24-${body}-${tail}`;
+  return `CV24-RW-${randomBytes(8).toString('hex').toUpperCase()}`;
 }
 
 export async function listRedemptions(ownerId: string): Promise<Redemption[]> {
@@ -72,29 +71,17 @@ export async function redeemReward(ownerId: string, reward: Reward): Promise<Red
   const member = await getMember(ownerId);
   if (!member) throw new InsufficientPointsError('Activate your Guest Card before redeeming.');
 
-  const tier = tierForPoints(member.points);
+  const tier = tierForPoints(member.lifetimePoints);
   const required = LOYALTY_TIERS.find((t) => t.id === reward.minTier);
   if (required && tier.minPoints < required.minPoints) {
     throw new TierLockedError(`${reward.name} unlocks at ${required.name} tier.`);
   }
   if (member.points < reward.costPoints) throw new InsufficientPointsError();
 
-  const spent = await spendPoints(ownerId, reward.costPoints);
-  if (!spent) throw new InsufficientPointsError();
-
-  try {
-    const rows = await sql`
-      INSERT INTO reward_redemptions (owner_id, reward_id, reward_name, category, points_spent, value_ngn, code)
-      VALUES (
-        ${ownerId}, ${reward.id}, ${reward.name}, ${reward.category},
-        ${reward.costPoints}, ${reward.valueNgn ?? null}, ${makeCode()}
-      )
-      RETURNING *
-    `;
-    return mapRow(rows[0]);
-  } catch (err) {
-    // Give the points back — the member paid and got nothing.
-    await refundPoints(ownerId, reward.costPoints).catch(() => null);
-    throw err;
-  }
+  const [row] = await sql`SELECT * FROM c24_redeem_reward(
+    ${ownerId}, ${reward.id}, ${reward.name}, ${reward.category}, ${reward.costPoints}::integer,
+    ${reward.valueNgn ?? null}::integer, ${makeCode()}, ${reward.drinkSlug || reward.inventorySlug || null},
+    ${required?.minPoints || 0}::integer
+  )`;
+  return mapRow(row);
 }

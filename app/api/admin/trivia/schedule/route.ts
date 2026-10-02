@@ -9,7 +9,7 @@ import { captureApiError } from '@/lib/sentry';
 const rounds = () => TRIVIA_ROUNDS.map((r) => ({ slug: r.slug, brand: r.brand, prizeLabel: r.prizeLabel }));
 
 export async function GET() {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const weeks = await listWeeks();
@@ -22,7 +22,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
   if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const gate = await requireAdmin();
+  const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
   if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });

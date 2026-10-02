@@ -5,7 +5,7 @@ import { absoluteUrl } from '@/lib/seo';
 export const metadata: Metadata = {
   title: 'Terms of Use',
   description:
-    'Terms for Convivia24 — nationwide alcohol delivery, events, venues, Guest Card, and partner services. Adults 18+ only.',
+    'Terms for Convivia24 — alcohol delivery in Lagos, Abuja and Port Harcourt, events, venues, Guest Card, and partner services. Adults 18+ only.',
   alternates: { canonical: absoluteUrl('/terms-of-use') },
   robots: { index: true, follow: true },
 };
@@ -39,7 +39,7 @@ export default function TermsPage() {
           <section>
             <h2 className="font-semibold text-obsidian mb-2">2. The service</h2>
             <p>
-              We offer nationwide drink delivery across Nigeria to homes, parties, clubs, and lounges; event listings; loyalty
+              We offer drink delivery in Lagos, Abuja, and Port Harcourt to homes, parties, clubs, and lounges; event listings; loyalty
               features; and partner wholesale tools. Catalog, pricing, stock, and delivery windows may change.
               Event listings and venue information may be provided by third parties and are not a guarantee of
               entry or availability.

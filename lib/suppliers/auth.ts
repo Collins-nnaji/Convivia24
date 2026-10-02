@@ -99,6 +99,7 @@ export async function signInSupplier(slug: string, key: string): Promise<Supplie
   const jar = await cookies();
   jar.set(cookieName(supplier.id), `${expiresAt}.${sign(supplier.id, expiresAt, keyHash)}`, {
     httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: `/`,
     maxAge: SESSION_MAX_AGE_SECONDS,
