@@ -51,8 +51,8 @@ npm run dev
   without it, queued order notices remain retryable and launch readiness reports missing configuration
 - `RESEND_FROM` — e.g. `"Convivia24 <orders@yourdomain.com>"`, required alongside `RESEND_API_KEY`
 - `RESEND_API_URL` — optional, defaults to `https://api.resend.com`
-- `ADMIN_NOTIFY_EMAIL` — optional; comma-separated list BCC'd on every "order received" email as an ops copy
-- `ADMIN_PASSWORD` / `CONVIVIA_ADMIN_EMAILS` — admin desk access (shared password or a Neon Auth allowlist)
+- `ADMIN_NOTIFY_EMAIL` — optional extra recipients; combined with all admin emails in one operational notification send
+- `CONVIVIA_ADMIN_EMAILS` — verified Neon Auth owner accounts; active staff accounts also have access according to their role. Shared-password access is disabled. Bobby (bobbynathus@yahoo.com) and Collins (collinsenofe@gmail.com) are included in the owner and notification lists.
 - `TERMII_API_KEY` — enables SMS (and WhatsApp, via `TERMII_CHANNEL=whatsapp`) order/delivery updates;
   without it, `lib/notify/termii.ts` no-ops the same way Resend does
 - `TERMII_SENDER_ID` — optional, your registered Termii sender ID; falls back to Termii's shared "N-Alert" ID

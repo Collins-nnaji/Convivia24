@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin, setAdminSession } from '@/lib/admin';
+import { requireAdmin } from '@/lib/admin';
 import { listInventory, upsertAdminProduct, adminStockList, editStockRow, StockEditError } from '@/lib/inventory';
 import { allSupplierStock, setSupplierStock, stockForSlug } from '@/lib/suppliers/stock';
 import { listSuppliers } from '@/lib/suppliers/repo';
@@ -50,15 +50,7 @@ export async function POST(req: NextRequest) {
     if (contentType.includes('application/json')) {
       const body = await req.json().catch(() => ({}));
       if (body.action === 'login') {
-        // A tighter, dedicated lockout on top of the general admin bucket above —
-        // a shared password is worth throttling harder than routine desk traffic.
-        const loginRl = await rateLimit(`admin-login:${clientIp(req)}`, 8, 900);
-        if (!loginRl.ok) {
-          return NextResponse.json({ error: 'Too many attempts. Try again later.' }, { status: 429 });
-        }
-        const ok = await setAdminSession(String(body.password || ''));
-        if (!ok) return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
-        return NextResponse.json({ ok: true });
+        return NextResponse.json({ error: 'Sign in with your authorised staff account.' }, { status: 403 });
       }
       if (body.action === 'adjust') {
         const gate = await requireAdmin('inventory');

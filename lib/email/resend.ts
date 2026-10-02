@@ -1,3 +1,5 @@
+import { adminEmails, normaliseEmails } from '@/lib/admin-emails';
+
 /**
  * Resend mailer. Sends nothing until env is complete so you can add
  * RESEND_API_URL / RESEND_API_KEY / RESEND_FROM later without breaking checkout.
@@ -83,18 +85,7 @@ export async function sendEmail(input: SendEmailInput): Promise<{ sent: boolean;
 }
 
 export function adminNotifyEmail(): string | string[] | null {
-  const seen = new Set<string>();
-  const emails = [process.env.CONVIVIA_ADMIN_EMAILS, process.env.ADMIN_NOTIFY_EMAIL]
-    .filter(Boolean)
-    .flatMap((value) => String(value).split(/[;,\s]+/))
-    // Deployment dashboards sometimes receive a Markdown-escaped `\@`; normalise it rather
-    // than asking Resend to deliver to a malformed address.
-    .map((email) => email.trim().toLowerCase().replace(/\\@/g, '@'))
-    .filter((email) => {
-      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || seen.has(email)) return false;
-      seen.add(email);
-      return true;
-    });
+  const emails = normaliseEmails(...adminEmails(), process.env.ADMIN_NOTIFY_EMAIL);
   if (emails.length === 0) return null;
   return emails.length === 1 ? emails[0] : emails;
 }

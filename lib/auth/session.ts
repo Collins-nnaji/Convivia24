@@ -3,6 +3,7 @@ import { auth, authConfigured } from './server';
 export interface AuthUser {
   id: string;
   email: string;
+  emailVerified?: boolean;
   name: string | null;
   image: string | null;
 }
@@ -23,6 +24,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     return {
       id: String(u.id),
       email: String(u.email),
+      emailVerified: u.emailVerified === true,
       name: u.name ?? null,
       image: u.image ?? null,
     };
