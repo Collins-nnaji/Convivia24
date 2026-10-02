@@ -670,12 +670,12 @@ function DeliveryStep({
         <div className="grid sm:grid-cols-2 gap-4">
           <Field label="City">
             <select required value={details.city} onChange={(e) => onChange('city', e.target.value)} className={inputClass}>
-              <option value="">Choose a city</option>
-              {['Lagos', 'Abuja', 'Port Harcourt'].map(city => <option key={city}>{city}</option>)}
+              <option value="">{zones.length ? 'Choose a delivery city' : 'No delivery areas available'}</option>
+              {[...new Set(zones.map(zone => zone.city))].map(city => <option key={city}>{city}</option>)}
             </select>
           </Field>
           <Field label="Delivery zone">
-            <select required value={details.deliveryZoneId} onChange={(e) => onChange('deliveryZoneId', e.target.value)} className={inputClass}>
+            <select required disabled={!details.city} value={details.deliveryZoneId} onChange={(e) => onChange('deliveryZoneId', e.target.value)} className={inputClass}>
               <option value="">Choose a supported zone</option>
               {zones.filter(zone => zone.city === details.city).map(zone => <option key={zone.id} value={zone.id}>{zone.name} · {formatNgn(Number(zone.feeNgn))} · {zone.estimate}</option>)}
             </select>

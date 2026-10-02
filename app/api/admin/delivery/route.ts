@@ -19,11 +19,14 @@ export async function POST(req: NextRequest) {
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
     const body = await req.json();
+    const id = body.id ? String(body.id) : null;
+    if (id && !/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: 'Valid delivery setting ID required.' }, { status: 400 });
     const name = String(body.name || '').trim().slice(0, 100);
     if (!name) return NextResponse.json({ error: 'Name is required.' }, { status: 400 });
     let rows;
     if (body.kind === 'provider') {
-      rows = await sql`INSERT INTO delivery_providers(name, contact, active)
+      const contact = String(body.contact || '').trim().slice(0, 200);
+      rows = id ? await sql`UPDATE delivery_providers SET name=${name}, contact=${contact}, active=${body.active === true} WHERE id=${id}::uuid RETURNING *` : await sql`INSERT INTO delivery_providers(name, contact, active)
         VALUES(${name}, ${String(body.contact || '').trim().slice(0, 200)}, ${body.active === true})
         ON CONFLICT(name) DO UPDATE SET contact = EXCLUDED.contact, active = EXCLUDED.active RETURNING *`;
     } else if (body.kind === 'zone') {
@@ -31,10 +34,11 @@ export async function POST(req: NextRequest) {
       const fee = Number(body.feeNgn);
       const estimate = String(body.estimate || '').trim().slice(0, 200);
       if (!city || !Number.isSafeInteger(fee) || fee < 0 || !estimate) return NextResponse.json({ error: 'Choose a launch city and enter a whole non-negative fee and delivery estimate.' }, { status: 400 });
-      rows = await sql`INSERT INTO delivery_zones(city, name, fee_ngn, estimate, active)
+      rows = id ? await sql`UPDATE delivery_zones SET city=${city}, name=${name}, fee_ngn=${fee}, estimate=${estimate}, active=${body.active === true} WHERE id=${id}::uuid RETURNING *` : await sql`INSERT INTO delivery_zones(city, name, fee_ngn, estimate, active)
         VALUES(${city}, ${name}, ${fee}, ${estimate}, ${body.active === true})
         ON CONFLICT(city, name) DO UPDATE SET fee_ngn = EXCLUDED.fee_ngn, estimate = EXCLUDED.estimate, active = EXCLUDED.active RETURNING *`;
     } else return NextResponse.json({ error: 'Unknown delivery setting.' }, { status: 400 });
+    if (!rows.length) return NextResponse.json({ error: 'Delivery setting not found. Refresh and retry.' }, { status: 404 });
     const user = await getCurrentUser();
     await sql`INSERT INTO admin_audit(actor, action, subject) VALUES(${user?.id || 'shared-admin'}, ${'delivery.' + body.kind}, ${String(rows[0].id)})`;
     return NextResponse.json({ saved: rows[0] });

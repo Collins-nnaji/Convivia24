@@ -64,7 +64,7 @@ export default function SourcingDesk({
 
   async function saveSourcing(order: AdminOrder) {
     if (!partner) {
-      setError('No active Nationwide supplier is set up.');
+      setError('No active supplier is set up.');
       return;
     }
     const draft = drafts[order.id] || {
@@ -135,7 +135,7 @@ export default function SourcingDesk({
       {/* ── Order sourcing ─────────────────────────────── */}
       <section>
         <p className="text-sm text-obsidian/50 mb-4">
-          Record what Nationwide charged for each order. Manage wholesale costs per SKU in the <strong>Supplier</strong> tab.
+          Record what your supplier charged for each order. Manage wholesale costs per SKU in the <strong>Supplier</strong> tab.
         </p>
         <h2 className="text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/40 mb-3">
           Assign orders ({unsourced.length} outstanding)
@@ -146,7 +146,7 @@ export default function SourcingDesk({
         ) : (
           <div className="overflow-x-auto rounded-xl border border-obsidian/10 bg-white">
           <div className="grid min-w-[900px] grid-cols-[1.4fr_.65fr_2fr] gap-4 border-b border-obsidian/10 bg-paper px-4 py-3 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40">
-            <span>Order &amp; contents</span><span className="text-right">Revenue / margin</span><span>Nationwide cost &amp; notes</span>
+            <span>Order &amp; contents</span><span className="text-right">Revenue / margin</span><span>Supplier cost &amp; notes</span>
           </div>
           <ul className="min-w-[900px] divide-y divide-obsidian/8">
             {live.map((order) => {
@@ -207,7 +207,7 @@ export default function SourcingDesk({
                   <div>
                   <div className="grid grid-cols-[minmax(0,1fr)_10rem_auto] gap-2 items-start">
                     <div className="rounded-lg border border-obsidian/10 bg-paper px-3 py-2 text-sm font-semibold text-obsidian">
-                      {partner?.name || 'Nationwide'}
+                      {partner?.name || 'Supplier'}
                     </div>
 
                     <input
@@ -215,7 +215,7 @@ export default function SourcingDesk({
                       min={0}
                       step={1000}
                       inputMode="numeric"
-                      aria-label="Nationwide cost in naira"
+                      aria-label="Supplier cost in naira"
                       placeholder="Cost"
                       value={draft.cost}
                       disabled={!partner}
@@ -242,7 +242,7 @@ export default function SourcingDesk({
 
                   {order.sourcedAt && !dirty && (
                     <p className="text-[11px] text-obsidian/40 mt-2">
-                      Costed via {order.supplierName || partner?.name || 'Nationwide'} on{' '}
+                      Costed via {order.supplierName || partner?.name || 'Supplier'} on{' '}
                       {new Date(order.sourcedAt).toLocaleDateString()}.
                     </p>
                   )}

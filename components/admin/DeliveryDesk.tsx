@@ -1,47 +1,23 @@
 'use client';
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { LAUNCH_CITIES } from '@/lib/delivery/policy';
 import { formatNgn } from '@/lib/drinks/catalog';
+import { useDesk } from './useDesk';
+import { DeskHeader, DeskPanel, DeskEmpty, DeskStats, deskField, deskButton } from './ui/DeskContent';
 type Zone = { id: string; city: string; name: string; fee_ngn: number; estimate: string; active: boolean };
 type Provider = { id: string; name: string; contact: string; active: boolean };
 export default function DeliveryDesk() {
-  const [zones, setZones] = useState<Zone[]>([]);
-  const [providers, setProviders] = useState<Provider[]>([]);
-  const [message, setMessage] = useState('');
-  const [busy, setBusy] = useState(false);
-  const load = useCallback(async () => {
-    try { const res = await fetch('/api/admin/delivery'); const data = await res.json(); if (!res.ok) throw new Error(data.error); setZones(data.zones); setProviders(data.providers); }
-    catch (err) { setMessage(err instanceof Error ? err.message : 'Could not load settings.'); }
-  }, []);
-  useEffect(() => { void load(); }, [load]);
+  const desk = useDesk<{ zones: Zone[]; providers: Provider[] }>('/api/admin/delivery');
+  const [zone, setZone] = useState<Zone | null>(null); const [provider, setProvider] = useState<Provider | null>(null);
   async function save(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); const form = event.currentTarget; const data = new FormData(form);
-    await submit({ ...Object.fromEntries(data), active: data.get('active') === 'on' });
+    event.preventDefault(); const form = event.currentTarget; const values = new FormData(form);
+    if (await desk.save({ ...Object.fromEntries(values), active: values.get('active') === 'on' }, 'Delivery settings saved.')) { setZone(null); setProvider(null); form.reset(); }
   }
-  async function submit(body: Record<string, unknown>) {
-    setBusy(true); setMessage('');
-    try { const res = await fetch('/api/admin/delivery', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); const data = await res.json(); if (!res.ok) throw new Error(data.error); await load(); setMessage('Saved.'); }
-    catch (err) { setMessage(err instanceof Error ? err.message : 'Could not save.'); }
-    finally { setBusy(false); }
-  }
-  const field = 'rounded-lg border border-obsidian/15 px-3 py-2 text-sm';
-  return <div className="space-y-8">
-    <p className="text-sm text-obsidian/60">Configure delivery areas and fees before enabling checkout. Staff book with their chosen courier and record tracking on the order.</p>
-    <p role="status">{message}</p>
-    <section className="rounded-xl bg-white p-5 space-y-4"><h3 className="text-lg font-bold">Delivery zones</h3>
-      <form onSubmit={save} className="flex flex-wrap gap-3 items-center"><input type="hidden" name="kind" value="zone" />
-        <select aria-label="City" name="city" className={field}>{LAUNCH_CITIES.map(city => <option key={city}>{city}</option>)}</select>
-        <input className={field} name="name" aria-label="Zone name" placeholder="Zone name" required maxLength={100} />
-        <input className={field} name="feeNgn" aria-label="Delivery fee in naira" placeholder="Fee (NGN)" type="number" min={0} step={1} required />
-        <input className={field} name="estimate" aria-label="Delivery estimate" placeholder="Delivery estimate" required />
-        <label className="text-sm"><input name="active" type="checkbox" /> Enable</label><button disabled={busy} className="btn-brand px-4 py-2">Save zone</button>
-      </form>
-      {zones.length === 0 && <p className="text-sm">No zones configured. Checkout will remain unavailable until a zone is enabled.</p>}
-      {zones.map(zone => <div key={zone.id} className="flex flex-wrap justify-between gap-2 border-t py-3"><span>{zone.city} · {zone.name} · {formatNgn(Number(zone.fee_ngn))} · {zone.estimate}</span><button disabled={busy} onClick={() => submit({ kind: 'zone', city: zone.city, name: zone.name, feeNgn: Number(zone.fee_ngn), estimate: zone.estimate, active: !zone.active })}>{zone.active ? 'Disable' : 'Enable'}</button></div>)}
-    </section>
-    <section className="rounded-xl bg-white p-5 space-y-4"><h3 className="text-lg font-bold">Courier providers</h3>
-      <form onSubmit={save} className="flex flex-wrap gap-3 items-center"><input type="hidden" name="kind" value="provider" /><input className={field} name="name" aria-label="Provider name" placeholder="Provider name" required /><input className={field} name="contact" aria-label="Provider contact" placeholder="Phone or booking contact" /><label className="text-sm"><input name="active" type="checkbox" defaultChecked /> Enable</label><button disabled={busy} className="btn-brand px-4 py-2">Save provider</button></form>
-      {providers.map(provider => <div key={provider.id} className="flex justify-between gap-3 border-t py-3"><span>{provider.name} · {provider.contact}</span><button disabled={busy} onClick={() => submit({ kind: 'provider', name: provider.name, contact: provider.contact, active: !provider.active })}>{provider.active ? 'Disable' : 'Enable'}</button></div>)}
-    </section>
+  return <div className="space-y-6"><DeskHeader {...desk} title="Delivery settings" description="Set the areas your supplier serves, with accurate delivery fees and estimates. Customers see only enabled zones at checkout. Couriers are delivery contacts, separate from your supplier." />
+    {desk.data && <><DeskStats items={[{ label: 'Enabled zones', value: desk.data.zones.filter(z => z.active).length }, { label: 'Cities served', value: new Set(desk.data.zones.filter(z => z.active).map(z => z.city)).size }, { label: 'Disabled zones', value: desk.data.zones.filter(z => !z.active).length }, { label: 'Enabled couriers', value: desk.data.providers.filter(p => p.active).length }]} />
+    <DeskPanel title="Delivery zones" description="Add only areas your supplier can fulfill. Editing a zone changes its fee and estimate for future checkout quotes."><form key={zone?.id || 'new-zone'} onSubmit={save} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"><input type="hidden" name="kind" value="zone" />{zone && <input type="hidden" name="id" value={zone.id} />}<label className="text-sm">City<select name="city" className={deskField} defaultValue={zone?.city || LAUNCH_CITIES[0]}>{LAUNCH_CITIES.map(city => <option key={city}>{city}</option>)}</select></label><label className="text-sm">Zone name<input className={deskField} name="name" defaultValue={zone?.name} placeholder="e.g. Victoria Island" required maxLength={100} /></label><label className="text-sm">Delivery fee in naira<input className={deskField} name="feeNgn" defaultValue={zone ? Number(zone.fee_ngn) : undefined} type="number" min={0} step={1} required /></label><label className="text-sm">Delivery estimate<input className={deskField} name="estimate" defaultValue={zone?.estimate} placeholder="e.g. Within 2–4 hours" required maxLength={200} /></label><label className="flex gap-2 items-center text-sm"><input name="active" type="checkbox" defaultChecked={zone?.active || false} /> Enable at checkout</label><div className="flex gap-2 items-end"><button disabled={desk.busy || desk.loading} className="btn-brand rounded-lg px-4 py-2 disabled:opacity-40">{zone ? 'Save changes' : 'Add zone'}</button>{zone && <button type="button" className={deskButton} onClick={() => setZone(null)}>Cancel edit</button>}</div></form>
+    {!desk.data.zones.length && <DeskEmpty>No zones configured. Checkout remains unavailable until a zone is enabled.</DeskEmpty>}{desk.data.zones.map(row => <div key={row.id} className="flex flex-wrap justify-between gap-3 border-t pt-3"><div><p className="font-semibold">{row.name} · {row.city}</p><p className="text-sm text-obsidian/60">{formatNgn(Number(row.fee_ngn))} · {row.estimate} · {row.active ? 'Enabled' : 'Disabled'}</p></div><div className="flex gap-2"><button className={deskButton} disabled={desk.busy || desk.loading} onClick={() => setZone(row)}>Edit zone</button><button className={deskButton} disabled={desk.busy || desk.loading} onClick={() => void desk.save({ kind: 'zone', id: row.id, city: row.city, name: row.name, feeNgn: Number(row.fee_ngn), estimate: row.estimate, active: !row.active }, 'Zone availability updated.')}>{row.active ? 'Disable' : 'Enable'}</button></div></div>)}</DeskPanel>
+    <DeskPanel title="Courier providers" description="Keep booking contacts here. Staff book the courier and record tracking against each order."><form key={provider?.id || 'new-provider'} onSubmit={save} className="grid gap-3 sm:grid-cols-2"><input type="hidden" name="kind" value="provider" />{provider && <input type="hidden" name="id" value={provider.id} />}<label className="text-sm">Provider name<input className={deskField} name="name" defaultValue={provider?.name} required maxLength={100} /></label><label className="text-sm">Provider contact<input className={deskField} name="contact" defaultValue={provider?.contact} placeholder="Phone or booking contact" maxLength={200} /></label><label className="flex gap-2 items-center text-sm"><input name="active" type="checkbox" defaultChecked={provider?.active ?? true} /> Enable provider</label><div className="flex gap-2"><button disabled={desk.busy || desk.loading} className="btn-brand rounded-lg px-4 py-2 disabled:opacity-40">{provider ? 'Save provider' : 'Add provider'}</button>{provider && <button type="button" className={deskButton} onClick={() => setProvider(null)}>Cancel edit</button>}</div></form>
+    {!desk.data.providers.length && <DeskEmpty>No courier providers added. Add a booking contact for your delivery team.</DeskEmpty>}{desk.data.providers.map(row => <div key={row.id} className="flex flex-wrap justify-between gap-3 border-t pt-3"><div><p className="font-semibold">{row.name} · {row.active ? 'Enabled' : 'Disabled'}</p><p className="text-sm text-obsidian/60">{row.contact || 'No booking contact recorded'}</p></div><div className="flex gap-2"><button className={deskButton} disabled={desk.busy || desk.loading} onClick={() => setProvider(row)}>Edit provider</button><button className={deskButton} disabled={desk.busy || desk.loading} onClick={() => void desk.save({ kind: 'provider', id: row.id, name: row.name, contact: row.contact, active: !row.active }, 'Courier availability updated.')}>{row.active ? 'Disable' : 'Enable'}</button></div></div>)}</DeskPanel></>}
   </div>;
 }

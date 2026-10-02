@@ -197,7 +197,7 @@ function AdminDesk() {
       {tab === 'refunds' && <RefundsDesk />}
       {tab === 'support' && <SupportDesk />}
       {tab === 'staff' && <StaffDesk />}
-      {tab === 'operations' && <OperationsDesk />}
+      {tab === 'operations' && <OperationsDesk role={staffRole} />}
       {tab === 'delivery' && <DeliveryDesk />}
       {tab === 'accounting' && <AccountingDesk />}
       {tab === 'analytics' && <AnalyticsDesk />}

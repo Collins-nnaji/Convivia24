@@ -126,6 +126,19 @@ describe('payment and fulfilment recovery',()=>{
     expect((await db.query<{points:number}>('SELECT points FROM loyalty_members WHERE owner_id=$1',[owner])).rows[0].points).toBe(1000);
   });
   it('can safely reapply the launch migration',async()=>{await db.exec(readFileSync('lib/db/launch-readiness.sql','utf8'));});
+  it('preserves signup and circle membership data when reapplying the full schema', async () => {
+    const email = `migration-${order()}@example.com`;
+    const user = order();
+    await db.query('INSERT INTO waitlist(email) VALUES($1)', [email]);
+    await db.query('INSERT INTO convivium_members(email) VALUES($1)', [email]);
+    await db.query("INSERT INTO circle_members(circle_id,user_id,name) SELECT id,$1,'Member' FROM circles WHERE slug='rooftop-lagos'", [user]);
+    for (const file of ['bootstrap.sql', 'schema.sql', 'venues-migration.sql', 'ecommerce.sql', 'suppliers-portal.sql', 'desk-raffle-giftcards.sql', 'launch-readiness.sql']) {
+      await db.exec(readFileSync('lib/db/' + file, 'utf8'));
+    }
+    expect((await db.query('SELECT id FROM waitlist WHERE email=$1', [email])).rows).toHaveLength(1);
+    expect((await db.query('SELECT id FROM convivium_members WHERE email=$1', [email])).rows).toHaveLength(1);
+    expect((await db.query('SELECT circle_id FROM circle_members WHERE user_id=$1', [user])).rows).toHaveLength(1);
+  });
 });
 
 describe('manual wholesale stock and refund',()=>{

@@ -953,7 +953,7 @@ function StockRow({
       {suppliersOpen && suppliers.length > 0 && (
         <div className="mt-3 border-t border-obsidian/10 pt-3">
           <p className="mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40">
-            {suppliers[0]?.name || 'Nationwide'} stock &amp; cost
+            {suppliers[0]?.name || 'Supplier'} stock &amp; cost
           </p>
           <div className="grid gap-2 sm:grid-cols-1 max-w-md">
             {suppliers.map((sup) => (
@@ -970,7 +970,7 @@ function StockRow({
             ))}
           </div>
           <p className="mt-2 text-[11px] text-obsidian/40">
-            On-hand and wholesale cost for the Nationwide partner. Quotes here also drive the margin column.
+            On-hand and wholesale cost for the supplier. Quotes here also drive the margin column.
           </p>
         </div>
       )}

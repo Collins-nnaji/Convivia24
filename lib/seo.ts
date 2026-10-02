@@ -11,7 +11,7 @@ export const SITE_TAGLINE = eventsEnabled
   : 'Drink supplies for events — delivery in Lagos, Abuja, and Port Harcourt';
 
 export const SITE_DESCRIPTION = eventsEnabled
-  ? 'Convivia24 is nightlife commerce across Nigeria: order spirits and party packs to the club, lounge, or house party; discover events and venues; follow circles; earn Guest Card perks; and partner venues buy wholesale. Delivery in Lagos, Abuja, and Port Harcourt. Adults 18+ only.'
+  ? 'Convivia24 is nightlife commerce across Nigeria: order spirits and party packs to the club, lounge, or house party; discover events and venues; follow circles; earn Guest Card perks; and partner venues buy wholesale. Delivery in enabled service areas. Adults 18+ only.'
   : 'Convivia24 supplies drinks for your event — plan the party, build your basket, and get spirits, Champagne, and party packs delivered in Lagos, Abuja, and Port Harcourt. Guest Card perks, brand trivia, and partner wholesale. Adults 18+ only.';
 
 export const SITE_KEYWORDS = eventsEnabled

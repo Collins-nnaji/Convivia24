@@ -175,7 +175,7 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
       }
       setMode('none');
       setError('');
-      notify('Nationwide partner updated.');
+      notify('supplier updated.');
       await reloadAll();
     } finally {
       setSaving(false);
@@ -235,10 +235,10 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
 
       <section className="min-w-0 space-y-5">
         {loading && !selected ? (
-          <p className="text-sm text-obsidian/45">Loading Nationwide partner…</p>
+          <p className="text-sm text-obsidian/45">Loading supplier…</p>
         ) : !selected ? (
           <div className="rounded-2xl border border-obsidian/10 bg-white p-8 text-center text-sm text-obsidian/50">
-            No active supplier. Seed Nationwide with <code className="text-xs">npx tsx lib/db/seed-suppliers.ts</code>.
+            No active supplier. Add your supplier and opening stock before taking orders.
           </div>
         ) : mode === 'edit' ? (
           <SupplierForm initial={selected} saving={saving} onSubmit={submitSupplier} onCancel={() => setMode('none')} />
@@ -314,7 +314,7 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
                       <tr>
                         <th className="px-3 py-3 text-left">SKU</th>
                         <th className="px-3 py-3 text-right">Retail</th>
-                        <th className="px-3 py-3 text-right">Nationwide cost</th>
+                        <th className="px-3 py-3 text-right">Supplier cost</th>
                         <th className="px-3 py-3 text-right">Margin</th>
                         <th className="px-3 py-3 text-right">Save</th>
                       </tr>

@@ -2,7 +2,7 @@
   "name": "convivia24",
   "version": "0.1.0",
   "private": true,
-  "description": "Nightlife commerce \u2014 drinks delivery nationwide across Nigeria, events, venues, Guest Card, and partner wholesale. Adults 18+.",
+  "description": "Nightlife commerce \u2014 drinks delivery in supported service areas, events, venues, Guest Card, and partner wholesale. Adults 18+.",
   "dependencies": {
     "@azure/storage-blob": "^12.33.0",
     "@neondatabase/auth": "^0.5.0-beta",

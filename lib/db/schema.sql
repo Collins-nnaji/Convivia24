@@ -3,40 +3,9 @@
 -- Run: npx tsx lib/db/migrate.ts
 
 -- ═══════════════════════════════════════════════
--- CLEAN SLATE: drop tables from earlier app concepts
+-- Preserve existing data when applying or reapplying the schema.
+-- Retiring tables from earlier app concepts requires a separate, reviewed migration.
 -- ═══════════════════════════════════════════════
-DROP TABLE IF EXISTS client_users CASCADE;
-DROP TABLE IF EXISTS listings CASCADE;
-DROP TABLE IF EXISTS audit_leads CASCADE;
-DROP TABLE IF EXISTS documents CASCADE;
-DROP TABLE IF EXISTS messages CASCADE;
-DROP TABLE IF EXISTS pipeline_deals CASCADE;
-DROP TABLE IF EXISTS clients CASCADE;
-DROP TABLE IF EXISTS app_users CASCADE;
-DROP TABLE IF EXISTS enquiries CASCADE;
-DROP TABLE IF EXISTS bookings CASCADE;
-DROP TABLE IF EXISTS businesses CASCADE;
-DROP TABLE IF EXISTS menu_items CASCADE;
-DROP TABLE IF EXISTS menu_categories CASCADE;
-DROP TABLE IF EXISTS reservations CASCADE;
-DROP TABLE IF EXISTS convivium_members CASCADE;
-DROP TABLE IF EXISTS tickets CASCADE;
-DROP TABLE IF EXISTS ticket_types CASCADE;
-DROP TABLE IF EXISTS orders CASCADE;
-DROP TABLE IF EXISTS events CASCADE;
-DROP TABLE IF EXISTS organizers CASCADE;
-DROP TABLE IF EXISTS inquiries CASCADE;
-DROP TABLE IF EXISTS waitlist CASCADE;
-DROP TABLE IF EXISTS uploads CASCADE;
-DROP TABLE IF EXISTS circle_likes CASCADE;
-DROP TABLE IF EXISTS circle_members CASCADE;
-DROP TABLE IF EXISTS circle_posts CASCADE;
-DROP TABLE IF EXISTS circles CASCADE;
-DROP TABLE IF EXISTS crew_cart_items CASCADE;
-DROP TABLE IF EXISTS crew_members CASCADE;
-DROP TABLE IF EXISTS crews CASCADE;
-DROP TABLE IF EXISTS companion_messages CASCADE;
-DROP TABLE IF EXISTS companion_conversations CASCADE;
 
 -- ═══════════════════════════════════════════════
 -- PERSONAL TASKS ("My 24" — manual items + AI rest buffers)
