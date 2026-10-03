@@ -59,7 +59,7 @@ function wrap(title: string, body: string): string {
                 />
               </a>
               <p style="margin:8px 0 0;font-size:11px;letter-spacing:.1em;color:#6b6560;">
-                Drink supplies for events · Lagos, Abuja & Port Harcourt · 18+
+                Drink supplies for events · supported areas across Nigeria · 18+
               </p>
             </td>
           </tr>
@@ -93,7 +93,7 @@ function wrap(title: string, body: string): string {
                   </td>
                   <td valign="middle" style="padding-left:12px;">
                     <p style="margin:0;font-size:12px;color:#6b6560;line-height:1.5;">
-                      Drinks for parties, clubs &amp; lounges · Lagos, Abuja & Port Harcourt · 18+
+                      Drinks for parties, clubs &amp; lounges · supported areas across Nigeria · 18+
                     </p>
                     <p style="margin:4px 0 0;font-size:12px;color:#6b6560;">
                       Questions?

@@ -34,7 +34,7 @@ async function handlePOST(req: NextRequest) {
       const city = launchCity(body.city);
       const fee = Number(body.feeNgn);
       const estimate = String(body.estimate || '').trim().slice(0, 200);
-      if (!city || !Number.isSafeInteger(fee) || fee < 0 || !estimate) return NextResponse.json({ error: 'Choose a launch city and enter a whole non-negative fee and delivery estimate.' }, { status: 400 });
+      if (!city || !Number.isSafeInteger(fee) || fee < 0 || !estimate) return NextResponse.json({ error: 'Choose a supported delivery city and enter a whole non-negative fee and delivery estimate.' }, { status: 400 });
       rows = id ? await sql`UPDATE delivery_zones SET city=${city}, name=${name}, fee_ngn=${fee}, estimate=${estimate}, active=${body.active === true} WHERE id=${id}::uuid RETURNING *` : await sql`INSERT INTO delivery_zones(city, name, fee_ngn, estimate, active)
         VALUES(${city}, ${name}, ${fee}, ${estimate}, ${body.active === true}) RETURNING *`;
     } else return NextResponse.json({ error: 'Unknown delivery setting.' }, { status: 400 });

@@ -92,7 +92,7 @@ export default function PackageBrowse({
             {OCCASION_LABELS[occasion]} packages
           </h2>
           <p className="text-body text-obsidian/60 mb-6 max-w-2xl">
-            One fixed price per package — cheaper than buying the same bottles separately. Delivered in supported zones in Lagos, Abuja and Port Harcourt.
+            One fixed price per package — cheaper than buying the same bottles separately. Delivered in supported zones in supported areas across Nigeria.
           </p>
         </>
       )}

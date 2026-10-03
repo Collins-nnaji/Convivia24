@@ -7,18 +7,18 @@ export const SITE_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://convivia24.
 export const SITE_NAME = 'Convivia24';
 
 export const SITE_TAGLINE = eventsEnabled
-  ? 'Drinks, nights out & venue drops — delivery in Lagos, Abuja, and Port Harcourt'
-  : 'Drink supplies for events — delivery in Lagos, Abuja, and Port Harcourt';
+  ? 'Drinks, nights out & venue drops — delivery in supported areas across Nigeria'
+  : 'Drink supplies for events — delivery in supported areas across Nigeria';
 
 export const SITE_DESCRIPTION = eventsEnabled
   ? 'Convivia24 is nightlife commerce across Nigeria: order spirits and party packs to the club, lounge, or house party; discover events and venues; follow circles; earn Guest Card perks; and partner venues buy wholesale. Delivery in enabled service areas. Adults 18+ only.'
-  : 'Convivia24 supplies drinks for your event — plan the party, build your basket, and get spirits, Champagne, and party packs delivered in Lagos, Abuja, and Port Harcourt. Guest Card perks, brand trivia, and partner wholesale. Adults 18+ only.';
+  : 'Convivia24 supplies drinks for your event — plan the party, build your basket, and get spirits, Champagne, and party packs delivered in supported areas across Nigeria. Guest Card perks, brand trivia, and partner wholesale. Adults 18+ only.';
 
 export const SITE_KEYWORDS = eventsEnabled
   ? [
       'Convivia24',
       'Nigeria drinks delivery',
-      'alcohol delivery in Lagos, Abuja and Port Harcourt',
+      'alcohol delivery in supported areas across Nigeria',
       'order drinks to club Nigeria',
       'party pack Nigeria',
       'nightlife events Nigeria',
@@ -34,7 +34,7 @@ export const SITE_KEYWORDS = eventsEnabled
       'Nigeria drinks delivery',
       'drink supplies for events',
       'party planner drinks Nigeria',
-      'alcohol delivery in Lagos, Abuja and Port Harcourt',
+      'alcohol delivery in supported areas across Nigeria',
       'order drinks for party Nigeria',
       'party pack Nigeria',
       'event drink delivery Nigeria',

@@ -184,7 +184,7 @@ function SuccessBody() {
         <p className="text-obsidian/60 leading-relaxed mb-6">
           {isManual
             ? 'Order saved. Our team will confirm payment and a delivery window shortly.'
-            : 'Payment confirmed. We’ll follow up with delivery in Lagos, Abuja, and Port Harcourt timing.'}
+            : 'Payment confirmed. We’ll follow up with delivery in supported areas across Nigeria timing.'}
         </p>
         {typeof state.subtotalNgn === 'number' && (
           <p className="text-2xl font-bold text-obsidian mb-2">{formatNgn(state.subtotalNgn)}</p>

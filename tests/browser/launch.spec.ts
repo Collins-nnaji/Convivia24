@@ -21,6 +21,38 @@ async function enter(page:import('@playwright/test').Page,signedIn=false){
   });
 }
 test('age gate protects the storefront',async({page})=>{await page.goto('/shop');await expect(page).toHaveURL(/age-check/);await expect(page.getByRole('button',{name:'Yes — enter'})).toBeVisible();});
+test('party planner changes city areas, saves the location, and restores it', async ({ page }) => {
+  test.setTimeout(60000);
+  await enter(page, true);
+  let party: Record<string, unknown> | null = null;
+  await page.route('**/api/parties', async route => {
+    if (route.request().method() === 'POST') {
+      party = { ...route.request().postDataJSON(), id: 'saved-party', shareToken: 'private-token' };
+      return route.fulfill({ json: { party } });
+    }
+    return route.fulfill({ json: { parties: party ? [party] : [] } });
+  });
+  await page.goto('/party-planner');
+  const city = page.getByRole('combobox', { name: 'City', exact: true });
+  const area = page.getByRole('combobox', { name: 'Preferred area', exact: false });
+  await city.selectOption('Enugu');
+  await expect(area).toHaveValue('Independence Layout');
+  await expect(area.locator('option[value="Victoria Island"]')).toHaveCount(0);
+  await area.selectOption('New Haven');
+  await city.selectOption('Awka');
+  await expect(area).toHaveValue('Government House Area');
+  await area.selectOption('Ifite');
+  await page.getByLabel('Plan name', { exact: true }).fill('Awka birthday');
+  await page.getByRole('button', { name: 'Plan my party', exact: true }).last().click();
+  await expect(page.getByText('Your night is ready.', { exact: false })).toBeVisible();
+  expect(party).toMatchObject({ plan: { night: { city: 'Awka', area: 'Ifite' } } });
+  await page.reload();
+  await page.getByRole('button', { name: 'Previous plans', exact: false }).click();
+  await page.getByRole('button', { name: /^Awka birthday/ }).click();
+  await expect(city).toHaveValue('Awka');
+  await expect(area).toHaveValue('Ifite');
+  await expect(page.getByText('Ifite, Awka · home delivery')).toBeVisible();
+});
 test('password recovery and support are discoverable',async({page})=>{await enter(page);await page.goto('/signin');await expect(page.getByRole('link',{name:'Forgot password?'})).toBeVisible();await page.getByRole('link',{name:'Forgot password?'}).click();await expect(page.getByRole('heading',{name:'Reset your password'})).toBeVisible();await expect(page.getByRole('link',{name:'Delivery & returns'})).toBeVisible();});
 test('checkout shows enabled city zones and delivery fee before payment',async({page})=>{
   await enter(page,true);await page.addInitScript(()=>localStorage.setItem('convivia_drinks_cart',JSON.stringify([{slug:'jameson-original',name:'Jameson',priceNgn:10000,qty:1}])));
@@ -30,6 +62,26 @@ test('checkout shows enabled city zones and delivery fee before payment',async({
   await expect(page.getByText('₦1,500',{exact:true})).toBeVisible();
 });
 test('admin delivery configuration explains disabled checkout and allows providers',async({page})=>{await enter(page,true);await page.goto('/admin#delivery');await expect(page.getByRole('heading',{name:'Delivery zones'})).toBeVisible();await expect(page.getByLabel('Provider name')).toBeVisible();await expect(page.getByText(/No zones configured/)).toBeVisible();});
+
+test('checkout offers enabled Enugu and Awka zones and resets the zone when city changes', async ({ page }) => {
+  test.setTimeout(60000);
+  await enter(page, true);
+  await page.addInitScript(() => localStorage.setItem('convivia_drinks_cart', JSON.stringify([{ slug: 'jameson-original', name: 'Jameson', priceNgn: 10000, qty: 1 }])));
+  await page.route('**/api/delivery', route => route.fulfill({ json: { zones: [
+    { id: '11111111-1111-4111-8111-111111111111', city: 'Enugu', name: 'New Haven', feeNgn: 1500, estimate: 'Next day' },
+    { id: '22222222-2222-4222-8222-222222222222', city: 'Awka', name: 'Ifite', feeNgn: 2000, estimate: 'Next day' },
+  ] } }));
+  await page.goto('/checkout');
+  const city = page.getByRole('combobox', { name: 'City', exact: true });
+  const zone = page.getByRole('combobox', { name: 'Delivery zone', exact: true });
+  await city.selectOption('Enugu');
+  await zone.selectOption('11111111-1111-4111-8111-111111111111');
+  await city.selectOption('Awka');
+  await expect(zone).toHaveValue('');
+  await expect(zone.locator('option')).toHaveText(['Choose a supported zone', 'Ifite · ₦2,000 · Next day']);
+  await zone.selectOption('22222222-2222-4222-8222-222222222222');
+  await expect(zone).toHaveValue('22222222-2222-4222-8222-222222222222');
+});
 
 test('admin sections show useful empty states and support error recovery', async ({ page }) => {
   await enter(page, true);

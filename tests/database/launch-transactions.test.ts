@@ -39,6 +39,17 @@ describe('transactional reservations', () => {
   });
 });
 describe('checkout transaction', () => {
+  it('expands an existing three-city delivery constraint without losing zones', async () => {
+    const zone = order();
+    await db.exec("ALTER TABLE delivery_zones DROP CONSTRAINT delivery_zones_city_check; ALTER TABLE delivery_zones ADD CONSTRAINT delivery_zones_city_check CHECK (city IN ('Lagos','Abuja','Port Harcourt'))");
+    await db.query("INSERT INTO delivery_zones(id,city,name,fee_ngn,estimate) VALUES($1,'Lagos',$2,100,'Tomorrow')", [zone, zone]);
+    await db.exec(readFileSync('lib/db/launch-readiness.sql', 'utf8'));
+    for (const city of ['Enugu', 'Awka', 'Onitsha', 'Aba', 'Owerri', 'Asaba', 'Benin City', 'Ibadan', 'Uyo', 'Calabar', 'Kano', 'Kaduna']) {
+      await db.query("INSERT INTO delivery_zones(city,name,fee_ngn,estimate) VALUES($1,'Test area',100,'Tomorrow')", [city]);
+    }
+    expect((await db.query('SELECT city FROM delivery_zones WHERE id=$1', [zone])).rows).toEqual([{ city: 'Lagos' }]);
+    await expect(db.query("INSERT INTO delivery_zones(city,name,fee_ngn,estimate) VALUES('Unknown','Test area',100,'Tomorrow')")).rejects.toThrow(/delivery_zones_city_check/);
+  });
   it('creates once, retains gift credit, and rolls back invalid gift cards', async () => {
     const slug='checkout-'+randomUUID(); const zone=order(); const id=order(); const key=order();
     await db.query('INSERT INTO inventory(slug,name,on_hand,price_ngn) VALUES($1,$1,5,1000)',[slug]);

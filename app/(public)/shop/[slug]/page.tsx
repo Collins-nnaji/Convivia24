@@ -19,7 +19,7 @@ export async function generateMetadata({
   const description =
     product.description ||
     product.tagline ||
-    `Order ${product.name} for parties, clubs, and lounges on Convivia24. Delivery in Lagos, Abuja, and Port Harcourt. 18+.`;
+    `Order ${product.name} for parties, clubs, and lounges on Convivia24. Delivery in supported areas across Nigeria. 18+.`;
   return {
     title: product.name,
     description,

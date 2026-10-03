@@ -26,7 +26,7 @@ export default function Footer() {
               />
             </Link>
             <p className="hidden sm:block text-[10px] text-white/40 truncate">
-              Plan the night · invite friends · order drinks · Lagos, Abuja & Port Harcourt · 18+
+              Plan the night · invite friends · order drinks · supported areas across Nigeria · 18+
             </p>
           </div>
 

@@ -23,7 +23,7 @@ export default function PrivacyPage() {
         <div className="space-y-8 text-base text-obsidian/70 leading-relaxed">
           <p>
             Convivia24 (&quot;we&quot;, &quot;us&quot;) operates a drinks ordering and nightlife platform for adults
-            aged 18 and over, with delivery in Lagos, Abuja, and Port Harcourt. This policy explains what we collect and how we use it.
+            aged 18 and over, with delivery in supported areas across Nigeria. This policy explains what we collect and how we use it.
           </p>
 
           <section>

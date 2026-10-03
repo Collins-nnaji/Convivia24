@@ -385,7 +385,7 @@ function CheckoutForm() {
             <ul className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 p-5 sm:p-6 bg-white border border-obsidian/8">
               <Assurance icon={Wine} label="100% authentic" detail="Original products only" />
               <Assurance icon={Lock} label="Secure checkout" detail="Your data is protected" />
-              <Assurance icon={Truck} label="Delivery in Lagos, Abuja, and Port Harcourt" detail="Enabled delivery zones" />
+              <Assurance icon={Truck} label="Delivery in supported areas across Nigeria" detail="Enabled delivery zones" />
               <Assurance icon={QrCode} label="Scan to verify" detail="Every order, checkable" />
             </ul>
           </div>

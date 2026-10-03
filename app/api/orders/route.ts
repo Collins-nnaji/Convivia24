@@ -152,7 +152,7 @@ async function handlePOST(req: NextRequest) {
       return NextResponse.json({ error: 'A phone number is required for delivery.' }, { status: 400 });
     }
     if (!city) {
-      return NextResponse.json({ error: 'City is required for delivery in Lagos, Abuja, and Port Harcourt.' }, { status: 400 });
+      return NextResponse.json({ error: 'City is required for delivery in supported areas across Nigeria.' }, { status: 400 });
     }
     if (!addressLine1) {
       return NextResponse.json(

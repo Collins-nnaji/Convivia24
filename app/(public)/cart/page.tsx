@@ -200,7 +200,7 @@ export default function CartPage() {
 
             <ul className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 p-5 sm:p-6 bg-white border border-obsidian/8">
               <Assurance icon={ShieldCheck} label="Secure payment" detail="Encrypted checkout" />
-              <Assurance icon={Truck} label="Delivery in Lagos, Abuja, and Port Harcourt" detail="Supported delivery zones" />
+              <Assurance icon={Truck} label="Delivery in supported areas across Nigeria" detail="Supported delivery zones" />
               <Assurance icon={Wine} label="Authentic products" detail="No parallel imports" />
               <Assurance icon={QrCode} label="Scan to verify" detail="Every order, checkable" />
             </ul>

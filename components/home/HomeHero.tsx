@@ -16,7 +16,7 @@ const LINES = eventsEnabled
       'Guest Card perks.',
       'Clubs & lounges.',
       'Partner wholesale.',
-      'Delivery in Lagos, Abuja, and Port Harcourt.',
+      'Delivery in supported areas across Nigeria.',
       "Tonight's drop.",
     ]
   : [
@@ -26,7 +26,7 @@ const LINES = eventsEnabled
       'Party packs delivered.',
       'Guest Card perks.',
       'Build your basket.',
-      'Delivery in Lagos, Abuja, and Port Harcourt.',
+      'Delivery in supported areas across Nigeria.',
       'Spirits & Champagne.',
     ];
 

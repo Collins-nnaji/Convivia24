@@ -1,4 +1,7 @@
-export const LAUNCH_CITIES = ['Lagos', 'Abuja', 'Port Harcourt'] as const;
+export const LAUNCH_CITIES = [
+  'Lagos', 'Abuja', 'Port Harcourt', 'Enugu', 'Awka', 'Onitsha', 'Aba',
+  'Owerri', 'Asaba', 'Benin City', 'Ibadan', 'Uyo', 'Calabar', 'Kano', 'Kaduna',
+] as const;
 export function launchCity(value: unknown): string | null {
   if (typeof value !== 'string') return null;
   return LAUNCH_CITIES.find((city) => city.toLowerCase() === value.trim().toLowerCase()) || null;

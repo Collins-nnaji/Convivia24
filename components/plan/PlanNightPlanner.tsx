@@ -29,7 +29,8 @@ import {
 import { useCart } from '@/components/cart/CartProvider';
 import PartyPlanner from '@/components/shop/PartyPlanner';
 import { formatNgn } from '@/lib/drinks/catalog';
-import { LAGOS_AREAS } from '@/lib/geo/lagos';
+import { LAUNCH_CITIES, launchCity } from '@/lib/delivery/policy';
+import { deliveryAreas } from '@/lib/delivery/areas';
 import {
   recommendDrinks,
   VIBE_LABELS,
@@ -93,8 +94,8 @@ function PlanNightPlannerInner() {
   const builderRef = useRef<HTMLDivElement>(null);
   const adjustRef = useRef<HTMLDivElement>(null);
   const [name, setName] = useState('');
-  const [city] = useState('Lagos');
-  const [area, setArea] = useState('vi');
+  const [city, setCity] = useState('Lagos');
+  const [area, setArea] = useState(deliveryAreas('Lagos')[0]);
   const [date, setDate] = useState(isoDate(7));
   const [time, setTime] = useState('19:00');
   const [mood, setMood] = useState<NightMood>('celebration');
@@ -116,7 +117,9 @@ function PlanNightPlannerInner() {
   const [adjustOpen, setAdjustOpen] = useState(false);
 
   const budgetPerPerson = Math.round(totalBudget / Math.max(groupSize, 1));
-  const areaLabel = LAGOS_AREAS.find((item) => item.id === area)?.name || 'Lagos';
+  const cityAreas = deliveryAreas(city);
+  const areaOptions = area && !cityAreas.includes(area) ? [...cityAreas, area] : cityAreas;
+  const areaLabel = area || city;
   const planName = name.trim() || suggestedName(mood, date);
 
   useEffect(() => {
@@ -152,7 +155,7 @@ function PlanNightPlannerInner() {
   function loadSavedPlan(party: SavedParty) {
     const night = party.plan?.night;
     const savedMood = night?.mood;
-    const savedArea = LAGOS_AREAS.find((item) => item.name === night?.area);
+    const savedCity = launchCity(night?.city) || 'Lagos';
 
     setActivePartyId(party.id);
     setName(party.name);
@@ -160,7 +163,8 @@ function PlanNightPlannerInner() {
     setTime(night?.meetingTime || night?.time || time);
     setGroupSize(party.guests);
     setTotalBudget(party.budgetNgn || totalBudget);
-    if (savedArea) setArea(savedArea.id);
+    setCity(savedCity);
+    setArea(night?.area || deliveryAreas(savedCity)[0]);
     if (savedMood && MOODS.some((item) => item.id === savedMood)) setMood(savedMood);
     if (DRINK_VIBES.includes(party.vibe as PartyVibe)) setDrinkVibe(party.vibe as PartyVibe);
     setGenerated(party.plan);
@@ -286,7 +290,7 @@ function PlanNightPlannerInner() {
       return;
     }
     const url = `${window.location.origin}/party-planner/${shareToken}`;
-    const text = `You’re invited to ${planName} — ${areaLabel}, ${date} at ${time}.`;
+    const text = `You’re invited to ${planName} — ${areaLabel}, ${city}, ${date} at ${time}.`;
     try {
       if (navigator.share) await navigator.share({ title: planName, text, url });
       else {
@@ -414,15 +418,25 @@ function PlanNightPlannerInner() {
                   <div className="grid content-start gap-4 rounded-2xl border border-obsidian/8 bg-paper/50 p-4 sm:grid-cols-2 lg:grid-cols-1">
                     <p className="text-[10px] font-black uppercase tracking-[0.16em] text-ember sm:col-span-2 lg:col-span-1">2 · Place &amp; budget</p>
                     <Field label="City" icon={<MapPin size={15} />}>
-                      <span className="night-input block text-obsidian/70">Lagos</span>
+                      <span className="relative block">
+                        <select value={city} onChange={(event) => {
+                          const nextCity = event.target.value;
+                          setCity(nextCity);
+                          setArea(deliveryAreas(nextCity)[0]);
+                        }} className="night-input select-clean pr-9">
+                          {LAUNCH_CITIES.map((item) => <option key={item} value={item}>{item}</option>)}
+                        </select>
+                        <ChevronDown size={15} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-obsidian/35" />
+                      </span>
                     </Field>
                     <Field label="Preferred area" icon={<MapPin size={15} />}>
                       <span className="relative block">
                         <select value={area} onChange={(event) => setArea(event.target.value)} className="night-input select-clean pr-9">
-                          {LAGOS_AREAS.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+                          {areaOptions.map((item) => <option key={item} value={item}>{item}</option>)}
                         </select>
                         <ChevronDown size={15} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-obsidian/35" />
                       </span>
+                      <p className="mt-1 text-[11px] text-obsidian/40">Delivery zones, fees and timing are confirmed at checkout.</p>
                     </Field>
                     <Field label="Guests" icon={<Users size={15} />}>
                       <input type="number" min={2} max={500} value={groupSize} onChange={(event) => setGroupSize(Math.max(2, Math.min(500, Number(event.target.value) || 2)))} className="night-input" />
@@ -494,7 +508,7 @@ function PlanNightPlannerInner() {
                 <div className="grid lg:grid-cols-[1fr_.72fr]">
                   <div className="p-5 sm:p-8">
                     <div className="grid gap-3 sm:grid-cols-2">
-                      <ResultTile eyebrow="Delivery to" title="Your place" text={`${areaLabel} · home delivery`} icon={<MapPin size={18} />} />
+                      <ResultTile eyebrow="Delivery to" title="Your place" text={`${generated.night.area}, ${generated.night.city} · home delivery`} icon={<MapPin size={18} />} />
                       <ResultTile eyebrow="Delivery" title={`${generated.night.meetingTime} · ${new Date(`${date}T12:00:00`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}`} text="Scheduled drop-off before guests arrive." icon={<Clock3 size={18} />} />
                       <ResultTile eyebrow="Servings" title={`~${generated.drinksPerGuest.toFixed(1)} drinks / guest`} text={`About ${generated.servingsEstimate} pours for ${groupSize} people`} icon={<GlassWater size={18} />} />
                       <ResultTile eyebrow="Party games" title={`${Math.min(3, Math.max(1, Math.floor(groupSize / 5)))} trivia games`} text="Free Convivia24 games to break the ice." icon={<MessageCircle size={18} />} />

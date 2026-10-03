@@ -100,12 +100,18 @@ ALTER TABLE ritual_orders ADD COLUMN IF NOT EXISTS courier_cost_ngn integer CHEC
 
 CREATE TABLE IF NOT EXISTS delivery_zones (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  city text NOT NULL CHECK (city IN ('Lagos','Abuja','Port Harcourt')),
+  city text NOT NULL,
   name text NOT NULL,
   fee_ngn integer NOT NULL CHECK (fee_ngn >= 0),
   estimate text NOT NULL,
   active boolean NOT NULL DEFAULT false,
   UNIQUE(city, name)
+);
+-- Replace the original three-city restriction on existing databases as well.
+ALTER TABLE delivery_zones DROP CONSTRAINT IF EXISTS delivery_zones_city_check;
+ALTER TABLE delivery_zones ADD CONSTRAINT delivery_zones_city_check CHECK (
+  city IN ('Lagos','Abuja','Port Harcourt','Enugu','Awka','Onitsha','Aba',
+    'Owerri','Asaba','Benin City','Ibadan','Uyo','Calabar','Kano','Kaduna')
 );
 CREATE TABLE IF NOT EXISTS delivery_providers (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
