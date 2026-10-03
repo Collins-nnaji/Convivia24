@@ -6,7 +6,7 @@ import { useDesk } from './useDesk';
 import { DeskHeader, DeskPanel, DeskEmpty, DeskStats, deskField, deskButton } from './ui/DeskContent';
 type Staff = { email: string; role: StaffRole; active: boolean };
 type Audit = { id: string; actor: string; action: string; subject: string; created_at: string };
-const descriptions: Record<StaffRole, string> = { owner: 'Full desk access, staff access and launch checks.', operations: 'Orders, stock, delivery, support and reward fulfillment.', finance: 'Orders, accounting, refunds and payment reconciliation.', content: 'Events, venues and trivia.' };
+const descriptions: Record<StaffRole, string> = { owner: 'Platform ownership, staff coordination and launch checks.', operations: 'Orders, stock, delivery, support and reward fulfillment.', finance: 'Orders, accounting, refunds and payment reconciliation.', content: 'Events, venues and trivia.' };
 export default function StaffDesk() {
   const desk = useDesk<{ staff: Staff[]; audit: Audit[]; accessEmails: string[] }>('/api/admin/staff');
   const { confirm } = useDialogs(); const [search, setSearch] = useState('');

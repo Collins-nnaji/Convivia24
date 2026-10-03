@@ -27,7 +27,7 @@ for (const file of ['.env.local', '.env']) {
 
 async function main() {
   const { sendEmail, resendConfigured } = await import('./resend');
-  const { adminEmails, normaliseEmails } = await import('../admin-emails');
+  const { adminNotificationEmails: adminEmails, normaliseEmails } = await import('../admin-emails');
   const { adminSuccessfulOrderEmail, orderStatusEmail } = await import('./templates');
   if (process.argv.includes('--inventory')) {
     const { sendInventoryDigest } = await import('./inventory-digest');
