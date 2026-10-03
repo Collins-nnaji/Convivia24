@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { apiErrorResponse } from '@/lib/db';
 import { notifyPartnerApplication } from '@/lib/commerce/partner-notify';
@@ -14,7 +15,7 @@ import { captureApiError } from '@/lib/sentry';
 
 const BRAND_CATEGORIES = ['spirits', 'whisky', 'cognac', 'vodka', 'tequila', 'wine', 'champagne', 'rtd', 'beer', 'mixers', 'other'];
 
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   try {
     const rl = await rateLimit(`partner-apply:${clientIp(req)}`, 8, 60);
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests. Try again shortly.' }, { status: 429 });
@@ -89,3 +90,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const POST = withAudit('/api/partners/apply', handlePOST);

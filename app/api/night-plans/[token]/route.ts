@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSharedParty, listPartyRsvps, respondToParty } from '@/lib/party/plans';
 import { clientIp, rateLimit } from '@/lib/redis';
@@ -18,7 +19,7 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
   }
 }
 
-export async function POST(req: NextRequest, { params }: RouteContext) {
+async function handlePOST(req: NextRequest, { params }: RouteContext) {
   try {
     const limit = await rateLimit(`night-plan-rsvp:${clientIp(req)}`, 20, 60);
     if (!limit.ok) return NextResponse.json({ error: 'Too many requests.' }, { status: 429 });
@@ -43,3 +44,5 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
     return NextResponse.json({ error: response.error }, { status: response.status });
   }
 }
+
+export const POST = withAudit('/api/night-plans/[token]', handlePOST);

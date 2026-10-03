@@ -1,10 +1,11 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
 import { apiErrorResponse } from '@/lib/db';
 import { getPricingPolicy, savePricingPolicy } from '@/lib/pricing/policy';
 import { captureApiError } from '@/lib/sentry';
 
-export async function GET() {
+async function handleGET() {
   const gate = await requireAdmin('inventory');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
@@ -17,7 +18,7 @@ export async function GET() {
   }
 }
 
-export async function PUT(req: NextRequest) {
+async function handlePUT(req: NextRequest) {
   const gate = await requireAdmin('inventory');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
@@ -33,3 +34,6 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const GET = withAudit('/api/admin/pricing-policy', handleGET);
+export const PUT = withAudit('/api/admin/pricing-policy', handlePUT);

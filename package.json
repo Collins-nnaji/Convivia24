@@ -35,7 +35,8 @@
     "cap:ios": "cap open ios",
     "typecheck": "tsc --noEmit",
     "test:browser": "playwright test",
-    "db:migrate": "tsx lib/db/migrate.ts"
+    "db:migrate": "tsx lib/db/migrate.ts",
+    "db:migrate:audit": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/migrate-platform-audit.mjs"
   },
   "browserslist": {
     "production": [

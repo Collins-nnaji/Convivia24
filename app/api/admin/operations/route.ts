@@ -1,8 +1,9 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
 import { getCurrentUser } from '@/lib/auth/session';
 import sql, { apiErrorResponse } from '@/lib/db';
-export async function GET() {
+async function handleGET() {
   const gate = await requireAdmin('read');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
@@ -14,7 +15,7 @@ export async function GET() {
     return NextResponse.json({ outlets, wholesale, rewards });
   } catch (err) { const { status, error } = apiErrorResponse(err); return NextResponse.json({ error }, { status }); }
 }
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   const gate = await requireAdmin('read');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
@@ -49,3 +50,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   } catch (err) { const { status, error } = apiErrorResponse(err, 'Could not complete operation.'); return NextResponse.json({ error }, { status }); }
 }
+
+export const GET = withAudit('/api/admin/operations', handleGET);
+export const POST = withAudit('/api/admin/operations', handlePOST);

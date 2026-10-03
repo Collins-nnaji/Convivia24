@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { apiErrorResponse } from '@/lib/db';
 import { requireSupplier } from '@/lib/suppliers/auth';
@@ -14,7 +15,7 @@ type Ctx = { params: Promise<{ slug: string }> };
  * PATCH { orderId, status } — move one of this supplier's orders forward.
  * PATCH { orderId, action: 'tracking', courierName, riderPhone, etaAt, trackingNote } — rider details.
  */
-export async function PATCH(req: NextRequest, { params }: Ctx) {
+async function handlePATCH(req: NextRequest, { params }: Ctx) {
   const { slug } = await params;
   const gate = await requireSupplier(slug);
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
@@ -54,3 +55,5 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const PATCH = withAudit('/api/supplier/[slug]/orders', handlePATCH);

@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { getReward } from '@/lib/loyalty/rewards';
 import {
@@ -12,7 +13,7 @@ import { rateLimit, clientIp } from '@/lib/redis';
 import { captureApiError } from '@/lib/sentry';
 
 /** The member's standing plus what they have already redeemed. */
-export async function GET() {
+async function handleGET() {
   const ownerId = await resolveMemberOwner().catch(() => null);
   if (!ownerId) return NextResponse.json({ signedIn: false, standing: null, redemptions: [] });
 
@@ -29,7 +30,7 @@ export async function GET() {
 }
 
 /** Spend points on one reward. */
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   try {
     const rl = await rateLimit(`reward-redeem:${clientIp(req)}`, 10, 60);
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
@@ -56,3 +57,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const GET = withAudit('/api/loyalty/rewards', handleGET);
+export const POST = withAudit('/api/loyalty/rewards', handlePOST);

@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireSupplier } from '@/lib/suppliers/auth';
 import { supplierShelf, supplierOrders } from '@/lib/suppliers/stock';
@@ -29,7 +30,7 @@ function publicSupplier(s: Supplier) {
 }
 
 /** GET — everything the portal shows: profile, shelf, orders, and their own recent activity. */
-export async function GET(_req: NextRequest, { params }: Ctx) {
+async function handleGET(_req: NextRequest, { params }: Ctx) {
   const { slug } = await params;
   const gate = await requireSupplier(slug);
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
@@ -56,7 +57,7 @@ export async function GET(_req: NextRequest, { params }: Ctx) {
 }
 
 /** PATCH — contact details only. Name, city and delivery areas are the desk's to change. */
-export async function PATCH(req: NextRequest, { params }: Ctx) {
+async function handlePATCH(req: NextRequest, { params }: Ctx) {
   const { slug } = await params;
   const gate = await requireSupplier(slug);
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
@@ -92,3 +93,6 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const GET = withAudit('/api/supplier/[slug]', handleGET);
+export const PATCH = withAudit('/api/supplier/[slug]', handlePATCH);

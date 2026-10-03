@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
 import { aiConfigured, AzureAiError, chat } from '@/lib/ai/azure';
@@ -60,7 +61,7 @@ Rules:
  * POST — read a price list and return proposed changes. Never writes.
  * Accepts `{ text }` (pasted) or `{ imageBase64 }` (a scanned/photographed list).
  */
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   const gate = await requireAdmin('inventory');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
@@ -144,7 +145,7 @@ export async function POST(req: NextRequest) {
 }
 
 /** PATCH — apply the rows the admin confirmed. Only price is touched; stock is left alone. */
-export async function PATCH(req: NextRequest) {
+async function handlePATCH(req: NextRequest) {
   const gate = await requireAdmin('inventory');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
@@ -187,3 +188,6 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const POST = withAudit('/api/admin/price-list', handlePOST);
+export const PATCH = withAudit('/api/admin/price-list', handlePATCH);

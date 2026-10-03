@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { getTasteProfile, resolveTasteOwner, saveTasteProfile } from '@/lib/trivia/profiles';
 import { apiErrorResponse, DatabaseUnavailableError } from '@/lib/db';
@@ -16,7 +17,7 @@ export async function GET() {
   }
 }
 
-export async function PUT(req: NextRequest) {
+async function handlePUT(req: NextRequest) {
   try {
     const rl = await rateLimit(`taste-profile:${clientIp(req)}`, 20, 60);
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
@@ -38,3 +39,5 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const PUT = withAudit('/api/trivia/profile', handlePUT);

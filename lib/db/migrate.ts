@@ -103,6 +103,7 @@ async function migrate() {
     // Gift card recipients/expiry and the trivia raffle log.
     'lib/db/desk-raffle-giftcards.sql',
     'lib/db/launch-readiness.sql',
+    'lib/db/platform-audit.sql',
   ];
   const schema = schemaFiles
     .map(f => readFileSync(join(process.cwd(), f), 'utf-8'))
@@ -117,7 +118,7 @@ async function migrate() {
 
   await sql.transaction([
     ...statements.map(statement => sql.query(statement)),
-    sql`INSERT INTO schema_migrations(name) VALUES('2026-10-launch-readiness') ON CONFLICT(name) DO NOTHING`,
+    sql`INSERT INTO schema_migrations(name) VALUES('2026-10-platform-audit') ON CONFLICT(name) DO NOTHING`,
   ]);
   console.log('Migration complete.');
 }

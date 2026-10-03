@@ -1,10 +1,11 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import sql, { apiErrorResponse } from '@/lib/db';
 import { requireAdmin } from '@/lib/admin';
 import { captureApiError } from '@/lib/sentry';
 
 /** GET ?slug=&limit= — the national stock ledger for one SKU: reserves, releases, fulfils, edits. */
-export async function GET(req: NextRequest) {
+async function handleGET(req: NextRequest) {
   const gate = await requireAdmin('inventory');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
@@ -47,3 +48,5 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const GET = withAudit('/api/admin/inventory/movements', handleGET);

@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextResponse } from 'next/server';
 import sql, { apiErrorResponse } from '@/lib/db';
 import { requireAdmin } from '@/lib/admin';
@@ -32,7 +33,7 @@ export type AdminSummary = {
  * Counts only — the numbers that decide where the desk goes next. Every tab loads its own
  * detail lazily, so this is the one cheap call the shell makes on mount.
  */
-export async function GET() {
+async function handleGET() {
   const gate = await requireAdmin('read');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
@@ -100,3 +101,5 @@ export async function GET() {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const GET = withAudit('/api/admin/summary', handleGET);

@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
 import { rateLimit, clientIp } from '@/lib/redis';
@@ -5,7 +6,7 @@ import { apiErrorResponse } from '@/lib/db';
 import { listVenues, createVenue, updateVenue, deleteVenue } from '@/lib/venues/repo';
 import { LAGOS_AREAS } from '@/lib/geo/lagos';
 
-export async function GET() {
+async function handleGET() {
   const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
 
@@ -18,7 +19,7 @@ export async function GET() {
   }
 }
 
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function PATCH(req: NextRequest) {
+async function handlePATCH(req: NextRequest) {
   const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
@@ -54,7 +55,7 @@ export async function PATCH(req: NextRequest) {
   }
 }
 
-export async function DELETE(req: NextRequest) {
+async function handleDELETE(req: NextRequest) {
   const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
@@ -71,3 +72,8 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const GET = withAudit('/api/admin/venues', handleGET);
+export const POST = withAudit('/api/admin/venues', handlePOST);
+export const PATCH = withAudit('/api/admin/venues', handlePATCH);
+export const DELETE = withAudit('/api/admin/venues', handleDELETE);

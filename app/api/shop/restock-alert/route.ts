@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { apiErrorResponse } from '@/lib/db';
 import { rateLimit, clientIp } from '@/lib/redis';
@@ -5,7 +6,7 @@ import { addRestockAlert } from '@/lib/shop/restock-alerts';
 import { DRINKS } from '@/lib/drinks/catalog';
 
 /** POST { slug, email } — email me when this bottle is back. */
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   try {
     const rl = await rateLimit(`restock:${clientIp(req)}`, 10, 60);
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
@@ -25,3 +26,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const POST = withAudit('/api/shop/restock-alert', handlePOST);

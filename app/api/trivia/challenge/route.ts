@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { isPass } from '@/lib/trivia/catalog';
 import { getRoundWithQuestions } from '@/lib/trivia/custom-questions';
@@ -14,7 +15,7 @@ import { captureApiError } from '@/lib/sentry';
  * are claimable here — right now that is the weekly trivia round, re-scored
  * from the submitted answers rather than trusting a client-side score.
  */
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   try {
     const rl = await rateLimit(`trivia-challenge:${clientIp(req)}`, 20, 60);
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
@@ -66,3 +67,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const POST = withAudit('/api/trivia/challenge', handlePOST);

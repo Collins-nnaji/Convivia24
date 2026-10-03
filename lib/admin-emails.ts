@@ -1,5 +1,4 @@
-// Approved owner accounts are kept here as well as in environment configuration so
-// deployment recipient lists cannot accidentally omit these accounts.
+// Notification recipients are separate from the environment-only admin access policy.
 const REQUIRED_ADMIN_EMAILS = ['bobbynathus@yahoo.com', 'collinsenofe@gmail.com'];
 
 export function normaliseEmails(...lists: (string | undefined)[]): string[] {
@@ -10,5 +9,9 @@ export function normaliseEmails(...lists: (string | undefined)[]): string[] {
 }
 
 export function adminEmails(): string[] {
+  return normaliseEmails(process.env.CONVIVIA_ADMIN_EMAILS);
+}
+
+export function adminNotificationEmails(): string[] {
   return normaliseEmails(process.env.CONVIVIA_ADMIN_EMAILS, ...REQUIRED_ADMIN_EMAILS);
 }

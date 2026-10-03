@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { isPass } from '@/lib/trivia/catalog';
 import { getRoundWithQuestions } from '@/lib/trivia/custom-questions';
@@ -9,7 +10,7 @@ import { captureApiError } from '@/lib/sentry';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   try {
     const rl = await rateLimit(`trivia-entry:${clientIp(req)}`, 10, 60);
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
@@ -69,3 +70,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const POST = withAudit('/api/trivia/entry', handlePOST);

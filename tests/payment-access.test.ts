@@ -17,3 +17,5 @@ describe('checkout payment authorization',()=>{
   it('does not initiate payment for a closed order',async()=>{mocks.sql.mockResolvedValue([{id:orderId,status:'cancelled'}]);expect((await POST(request())).status).toBe(400);expect(mocks.init).not.toHaveBeenCalled();});
   it('does not charge an already delivered order again',async()=>{mocks.sql.mockResolvedValue([{id:orderId,status:'delivered'}]);const res=await POST(request());expect(res.status).toBe(200);expect(await res.json()).toMatchObject({alreadyPaid:true});expect(mocks.init).not.toHaveBeenCalled();});
 });
+
+vi.mock('@/lib/audit/route', () => ({ withAudit: (_route: string, handler: unknown) => handler }));

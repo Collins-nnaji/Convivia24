@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { deleteParty, listParties, saveParty, validatePartyInput, type SavePartyInput } from '@/lib/party/plans';
 import { resolvePartyOwner } from '@/lib/party/owner';
@@ -17,7 +18,7 @@ export async function GET() {
   }
 }
 
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   try {
     const rl = await rateLimit(`parties:${clientIp(req)}`, 30, 60);
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
@@ -53,7 +54,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function DELETE(req: NextRequest) {
+async function handleDELETE(req: NextRequest) {
   try {
     const ownerId = await resolvePartyOwner();
     const id = new URL(req.url).searchParams.get('id') || '';
@@ -67,3 +68,6 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const POST = withAudit('/api/parties', handlePOST);
+export const DELETE = withAudit('/api/parties', handleDELETE);

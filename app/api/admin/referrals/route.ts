@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import sql from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
@@ -13,7 +14,7 @@ import {
   type PartnerStatus,
 } from '@/lib/referrals/repo';
 
-export async function GET() {
+async function handleGET() {
   const gate = await requireAdmin('finance');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
@@ -26,7 +27,7 @@ export async function GET() {
   }
 }
 
-export async function PATCH(req: NextRequest) {
+async function handlePATCH(req: NextRequest) {
   const gate = await requireAdmin('finance');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
@@ -91,3 +92,6 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const GET = withAudit('/api/admin/referrals', handleGET);
+export const PATCH = withAudit('/api/admin/referrals', handlePATCH);

@@ -79,3 +79,5 @@ describe('delivery configuration', () => {
     expect(mocks.sql.mock.calls[0][0].join('')).toContain('WHERE active');
   });
 });
+
+vi.mock('@/lib/audit/route', () => ({ withAudit: (_route: string, handler: unknown) => handler }));

@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import sql, { apiErrorResponse } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth/session';
@@ -6,7 +7,7 @@ import { rateLimit, clientIp } from '@/lib/redis';
 type CartLinePayload = { slug: string; qty: number };
 
 /** Server-side cart for signed-in users — lets a cart survive a device switch. Guests stay localStorage-only. */
-export async function GET() {
+async function handleGET() {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ items: null });
@@ -18,7 +19,7 @@ export async function GET() {
   }
 }
 
-export async function PUT(req: NextRequest) {
+async function handlePUT(req: NextRequest) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: 'Sign in required.' }, { status: 401 });
@@ -44,3 +45,6 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const GET = withAudit('/api/cart', handleGET);
+export const PUT = withAudit('/api/cart', handlePUT);

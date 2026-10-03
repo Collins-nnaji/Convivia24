@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { pointsFromSpend } from '@/lib/loyalty/program';
 import sql, { apiErrorResponse } from '@/lib/db';
@@ -7,7 +8,7 @@ import type { OrderStatus } from '@/lib/commerce/status';
 import { captureApiError } from '@/lib/sentry';
 
 /** One order, with its tracking timeline. Scoped to the signed-in buyer's email. */
-export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function handleGET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
     const user = await getCurrentUser();
@@ -77,3 +78,5 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const GET = withAudit('/api/orders/[id]', handleGET);

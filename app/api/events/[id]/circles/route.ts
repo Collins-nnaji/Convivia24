@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit, clientIp } from '@/lib/redis';
 import { getCurrentUser } from '@/lib/auth/session';
@@ -30,7 +31,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 }
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function handlePOST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const rl = await rateLimit(`events-id-circles:${clientIp(req)}`, 30, 60);
   if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   try {
@@ -53,3 +54,5 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const POST = withAudit('/api/events/[id]/circles', handlePOST);

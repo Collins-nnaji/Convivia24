@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth/session';
@@ -19,7 +20,7 @@ export type ActivityItem = {
  * orders placed, rounds passed, rewards redeemed. Every entry is a row that
  * exists; nothing is inferred, so an empty feed is an honest answer.
  */
-export async function GET() {
+async function handleGET() {
   const user = await getCurrentUser().catch(() => null);
   if (!user) return NextResponse.json({ signedIn: false, activity: [] });
 
@@ -82,3 +83,5 @@ export async function GET() {
     return NextResponse.json({ signedIn: true, activity: [], degraded: true });
   }
 }
+
+export const GET = withAudit('/api/account/activity', handleGET);

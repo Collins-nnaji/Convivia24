@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
 import { apiErrorResponse } from '@/lib/db';
@@ -6,7 +7,7 @@ import { captureApiError } from '@/lib/sentry';
 import { approveBottleRequest, declineBottleRequest, listBottleRequests } from '@/lib/suppliers/requests';
 import { invalidateCatalog } from '@/lib/shop/catalog-cache';
 
-export async function GET(req: NextRequest) {
+async function handleGET(req: NextRequest) {
   const gate = await requireAdmin('inventory');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
@@ -20,7 +21,7 @@ export async function GET(req: NextRequest) {
 }
 
 /** PATCH { id, action: 'approve', priceNgn, slug?, note? } | { id, action: 'decline', note? } */
-export async function PATCH(req: NextRequest) {
+async function handlePATCH(req: NextRequest) {
   const gate = await requireAdmin('inventory');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
@@ -49,3 +50,6 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const GET = withAudit('/api/admin/suppliers/requests', handleGET);
+export const PATCH = withAudit('/api/admin/suppliers/requests', handlePATCH);

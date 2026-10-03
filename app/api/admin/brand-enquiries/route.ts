@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
 import { apiErrorResponse } from '@/lib/db';
@@ -7,7 +8,7 @@ import { listBrandEnquiries, setBrandEnquiryStatus } from '@/lib/trivia/enquirie
 
 const STATUSES = ['new', 'contacted', 'won', 'closed'] as const;
 
-export async function GET() {
+async function handleGET() {
   const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
@@ -19,7 +20,7 @@ export async function GET() {
   }
 }
 
-export async function PATCH(req: NextRequest) {
+async function handlePATCH(req: NextRequest) {
   const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
@@ -43,3 +44,6 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const GET = withAudit('/api/admin/brand-enquiries', handleGET);
+export const PATCH = withAudit('/api/admin/brand-enquiries', handlePATCH);

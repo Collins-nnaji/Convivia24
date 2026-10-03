@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import ActivityTracker from './ActivityTracker';
 import { authClient, signOut as doSignOut, type SessionUser } from '@/lib/auth/client';
 
 interface AuthCtx {
@@ -47,6 +48,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
   return (
     <Ctx.Provider value={{ user, loading: isPending, authConfigured, refresh, signOut }}>
+      <ActivityTracker />
       {children}
     </Ctx.Provider>
   );

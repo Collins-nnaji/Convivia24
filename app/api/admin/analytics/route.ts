@@ -1,10 +1,11 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
 import { buildAnalyticsReport, parseAnalyticsPeriod } from '@/lib/analytics/report';
 import { apiErrorResponse } from '@/lib/db';
 import { captureApiError } from '@/lib/sentry';
 
-export async function GET(req: NextRequest) {
+async function handleGET(req: NextRequest) {
   const gate = await requireAdmin('read');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
 
@@ -18,3 +19,5 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const GET = withAudit('/api/admin/analytics', handleGET);

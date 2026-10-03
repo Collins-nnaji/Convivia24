@@ -1,10 +1,11 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit, clientIp } from '@/lib/redis';
 import { getCurrentUser } from '@/lib/auth/session';
 import { apiErrorResponse } from '@/lib/db';
 import { getVenueBySlug, followVenue, unfollowVenue } from '@/lib/venues/repo';
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
+async function handlePOST(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const rl = await rateLimit(`venues-slug-follow:${clientIp(req)}`, 30, 60);
   if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   try {
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
+async function handleDELETE(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const rl = await rateLimit(`venues-slug-follow:${clientIp(req)}`, 30, 60);
   if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   try {
@@ -41,3 +42,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ s
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const POST = withAudit('/api/venues/[slug]/follow', handlePOST);
+export const DELETE = withAudit('/api/venues/[slug]/follow', handleDELETE);

@@ -1,10 +1,11 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth/session';
 import { apiErrorResponse } from '@/lib/db';
 import { joinCircle, leaveCircle } from '@/lib/circles/repo';
 import { rateLimit, clientIp } from '@/lib/redis';
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function handlePOST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'Sign in to join a circle.' }, { status: 401 });
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function handleDELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'Sign in required.' }, { status: 401 });
@@ -31,3 +32,6 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const POST = withAudit('/api/circles/[id]/join', handlePOST);
+export const DELETE = withAudit('/api/circles/[id]/join', handleDELETE);

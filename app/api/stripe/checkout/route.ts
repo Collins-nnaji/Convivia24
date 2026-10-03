@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { AGE_GATE_COOKIE, verifyAgeToken } from '@/lib/age-gate';
 import { NextRequest, NextResponse } from 'next/server';
 import sql, { apiErrorResponse } from '@/lib/db';
@@ -10,7 +11,7 @@ import { flutterwaveSecret, initializeFlutterwavePayment } from '@/lib/payments/
  * If FLUTTERWAVE_SECRET_KEY is unset, marks the order awaiting_payment and
  * returns a manual-confirm path (concierge will follow up).
  */
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   try {
     if (!await verifyAgeToken(req.cookies.get(AGE_GATE_COOKIE)?.value)) return NextResponse.json({ error: 'Confirm you are 18+ before ordering.' }, { status: 403 });
     const rl = await rateLimit(`checkout:${clientIp(req)}`, 15, 60);
@@ -112,3 +113,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const POST = withAudit('/api/stripe/checkout', handlePOST);

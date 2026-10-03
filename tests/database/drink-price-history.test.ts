@@ -71,3 +71,5 @@ describe('drink price history', () => {
     });
   });
 });
+
+vi.mock('@/lib/audit/route', () => ({ withAudit: (_route: string, handler: unknown) => handler }));

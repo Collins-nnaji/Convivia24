@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { apiErrorResponse } from '@/lib/db';
 import { adminNotifyEmail, sendEmail } from '@/lib/email/resend';
@@ -22,7 +23,7 @@ function escapeHtml(text: string): string {
 }
 
 /** Public — a drinks brand asking about promotion on Convivia24. */
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   try {
     const rl = await rateLimit(`brand-enquiry:${clientIp(req)}`, 5, 60);
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests.' }, { status: 429 });
@@ -73,3 +74,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const POST = withAudit('/api/trivia/brand-enquiry', handlePOST);

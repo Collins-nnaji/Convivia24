@@ -52,7 +52,7 @@ npm run dev
 - `RESEND_FROM` — e.g. `"Convivia24 <orders@yourdomain.com>"`, required alongside `RESEND_API_KEY`
 - `RESEND_API_URL` — optional, defaults to `https://api.resend.com`
 - `ADMIN_NOTIFY_EMAIL` — optional extra recipients; combined with all admin emails in one operational notification send
-- `CONVIVIA_ADMIN_EMAILS` — verified Neon Auth owner accounts; active staff accounts also have access according to their role. Shared-password access is disabled. Bobby (bobbynathus@yahoo.com) and Collins (collinsenofe@gmail.com) are included in the owner and notification lists.
+- `CONVIVIA_ADMIN_EMAILS` — the only Neon Auth account emails allowed into admin. Listed accounts have full access without an app email verification step; staff directory entries do not grant access. Shared-password access is disabled. Notification recipient defaults remain separate.
 - `TERMII_API_KEY` — enables SMS (and WhatsApp, via `TERMII_CHANNEL=whatsapp`) order/delivery updates;
   without it, `lib/notify/termii.ts` no-ops the same way Resend does
 - `TERMII_SENDER_ID` — optional, your registered Termii sender ID; falls back to Termii's shared "N-Alert" ID
@@ -102,3 +102,5 @@ ones with `npx @capacitor/assets generate` once brand assets in the right (squar
 current `/public/convivia24.png` is a wide wordmark, not an icon shape.
 
 Brand logo: `/public/convivia24.png` (red→black wordmark). Accent: ember red `#E23B2F`.
+
+Admin platform audit is available at `/admin/audit` or Admin → Platform audit. Apply `npm run db:migrate:audit` to add only the audit tables and merged activity view; the full `npm run db:migrate` also includes them. The page shows unexpired Neon sessions, observed page activity, authentication events, server action outcomes, and existing admin/supplier/drink histories. New request tracking starts with deployment. Only emails in `CONVIVIA_ADMIN_EMAILS` can access admin; email verification is not required by the app.

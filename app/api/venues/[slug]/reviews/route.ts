@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit, clientIp } from '@/lib/redis';
 import { getCurrentUser } from '@/lib/auth/session';
@@ -18,7 +19,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
   }
 }
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
+async function handlePOST(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const rl = await rateLimit(`venues-slug-reviews:${clientIp(req)}`, 30, 60);
   if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   try {
@@ -51,3 +52,5 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const POST = withAudit('/api/venues/[slug]/reviews', handlePOST);

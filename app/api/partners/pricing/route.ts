@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import {
   deletePricingItem,
@@ -39,7 +40,7 @@ export async function GET() {
   }
 }
 
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   try {
     const rl = await rateLimit(`partner-pricing:${clientIp(req)}`, 60, 60);
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
@@ -97,7 +98,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function DELETE(req: NextRequest) {
+async function handleDELETE(req: NextRequest) {
   try {
     const outlet = await requireOutlet();
     if (!outlet) return NextResponse.json({ error: 'Open a partner desk first.' }, { status: 404 });
@@ -113,3 +114,6 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const POST = withAudit('/api/partners/pricing', handlePOST);
+export const DELETE = withAudit('/api/partners/pricing', handleDELETE);

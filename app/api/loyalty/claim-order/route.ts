@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import sql, { apiErrorResponse } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth/session';
@@ -10,7 +11,7 @@ import { captureApiError } from '@/lib/sentry';
  * Only an order placed with this account's email, and not yet owned by anyone, can be claimed.
  * Claiming also enrols the account in the Guest Card if it isn't already.
  */
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   try {
     const rl = await rateLimit(`claim-order:${clientIp(req)}`, 20, 60);
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
@@ -40,3 +41,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const POST = withAudit('/api/loyalty/claim-order', handlePOST);

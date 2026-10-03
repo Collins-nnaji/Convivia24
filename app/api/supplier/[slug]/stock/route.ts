@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import sql, { apiErrorResponse } from '@/lib/db';
 import { requireSupplier } from '@/lib/suppliers/auth';
@@ -34,7 +35,7 @@ async function currentHolding(supplierId: string, slug: string) {
  * POST { slug, onHand?, costNgn? } — set what this supplier holds and/or quotes for one SKU.
  * Listing a SKU for the first time is the same call with an `onHand`.
  */
-export async function POST(req: NextRequest, { params }: Ctx) {
+async function handlePOST(req: NextRequest, { params }: Ctx) {
   const { slug: portalSlug } = await params;
   const gate = await requireSupplier(portalSlug);
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
@@ -106,7 +107,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
 }
 
 /** DELETE ?slug= — take a SKU off the shelf. DELETE ?slug=&what=cost withdraws only the quote. */
-export async function DELETE(req: NextRequest, { params }: Ctx) {
+async function handleDELETE(req: NextRequest, { params }: Ctx) {
   const { slug: portalSlug } = await params;
   const gate = await requireSupplier(portalSlug);
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
@@ -149,3 +150,6 @@ export async function DELETE(req: NextRequest, { params }: Ctx) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const POST = withAudit('/api/supplier/[slug]/stock', handlePOST);
+export const DELETE = withAudit('/api/supplier/[slug]/stock', handleDELETE);

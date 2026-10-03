@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import sql, { apiErrorResponse, DatabaseUnavailableError } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth/session';
@@ -49,7 +50,7 @@ async function resolveManagedBrand(): Promise<
   };
 }
 
-export async function GET() {
+async function handleGET() {
   try {
     const gate = await resolveManagedBrand();
     if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
@@ -97,7 +98,7 @@ function parseTasks(value: unknown): CampaignTask[] {
 }
 
 /** Create or update one of the brand's own campaigns. */
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   try {
     const rl = await rateLimit(`brand-portal:${clientIp(req)}`, 20, 60);
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
@@ -136,3 +137,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const GET = withAudit('/api/brands/portal', handleGET);
+export const POST = withAudit('/api/brands/portal', handlePOST);

@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import {
   CampaignClosedError,
@@ -52,7 +53,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 }
 
 /** Join the campaign, or tick off one of its tasks. */
-export async function POST(req: NextRequest, { params }: Params) {
+async function handlePOST(req: NextRequest, { params }: Params) {
   const { slug } = await params;
   try {
     const rl = await rateLimit(`campaign:${clientIp(req)}`, 30, 60);
@@ -94,3 +95,5 @@ export async function POST(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const POST = withAudit('/api/campaigns/[slug]', handlePOST);

@@ -1,9 +1,10 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
 import { getCurrentUser } from '@/lib/auth/session';
 import sql, { apiErrorResponse } from '@/lib/db';
 import { launchCity } from '@/lib/delivery/policy';
-export async function GET() {
+async function handleGET() {
   const gate = await requireAdmin('operations');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
@@ -14,7 +15,7 @@ export async function GET() {
     return NextResponse.json({ zones, providers });
   } catch (err) { const { status, error } = apiErrorResponse(err); return NextResponse.json({ error }, { status }); }
 }
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   const gate = await requireAdmin('operations');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
@@ -43,3 +44,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ saved: rows[0] });
   } catch (err) { if (err && typeof err === 'object' && 'code' in err && err.code === '23505') return NextResponse.json({ error: 'A delivery zone or courier with that name already exists. Edit the existing record or choose another name.' }, { status: 409 }); const { status, error } = apiErrorResponse(err, 'Could not save delivery settings.'); return NextResponse.json({ error }, { status }); }
 }
+
+export const GET = withAudit('/api/admin/delivery', handleGET);
+export const POST = withAudit('/api/admin/delivery', handlePOST);

@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
 import {
@@ -243,7 +244,7 @@ async function position() {
   });
 }
 
-export async function GET(req: NextRequest) {
+async function handleGET(req: NextRequest) {
   const gate = await requireAdmin('finance');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
 
@@ -377,3 +378,5 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const GET = withAudit('/api/admin/accounting', handleGET);

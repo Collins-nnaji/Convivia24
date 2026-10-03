@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { aiConfigured, chat } from '@/lib/ai/azure';
 import { clientIp, rateLimit } from '@/lib/redis';
@@ -52,7 +53,7 @@ function fallbackRecipe(spirit: string, ingredients: string, style: string, serv
   };
 }
 
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   let spirit = 'gin';
   let ingredients = '';
   let style = 'refreshing';
@@ -106,3 +107,5 @@ export async function POST(req: NextRequest) {
     });
   }
 }
+
+export const POST = withAudit('/api/ai/cocktail', handlePOST);

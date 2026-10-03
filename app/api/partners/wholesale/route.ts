@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import sql from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import {
@@ -31,7 +32,7 @@ export async function GET() {
   }
 }
 
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   try {
     const rl = await rateLimit(`partner-wholesale:${clientIp(req)}`, 20, 60);
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
@@ -74,3 +75,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const POST = withAudit('/api/partners/wholesale', handlePOST);

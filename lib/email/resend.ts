@@ -1,4 +1,4 @@
-import { adminEmails, normaliseEmails } from '@/lib/admin-emails';
+import { adminNotificationEmails as adminEmails, normaliseEmails } from '@/lib/admin-emails';
 
 /**
  * Resend mailer. Sends nothing until env is complete so you can add

@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth/session';
@@ -12,7 +13,7 @@ interface ReshuffleItem { id: string; title: string; starts_at: string; ends_at:
  * tasks later/tomorrow and opening up the evening. Returns a proposal the user
  * must explicitly accept (no silent writes).
  */
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
 
@@ -90,3 +91,5 @@ Only include ids that exist in the list above. Prefer moving "low" priority item
     return NextResponse.json({ error: 'Could not destress your day right now.' }, { status: 500 });
   }
 }
+
+export const POST = withAudit('/api/ai/destress', handlePOST);

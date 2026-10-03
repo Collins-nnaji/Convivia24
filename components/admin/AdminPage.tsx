@@ -17,6 +17,7 @@ import ContentDesk from '@/components/admin/ContentDesk';
 import ReadinessDesk from '@/components/admin/ReadinessDesk';
 import RefundsDesk from '@/components/admin/RefundsDesk';
 import SupportDesk from '@/components/admin/SupportDesk';
+import AuditDesk from '@/components/admin/AuditDesk';
 import StaffDesk from '@/components/admin/StaffDesk';
 import { hasAdminPermission, STAFF_ROLES, type StaffRole, type AdminPermission } from '@/lib/admin-permissions';
 import OperationsDesk from '@/components/admin/OperationsDesk';
@@ -27,13 +28,13 @@ import { useAdminOrders } from '@/components/admin/useAdminOrders';
 import { EMPTY_SUMMARY, type AdminSummary } from '@/components/admin/types';
 import { BarChart3, CalendarDays, Gift, Landmark, LayoutDashboard, PackageSearch, Share2, ShoppingBag, Trophy, Truck, Wine } from 'lucide-react';
 
-const TAB_KEYS = ['overview', 'accounting', 'analytics', 'drinks', 'orders', 'sourcing', 'suppliers', 'referrals', 'giftcards', 'trivia', 'content', 'delivery', 'operations', 'staff', 'support', 'refunds', 'readiness'] as const;
+const TAB_KEYS = ['overview', 'accounting', 'analytics', 'drinks', 'orders', 'sourcing', 'suppliers', 'referrals', 'giftcards', 'trivia', 'content', 'delivery', 'operations', 'staff', 'support', 'refunds', 'readiness', 'audit'] as const;
 type TabKey = (typeof TAB_KEYS)[number];
 const TAB_PERMISSIONS: Record<TabKey, AdminPermission> = {
   overview: 'read', analytics: 'read', accounting: 'finance', orders: 'orders', sourcing: 'orders',
   drinks: 'inventory', suppliers: 'inventory', referrals: 'finance', giftcards: 'finance',
   trivia: 'content', content: 'content', delivery: 'operations', operations: 'read',
-  staff: 'owner', support: 'operations', refunds: 'finance', readiness: 'owner',
+  audit: 'owner', staff: 'owner', support: 'operations', refunds: 'finance', readiness: 'owner',
 };
 
 function isTab(v: string): v is TabKey {
@@ -41,25 +42,25 @@ function isTab(v: string): v is TabKey {
 }
 
 /** The tab lives in the URL hash so a reload (or a shared link) lands on the same view. */
-function tabFromHash(): TabKey {
-  if (typeof window === 'undefined') return 'overview';
+function tabFromHash(fallback: TabKey): TabKey {
+  if (typeof window === 'undefined') return fallback;
   const h = window.location.hash.replace(/^#/, '');
-  return isTab(h) ? h : 'overview';
+  return isTab(h) ? h : fallback;
 }
 
-export default function AdminPage() {
+export default function AdminPage({ initialTab = 'overview' }: { initialTab?: TabKey }) {
   return (
     <DialogProvider>
-      <AdminDesk />
+      <AdminDesk initialTab={initialTab} />
     </DialogProvider>
   );
 }
 
-function AdminDesk() {
+function AdminDesk({ initialTab }: { initialTab: TabKey }) {
   /** null = still checking the cookie; false = show the sign-in form. */
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [summaryError, setSummaryError] = useState('');
-  const [tab, setTab] = useState<TabKey>('overview');
+  const [tab, setTab] = useState<TabKey>(initialTab);
   const [staffRole, setStaffRole] = useState<StaffRole>('owner');
   const [summary, setSummary] = useState<AdminSummary>(EMPTY_SUMMARY);
   const ordersStore = useAdminOrders();
@@ -77,12 +78,12 @@ function AdminDesk() {
   }, []);
 
   useEffect(() => {
-    setTab(tabFromHash());
-    const onHash = () => setTab(tabFromHash());
+    setTab(tabFromHash(initialTab));
+    const onHash = () => setTab(tabFromHash(initialTab));
     window.addEventListener('hashchange', onHash);
     loadSummary().catch(() => setAuthed(false));
     return () => window.removeEventListener('hashchange', onHash);
-  }, [loadSummary]);
+  }, [loadSummary, initialTab]);
 
   // Orders are shared by two tabs; fetch them the first time either is opened.
   const needsOrders = tab === 'orders' || tab === 'sourcing';
@@ -132,6 +133,7 @@ function AdminDesk() {
     { key: 'readiness', label: 'Launch readiness', icon: <LayoutDashboard size={17} /> },
     { key: 'refunds', label: 'Refunds & exceptions', icon: <Landmark size={17} /> },
     { key: 'support', label: 'Customer support', icon: <Gift size={17} /> },
+    { key: 'audit', label: 'Platform audit', icon: <LayoutDashboard size={17} /> },
     { key: 'staff', label: 'Staff & audit', icon: <LayoutDashboard size={17} /> },
     { key: 'operations', label: 'Partners & rewards', icon: <Gift size={17} /> },
     { key: 'delivery', label: 'Delivery settings', icon: <Truck size={17} /> },
@@ -166,6 +168,7 @@ function AdminDesk() {
       {tab === 'refunds' && <RefundsDesk />}
       {tab === 'support' && <SupportDesk />}
       {tab === 'staff' && <StaffDesk />}
+      {tab === 'audit' && <AuditDesk />}
       {tab === 'operations' && <OperationsDesk role={staffRole} />}
       {tab === 'delivery' && <DeliveryDesk />}
       {tab === 'accounting' && <AccountingDesk />}

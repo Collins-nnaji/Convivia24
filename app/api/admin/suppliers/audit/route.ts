@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
 import { apiErrorResponse } from '@/lib/db';
@@ -5,7 +6,7 @@ import { captureApiError } from '@/lib/sentry';
 import { describeAudit, listSupplierAudit } from '@/lib/suppliers/audit';
 
 /** GET ?supplierId=&limit= — who changed what on which supplier's shelf, newest first. */
-export async function GET(req: NextRequest) {
+async function handleGET(req: NextRequest) {
   const gate = await requireAdmin('inventory');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
@@ -20,3 +21,5 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const GET = withAudit('/api/admin/suppliers/audit', handleGET);

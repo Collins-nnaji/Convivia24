@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { claimMember, getMember, resolveMemberOwner, standingFor } from '@/lib/loyalty/members';
 import { getCurrentUser } from '@/lib/auth/session';
@@ -6,7 +7,7 @@ import { rateLimit, clientIp } from '@/lib/redis';
 import { captureApiError } from '@/lib/sentry';
 
 /** The signed-in shopper's loyalty standing — points, tier, discount. */
-export async function GET() {
+async function handleGET() {
   const ownerId = await resolveMemberOwner();
   if (!ownerId) return NextResponse.json({ signedIn: false, standing: null });
   try {
@@ -24,7 +25,7 @@ export async function GET() {
 }
 
 /** Claim a card on this account. */
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   try {
     const rl = await rateLimit(`loyalty-claim:${clientIp(req)}`, 20, 60);
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
@@ -48,3 +49,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const GET = withAudit('/api/loyalty/me', handleGET);
+export const POST = withAudit('/api/loyalty/me', handlePOST);

@@ -1,10 +1,11 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit, clientIp } from '@/lib/redis';
 import sql, { apiErrorResponse } from '@/lib/db';
 import { sendEmail } from '@/lib/email/resend';
 import { waitlistEmail } from '@/lib/email/templates';
 
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   const rl = await rateLimit(`waitlist:${clientIp(req)}`, 30, 60);
   if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   try {
@@ -60,3 +61,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const POST = withAudit('/api/waitlist', handlePOST);

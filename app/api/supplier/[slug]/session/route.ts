@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { signInSupplier, signOutSupplier, requireSupplier } from '@/lib/suppliers/auth';
 import { logSupplierAction } from '@/lib/suppliers/audit';
@@ -8,7 +9,7 @@ import { apiErrorResponse } from '@/lib/db';
 type Ctx = { params: Promise<{ slug: string }> };
 
 /** POST { key } — sign in to one supplier's portal. */
-export async function POST(req: NextRequest, { params }: Ctx) {
+async function handlePOST(req: NextRequest, { params }: Ctx) {
   const { slug } = await params;
   try {
     // Shared keys deserve a tight lockout — eight tries per quarter hour per address.
@@ -30,9 +31,12 @@ export async function POST(req: NextRequest, { params }: Ctx) {
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: Ctx) {
+async function handleDELETE(_req: NextRequest, { params }: Ctx) {
   const { slug } = await params;
   const gate = await requireSupplier(slug);
   if (gate.ok) await signOutSupplier(gate.supplier.id);
   return NextResponse.json({ ok: true });
 }
+
+export const POST = withAudit('/api/supplier/[slug]/session', handlePOST);
+export const DELETE = withAudit('/api/supplier/[slug]/session', handleDELETE);

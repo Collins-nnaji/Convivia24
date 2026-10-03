@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { apiErrorResponse } from '@/lib/db';
 import { requireSupplier } from '@/lib/suppliers/auth';
@@ -7,7 +8,7 @@ import { captureApiError } from '@/lib/sentry';
 
 type Ctx = { params: Promise<{ slug: string }> };
 
-export async function GET(_req: NextRequest, { params }: Ctx) {
+async function handleGET(_req: NextRequest, { params }: Ctx) {
   const { slug } = await params;
   const gate = await requireSupplier(slug);
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
@@ -21,7 +22,7 @@ export async function GET(_req: NextRequest, { params }: Ctx) {
 }
 
 /** POST — suggest a bottle that is not in the catalog. The desk approves or declines. */
-export async function POST(req: NextRequest, { params }: Ctx) {
+async function handlePOST(req: NextRequest, { params }: Ctx) {
   const { slug } = await params;
   const gate = await requireSupplier(slug);
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
@@ -49,3 +50,6 @@ export async function POST(req: NextRequest, { params }: Ctx) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const GET = withAudit('/api/supplier/[slug]/requests', handleGET);
+export const POST = withAudit('/api/supplier/[slug]/requests', handlePOST);

@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
 import { listInventory, upsertAdminProduct, adminStockList, editStockRow, StockEditError } from '@/lib/inventory';
@@ -14,7 +15,7 @@ import { captureApiError } from '@/lib/sentry';
 import { chat, aiConfigured } from '@/lib/ai/azure';
 import { listSupplierCatalog } from '@/lib/suppliers/sku-prices';
 
-export async function GET() {
+async function handleGET() {
   const gate = await requireAdmin('inventory');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
@@ -39,7 +40,7 @@ export async function GET() {
   }
 }
 
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   try {
     const rl = await rateLimit(`admin:${clientIp(req)}`, 40, 60);
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
@@ -288,3 +289,6 @@ Return JSON:
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const GET = withAudit('/api/admin/inventory', handleGET);
+export const POST = withAudit('/api/admin/inventory', handlePOST);

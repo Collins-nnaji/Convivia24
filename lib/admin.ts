@@ -1,5 +1,4 @@
-import sql from '@/lib/db';
-import { hasAdminPermission, STAFF_ROLES, type AdminPermission, type StaffRole } from '@/lib/admin-permissions';
+import { hasAdminPermission, type AdminPermission, type StaffRole } from '@/lib/admin-permissions';
 import { cookies } from 'next/headers';
 import { getCurrentUser } from '@/lib/auth/session';
 import { adminEmails } from '@/lib/admin-emails';
@@ -8,10 +7,8 @@ const ADMIN_COOKIE = 'c24_admin';
 
 export async function adminIdentity(): Promise<{ actor: string; actorLabel: string; role: StaffRole } | null> {
   const user = await getCurrentUser();
-  if (user?.email && user.emailVerified) {
-    if (adminEmails().includes(user.email.trim().toLowerCase())) return { actor: user.id, actorLabel: user.email, role: 'owner' };
-    const [staff] = await sql`SELECT role FROM admin_staff WHERE email = ${user.email.trim().toLowerCase()} AND active`;
-    if (staff && STAFF_ROLES.includes(staff.role as StaffRole)) return { actor: user.id, actorLabel: user.email, role: staff.role as StaffRole };
+  if (user?.email && adminEmails().includes(user.email.trim().toLowerCase())) {
+    return { actor: user.id, actorLabel: user.email, role: 'owner' };
   }
   return null;
 }

@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth/session';
 import { apiErrorResponse } from '@/lib/db';
@@ -6,7 +7,7 @@ import { captureApiError } from '@/lib/sentry';
 import { createPartner, validatePartner } from '@/lib/referrals/repo';
 
 /** Public — an event planner, venue or caterer applying to refer business. */
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   try {
     const rl = await rateLimit(`referrals:apply:${clientIp(req)}`, 5, 60);
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests.' }, { status: 429 });
@@ -42,3 +43,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const POST = withAudit('/api/referrals/apply', handlePOST);

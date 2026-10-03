@@ -42,7 +42,7 @@ test('admin sections show useful empty states and support error recovery', async
   await expect(page.getByRole('heading', { name: 'Operational rehearsals' })).toBeVisible();
   await page.getByRole('link', { name: 'Open delivery' }).click();
   await expect(page.getByRole('heading', { name: 'Delivery zones' })).toBeVisible();
-  for (const [tab, heading] of [['refunds', 'Refund requests'], ['support', 'Customer requests'], ['staff', 'Grant staff access'], ['operations', 'Partner approvals']]) {
+  for (const [tab, heading] of [['refunds', 'Refund requests'], ['support', 'Customer requests'], ['staff', 'Add staff record'], ['operations', 'Partner approvals']]) {
     await page.goto(`/admin#${tab}`);
     await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Refresh', exact: true })).toBeVisible();
@@ -190,7 +190,7 @@ test('malformed admin records show a recoverable error instead of a crashed page
   await expect(page.getByRole('alert').filter({ hasText: 'incomplete records' })).toBeVisible();
   await page.route('**/api/admin/staff', route => route.fulfill({ json: { staff: [], audit: [] } }));
   await page.getByRole('button', { name: 'Refresh', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Grant staff access' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Add staff record' })).toBeVisible();
 });
 
 test('analytics ignores a late response from the previous reporting period', async ({ page }) => {
@@ -214,11 +214,11 @@ test('admin summary failure shows retry instead of assuming owner access', async
   await page.route('**/api/admin/summary', route => route.fulfill({ status: 500, json: { error: 'Desk database unavailable.' } }));
   await page.goto('/admin#staff');
   await expect(page.getByRole('alert').filter({ hasText: 'Desk database unavailable.' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Grant staff access' })).not.toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Add staff record' })).not.toBeVisible();
   await page.route('**/api/admin/summary', route => route.fulfill({ json: { staffRole: 'owner', todayOrders: 0, todayRevenueNgn: 0 } }));
   await page.route('**/api/admin/staff', route => route.fulfill({ json: { staff: [], audit: [] } }));
   await page.getByRole('button', { name: 'Retry opening desk' }).click();
-  await expect(page.getByRole('heading', { name: 'Grant staff access' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Add staff record' })).toBeVisible();
 });
 
 test('bookmarked owner-only sections stay protected for operations staff', async ({ page }) => {
@@ -226,5 +226,5 @@ test('bookmarked owner-only sections stay protected for operations staff', async
   await page.route('**/api/admin/summary', route => route.fulfill({ json: { staffRole: 'operations', todayOrders: 0, todayRevenueNgn: 0 } }));
   await page.goto('/admin#staff');
   await expect(page.getByRole('alert').filter({ hasText: 'Your staff role does not have access' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Grant staff access' })).not.toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Add staff record' })).not.toBeVisible();
 });

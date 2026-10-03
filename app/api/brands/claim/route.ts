@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { getBrand } from '@/lib/brands/catalog';
 import { BrandAlreadyManagedError, createClaim, resolveBrandOwner } from '@/lib/brands/store';
@@ -13,7 +14,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  * This records the request only. Convivia24 verifies the person works for the
  * house before any claim is approved — nothing here grants access on its own.
  */
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   try {
     const rl = await rateLimit(`brand-claim:${clientIp(req)}`, 5, 60);
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
@@ -54,3 +55,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const POST = withAudit('/api/brands/claim', handlePOST);

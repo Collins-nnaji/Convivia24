@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { refundCompleted } from '@/lib/payments/flutterwave';
 import { NextRequest, NextResponse } from 'next/server';
 import sql, { apiErrorResponse } from '@/lib/db';
@@ -26,7 +27,7 @@ const ADMIN_SETTABLE_STATUSES: OrderStatus[] = ORDER_STATUSES.filter(
  * GET ?from=&to=&status=&q=&limit=&offset= — the ledger, filtered and paged on the server so
  * "all time" and the CSV are actually complete.
  */
-export async function GET(req: NextRequest) {
+async function handleGET(req: NextRequest) {
   const gate = await requireAdmin('orders');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
@@ -168,7 +169,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-export async function PATCH(req: NextRequest) {
+async function handlePATCH(req: NextRequest) {
   const gate = await requireAdmin('orders');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
@@ -380,7 +381,7 @@ export async function PATCH(req: NextRequest) {
   }
 }
 
-export async function DELETE(req: NextRequest) {
+async function handleDELETE(req: NextRequest) {
   const gate = await requireAdmin('orders');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
@@ -408,3 +409,7 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const GET = withAudit('/api/admin/orders', handleGET);
+export const PATCH = withAudit('/api/admin/orders', handlePATCH);
+export const DELETE = withAudit('/api/admin/orders', handleDELETE);

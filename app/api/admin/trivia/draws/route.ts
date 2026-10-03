@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
 import { apiErrorResponse } from '@/lib/db';
@@ -7,7 +8,7 @@ import { resendConfigured } from '@/lib/email/resend';
 import { DrawError, eligibleEntries, getDraw, listDraws, notifyRunnersUp, notifyWinner, runDraw } from '@/lib/trivia/raffle';
 
 /** GET ?round=&week= — draw history plus who is currently eligible for that round/week. */
-export async function GET(req: NextRequest) {
+async function handleGET(req: NextRequest) {
   const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
@@ -27,7 +28,7 @@ export async function GET(req: NextRequest) {
  * POST { roundSlug, weekStart?, notifyWinner?, notifyOthers?, message? } — run the draw.
  * POST { action: 'notify', id, who: 'winner' | 'others', message? } — (re)send the emails.
  */
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   const gate = await requireAdmin('content');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   try {
@@ -67,3 +68,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const GET = withAudit('/api/admin/trivia/draws', handleGET);
+export const POST = withAudit('/api/admin/trivia/draws', handlePOST);

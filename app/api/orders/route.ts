@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { AGE_GATE_COOKIE, verifyAgeToken } from '@/lib/age-gate';
 import { createHash, randomUUID } from 'crypto';
 import { notifyOrderStatus } from '@/lib/commerce/notify';
@@ -20,7 +21,7 @@ type IncomingItem = {
   qty: number;
 };
 
-export async function GET() {
+async function handleGET() {
   try {
     const user = await getCurrentUser();
     if (!user?.email) {
@@ -87,7 +88,7 @@ export async function GET() {
   }
 }
 
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   try {
     if (!await verifyAgeToken(req.cookies.get(AGE_GATE_COOKIE)?.value)) return NextResponse.json({ error: 'Confirm you are 18+ before ordering.' }, { status: 403 });
     const rl = await rateLimit(`orders:create:${clientIp(req)}`, 10, 60);
@@ -265,7 +266,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function PATCH(req: NextRequest) {
+async function handlePATCH(req: NextRequest) {
   try {
     const user = await getCurrentUser();
     if (!user?.email) {
@@ -291,3 +292,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error }, { status });
   }
 }
+
+export const GET = withAudit('/api/orders', handleGET);
+export const POST = withAudit('/api/orders', handlePOST);
+export const PATCH = withAudit('/api/orders', handlePATCH);

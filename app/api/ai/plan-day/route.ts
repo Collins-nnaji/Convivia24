@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth/session';
@@ -55,7 +56,7 @@ function fallbackPlan(mood: string, dayStart: Date): { reply: string; blocks: Pl
  * tomorrow's existing commitments, proposes a day plan as time blocks. Nothing
  * is written until the user explicitly accepts (see /api/calendar for writes).
  */
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
 
@@ -136,3 +137,5 @@ Return JSON:
     return NextResponse.json({ error: 'Could not plan your day right now.' }, { status: 500 });
   }
 }
+
+export const POST = withAudit('/api/ai/plan-day', handlePOST);

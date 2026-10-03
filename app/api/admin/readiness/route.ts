@@ -1,9 +1,10 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
 import sql from '@/lib/db';
 import { configurationChecks, readinessFailureMessage, type ReadinessCheck } from '@/lib/launch-readiness';
 
-export async function GET() {
+async function handleGET() {
   const gate = await requireAdmin('owner');
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   const checks = configurationChecks(process.env);
@@ -51,3 +52,5 @@ export async function GET() {
   ]));
   return NextResponse.json({ targetDate: '2026-11-01', ready: checks.every(check => check.ok), checks, stockMismatches, supplierStockMismatches }, { headers: { 'Cache-Control': 'no-store' } });
 }
+
+export const GET = withAudit('/api/admin/readiness', handleGET);

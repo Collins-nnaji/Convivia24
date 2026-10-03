@@ -1,3 +1,4 @@
+import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { chat, aiConfigured } from '@/lib/ai/azure';
 import { recommendDrinks, type PartyVibe } from '@/lib/party/drinks-plan';
@@ -5,7 +6,7 @@ import { rateLimit, clientIp } from '@/lib/redis';
 import { captureApiError } from '@/lib/sentry';
 import { formatNgn } from '@/lib/drinks/catalog';
 
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   try {
     const rl = await rateLimit(`party-ai:${clientIp(req)}`, 12, 60);
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
@@ -56,3 +57,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Planner unavailable right now.' }, { status: 500 });
   }
 }
+
+export const POST = withAudit('/api/party/ai', handlePOST);
