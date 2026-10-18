@@ -7,6 +7,8 @@ export type DiscoverSection = {
   key: DiscoverSectionKey;
   href: string;
   label: string;
+  /** Tab label for the phone segmented bar, where the full label won't fit four across. */
+  short: string;
   /** One neutral sentence — no brand names, no live data. */
   description: string;
 };
@@ -18,24 +20,28 @@ export const DISCOVER_SECTIONS: DiscoverSection[] = [
     key: 'taste',
     href: '/discover/taste',
     label: 'Your taste',
+    short: 'Taste',
     description: 'Build your profile and see which houses fit you.',
   },
   {
     key: 'mix',
     href: '/discover/mix',
     label: 'Cocktail maker',
+    short: 'Mix',
     description: 'Tell it what you have — get a measured recipe for tonight.',
   },
   {
     key: 'trivia',
     href: '/discover/trivia',
     label: 'Trivia',
+    short: 'Trivia',
     description: "Play the week's round, learn the house, earn points and enter the bottle draw.",
   },
   {
     key: 'rewards',
     href: '/discover/rewards',
     label: 'Rewards',
+    short: 'Rewards',
     description: 'Spend your points on bottles and Convivia merch.',
   },
 ];

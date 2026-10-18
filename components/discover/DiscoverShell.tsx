@@ -26,15 +26,61 @@ export default function DiscoverShell({ children }: { children: React.ReactNode 
   const points = hub.standing?.points ?? null;
 
   return (
-    <section className="min-h-[70vh] bg-paper">
-      <div className="mx-auto grid max-w-[1400px] gap-4 px-3 py-4 sm:px-5 sm:py-6 lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-6 xl:grid-cols-[340px_minmax(0,1fr)]">
+    <section className="min-h-full bg-white md:min-h-[70vh] md:bg-paper">
+      {/* ── Phone tabs ───────────────────────────────────── */}
+      {/* Below md the app shell scrolls #app-scroll, so this sticks under the header like a native segmented bar. */}
+      <nav aria-label="Discover sections" className="sticky top-0 z-20 border-b border-obsidian/8 bg-white/95 backdrop-blur-md md:hidden">
+        <div className="flex items-center justify-between gap-3 px-4 pt-3">
+          <p className="font-wordmark text-2xl leading-none text-obsidian">Discover</p>
+          {hub.loading ? (
+            <span className="block h-8 w-20 animate-pulse rounded-full bg-obsidian/5" />
+          ) : hub.signedIn && points !== null ? (
+            <Link href="/discover/rewards" className="inline-flex items-center gap-1.5 rounded-full bg-obsidian px-3 py-1.5 text-white">
+              <Star size={12} className="fill-ember text-ember" />
+              <span className="font-logo text-[12px] font-black tabular-nums tracking-tight">{points.toLocaleString()} PTS</span>
+            </Link>
+          ) : (
+            <Link href="/signin?next=%2Fdiscover" className="rounded-full border border-obsidian/12 px-3 py-1.5 text-[12px] font-bold text-obsidian active:border-ember active:text-ember">
+              Sign in
+            </Link>
+          )}
+        </div>
+        <ul className="grid grid-cols-4 gap-1 px-2 pb-2 pt-2.5">
+          {DISCOVER_SECTIONS.map((s) => {
+            const on = s.key === active;
+            return (
+              <li key={s.key}>
+                <Link
+                  href={s.href}
+                  aria-current={on ? 'page' : undefined}
+                  className={`relative flex flex-col items-center gap-1 rounded-xl px-1 py-1.5 transition-colors active:scale-95 ${
+                    on ? 'text-ember' : 'text-obsidian/45'
+                  }`}
+                >
+                  {on && (
+                    <motion.span
+                      layoutId="discover-tab-active"
+                      className="absolute inset-0 rounded-xl bg-ember/[0.08]"
+                      transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+                    />
+                  )}
+                  <SectionIcon section={s.key} size={24} className="relative" />
+                  <span className="relative text-[11px] font-bold uppercase tracking-[0.06em]">{s.short}</span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+
+      <div className="mx-auto grid max-w-[1400px] md:gap-4 md:px-5 md:py-6 lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-6 xl:grid-cols-[340px_minmax(0,1fr)]">
         {/* ── Rail ─────────────────────────────────────────── */}
         <motion.nav
           aria-label="Discover sections"
           variants={rail}
           initial="hidden"
           animate="show"
-          className="lg:sticky lg:top-24 lg:self-start"
+          className="hidden md:block lg:sticky lg:top-24 lg:self-start"
         >
           <motion.div variants={card} className="mb-3 hidden lg:block">
             {hub.loading ? (
@@ -101,7 +147,7 @@ export default function DiscoverShell({ children }: { children: React.ReactNode 
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
-              className="overflow-hidden rounded-3xl border border-obsidian/10 bg-white"
+              className="overflow-hidden bg-white md:rounded-3xl md:border md:border-obsidian/10"
             >
               {children}
             </motion.div>
