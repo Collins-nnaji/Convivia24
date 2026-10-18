@@ -10,9 +10,11 @@ import Footer from '@/components/Footer';
 
 export default function PublicShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '/';
-  // Consumer pages share a footer, including during route loading.
   const isStaffArea = pathname.startsWith('/admin') || pathname.startsWith('/supplier');
-  const showFooter = !isStaffArea;
+  // Only the landing page carries the footer; every other page ends at its content.
+  const showFooter = pathname === '/';
+  // The footer normally pads clear of the phone tab bar — without it, the page has to.
+  const tabBarGap = !showFooter && !isStaffArea ? 'pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0' : '';
   return (
     <CartProvider>
       <RouteScrollReset />
@@ -30,7 +32,7 @@ export default function PublicShell({ children }: { children: React.ReactNode })
           className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch] md:overflow-visible md:min-h-fit md:flex-none"
         >
           <div className="flex min-h-full flex-col md:min-h-[calc(100dvh-4.5rem)]">
-            <main className="relative z-0 flex-1">{children}</main>
+            <main className={`relative z-0 flex-1 ${tabBarGap}`}>{children}</main>
             {showFooter && <Footer />}
           </div>
         </div>
