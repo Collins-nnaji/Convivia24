@@ -57,3 +57,9 @@ export async function verifyAgeToken(token: string | undefined | null): Promise<
   const expected = await hmacHex(expiresAtRaw);
   return timingSafeStringEqual(sig, expected);
 }
+
+/** Same-origin path to continue to after the gate; anything else falls back to the home page. */
+export function safeNextPath(raw: unknown): string {
+  if (typeof raw !== 'string') return '/';
+  return raw.startsWith('/') && !raw.startsWith('//') && !raw.includes('\\') ? raw : '/';
+}

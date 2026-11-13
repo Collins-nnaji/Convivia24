@@ -49,3 +49,33 @@ describe('age confirmation availability', () => {
     expect((await rateLimit('checkout:test', 20, 60)).ok).toBe(false);
   });
 });
+
+describe('age confirmation form submit', () => {
+  const form = (next: string) => new NextRequest('https://convivia24.com/api/age-gate', {
+    method: 'POST',
+    headers: { 'x-forwarded-for': '192.0.2.60', 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ next }).toString(),
+  });
+
+  it('sets the cookie and redirects to the requested page in one response', async () => {
+    const POST = await route(false);
+    const response = await POST(form('/shop?category=whisky'));
+    expect(response.status).toBe(303);
+    expect(response.headers.get('location')).toBe('https://convivia24.com/shop?category=whisky');
+    const { verifyAgeToken } = await import('../lib/age-gate');
+    expect(await verifyAgeToken(response.cookies.get('convivia_age_verified')?.value)).toBe(true);
+  });
+
+  it('refuses off-site redirects', async () => {
+    const POST = await route(false);
+    expect((await POST(form('//evil.example'))).headers.get('location')).toBe('https://convivia24.com/');
+  });
+
+  it('falls back to the local limiter when Redis hangs', async () => {
+    mocks.incr.mockImplementation(() => new Promise(() => {}));
+    const POST = await route(true);
+    const started = Date.now();
+    expect((await POST(form('/'))).status).toBe(303);
+    expect(Date.now() - started).toBeLessThan(2000);
+  });
+});

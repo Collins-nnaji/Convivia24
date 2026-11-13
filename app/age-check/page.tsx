@@ -1,39 +1,22 @@
-'use client';
+import { safeNextPath } from '@/lib/age-gate';
+import AgeConfirmButtons from '@/components/age/AgeConfirmButtons';
 
-import { Suspense, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+type Props = { searchParams: Promise<{ next?: string | string[]; error?: string | string[] }> };
 
-function AgeCheckInner() {
-  const params = useSearchParams();
-  const requestedNext = params.get('next') || '/';
-  const next = requestedNext.startsWith('/') && !requestedNext.startsWith('//') && !requestedNext.includes('\\') ? requestedNext : '/';
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  async function confirm() {
-    setLoading(true);
-    setError('');
-    try {
-      const res = await fetch('/api/age-gate', { method: 'POST' });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || 'Could not verify right now. Please try again.');
-      }
-      // Start a fresh request with the signed cookie, avoiding previously prefetched redirects.
-      window.location.replace(next);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not verify right now. Please try again.');
-      setLoading(false);
-    }
-  }
-
-  function decline() {
-    window.location.href = 'https://www.google.com';
-  }
+/**
+ * Server-rendered gate. "Yes" is a native form POST to /api/age-gate, which sets the cookie and
+ * redirects in the same response, so confirming takes a single request and works even before the
+ * page's JavaScript has loaded.
+ */
+export default async function AgeCheckPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const next = safeNextPath(Array.isArray(params.next) ? params.next[0] : params.next);
+  const rateLimited = params.error === 'rate';
 
   return (
     <div className="min-h-[100dvh] flex items-center justify-center bg-obsidian px-5 py-10">
-      <div className="w-full max-w-md bg-white p-8 sm:p-10 shadow-2xl">
+      <form method="post" action="/api/age-gate" className="w-full max-w-md bg-white p-8 sm:p-10 shadow-2xl">
+        <input type="hidden" name="next" value={next} />
         <img src="/convivia24.png" alt="Convivia24" className="h-10 w-auto rounded-sm mb-6" />
         <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ember mb-3">Delivery in supported areas across Nigeria · 18+</p>
         <h1 className="text-2xl sm:text-3xl font-bold text-obsidian leading-tight mb-3">
@@ -51,34 +34,11 @@ function AgeCheckInner() {
           </a>
           .
         </p>
-        {error && <p role="alert" className="text-sm text-ember mb-4">{error}</p>}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <button
-            type="button"
-            onClick={confirm}
-            disabled={loading}
-            className="flex-1 px-5 py-3.5 btn-brand text-[11px] font-black uppercase tracking-[0.15em] disabled:opacity-60"
-          >
-            {loading ? '…' : 'Yes — enter'}
-          </button>
-          <button
-            type="button"
-            onClick={decline}
-            disabled={loading}
-            className="flex-1 px-5 py-3.5 border border-obsidian/15 text-obsidian/60 hover:text-obsidian text-[11px] font-black uppercase tracking-[0.15em]"
-          >
-            No
-          </button>
-        </div>
-      </div>
+        {rateLimited && (
+          <p role="alert" className="text-sm text-ember mb-4">Too many attempts. Please wait a minute and try again.</p>
+        )}
+        <AgeConfirmButtons />
+      </form>
     </div>
-  );
-}
-
-export default function AgeCheckPage() {
-  return (
-    <Suspense fallback={<div className="min-h-[100dvh] bg-obsidian" />}>
-      <AgeCheckInner />
-    </Suspense>
   );
 }

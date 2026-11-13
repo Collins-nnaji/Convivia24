@@ -5,6 +5,7 @@ const footerLinks = [
   { label: 'Delivery & returns', href: '/delivery-and-returns' },
   { label: 'Support', href: '/support' },
   { label: 'Brands', href: '/brands' },
+  { label: 'Trend report', href: '/trends' },
   { label: 'Contact', href: '/contact' },
   { label: 'Refer & earn', href: '/shop/refer-and-earn' },
 ];

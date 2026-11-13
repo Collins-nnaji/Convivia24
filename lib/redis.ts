@@ -46,7 +46,12 @@ function localRateLimit(key: string, limit: number, windowSeconds: number): Rate
  * Allow `limit` requests per `windowSeconds` for `key`. Returns ok=true when
  * Upstash isn't configured (so requests aren't accidentally blocked in dev).
  */
-export async function rateLimit(key: string, limit: number, windowSeconds: number, options?: { fallback?: 'local' }): Promise<RateLimit> {
+export async function rateLimit(
+  key: string,
+  limit: number,
+  windowSeconds: number,
+  options?: { fallback?: 'local'; timeoutMs?: number },
+): Promise<RateLimit> {
   const unavailable = () => options?.fallback === 'local'
     ? localRateLimit(key, limit, windowSeconds)
     : { ok: process.env.NODE_ENV !== 'production', remaining: 0, resetAt: Date.now() + windowSeconds * 1000 };
@@ -56,8 +61,18 @@ export async function rateLimit(key: string, limit: number, windowSeconds: numbe
   const window = Math.floor(Date.now() / 1000 / windowSeconds);
   const k = `rl:${key}:${window}`;
   try {
-    const count = await r.incr(k);
-    if (count === 1) await r.expire(k, windowSeconds);
+    const counted = (async () => {
+      const n = await r.incr(k);
+      if (n === 1) await r.expire(k, windowSeconds);
+      return n;
+    })();
+    // Latency-sensitive callers cap the Redis round trips and fall back rather than make a person wait.
+    const count = options?.timeoutMs
+      ? await Promise.race([
+          counted,
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('rate limit timeout')), options.timeoutMs)),
+        ])
+      : await counted;
     const ok = count <= limit;
     // Daily route counters for the admin analytics desk — never await so RL stays fast.
     void import('@/lib/analytics/api-usage')

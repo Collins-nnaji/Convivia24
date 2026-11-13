@@ -6,7 +6,7 @@ import { absoluteUrl } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
-const MVP_PATHS = ['/', '/shop', '/party-planner', '/discover', '/contact', '/guest-card', '/convivium', '/privacy-policy', '/terms-of-use', '/brands', '/discover/trivia', '/discover/taste', '/discover/mix', '/discover/rewards', '/delivery-and-returns'];
+const MVP_PATHS = ['/', '/shop', '/party-planner', '/discover', '/contact', '/guest-card', '/convivium', '/privacy-policy', '/terms-of-use', '/brands', '/trends', '/discover/trivia', '/discover/taste', '/discover/mix', '/discover/rewards', '/delivery-and-returns'];
 
 const FULL_PATHS = [...MVP_PATHS, '/events', '/venues', '/circles'];
 
