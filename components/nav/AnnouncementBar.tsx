@@ -9,6 +9,9 @@ import { ChevronDown, ChevronLeft, ChevronRight, Clock, MapPin, Truck, X } from 
 import { DEFAULT_CONTENT, safeHref, type StorefrontBlock } from '@/lib/storefront/blocks';
 import type { DeliveryCity } from '@/lib/storefront/repo';
 import { formatNgn } from '@/lib/drinks/catalog';
+import { LAUNCH_CITIES } from '@/lib/delivery/policy';
+
+const CITY_KEY = 'convivia_city';
 
 const DISMISS_KEY = 'convivia_announcement_dismissed';
 
@@ -37,9 +40,26 @@ export default function AnnouncementBar() {
   const [panelOpen, setPanelOpen] = useState(false);
   // The modal portals into <body>, which only exists after hydration.
   const [mounted, setMounted] = useState(false);
+  // Delivery city is the shopper's choice — never auto-detected.
+  const [city, setCity] = useState('');
+
+  function chooseCity(next: string) {
+    setCity(next);
+    try {
+      localStorage.setItem(CITY_KEY, next);
+    } catch {
+      /* ignore */
+    }
+    window.dispatchEvent(new CustomEvent('convivia:city', { detail: next }));
+  }
 
   useEffect(() => {
     setMounted(true);
+    try {
+      setCity(localStorage.getItem(CITY_KEY) || '');
+    } catch {
+      /* ignore */
+    }
     try {
       if (sessionStorage.getItem(DISMISS_KEY) === '1') setHidden(true);
     } catch {
@@ -86,6 +106,22 @@ export default function AnnouncementBar() {
   return (
     <div className={`relative shrink-0 ${THEME_BG[item.theme]}`} role="region" aria-label="Announcements">
       <div className="mx-auto flex h-9 max-w-[1600px] items-center justify-center gap-2 px-10 text-center text-[12px] font-medium sm:text-[13px]">
+        <label className="absolute left-8 hidden items-center gap-1 opacity-90 md:flex">
+          <MapPin size={13} aria-hidden />
+          <span className="sr-only">Delivery city</span>
+          <select
+            value={city}
+            onChange={(e) => chooseCity(e.target.value)}
+            className="cursor-pointer bg-transparent text-[12px] font-semibold underline-offset-2 hover:underline focus:outline-none [&>option]:text-obsidian"
+          >
+            <option value="">Select city</option>
+            {(delivery && delivery.length ? delivery.map((c) => c.city) : LAUNCH_CITIES).map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </label>
         {items.length > 1 && (
           <button type="button" onClick={() => step(-1)} aria-label="Previous announcement" className="absolute left-2 hidden opacity-60 hover:opacity-100 sm:block">
             <ChevronLeft size={15} />

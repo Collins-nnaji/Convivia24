@@ -8,6 +8,7 @@ import type { HomeBrand } from '@/lib/storefront/home';
 import type { HomeReview } from '@/lib/storefront/repo';
 import type { CatalogProduct } from '@/lib/shop/use-catalog';
 import SectionHeading from './SectionHeading';
+import FollowBrandButton from './FollowBrandButton';
 
 const WRAP = 'mx-auto max-w-[1600px] px-3 sm:px-4 lg:px-5';
 
@@ -103,6 +104,9 @@ export function BrandStrip({ brands }: { brands: HomeBrand[] }) {
                   {b.count} bottle{b.count === 1 ? '' : 's'}
                 </span>
               </Link>
+              <div className="mt-2">
+                <FollowBrandButton slug={b.slug} name={b.name} />
+              </div>
             </li>
           ))}
         </ul>

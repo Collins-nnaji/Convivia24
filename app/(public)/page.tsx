@@ -16,8 +16,9 @@ import { getHomeData } from '@/lib/storefront/home';
 import { eventsEnabled } from '@/lib/features';
 import { absoluteUrl } from '@/lib/seo';
 
-// Merchandising is edited live in the desk; the data layer caches in Redis, so render per request.
-export const dynamic = 'force-dynamic';
+// Served from the static cache and rebuilt in the background at most once a minute, so
+// shoppers never wait on Redis/DB round-trips. Desk edits show up within ~60s.
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   alternates: { canonical: absoluteUrl('/') },

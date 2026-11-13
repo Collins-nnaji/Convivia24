@@ -4,7 +4,7 @@ import { BRANDS } from '@/lib/brands/catalog';
 import { cacheGet, cacheSet } from '@/lib/redis';
 import { CATALOG_CACHE_KEY } from '@/lib/shop/catalog-cache';
 import type { CatalogProduct } from '@/lib/shop/use-catalog';
-import type { StorefrontContent } from './blocks';
+import { resolveContent, type StorefrontContent } from './blocks';
 import { cachedBestSellers, homeReviews, storefrontContent, type HomeReview } from './repo';
 
 export type HomeBrand = { slug: string; name: string; count: number };
@@ -36,12 +36,20 @@ const sellable = (p: CatalogProduct) =>
   !p.sample && !p.partyPack && p.category !== 'party-packs' && (p.available == null || p.available > 0);
 const hasPhoto = (p: CatalogProduct) => Boolean(p.image || p.packImages?.length);
 
+/** A slow data source must not hold the home page hostage: fall back after `ms`. */
+function within<T>(p: Promise<T>, ms: number, fallback: () => T): Promise<T> {
+  return Promise.race([
+    p.catch(() => fallback()),
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback()), ms)),
+  ]);
+}
+
 export async function getHomeData(): Promise<HomeData> {
   const [content, products, sellerSlugs, reviews] = await Promise.all([
-    storefrontContent(),
-    catalog(),
-    cachedBestSellers(),
-    homeReviews(),
+    within(storefrontContent(), 2500, () => resolveContent([])),
+    within<CatalogProduct[]>(catalog(), 4000, () => DRINKS),
+    within(cachedBestSellers(), 2000, () => [] as string[]),
+    within(homeReviews(), 2000, () => ({ reviews: [], average: 0, count: 0 })),
   ]);
 
   const pool = products.filter((p) => sellable(p) && hasPhoto(p));
