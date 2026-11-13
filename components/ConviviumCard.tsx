@@ -98,8 +98,8 @@ export default function ConviviumCard({
         <div className="relative z-10 h-full flex flex-col justify-between p-6 sm:p-7">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-[8px] font-black uppercase tracking-[0.4em] text-cream/55 mb-1">{brand}</p>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-cream/85">{tier}</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-cream/55 mb-1">{brand}</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-cream/85">{tier}</p>
             </div>
             <Image
               src="/convivia24.png"
@@ -135,13 +135,13 @@ export default function ConviviumCard({
             </div>
             <div className="flex items-end justify-between">
               <div>
-                <p className="text-[8px] font-black uppercase tracking-[0.3em] text-cream/40 mb-0.5">
+                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-cream/40 mb-0.5">
                   {isPremium ? 'Outlet' : 'Member'}
                 </p>
                 <p className="text-cream/95 text-[13px] font-semibold tracking-[0.15em]">{name}</p>
               </div>
               <div className="text-right">
-                <p className="text-[8px] font-black uppercase tracking-[0.3em] text-cream/40 mb-0.5">{sinceLabel}</p>
+                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-cream/40 mb-0.5">{sinceLabel}</p>
                 <p className="text-cream/80 text-[11px] font-medium tracking-wider">{sinceValue}</p>
               </div>
             </div>

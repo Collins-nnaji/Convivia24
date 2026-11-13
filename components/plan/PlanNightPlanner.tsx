@@ -317,7 +317,7 @@ function PlanNightPlannerInner() {
     <div className="min-h-[70vh] bg-paper pb-16 sm:pb-20">
       <section className="border-b border-obsidian/8 bg-paper">
         <div className="relative mx-auto w-full max-w-[1600px] px-2.5 py-4 sm:px-4 sm:py-6 lg:px-5 lg:py-4">
-          <p className="mb-1.5 text-[10px] font-black uppercase tracking-[0.28em] text-ember sm:mb-2">Party Planner</p>
+          <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.28em] text-ember sm:mb-2">Party Planner</p>
           <h1 className="max-w-2xl font-wordmark text-2xl leading-tight text-obsidian sm:text-5xl sm:leading-[1.05] lg:text-4xl">
             We&apos;ll build the party.
           </h1>
@@ -335,7 +335,7 @@ function PlanNightPlannerInner() {
               <History size={14} className="sm:h-4 sm:w-4" /> Previous plans{savedPlans.length > 0 ? ` (${savedPlans.length})` : ''}
             </button>
             <span className="hidden h-5 w-px bg-obsidian/10 sm:block" aria-hidden />
-            <span className="hidden text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/35 sm:inline">Shortcuts</span>
+            <span className="hidden text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/35 sm:inline">Shortcuts</span>
             {QUICK_PLANS.map((item) => (
               <button
                 key={item.label}
@@ -357,7 +357,7 @@ function PlanNightPlannerInner() {
             <div className="mt-4 max-w-2xl rounded-2xl border border-obsidian/10 bg-white p-3 shadow-[0_12px_35px_rgba(15,15,15,0.06)] sm:mt-5 sm:p-4">
               <div className="flex items-center justify-between gap-3 px-1 pb-3">
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-ember">Previous party plans</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-ember">Previous party plans</p>
                   <p className="mt-1 text-xs text-obsidian/45">Open a saved plan to review or update it.</p>
                 </div>
                 <button type="button" onClick={startNewPlan} className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-obsidian/10 px-3 py-2 text-xs font-bold text-obsidian/60 hover:border-ember/30 hover:text-ember">
@@ -396,14 +396,14 @@ function PlanNightPlannerInner() {
               <div className="p-4 sm:p-8 lg:p-6">
                 <div className="mb-5 flex items-start justify-between gap-4 sm:mb-8 sm:gap-5 lg:mb-5">
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-ember">Your brief</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-ember">Your brief</p>
                     <h2 className="mt-1.5 font-wordmark text-xl text-obsidian sm:mt-2 sm:text-3xl">Build your party package</h2>
                   </div>
                 </div>
 
                 <div className="grid gap-5 lg:grid-cols-3 lg:gap-4">
                   <div className="grid content-start gap-4 rounded-2xl border border-obsidian/8 bg-paper/50 p-4 sm:grid-cols-2 lg:grid-cols-1">
-                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-ember sm:col-span-2 lg:col-span-1">1 · Event details</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ember sm:col-span-2 lg:col-span-1">1 · Event details</p>
                     <Field label="Plan name" icon={<PartyPopper size={15} />}>
                       <input value={name} onChange={(event) => setName(event.target.value)} placeholder={suggestedName(mood, date)} className="night-input" />
                     </Field>
@@ -416,7 +416,7 @@ function PlanNightPlannerInner() {
                   </div>
 
                   <div className="grid content-start gap-4 rounded-2xl border border-obsidian/8 bg-paper/50 p-4 sm:grid-cols-2 lg:grid-cols-1">
-                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-ember sm:col-span-2 lg:col-span-1">2 · Place &amp; budget</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ember sm:col-span-2 lg:col-span-1">2 · Place &amp; budget</p>
                     <Field label="City" icon={<MapPin size={15} />}>
                       <span className="relative block">
                         <select value={city} onChange={(event) => {
@@ -453,7 +453,7 @@ function PlanNightPlannerInner() {
                   </div>
 
                   <div className="rounded-2xl border border-obsidian/8 bg-paper/50 p-4">
-                    <p className="mb-3 text-[10px] font-black uppercase tracking-[0.16em] text-ember">3 · Party preferences</p>
+                    <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.16em] text-ember">3 · Party preferences</p>
                     <p className="mb-2 text-xs font-bold text-obsidian/55">Party type</p>
                     <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-5 sm:gap-2 lg:grid-cols-2">
                     {MOODS.map((item) => (
@@ -471,7 +471,7 @@ function PlanNightPlannerInner() {
                       </button>
                     ))}
                     </div>
-                    <button type="button" onClick={createPlan} disabled={creating} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-obsidian px-5 py-3 text-xs font-black uppercase tracking-[0.12em] text-white transition hover:bg-ember disabled:opacity-60">
+                    <button type="button" onClick={createPlan} disabled={creating} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-obsidian px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-ember disabled:opacity-60">
                       {creating ? 'Planning your party…' : 'Plan my party'}
                     </button>
                   </div>
@@ -493,7 +493,7 @@ function PlanNightPlannerInner() {
                         height={55}
                         className="mb-5 h-7 w-auto sm:h-9"
                       />
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-ember">Your party package</p>
+                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-ember">Your party package</p>
                       <h2 className="mt-2 font-wordmark text-3xl text-obsidian sm:text-4xl">{planName}</h2>
                       <p className="mt-2 text-sm text-obsidian/55">
                         {groupSize} guests · {formatNgn(totalBudget)} budget · Delivery by {generated.night.meetingTime}
@@ -517,7 +517,7 @@ function PlanNightPlannerInner() {
                     <div className="mt-6 rounded-2xl border border-obsidian/8 bg-paper p-4 sm:p-5">
                       <div className="flex items-center justify-between gap-3">
                         <div>
-                          <p className="text-[10px] font-black uppercase tracking-wider text-ember">Recommended package</p>
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-ember">Recommended package</p>
                           <p className="mt-1 text-sm text-obsidian/50">Bottles, mixers, ice and cups sized for your group.</p>
                         </div>
                         <span className="text-sm font-bold text-obsidian">{formatNgn(generated.totalNgn)}</span>
@@ -549,7 +549,7 @@ function PlanNightPlannerInner() {
                   </div>
 
                   <aside className="border-t border-obsidian/8 bg-paper p-5 sm:p-8 lg:border-l lg:border-t-0">
-                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-obsidian/40">Next steps</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-obsidian/40">Next steps</p>
                     <div className="mt-4 space-y-2">
                       <ActionButton icon={<Save size={16} />} label={saving ? 'Saving…' : activePartyId ? 'Save changes' : 'Save plan'} onClick={saveGeneratedPlan} disabled={saving} />
                       <ActionButton label="Adjust package" onClick={openAdjustPackage} />
@@ -564,7 +564,7 @@ function PlanNightPlannerInner() {
                     )}
                     {splitOpen && (
                       <div className="mt-4 rounded-2xl border border-ember/15 bg-white p-4">
-                        <p className="text-[10px] font-black uppercase tracking-wider text-ember">Split payment</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-ember">Split payment</p>
                         <p className="mt-2 text-2xl font-semibold text-obsidian">{formatNgn(budgetPerPerson)} <span className="text-xs font-normal text-obsidian/40">each</span></p>
                         <p className="mt-1 text-xs text-obsidian/45">{groupSize} shares · {formatNgn(totalBudget)} total target</p>
                         <button type="button" onClick={async () => { await navigator.clipboard.writeText(`${planName}: ${formatNgn(budgetPerPerson)} each for ${groupSize} people.`); setMessage('Payment request copied for the group.'); }} className="mt-3 inline-flex items-center gap-2 text-xs font-bold text-ember"><Copy size={13} /> Copy payment request</button>
@@ -579,7 +579,7 @@ function PlanNightPlannerInner() {
           {adjustOpen && (
             <section ref={adjustRef} className="scroll-mt-36 mb-14 overflow-hidden rounded-3xl border border-obsidian/10 bg-white">
               <div className="border-b border-obsidian/8 p-5 sm:p-7">
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-ember">Adjust package</p>
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-ember">Adjust package</p>
                 <h2 className="mt-1 font-wordmark text-xl sm:text-2xl">Fine-tune bottles, quantities and party packs</h2>
               </div>
               <div className="p-3 sm:p-6">
@@ -597,7 +597,7 @@ function Field({ label, icon, wide, children }: { label: string; icon: React.Rea
 }
 
 function ResultTile({ eyebrow, title, text, icon }: { eyebrow: string; title: string; text: string; icon: React.ReactNode }) {
-  return <div className="rounded-2xl border border-obsidian/8 p-4"><div className="flex items-center gap-2 text-ember">{icon}<p className="text-[10px] font-black uppercase tracking-wider">{eyebrow}</p></div><p className="mt-3 font-semibold text-obsidian">{title}</p><p className="mt-1 text-xs leading-relaxed text-obsidian/45">{text}</p></div>;
+  return <div className="rounded-2xl border border-obsidian/8 p-4"><div className="flex items-center gap-2 text-ember">{icon}<p className="text-[10px] font-bold uppercase tracking-wider">{eyebrow}</p></div><p className="mt-3 font-semibold text-obsidian">{title}</p><p className="mt-1 text-xs leading-relaxed text-obsidian/45">{text}</p></div>;
 }
 
 function ActionButton({ icon, label, onClick, disabled = false }: { icon?: React.ReactNode; label: string; onClick: () => void; disabled?: boolean }) {

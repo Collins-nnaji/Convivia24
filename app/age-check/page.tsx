@@ -14,12 +14,14 @@ export default async function AgeCheckPage({ searchParams }: Props) {
   const rateLimited = params.error === 'rate';
 
   return (
-    <div className="min-h-[100dvh] flex items-center justify-center bg-obsidian px-5 py-10">
-      <form method="post" action="/api/age-gate" className="w-full max-w-md bg-white p-8 sm:p-10 shadow-2xl">
+    <div className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-[linear-gradient(118deg,#050505_0%,#141212_55%,#2a1210_100%)] px-5 py-10">
+      <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.07] [background-image:radial-gradient(circle_at_1px_1px,#fff_1px,transparent_0)] [background-size:22px_22px]" />
+      <div aria-hidden className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-saffron/15 blur-3xl" />
+      <form method="post" action="/api/age-gate" className="relative w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl sm:p-10">
         <input type="hidden" name="next" value={next} />
         <img src="/convivia24.png" alt="Convivia24" className="h-10 w-auto rounded-sm mb-6" />
-        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ember mb-3">Delivery in supported areas across Nigeria · 18+</p>
-        <h1 className="text-2xl sm:text-3xl font-bold text-obsidian leading-tight mb-3">
+        <p className="mb-3 text-[12px] font-bold uppercase tracking-[0.16em] text-ember">Delivery in supported areas across Nigeria · 18+</p>
+        <h1 className="mb-3 font-serif text-[2rem] font-light leading-tight tracking-tight text-obsidian sm:text-[2.4rem]">
           Are you of legal drinking age?
         </h1>
         <p className="text-sm text-obsidian/55 leading-relaxed mb-8">

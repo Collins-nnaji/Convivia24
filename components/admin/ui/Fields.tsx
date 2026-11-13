@@ -9,7 +9,7 @@ export const adminInputClass =
 export function AdminLabel({ children, hint }: { children: ReactNode; hint?: string }) {
   return (
     <span className="mb-1.5 flex items-baseline gap-2">
-      <span className="text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/45">{children}</span>
+      <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/45">{children}</span>
       {hint && <span className="text-[11px] font-normal normal-case tracking-normal text-obsidian/35">{hint}</span>}
     </span>
   );

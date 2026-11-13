@@ -155,7 +155,7 @@ export default function BrandEnquiryForm() {
               <button
                 type="submit"
                 disabled={loading}
-                className="btn-brand text-[11px] font-black uppercase tracking-[0.14em] px-6 py-3 disabled:opacity-60"
+                className="btn-brand text-[11px] font-bold uppercase tracking-[0.14em] px-6 py-3 disabled:opacity-60 rounded-full"
               >
                 {loading ? 'Sending…' : 'Send enquiry'}
               </button>

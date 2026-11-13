@@ -52,7 +52,7 @@ function PlayChallengeCard({
   return (
     <motion.div
       whileHover={{ y: -2 }}
-      className={`bg-white text-obsidian flex items-center gap-3 sm:gap-4 max-w-lg shadow-[0_20px_50px_-30px_rgba(0,0,0,0.9)] ${
+      className={`rounded-2xl bg-white text-obsidian flex items-center gap-3 sm:gap-4 max-w-lg shadow-[0_20px_50px_-30px_rgba(0,0,0,0.9)] ${
         compact ? 'mt-3 p-3' : 'mt-6 p-4 sm:p-5'
       }`}
     >
@@ -79,9 +79,9 @@ function PlayChallengeCard({
       <button
         type="button"
         onClick={onPlay}
-        className={`btn-brand text-[10px] font-black uppercase tracking-[0.12em] inline-flex items-center gap-1 shrink-0 ${
+        className={`btn-brand text-[10px] font-bold uppercase tracking-[0.12em] inline-flex items-center gap-1 shrink-0 ${
           compact ? 'px-3.5 py-2.5' : 'px-4 sm:px-5 py-3 gap-1.5'
-        }`}
+        } rounded-full`}
       >
         Play
         <ChevronRight size={14} />
@@ -107,7 +107,7 @@ export default function FeaturedRound({
       initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45 }}
-      className="relative overflow-hidden brand-gradient text-white"
+      className="relative overflow-hidden rounded-3xl brand-gradient text-white"
     >
       <motion.div
         aria-hidden
@@ -124,7 +124,7 @@ export default function FeaturedRound({
       <div className="relative p-4 md:hidden">
         <div className="flex gap-3 items-center">
           <div className="min-w-0 flex-1">
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-white/12 text-[8px] font-black uppercase tracking-[0.2em]">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-white/12 text-[10px] font-bold uppercase tracking-[0.2em] rounded-full">
               <motion.span
                 className="w-1.5 h-1.5 rounded-full bg-white"
                 animate={{ opacity: [1, 0.25, 1] }}
@@ -132,7 +132,7 @@ export default function FeaturedRound({
               />
               Featured
             </span>
-            <h2 className="font-logo font-black uppercase tracking-tight text-xl leading-[0.95] mt-1.5">
+            <h2 className="font-serif font-light tracking-tight text-xl leading-[0.95] mt-1.5">
               {round.brand}
             </h2>
             {match > 0 && (
@@ -148,7 +148,7 @@ export default function FeaturedRound({
       {/* Desktop — original spacious two-column layout */}
       <div className="relative hidden md:grid md:grid-cols-12 gap-6 items-center p-6 sm:p-9">
         <div className="md:col-span-7 min-w-0">
-          <span className="inline-flex items-center gap-2 px-2.5 py-1 bg-white/12 text-[9px] font-black uppercase tracking-[0.2em]">
+          <span className="inline-flex items-center gap-2 px-2.5 py-1 bg-white/12 text-[11px] font-bold uppercase tracking-[0.2em] rounded-full">
             <motion.span
               className="w-1.5 h-1.5 rounded-full bg-white"
               animate={{ opacity: [1, 0.25, 1] }}
@@ -157,7 +157,7 @@ export default function FeaturedRound({
             Featured for you
           </span>
 
-          <h2 className="font-logo font-black uppercase tracking-tight text-3xl sm:text-5xl leading-[0.95] mt-4">
+          <h2 className="font-serif font-light tracking-tight text-3xl sm:text-5xl leading-[0.95] mt-4">
             {round.brand}
           </h2>
 
@@ -166,7 +166,7 @@ export default function FeaturedRound({
               <p className="text-[12px] text-white/70 whitespace-nowrap tabular-nums">
                 {match}% match for your taste
               </p>
-              <div className="h-[3px] flex-1 bg-white/15 overflow-hidden">
+              <div className="h-[3px] flex-1 rounded-full bg-white/15 overflow-hidden">
                 <motion.div
                   className="h-full bg-white"
                   initial={{ width: 0 }}

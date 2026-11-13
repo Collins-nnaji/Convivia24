@@ -37,7 +37,7 @@ function Age18Badge() {
       title="18+"
       aria-label="Ages 18 and over"
     >
-      <span className="font-wordmark-sm text-[9px] sm:text-[10px] tracking-[0.06em] leading-none">18+</span>
+      <span className="font-wordmark-sm text-[11px] sm:text-[10px] tracking-[0.06em] leading-none">18+</span>
     </span>
   );
 }

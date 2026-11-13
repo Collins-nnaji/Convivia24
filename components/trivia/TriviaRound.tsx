@@ -73,7 +73,7 @@ export default function TriviaRoundPlayer({
       <button
         type="button"
         onClick={onExit}
-        className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/45 hover:text-obsidian mb-6"
+        className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/45 hover:text-obsidian mb-6"
       >
         <ArrowLeft size={14} /> Back to Discover
       </button>
@@ -132,7 +132,7 @@ function Quiz({
   return (
     <div>
       <div className="flex items-center justify-between gap-4 mb-3">
-        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-ember flex items-center gap-2">
+        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-ember flex items-center gap-2">
           <HouseGlyph glyph={round.glyph} className="w-4 h-4" />
           {round.brand}
           {!isLive && <span className="text-obsidian/35">· practice</span>}
@@ -158,7 +158,7 @@ function Quiz({
           transition={{ duration: 0.28 }}
           className="bg-white p-6 sm:p-8 shadow-[0_12px_40px_-24px_rgba(10,10,10,0.35)]"
         >
-          <h2 className="text-xl font-bold leading-snug mb-6">{question.prompt}</h2>
+          <h2 className="text-xl font-serif font-light leading-snug mb-6">{question.prompt}</h2>
 
           <ul className="space-y-2.5">
             {question.options.map((option, i) => {
@@ -201,7 +201,7 @@ function Quiz({
               >
                 <div className="mt-6 pt-5 border-t border-obsidian/10">
                   <p
-                    className={`text-[10px] font-black uppercase tracking-[0.18em] mb-2 ${
+                    className={`text-[10px] font-bold uppercase tracking-[0.18em] mb-2 ${
                       correct ? 'text-ember' : 'text-obsidian/40'
                     }`}
                   >
@@ -214,7 +214,7 @@ function Quiz({
                   <button
                     type="button"
                     onClick={onNext}
-                    className="mt-5 px-6 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em]"
+                    className="mt-5 px-6 py-3 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] rounded-full"
                   >
                     {step + 1 >= round.questions.length ? 'See result' : 'Next question'}
                   </button>
@@ -304,12 +304,12 @@ function Result({
     >
       <div className="flex items-start justify-between gap-5">
         <div className="min-w-0">
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-ember mb-2">{round.brand}</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-ember mb-2">{round.brand}</p>
           <motion.h2
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: 'spring', stiffness: 220, damping: 16 }}
-            className="font-logo font-extrabold uppercase tracking-tight text-3xl"
+            className="font-serif font-light tracking-tight text-3xl"
           >
             {score} / {round.questions.length}
           </motion.h2>
@@ -351,16 +351,16 @@ function Result({
         <form onSubmit={enterDraw} className="mt-6 pt-6 border-t border-obsidian/10 space-y-4">
           <div className="grid sm:grid-cols-2 gap-4">
             <label className="block">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 block mb-1">Name</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian/40 block mb-1">Name</span>
               <input value={name} onChange={(e) => setName(e.target.value)} required className={inputClass} />
             </label>
             <label className="block">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 block mb-1">Email</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian/40 block mb-1">Email</span>
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={inputClass} />
             </label>
           </div>
           <label className="block">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 block mb-1">
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian/40 block mb-1">
               Phone (optional)
             </span>
             <input value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} />
@@ -373,7 +373,7 @@ function Result({
           <button
             type="submit"
             disabled={sending}
-            className="px-6 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em] disabled:opacity-50"
+            className="px-6 py-3 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] disabled:opacity-50 rounded-full"
           >
             {sending ? 'Entering…' : 'Enter the draw'}
           </button>
@@ -386,7 +386,7 @@ function Result({
           animate={{ opacity: 1, y: 0 }}
           className="mt-6 pt-6 border-t border-obsidian/10"
         >
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 mb-1">You&apos;re entered</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian/40 mb-1">You&apos;re entered</p>
           <p className="font-mono text-2xl font-bold text-ember">{code}</p>
           <p className="text-sm text-obsidian/55 mt-2">
             Keep this reference — we&apos;ll email you if your name comes out for the {round.prizeLabel}.
@@ -399,7 +399,7 @@ function Result({
           <button
             type="button"
             onClick={onRetry}
-            className="px-5 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em]"
+            className="px-5 py-3 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] rounded-full"
           >
             Play again
           </button>
@@ -407,13 +407,13 @@ function Result({
         <button
           type="button"
           onClick={onExit}
-          className="px-5 py-3 border border-obsidian/15 text-[11px] font-black uppercase tracking-[0.12em]"
+          className="px-5 py-3 border border-obsidian/15 text-[11px] font-bold uppercase tracking-[0.12em] rounded-full"
         >
           Other rounds
         </button>
         <Link
           href={`/shop/${round.prizeSlug}`}
-          className="px-5 py-3 border border-obsidian/15 text-[11px] font-black uppercase tracking-[0.12em]"
+          className="px-5 py-3 border border-obsidian/15 text-[11px] font-bold uppercase tracking-[0.12em] rounded-full"
         >
           Shop {round.brand}
         </Link>

@@ -86,7 +86,7 @@ export default function GuestCardStrip({
             <CreditCard size={15} />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-[10px] font-black uppercase tracking-[0.18em] text-ember leading-none mb-0.5">
+            <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-ember leading-none mb-0.5">
               Guest Card
             </span>
             <span className="block text-xs text-obsidian/60 truncate">{summary}</span>
@@ -124,7 +124,7 @@ export default function GuestCardStrip({
   }
 
   return (
-    <div className={`border border-obsidian/10 bg-white ${className}`}>
+    <div className={`border border-obsidian/10 bg-white ${className} rounded-2xl`}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -136,7 +136,7 @@ export default function GuestCardStrip({
           <CreditCard size={16} />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[10px] font-black uppercase tracking-[0.2em] text-ember">Guest Card</span>
+          <span className="block text-[10px] font-bold uppercase tracking-[0.2em] text-ember">Guest Card</span>
           <span className="block text-[12px] text-obsidian/55 truncate">
             {enrolled
               ? `${standing?.tierName} · ${points.toLocaleString('en-NG')} pts${
@@ -206,11 +206,11 @@ function GuestCardDetails({
         <>
           <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
             <div>
-              <dt className="text-[10px] font-black uppercase tracking-[0.16em] text-obsidian/35">Tier</dt>
+              <dt className="text-[10px] font-bold uppercase tracking-[0.16em] text-obsidian/35">Tier</dt>
               <dd className="font-semibold">{standing?.tierName}</dd>
             </div>
             <div>
-              <dt className="text-[10px] font-black uppercase tracking-[0.16em] text-obsidian/35">Shop discount</dt>
+              <dt className="text-[10px] font-bold uppercase tracking-[0.16em] text-obsidian/35">Shop discount</dt>
               <dd className="font-semibold">{discountPct > 0 ? `${discountPct}%` : 'None yet'}</dd>
             </div>
           </dl>
@@ -221,7 +221,7 @@ function GuestCardDetails({
           </p>
           <Link
             href="/guest-card"
-            className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-ember hover:gap-2.5 transition-all"
+            className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-ember hover:gap-2.5 transition-all"
           >
             Manage card & perks <ArrowRight size={12} />
           </Link>
@@ -236,7 +236,7 @@ function GuestCardDetails({
             type="button"
             onClick={onClaim}
             disabled={claiming}
-            className="mt-3 px-5 py-2.5 btn-brand text-[10px] font-black uppercase tracking-[0.14em] disabled:opacity-50"
+            className="mt-3 px-5 py-2.5 btn-brand text-[10px] font-bold uppercase tracking-[0.14em] disabled:opacity-50 rounded-full"
           >
             {claiming ? 'Claiming…' : 'Claim my card'}
           </button>

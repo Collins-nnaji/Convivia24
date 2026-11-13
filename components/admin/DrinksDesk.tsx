@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } fro
 import Image from 'next/image';
 import { ChevronDown, FileText, Plus, Sparkles, X } from 'lucide-react';
 import Modal from './ui/Modal';
-import { CATEGORIES, CATEGORY_LABELS, formatNgn } from '@/lib/drinks/catalog';
+import { BADGE_LABELS, CATEGORIES, CATEGORY_LABELS, PRODUCT_BADGES, formatNgn } from '@/lib/drinks/catalog';
 import { skuMargin } from '@/lib/suppliers/margin';
 import { derivedPackCost, isDerivedCostSku } from '@/lib/suppliers/pack-cost';
 import { DEFAULT_MARKUP, quoteRetail, type MarkupPolicy } from '@/lib/pricing/checkout-fees';
@@ -35,6 +35,11 @@ type Item = {
   tagline?: string | null;
   description?: string | null;
   taste_note?: string | null;
+  compare_at_ngn?: number | null;
+  featured?: boolean | null;
+  badge?: string | null;
+  origin?: string | null;
+  merch_rank?: number;
 };
 
 type SupplierLite = { id: string; name: string; city: string };
@@ -318,7 +323,7 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
     <>
       {msg && <p className="mb-6 text-sm text-ember">{msg}</p>}
       {advice && (
-        <div className="relative mb-8 whitespace-pre-wrap bg-white p-5 pr-12 text-sm leading-relaxed text-obsidian/70 shadow-sm">
+        <div className="relative mb-8 whitespace-pre-wrap bg-white p-5 pr-12 text-sm leading-relaxed text-obsidian/70 shadow-sm rounded-2xl">
           {advice}
           <button
             type="button"
@@ -339,10 +344,10 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
         onClose={closeForm}
         footer={
           <>
-            <button type="button" onClick={closeForm} className="rounded-lg border border-obsidian/15 px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/70 hover:bg-obsidian/[0.04]">
+            <button type="button" onClick={closeForm} className="rounded-full border border-obsidian/15 px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/70 hover:bg-obsidian/[0.04]">
               {product.slug ? 'Discard' : 'Cancel'}
             </button>
-            <button type="submit" form="admin-product-form" disabled={loading} className="btn-brand rounded-lg px-6 py-2.5 text-[11px] font-black uppercase tracking-[0.14em] disabled:opacity-50">
+            <button type="submit" form="admin-product-form" disabled={loading} className="btn-brand rounded-full px-6 py-2.5 text-[11px] font-bold uppercase tracking-[0.14em] disabled:opacity-50">
               {loading ? 'Saving…' : 'Save to shop'}
             </button>
           </>
@@ -375,7 +380,7 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
             onChange={(e) => setField('tasteNote')(e.target.value)}
           />
           <div className="border-t border-obsidian/8 pt-4">
-            <p className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40">
+            <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian/40">
               Brand story (optional — shared across same brand)
             </p>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -392,7 +397,7 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
             onClick={generateCopy}
             disabled={loading || !aiOk}
             title={aiOk ? undefined : 'Azure OpenAI is not configured'}
-            className="inline-flex items-center gap-1.5 border border-obsidian/15 px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/60 hover:text-ember disabled:opacity-40"
+            className="inline-flex items-center gap-1.5 border border-obsidian/15 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/60 hover:text-ember disabled:opacity-40"
           >
             <Sparkles size={13} /> {loading ? 'Generating…' : 'Generate copy with AI'}
           </button>
@@ -425,7 +430,7 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
             setProduct(EMPTY_PRODUCT);
             setFormOpen(true);
           }}
-          className="btn-brand inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em]"
+          className="btn-brand inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em]"
         >
           <Plus size={13} /> Add a drink
         </button>
@@ -434,7 +439,7 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
           onClick={askAdvice}
           disabled={loading || !aiOk}
           title={aiOk ? undefined : 'Azure OpenAI is not configured'}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-obsidian/15 px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/70 transition-colors hover:bg-obsidian/[0.04] disabled:opacity-40"
+          className="inline-flex items-center gap-1.5 rounded-full border border-obsidian/15 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/70 transition-colors hover:bg-obsidian/[0.04] disabled:opacity-40"
         >
           <Sparkles size={13} /> AI stock advice
         </button>
@@ -479,7 +484,7 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
           {suppliers[0] ? ` · ${suppliers[0].name}` : ''}
         </span>
       </div>
-      <div className="hidden min-w-[980px] grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(0,.55fr))_auto] gap-3 border-x border-t border-obsidian/10 bg-paper px-4 py-3 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40 lg:grid">
+      <div className="hidden min-w-[980px] grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(0,.55fr))_auto] gap-3 border-x border-t border-obsidian/10 bg-paper px-4 py-3 text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/40 lg:grid">
         <span>SKU</span>
         <span className="text-right">On hand</span>
         <span className="text-right">Cost</span>
@@ -609,7 +614,7 @@ function SupplierQtyField({
 
   return (
     <div className="rounded-xl border border-obsidian/10 bg-paper/50 p-2.5">
-      <span className="block text-[10px] font-black uppercase tracking-[0.1em] text-obsidian/45">{supplier.city}</span>
+      <span className="block text-[10px] font-bold uppercase tracking-[0.1em] text-obsidian/45">{supplier.city}</span>
       <span className="mb-1.5 block truncate text-[11px] text-obsidian/40">{supplier.name}</span>
       <label className="block text-[10px] text-obsidian/40">
         Stock
@@ -691,7 +696,7 @@ function StockHistory({ slug, saving, item }: { slug: string; saving: boolean; i
   const delta = (n: number) => (n === 0 ? '·' : n > 0 ? `+${n}` : String(n));
   return (
     <table className="w-full text-xs">
-      <thead className="text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40">
+      <thead className="text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/40">
         <tr>
           <th className="py-1 text-left">When</th>
           <th className="py-1 text-left">What</th>
@@ -759,6 +764,7 @@ function StockRow({
   const [guideOpen, setGuideOpen] = useState(false);
   const [suppliersOpen, setSuppliersOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [merchOpen, setMerchOpen] = useState(false);
 
   useEffect(() => {
     setOnHand(String(item.on_hand));
@@ -801,9 +807,14 @@ function StockRow({
     ...(lowStock ? [{ label: 'Low', tone: 'text-amber-700' }] : []),
     ...(!item.active ? [{ label: 'Off shop', tone: 'text-red-600' }] : []),
     ...(item.taste_note ? [] : [{ label: 'No guide' }]),
+    ...(item.featured ? [{ label: 'Featured', tone: 'text-ember' }] : []),
+    ...(item.compare_at_ngn && item.price_ngn && item.compare_at_ngn > item.price_ngn
+      ? [{ label: `Save ${formatNgn(item.compare_at_ngn - item.price_ngn)}`, tone: 'text-emerald-700' }]
+      : []),
+    ...(item.badge && item.badge in BADGE_LABELS ? [{ label: BADGE_LABELS[item.badge as keyof typeof BADGE_LABELS] }] : []),
   ];
   const cell = `${adminInputClass} py-2`;
-  const btn = 'px-3 py-2.5 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-40';
+  const btn = 'px-3 py-2.5 border border-obsidian/15 text-[10px] font-bold uppercase tracking-[0.12em] disabled:opacity-40';
 
   return (
     <div className="min-w-[980px] space-y-3 border-x border-t border-obsidian/10 bg-white p-4">
@@ -817,7 +828,7 @@ function StockRow({
           <div className="min-w-0">
             <p className="truncate font-medium">{item.name}</p>
             <p className="truncate font-mono text-[11px] text-obsidian/40">{item.slug}</p>
-            <p className="mt-0.5 flex flex-wrap gap-x-1.5 text-[10px] font-black uppercase tracking-[0.1em] text-obsidian/35">
+            <p className="mt-0.5 flex flex-wrap gap-x-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-obsidian/35">
               {chips.map((c, i) => (
                 <span key={c.label} className={c.tone}>
                   {i > 0 && <span className="text-obsidian/20">· </span>}
@@ -920,7 +931,7 @@ function StockRow({
                 tasteNote,
               })
             }
-            className="btn-brand px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-35"
+            className="btn-brand px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] disabled:opacity-35"
           >
             {saving ? '…' : 'Save'}
           </button>
@@ -932,6 +943,9 @@ function StockRow({
               {suppliers[0]?.name || 'Stock'}
             </button>
           )}
+          <button type="button" onClick={() => setMerchOpen((v) => !v)} aria-expanded={merchOpen} className={btn}>
+            Merchandise
+          </button>
           <button type="button" onClick={() => setGuideOpen((v) => !v)} aria-expanded={guideOpen} className={btn}>
             Guide
           </button>
@@ -945,7 +959,7 @@ function StockRow({
             type="button"
             disabled={saving}
             onClick={onDelete}
-            className="border border-ember/40 px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.12em] text-ember disabled:opacity-40"
+            className="border border-ember/40 px-3 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] text-ember disabled:opacity-40"
           >
             Delete
           </button>
@@ -954,7 +968,7 @@ function StockRow({
 
       {suppliersOpen && suppliers.length > 0 && (
         <div className="mt-3 border-t border-obsidian/10 pt-3">
-          <p className="mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40">
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/40">
             {suppliers[0]?.name || 'Supplier'} stock &amp; cost
           </p>
           <div className="grid gap-2 sm:grid-cols-1 max-w-md">
@@ -977,9 +991,11 @@ function StockRow({
         </div>
       )}
 
+      {merchOpen && <MerchPanel item={item} retailNgn={price === '' ? item.price_ngn : Number(price)} saving={saving} onSave={onSave} />}
+
       {historyOpen && (
         <div className="border-t border-obsidian/10 pt-3">
-          <p className="mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40">Stock &amp; price history</p>
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/40">Stock &amp; price history</p>
           <StockHistory slug={item.slug} saving={saving} item={item} />
         </div>
       )}
@@ -1002,6 +1018,81 @@ function StockRow({
           </p>
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * How the bottle is sold on the storefront: Handpicked, the SAVE badge, the ribbon and the Country
+ * facet. Saved through the same audited `adjust` action as stock and price.
+ */
+function MerchPanel({
+  item,
+  retailNgn,
+  saving,
+  onSave,
+}: {
+  item: Item;
+  retailNgn: number | null;
+  saving: boolean;
+  onSave: (patch: Record<string, unknown>) => void;
+}) {
+  const [featured, setFeatured] = useState(Boolean(item.featured));
+  const [compareAt, setCompareAt] = useState(item.compare_at_ngn != null ? String(item.compare_at_ngn) : '');
+  const [badge, setBadge] = useState(item.badge || '');
+  const [origin, setOrigin] = useState(item.origin || '');
+  const [rank, setRank] = useState(String(item.merch_rank ?? 0));
+
+  const was = compareAt === '' ? null : Number(compareAt);
+  const saving_ = was != null && retailNgn != null && was > retailNgn ? was - retailNgn : 0;
+  const dirty =
+    featured !== Boolean(item.featured) ||
+    compareAt !== (item.compare_at_ngn != null ? String(item.compare_at_ngn) : '') ||
+    badge !== (item.badge || '') ||
+    origin !== (item.origin || '') ||
+    rank !== String(item.merch_rank ?? 0);
+
+  return (
+    <div className="space-y-3 border-t border-obsidian/10 pt-3">
+      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/40">Storefront merchandising</p>
+      <div className="grid gap-3 sm:grid-cols-5">
+        <label className="flex items-center gap-2 self-end rounded-lg border border-obsidian/12 px-3 py-2.5 text-sm">
+          <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} className="rounded text-ember focus:ring-ember" />
+          Handpicked (home)
+        </label>
+        <div>
+          <AdminInput
+            label="Was price (NGN)"
+            hint="blank = no offer"
+            type="number"
+            min={0}
+            inputMode="numeric"
+            value={compareAt}
+            onChange={(e) => setCompareAt(e.target.value)}
+            className={`${adminInputClass} py-2`}
+          />
+          <p className={`mt-1 text-[11px] font-semibold ${saving_ ? 'text-emerald-700' : 'text-obsidian/40'}`}>
+            {saving_ ? `Shows SAVE ${formatNgn(saving_)}` : was != null ? 'Must be above retail to show an offer' : 'Not on offer'}
+          </p>
+        </div>
+        <AdminSelect
+          label="Ribbon"
+          value={badge}
+          onChange={setBadge}
+          placeholder="None"
+          options={PRODUCT_BADGES.map((b) => ({ value: b, label: BADGE_LABELS[b] }))}
+        />
+        <AdminInput label="Country" placeholder="Scotland" value={origin} onChange={(e) => setOrigin(e.target.value)} className={`${adminInputClass} py-2`} />
+        <AdminInput label="Rank" hint="higher shows first" type="number" inputMode="numeric" value={rank} onChange={(e) => setRank(e.target.value)} className={`${adminInputClass} py-2`} />
+      </div>
+      <button
+        type="button"
+        disabled={saving || !dirty}
+        onClick={() => onSave({ featured, compareAtNgn: compareAt, badge, origin, merchRank: rank || 0 })}
+        className="btn-brand px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] disabled:opacity-35"
+      >
+        {saving ? '…' : 'Save merchandising'}
+      </button>
     </div>
   );
 }

@@ -45,7 +45,7 @@ export default function ReferApplyForm() {
     const link =
       typeof window !== 'undefined' ? `${window.location.origin}/?ref=${result.code}` : `/?ref=${result.code}`;
     return (
-      <div className="bg-white border border-obsidian/10 p-6">
+      <div className="bg-white border border-obsidian/10 p-6 rounded-2xl">
         <p className="text-[10px] uppercase tracking-wider text-ember mb-2">You are in</p>
         <h2 className="font-wordmark-sm text-base text-obsidian mb-3">Your code is {result.code}</h2>
         <p className="text-sm text-obsidian/60 leading-relaxed mb-4">
@@ -74,7 +74,7 @@ export default function ReferApplyForm() {
           </button>
         </div>
 
-        <Link href="/your-referrals" className="text-[11px] font-black uppercase tracking-[0.16em] text-ember">
+        <Link href="/your-referrals" className="text-[11px] font-bold uppercase tracking-[0.16em] text-ember">
           Open your dashboard →
         </Link>
       </div>
@@ -85,7 +85,7 @@ export default function ReferApplyForm() {
     'w-full bg-transparent border-0 border-b border-obsidian/20 focus:border-ember focus:ring-0 text-obsidian text-sm py-2.5 px-0 placeholder-obsidian/25';
 
   return (
-    <form onSubmit={submit} className="bg-white border border-obsidian/10 p-6 space-y-5">
+    <form onSubmit={submit} className="bg-white border border-obsidian/10 p-6 space-y-5 rounded-2xl">
       <div className="grid sm:grid-cols-2 gap-5">
         <label className="block">
           <span className="text-[10px] uppercase tracking-wider text-obsidian/40">Your name</span>
@@ -137,7 +137,7 @@ export default function ReferApplyForm() {
       <button
         type="submit"
         disabled={loading}
-        className="btn-brand text-[11px] font-black uppercase tracking-[0.14em] px-6 py-3 disabled:opacity-60"
+        className="btn-brand text-[11px] font-bold uppercase tracking-[0.14em] px-6 py-3 disabled:opacity-60 rounded-full"
       >
         {loading ? 'Submitting…' : 'Get my referral code'}
       </button>

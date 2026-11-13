@@ -3,35 +3,47 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown, Gift, LogOut, Menu, ShoppingBag, UserRound, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, Gift, Heart, LogOut, Menu, Search, ShoppingBag, UserRound, X } from 'lucide-react';
 import { useCart } from '@/components/cart/CartProvider';
 import { useUser } from '@/components/auth/AuthProvider';
-import { formatNgn } from '@/lib/drinks/catalog';
+import AnnouncementBar from '@/components/nav/AnnouncementBar';
+import CategoryNav from '@/components/nav/CategoryNav';
+import SearchBox from '@/components/nav/SearchBox';
+import { CATEGORIES, CATEGORY_LABELS, formatNgn } from '@/lib/drinks/catalog';
 import { isNavActive, primaryNavLinks } from '@/lib/nav';
 
 const LINKS = primaryNavLinks();
+/** The category row covers Shop, so the utility row carries the rest of the app. */
+const UTILITY_LINKS = LINKS.filter((l) => l.href !== '/shop');
 
 const NAV_ICONS = { gift: Gift } as const;
 
+/**
+ * Storefront header:
+ *   announcement bar (scrolls away) → sticky main row (logo · search · account · basket)
+ *   → department row with mega menus (scrolls away).
+ * Only the main row is sticky and it keeps the 4.5rem height every `sticky top-24` aside and the
+ * admin shell were built around. Staff areas get the main row only.
+ */
 export default function Navigation() {
-  const pathname = usePathname();
+  const pathname = usePathname() || '/';
   const { count, subtotalNgn } = useCart();
   const { user, loading, signOut } = useUser();
   const [open, setOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [mobileSearch, setMobileSearch] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const staff = pathname.startsWith('/admin') || pathname.startsWith('/supplier');
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    // On mobile the page itself doesn't scroll — #app-scroll does (see the
-    // (public) layout's app-shell wrapper) — so both need watching. On
-    // desktop that element reverts to normal flow and window scroll fires.
+    // On mobile #app-scroll scrolls (see PublicShell); on desktop the window does.
     const appScroll = document.getElementById('app-scroll');
     const handler = () => setScrolled(window.scrollY > 8 || (appScroll?.scrollTop ?? 0) > 8);
     window.addEventListener('scroll', handler, { passive: true });
@@ -46,81 +58,95 @@ export default function Navigation() {
   useEffect(() => {
     setOpen(false);
     setAccountOpen(false);
+    setMobileSearch(false);
   }, [pathname]);
 
-  const isActive = (href: string) => {
-    if (href === '/shop') {
-      return pathname === '/shop' || pathname.startsWith('/shop/');
-    }
-    return isNavActive(pathname, href);
-  };
-
+  const isActive = (href: string) => isNavActive(pathname, href);
   const firstName = user?.name?.split(' ')[0] || user?.email?.split('@')[0] || 'Account';
   const authReady = mounted && !loading;
   const signedIn = authReady && Boolean(user);
+  const signInHref = `/signin?next=${encodeURIComponent(pathname)}`;
 
   return (
     <>
+      {!staff && <AnnouncementBar />}
+
       <header
-        className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
-          scrolled
-            ? 'bg-white/95 backdrop-blur-md shadow-[0_1px_0_0_rgba(10,10,10,0.08)]'
-            : 'bg-white border-b border-obsidian/6'
+        className={`sticky top-0 z-50 shrink-0 bg-white transition-shadow duration-300 ${
+          scrolled ? 'shadow-[0_1px_0_0_rgba(10,10,10,0.08),0_8px_24px_-16px_rgba(10,10,10,0.25)]' : 'border-b border-obsidian/[0.06]'
         }`}
       >
-        <div className="max-w-[1600px] w-full mx-auto px-3 sm:px-4 lg:px-5 h-16 md:h-[4.5rem] flex items-center justify-between gap-3">
-          <Link href="/" className="shrink-0 flex items-center" aria-label="Convivia24">
-            <Image
-              src="/convivia24.png"
-              alt="Convivia24"
-              width={299}
-              height={55}
-              priority
-              className="h-8 sm:h-11 w-auto rounded-sm"
-            />
+        <div className="mx-auto flex h-16 w-full max-w-[1600px] items-center gap-2 px-3 sm:px-4 md:h-[4.5rem] lg:gap-6 lg:px-5">
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="-ml-1 grid h-10 w-10 place-items-center text-obsidian lg:hidden"
+            aria-label="Open menu"
+          >
+            <Menu size={22} />
+          </button>
+
+          <Link href="/" className="flex shrink-0 items-center" aria-label="Convivia24 home">
+            <Image src="/convivia24.png" alt="Convivia24" width={299} height={55} priority className="h-7 w-auto rounded-sm sm:h-9 lg:h-10" />
           </Link>
 
-          <nav className="hidden md:flex items-center gap-1 ml-auto">
-            {LINKS.map(({ label, href, icon, accent, children }) => (
-              <DesktopNavLink
-                key={href}
-                href={href}
-                label={label}
-                active={isActive(href)}
-                icon={icon ? NAV_ICONS[icon] : undefined}
-                accent={accent}
-                subLinks={children}
-              />
-            ))}
+          {!staff && <SearchBox className="mx-auto hidden w-full max-w-xl flex-1 md:block" />}
 
-            <CartButton
-              count={count}
-              subtotalNgn={subtotalNgn}
-              active={isActive('/cart')}
-              showCounts={mounted}
-            />
+          <nav className="ml-auto hidden items-center gap-1 lg:flex" aria-label="Main">
+            {UTILITY_LINKS.map(({ label, href, icon }) => {
+              const Icon = icon ? NAV_ICONS[icon] : null;
+              const active = isActive(href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-2 text-[13px] font-medium transition-colors ${
+                    active ? 'bg-obsidian/[0.06] text-obsidian' : 'text-obsidian/65 hover:text-obsidian'
+                  }`}
+                >
+                  {Icon && <Icon size={15} strokeWidth={2.2} className="text-ember" />}
+                  {label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="ml-auto flex items-center gap-0.5 lg:ml-0">
+            {!staff && (
+              <button
+                type="button"
+                onClick={() => setMobileSearch((v) => !v)}
+                className="grid h-10 w-10 place-items-center text-obsidian md:hidden"
+                aria-label={mobileSearch ? 'Close search' : 'Search'}
+                aria-expanded={mobileSearch}
+              >
+                {mobileSearch ? <X size={21} /> : <Search size={21} />}
+              </button>
+            )}
+
+            <Link href="/my-account?section=saved" className="hidden h-10 w-10 place-items-center text-obsidian/70 hover:text-obsidian sm:grid" aria-label="Saved bottles">
+              <Heart size={20} />
+            </Link>
 
             {!authReady ? (
-              <span
-                className="ml-2 inline-block h-10 w-24 rounded-full bg-obsidian/[0.04]"
-                aria-hidden
-              />
+              <span className="hidden h-10 w-10 sm:inline-block" aria-hidden />
             ) : signedIn && user ? (
-              <div className="relative ml-1">
+              <div className="relative hidden sm:block">
                 <button
                   type="button"
                   onClick={() => setAccountOpen((v) => !v)}
-                  className="inline-flex items-center gap-2 rounded-full py-1 pl-1 pr-2.5 text-obsidian transition-colors hover:bg-obsidian/[0.04]"
+                  className="inline-flex items-center gap-1.5 rounded-full py-1 pl-1 pr-2 text-obsidian transition-colors hover:bg-obsidian/[0.04]"
                   aria-expanded={accountOpen}
+                  aria-label="Your account"
                 >
                   {user.image ? (
-                    <Image src={user.image} alt="" width={28} height={28} className="w-7 h-7 rounded-full object-cover ring-1 ring-obsidian/10" />
+                    <Image src={user.image} alt="" width={28} height={28} className="h-7 w-7 rounded-full object-cover ring-1 ring-obsidian/10" />
                   ) : (
-                    <span className="w-7 h-7 rounded-full bg-ember/10 text-ember flex items-center justify-center text-xs font-semibold ring-1 ring-ember/15">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-ember/10 text-xs font-semibold text-ember ring-1 ring-ember/15">
                       {firstName.slice(0, 1).toUpperCase()}
                     </span>
                   )}
-                  <span className="font-wordmark text-[13px] tracking-[0.08em] font-bold max-w-[6rem] truncate">{firstName}</span>
+                  <span className="hidden max-w-[6rem] truncate text-[13px] font-semibold xl:inline">{firstName}</span>
                   <ChevronDown size={14} className={`text-obsidian/40 transition-transform ${accountOpen ? 'rotate-180' : ''}`} />
                 </button>
                 <AnimatePresence>
@@ -129,30 +155,26 @@ export default function Navigation() {
                       initial={{ opacity: 0, y: -4 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -4 }}
-                      className="absolute right-0 top-full mt-2 w-56 bg-white border border-obsidian/10 shadow-lg py-2 z-50"
+                      className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-obsidian/10 bg-white py-2 shadow-lg"
                     >
-                      <p className="px-4 py-2 text-[11px] text-obsidian/45 truncate border-b border-obsidian/6 mb-1">
-                        {user.email}
-                      </p>
-                      <Link href="/my-account" className="block px-4 py-2.5 font-wordmark text-xs tracking-[0.1em] font-semibold hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
-                        My profile
-                      </Link>
-                      <Link href="/party-planner" className="block px-4 py-2.5 font-wordmark text-xs tracking-[0.1em] font-semibold hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
-                        My night plans
-                      </Link>
-                      <Link href="/orders" className="block px-4 py-2.5 font-wordmark text-xs tracking-[0.1em] font-semibold hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
-                        Order history
-                      </Link>
-                      <Link href="/shop/refer-and-earn" className="block px-4 py-2.5 font-wordmark text-xs tracking-[0.1em] font-semibold hover:bg-ember/5" onClick={() => setAccountOpen(false)}>
-                        Refer &amp; earn
-                      </Link>
+                      <p className="mb-1 truncate border-b border-obsidian/6 px-4 py-2 text-[11px] text-obsidian/45">{user.email}</p>
+                      {[
+                        ['My profile', '/my-account'],
+                        ['Order history', '/orders'],
+                        ['My night plans', '/party-planner'],
+                        ['Refer & earn', '/shop/refer-and-earn'],
+                      ].map(([label, href]) => (
+                        <Link key={href} href={href} onClick={() => setAccountOpen(false)} className="block px-4 py-2.5 text-sm font-medium hover:bg-shell">
+                          {label}
+                        </Link>
+                      ))}
                       <button
                         type="button"
                         onClick={() => {
                           setAccountOpen(false);
                           signOut();
                         }}
-                        className="w-full text-left px-4 py-2.5 font-wordmark text-xs tracking-[0.1em] font-semibold text-ember inline-flex items-center gap-2 hover:bg-ember/5"
+                        className="inline-flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-ember hover:bg-shell"
                       >
                         <LogOut size={14} /> Sign out
                       </button>
@@ -161,40 +183,27 @@ export default function Navigation() {
                 </AnimatePresence>
               </div>
             ) : (
-              <Link
-                href={`/signin?next=${encodeURIComponent(pathname || '/')}`}
-                className="ml-2 inline-flex items-center gap-1.5 px-2 py-1.5 font-wordmark text-[13px] tracking-[0.1em] font-medium text-obsidian/65 transition-colors hover:text-obsidian"
-              >
-                <UserRound size={16} /> Sign in
+              <Link href={signInHref} className="hidden h-10 w-10 place-items-center text-obsidian/70 hover:text-obsidian sm:grid" aria-label="Sign in">
+                <UserRound size={20} />
               </Link>
             )}
-          </nav>
 
-          <div className="flex items-center gap-2 md:hidden ml-auto">
-            <CartButton
-              count={count}
-              subtotalNgn={subtotalNgn}
-              active={isActive('/cart')}
-              showCounts={mounted}
-            />
-            {signedIn && user ? (
-              <span className="w-8 h-8 rounded-full badge-brand flex items-center justify-center text-[10px] font-black shrink-0">
-                {firstName.slice(0, 1).toUpperCase()}
-              </span>
-            ) : null}
-            <button
-              type="button"
-              onClick={() => setOpen((v) => !v)}
-              className="p-2 text-obsidian"
-              aria-label={open ? 'Close menu' : 'Open menu'}
-            >
-              {open ? <X size={22} /> : <Menu size={22} />}
-            </button>
+            <CartButton count={count} subtotalNgn={subtotalNgn} active={isActive('/cart')} showCounts={mounted} />
           </div>
         </div>
+
+        {mobileSearch && !staff && (
+          <div className="px-3 pb-3 md:hidden">
+            <SearchBox autoFocus onNavigate={() => setMobileSearch(false)} />
+          </div>
+        )}
       </header>
 
-      <div className="h-16 shrink-0 md:h-[4.5rem]" />
+      {!staff && (
+        <Suspense fallback={<div className="hidden h-11 border-b border-obsidian/10 md:block" />}>
+          <CategoryNav />
+        </Suspense>
+      )}
 
       <AnimatePresence>
         {open && (
@@ -204,95 +213,81 @@ export default function Navigation() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 bg-black/40 md:hidden"
+              className="fixed inset-0 z-[60] bg-black/45 lg:hidden"
               onClick={() => setOpen(false)}
             />
-            <motion.div
+            <motion.aside
               key="drawer"
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              className="fixed top-16 inset-x-0 z-50 bg-white border-b border-obsidian/10 shadow-lg md:hidden max-h-[calc(100dvh-4rem)] overflow-y-auto"
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', stiffness: 380, damping: 38 }}
+              className="fixed inset-y-0 left-0 z-[70] flex w-[86vw] max-w-sm flex-col bg-white shadow-2xl lg:hidden"
+              aria-label="Menu"
             >
-              <nav className="px-5 py-3 divide-y divide-obsidian/8">
-                {signedIn && user && (
-                  <div className="py-3.5 flex items-center gap-3">
-                    <span className="w-9 h-9 rounded-full badge-brand flex items-center justify-center text-xs font-black">
+              <div className="flex h-16 shrink-0 items-center justify-between border-b border-obsidian/8 px-4">
+                <Image src="/convivia24.png" alt="Convivia24" width={299} height={55} className="h-7 w-auto" />
+                <button type="button" onClick={() => setOpen(false)} className="grid h-10 w-10 place-items-center" aria-label="Close menu">
+                  <X size={22} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto pb-[env(safe-area-inset-bottom)]">
+                {signedIn && user ? (
+                  <div className="flex items-center gap-3 border-b border-obsidian/8 px-5 py-4">
+                    <span className="badge-brand flex h-10 w-10 items-center justify-center rounded-full text-sm font-black">
                       {firstName.slice(0, 1).toUpperCase()}
                     </span>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold truncate">{firstName}</p>
-                      <p className="text-[11px] text-obsidian/40 truncate">{user.email}</p>
+                      <p className="truncate font-semibold">Hi, {firstName}</p>
+                      <p className="truncate text-xs text-obsidian/45">{user.email}</p>
                     </div>
-                    <span className="ml-auto text-[9px] font-black uppercase tracking-wider text-emerald-600">Signed in</span>
+                  </div>
+                ) : (
+                  <div className="border-b border-obsidian/8 px-5 py-4">
+                    <Link href={signInHref} className="block w-full rounded-full bg-obsidian py-3 text-center text-sm font-bold text-white">
+                      Sign in or create account
+                    </Link>
                   </div>
                 )}
-                {LINKS.map(({ label, href, icon, accent, children }) => {
-                  const Icon = icon ? NAV_ICONS[icon] : null;
-                  return (
-                    <div key={href}>
-                      <Link
-                        href={href}
-                        scroll
-                        className={`flex items-center justify-between py-3.5 font-wordmark text-sm tracking-[0.1em] font-semibold ${
-                          isActive(href) || accent ? 'text-ember' : 'text-obsidian/70'
-                        }`}
-                      >
-                        <span className="inline-flex items-center gap-2">
-                          {Icon && <Icon size={15} strokeWidth={2.2} />}
-                          {label}
-                        </span>
-                        <span className="text-ember/40 text-lg">&rsaquo;</span>
-                      </Link>
-                      {/* Tabs of the same page, indented rather than promoted. */}
-                      {children && children.length > 1 && (
-                        <div className="pl-7 pb-2 -mt-1 space-y-1">
-                          {children.slice(1).map((child) => (
-                            <Link
-                              key={child.href}
-                              href={child.href}
-                              scroll
-                              className="block py-1.5 text-sm text-obsidian/50 hover:text-ember transition-colors"
-                            >
-                              {child.label}
-                            </Link>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-                {signedIn && user ? (
+
+                <p className="px-5 pb-1 pt-5 text-[11px] font-bold uppercase tracking-[0.16em] text-obsidian/40">Shop</p>
+                <ul>
+                  <DrawerLink href="/shop" label="All drinks" />
+                  <DrawerLink href="/shop?offer=new" label="New in" />
+                  <DrawerLink href="/shop?offer=on-offer" label="Deals" accent />
+                  {CATEGORIES.filter((c) => c !== 'party-packs').map((c) => (
+                    <DrawerLink key={c} href={`/shop?type=${c}`} label={CATEGORY_LABELS[c]} />
+                  ))}
+                  <DrawerLink href="/shop?section=packages" label="Party packs" />
+                </ul>
+
+                <p className="px-5 pb-1 pt-5 text-[11px] font-bold uppercase tracking-[0.16em] text-obsidian/40">Explore</p>
+                <ul>
+                  {UTILITY_LINKS.map((l) => (
+                    <DrawerLink key={l.href} href={l.href} label={l.label} />
+                  ))}
+                </ul>
+
+                {signedIn && (
                   <>
-                    <Link href="/my-account" className="flex items-center justify-between py-3.5 font-wordmark text-sm tracking-[0.1em] font-semibold text-obsidian/70">
-                      My profile
-                      <span className="text-ember/40 text-lg">&rsaquo;</span>
-                    </Link>
-                    <Link href="/orders" className="flex items-center justify-between py-3.5 font-wordmark text-sm tracking-[0.1em] font-semibold text-obsidian/70">
-                      Order history
-                      <span className="text-ember/40 text-lg">&rsaquo;</span>
-                    </Link>
+                    <p className="px-5 pb-1 pt-5 text-[11px] font-bold uppercase tracking-[0.16em] text-obsidian/40">Account</p>
+                    <ul>
+                      <DrawerLink href="/my-account" label="My profile" />
+                      <DrawerLink href="/orders" label="Order history" />
+                      <DrawerLink href="/my-account?section=saved" label="Saved bottles" />
+                    </ul>
                     <button
                       type="button"
                       onClick={() => signOut()}
-                      className="flex w-full items-center justify-between py-3.5 font-wordmark text-sm tracking-[0.1em] font-semibold text-ember"
+                      className="mx-5 mb-6 mt-4 inline-flex items-center gap-2 text-sm font-semibold text-ember"
                     >
-                      Sign out
-                      <LogOut size={16} />
+                      <LogOut size={15} /> Sign out
                     </button>
                   </>
-                ) : (
-                  <div className="pt-4 pb-2">
-                    <Link
-                      href={`/signin?next=${encodeURIComponent(pathname || '/')}`}
-                      className="block w-full text-center py-3.5 btn-brand text-[12px] font-black uppercase tracking-[0.12em]"
-                    >
-                      Sign in
-                    </Link>
-                  </div>
                 )}
-              </nav>
-            </motion.div>
+              </div>
+            </motion.aside>
           </>
         )}
       </AnimatePresence>
@@ -300,85 +295,17 @@ export default function Navigation() {
   );
 }
 
-function DesktopNavLink({
-  href,
-  label,
-  active,
-  icon: Icon,
-  accent,
-  subLinks,
-}: {
-  href: string;
-  label: string;
-  active: boolean;
-  icon?: typeof Gift;
-  accent?: boolean;
-  /** Renders a hover menu of the link's sub-destinations. */
-  subLinks?: { label: string; href: string }[];
-}) {
-  const [open, setOpen] = useState(false);
-
-  const link = (
-    <Link
-      href={href}
-      scroll
-      className={`relative inline-flex items-center gap-2 px-3 py-2.5 font-wordmark text-[13px] tracking-[0.1em] transition-colors ${
-        active
-          ? accent
-            ? 'font-bold text-ember'
-            : 'font-bold text-obsidian'
-          : accent
-            ? 'font-medium text-ember/70 hover:text-ember'
-            : 'font-medium text-obsidian/65 hover:text-obsidian'
-      }`}
-    >
-      {Icon && <Icon size={16} strokeWidth={2.2} />}
-      {label}
-      {active && (
-        <motion.span
-          layoutId="nav-underline"
-          className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-ember"
-          transition={{ type: 'spring', stiffness: 400, damping: 32 }}
-        />
-      )}
-    </Link>
-  );
-
-  if (!subLinks || subLinks.length === 0) return link;
-
+function DrawerLink({ href, label, accent }: { href: string; label: string; accent?: boolean }) {
   return (
-    <div
-      className="relative"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-      onFocus={() => setOpen(true)}
-      onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node)) setOpen(false);
-      }}
-    >
-      {link}
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            className="absolute left-0 top-full w-48 bg-white border border-obsidian/10 shadow-lg py-2 z-50"
-          >
-            {subLinks.map((child) => (
-              <Link
-                key={child.href}
-                href={child.href}
-                scroll
-                className="block px-4 py-2.5 font-wordmark text-xs tracking-[0.1em] font-semibold text-obsidian/65 hover:bg-ember/5 hover:text-ember transition-colors"
-              >
-                {child.label}
-              </Link>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+    <li>
+      <Link
+        href={href}
+        className={`flex items-center justify-between px-5 py-3 text-[15px] font-medium hover:bg-shell ${accent ? 'text-ember' : 'text-obsidian'}`}
+      >
+        {label}
+        <ChevronRight size={16} className="text-obsidian/25" />
+      </Link>
+    </li>
   );
 }
 
@@ -397,21 +324,20 @@ function CartButton({
   return (
     <Link
       href="/cart"
-      scroll
-      aria-label={filled ? `Cart, ${count} items, ${formatNgn(subtotalNgn)}` : 'Cart'}
-      className={`relative ml-1 inline-flex items-center gap-1.5 rounded-full px-2 py-1.5 transition-colors ${
-        active ? 'bg-obsidian/[0.06] text-obsidian' : 'text-obsidian/55 hover:bg-obsidian/[0.04] hover:text-obsidian'
+      aria-label={filled ? `Basket, ${count} items, ${formatNgn(subtotalNgn)}` : 'Basket'}
+      className={`relative inline-flex h-10 items-center gap-1.5 rounded-full px-2 transition-colors ${
+        active ? 'bg-obsidian/[0.06] text-obsidian' : 'text-obsidian hover:bg-obsidian/[0.04]'
       }`}
     >
-      <ShoppingBag size={18} strokeWidth={2.2} />
-      {filled && (
-        <>
-          <span className="min-w-[16px] h-4 px-1 rounded-full bg-ember text-white text-[9px] font-bold flex items-center justify-center leading-none">
+      <span className="relative">
+        <ShoppingBag size={21} strokeWidth={2} />
+        {filled && (
+          <span className="absolute -right-2 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-ember px-1 text-[10px] font-bold leading-none text-white">
             {count}
           </span>
-          <span className="text-[11px] font-semibold tabular-nums text-obsidian">{formatNgn(subtotalNgn)}</span>
-        </>
-      )}
+        )}
+      </span>
+      {filled && <span className="hidden pl-1 text-[13px] font-semibold tabular-nums text-obsidian xl:inline">{formatNgn(subtotalNgn)}</span>}
     </Link>
   );
 }

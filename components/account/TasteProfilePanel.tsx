@@ -83,7 +83,7 @@ export default function TasteProfilePanel({
 
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="font-logo font-black uppercase tracking-tight text-2xl sm:text-3xl">
+          <h1 className="font-serif font-light tracking-tight text-2xl sm:text-3xl">
             <span className="brand-text">Taste profile</span>
           </h1>
           <p className="text-obsidian/50 mt-2 text-sm">
@@ -93,14 +93,14 @@ export default function TasteProfilePanel({
         <button
           type="button"
           onClick={() => onEditing(true)}
-          className="px-5 py-2.5 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em] hover:border-ember hover:text-ember transition-colors"
+          className="px-5 py-2.5 border border-obsidian/15 text-[10px] font-bold uppercase tracking-[0.12em] hover:border-ember hover:text-ember transition-colors rounded-full"
         >
           {built ? 'Edit profile' : 'Build profile'}
         </button>
       </div>
 
       {!built ? (
-        <div className="bg-white border border-obsidian/8 p-8 text-center"> <p className="font-bold">No taste profile yet</p>
+        <div className="bg-white border border-obsidian/8 p-8 text-center rounded-2xl"> <p className="font-bold">No taste profile yet</p>
           <p className="text-sm text-obsidian/55 mt-2 max-w-md mx-auto leading-relaxed">
             Four quick questions — what you drink, how you like it, when you pour, and what you spend. Every
             match percentage on the site comes from your answers.
@@ -108,14 +108,14 @@ export default function TasteProfilePanel({
           <button
             type="button"
             onClick={() => onEditing(true)}
-            className="mt-5 px-6 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em]"
+            className="mt-5 px-6 py-3 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] rounded-full"
           >
             Build my profile
           </button>
         </div>
       ) : (
         <>
-          <div className="bg-white border border-obsidian/8">
+          <div className="bg-white border border-obsidian/8 rounded-2xl">
             <div className="flex overflow-x-auto scrollbar-hide border-b border-obsidian/8">
               {(
                 [
@@ -154,10 +154,10 @@ export default function TasteProfilePanel({
                       <div className="flex items-start gap-5 flex-wrap">
                         <MatchRing value={match} />
                         <div className="min-w-0 flex-1">
-                          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-obsidian/35">
+                          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-obsidian/35">
                             Your taste personality
                           </p>
-                          <p className="font-logo font-black uppercase tracking-tight text-xl mt-1">
+                          <p className="font-serif font-light tracking-tight text-xl mt-1">
                             {personality?.name}
                           </p>
                           <p className="text-sm text-obsidian/55 mt-2 leading-relaxed max-w-md">
@@ -177,7 +177,7 @@ export default function TasteProfilePanel({
                       </div>
 
                       <div>
-                        <h3 className="text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/45 mb-3">
+                        <h3 className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/45 mb-3">
                           Your top categories
                         </h3>
                         <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
@@ -199,7 +199,7 @@ export default function TasteProfilePanel({
                   {tab === 'preferences' && (
                     <div className="space-y-6">
                       <div>
-                        <h3 className="text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/45 mb-3">
+                        <h3 className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/45 mb-3">
                           Preference breakdown
                         </h3>
                         <ul className="space-y-4">
@@ -240,7 +240,7 @@ export default function TasteProfilePanel({
 
                   {tab === 'activity' && (
                     <div>
-                      <h3 className="text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/45 mb-3">
+                      <h3 className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/45 mb-3">
                         Recent activity impacting your taste
                       </h3>
                       {activity.length === 0 ? (
@@ -279,17 +279,17 @@ export default function TasteProfilePanel({
           </div>
 
           {recommendations.length > 0 && (
-            <section className="bg-white border border-obsidian/8">
+            <section className="bg-white border border-obsidian/8 rounded-2xl">
               <div className="px-5 py-4 border-b border-obsidian/8 flex items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50">
+                  <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-obsidian/50">
                     Recommended for you
                   </h2>
                   <p className="text-[12px] text-obsidian/40 mt-1">Matched against your taste profile</p>
                 </div>
                 <Link
                   href="/shop"
-                  className="text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/40 hover:text-ember inline-flex items-center gap-1 transition-colors"
+                  className="text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/40 hover:text-ember inline-flex items-center gap-1 transition-colors"
                 >
                   View all <ChevronRight size={13} />
                 </Link>
@@ -343,7 +343,7 @@ export default function TasteProfilePanel({
 function ChipList({ title, values }: { title: string; values: string[] }) {
   return (
     <div>
-      <h3 className="text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/45 mb-2.5">{title}</h3>
+      <h3 className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/45 mb-2.5">{title}</h3>
       {values.length === 0 ? (
         <p className="text-[12px] text-obsidian/40">Nothing picked.</p>
       ) : (

@@ -39,13 +39,13 @@ export default function EventsNewsletter() {
   }
 
   return (
-    <section className="brand-gradient text-white p-6 sm:p-8 grid lg:grid-cols-2 gap-6 items-center">
+    <section className="rounded-3xl brand-gradient text-white p-6 sm:p-8 grid lg:grid-cols-2 gap-6 items-center">
       <div className="flex items-start gap-4">
         <span className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center shrink-0">
           <Mail size={20} />
         </span>
         <div>
-          <h2 className="font-logo font-black uppercase tracking-tight text-xl">Never miss an experience</h2>
+          <h2 className="font-serif font-light tracking-tight text-xl">Never miss an experience</h2>
           <p className="text-sm text-white/60 mt-1.5 leading-relaxed">
             Updates on upcoming nights, early tickets, and invites to tastings.
           </p>
@@ -78,7 +78,7 @@ export default function EventsNewsletter() {
             <button
               type="submit"
               disabled={sending}
-              className="px-6 py-3 bg-white/10 border-l border-white/15 text-white text-[11px] font-black uppercase tracking-[0.12em] hover:bg-white/15 disabled:opacity-50 shrink-0 transition-colors"
+              className="px-6 py-3 bg-white/10 border-l border-white/15 text-white text-[11px] font-bold uppercase tracking-[0.12em] hover:bg-white/15 disabled:opacity-50 shrink-0 transition-colors"
             >
               {sending ? 'Adding…' : 'Subscribe'}
             </button>

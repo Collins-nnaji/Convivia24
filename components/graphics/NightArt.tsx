@@ -158,7 +158,7 @@ export default function NightArt({
   label?: string;
 }) {
   return (
-    <div className={`relative overflow-hidden brand-gradient ${className}`}>
+    <div className={`relative overflow-hidden rounded-2xl brand-gradient ${className}`}>
       <div
         className="absolute inset-0 opacity-30"
         style={{
@@ -168,7 +168,7 @@ export default function NightArt({
       />
       <Scene kind={kind} />
       {label ? (
-        <span className="absolute top-2.5 left-2.5 badge-brand text-[8px] font-black uppercase tracking-wider px-2 py-0.5">
+        <span className="absolute top-2.5 left-2.5 badge-brand text-[10px] font-bold uppercase tracking-wider px-2 py-0.5">
           {label}
         </span>
       ) : null}
@@ -190,8 +190,8 @@ export function GraphicBanner({
       <NightArt kind={kind} className="absolute inset-0 h-full" />
       <div className="absolute inset-0 bg-gradient-to-t from-obsidian/90 via-obsidian/45 to-obsidian/20" />
       <div className="absolute bottom-0 inset-x-0 max-w-6xl mx-auto px-5 sm:px-8 pb-6">
-        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ember-light mb-2">{kicker}</p>
-        <h1 className="text-3xl sm:text-4xl font-bold text-white">{title}</h1>
+        <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-ember-light mb-2">{kicker}</p>
+        <h1 className="text-3xl sm:text-4xl font-serif font-light tracking-tight text-white">{title}</h1>
       </div>
     </div>
   );

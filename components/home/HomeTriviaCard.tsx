@@ -13,10 +13,10 @@ export default function HomeTriviaCard() {
       <div className="max-w-6xl mx-auto px-5 sm:px-8">
         <Link
           href="/discover"
-          className="group relative grid min-h-[260px] overflow-hidden brand-gradient text-white sm:grid-cols-[minmax(0,1fr)_280px] sm:min-h-[320px]"
+          className="group relative grid min-h-[260px] overflow-hidden rounded-3xl brand-gradient text-white sm:grid-cols-[minmax(0,1fr)_280px] sm:min-h-[320px]"
         >
           <div className="relative z-10 flex flex-col justify-center p-6 sm:p-10">
-            <p className="text-[9px] font-wordmark-sm text-white/60 mb-3">Drink trivia</p>
+            <p className="text-[11px] font-wordmark-sm text-white/60 mb-3">Drink trivia</p>
             <h2 className="font-wordmark text-3xl sm:text-4xl">Know your {round.brand}?</h2>
             <p className="mt-3 max-w-lg text-sm leading-relaxed text-white/70">
               Answer {round.questions.length} questions, earn 250 points and enter the draw for a {round.prizeLabel}.
@@ -37,7 +37,7 @@ export default function HomeTriviaCard() {
                 className="relative object-contain p-5 drop-shadow-[0_24px_40px_rgba(0,0,0,0.5)] sm:p-8"
               />
             )}
-            <span className="absolute right-4 top-4 hidden items-center gap-1.5 bg-white/10 px-2.5 py-1 text-[9px] font-wordmark-sm sm:inline-flex">
+            <span className="absolute right-4 top-4 hidden items-center gap-1.5 bg-white/10 px-2.5 py-1 text-[11px] font-wordmark-sm sm:inline-flex">
               <Gift size={12} /> Bottle draw
             </span>
           </div>

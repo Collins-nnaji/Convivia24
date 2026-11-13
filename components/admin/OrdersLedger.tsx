@@ -327,7 +327,7 @@ export default function OrdersLedger({
       <div className="overflow-x-auto rounded-2xl border border-obsidian/[0.08] bg-white shadow-sm">
         <table className="w-full min-w-[1000px] border-collapse text-sm">
           <thead className="sticky top-0 z-10 bg-paper/95 backdrop-blur">
-            <tr className="text-left text-[10px] font-black uppercase tracking-[0.1em] text-obsidian/45">
+            <tr className="text-left text-[10px] font-bold uppercase tracking-[0.1em] text-obsidian/45">
               <th className="w-8 border-b border-obsidian/10 py-2.5 pl-3" />
               <th className="border-b border-obsidian/10 px-2 py-2.5">Date</th>
               <th className="border-b border-obsidian/10 px-2 py-2.5">Order</th>
@@ -400,7 +400,7 @@ export default function OrdersLedger({
                   <td className="px-2 py-2">
                     {options.length === 0 ? (
                       <span
-                        className={`inline-block rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ring-1 ${
+                        className={`inline-block rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ring-1 ${
                           STATUS_TONE[o.status] ?? 'bg-obsidian/[0.06] text-obsidian/60 ring-obsidian/10'
                         }`}
                       >
@@ -412,7 +412,7 @@ export default function OrdersLedger({
                         disabled={updatingOrder === o.id}
                         onChange={(e) => onStatusChange(o, e.target.value as OrderStatus)}
                         aria-label="Change status"
-                        className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ring-1 focus:ring-2 focus:ring-ember disabled:opacity-50 ${
+                        className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ring-1 focus:ring-2 focus:ring-ember disabled:opacity-50 ${
                           STATUS_TONE[o.status] ?? 'bg-obsidian/[0.06] text-obsidian/60 ring-obsidian/10'
                         }`}
                       >
@@ -480,7 +480,7 @@ export default function OrdersLedger({
                     <td colSpan={10} className="px-2 py-3">
                       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
                         <div>
-                          <p className="mb-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40">
+                          <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/40">
                             Line items
                           </p>
                           <table className="w-full text-xs">
@@ -525,7 +525,7 @@ export default function OrdersLedger({
                         </div>
 
                         <div className="space-y-2 text-xs">
-                          <p className="text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40">
+                          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/40">
                             Fulfilment
                           </p>
                           <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-obsidian/60">
@@ -689,7 +689,7 @@ function BankTransfer({
       )}
       {!closed && open && (
         <div className="space-y-2 rounded-lg bg-white p-2 ring-1 ring-obsidian/10">
-          <label className="block text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40">
+          <label className="block text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/40">
             Transfer reference
             <input
               value={reference}
@@ -733,7 +733,7 @@ function BankTransfer({
 function Stat({ label, value, tone }: { label: string; value: string; tone?: 'good' | 'bad' | 'muted' }) {
   return (
     <div className="bg-white px-3 py-2">
-      <p className="text-[9px] font-black uppercase tracking-[0.14em] text-obsidian/35">{label}</p>
+      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/35">{label}</p>
       <p
         className={`mt-0.5 text-sm font-bold tabular-nums ${
           tone === 'good'

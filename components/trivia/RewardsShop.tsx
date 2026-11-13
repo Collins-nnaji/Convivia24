@@ -113,7 +113,7 @@ export default function RewardsShop({
                 }`}
               >
                 <Icon size={15} className="sm:w-[17px] sm:h-[17px]" />
-                <span className="text-[9px] font-black uppercase tracking-[0.06em] whitespace-nowrap sm:text-[10px] sm:tracking-[0.08em]">
+                <span className="text-[11px] font-bold uppercase tracking-[0.06em] whitespace-nowrap sm:text-[10px] sm:tracking-[0.08em]">
                   {c.label}
                 </span>
               </button>
@@ -136,7 +136,7 @@ export default function RewardsShop({
       </div>
 
       <section>
-        <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50 mb-4">
+        <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-obsidian/50 mb-4">
           Featured rewards
         </h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
@@ -157,7 +157,7 @@ export default function RewardsShop({
 
       {rest.length > 0 && (
         <section>
-          <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50 mb-4">
+          <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-obsidian/50 mb-4">
             More rewards
           </h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
@@ -267,7 +267,7 @@ function RewardCard({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index, 7) * 0.04, duration: 0.3 }}
-      className="bg-white border border-obsidian/8 flex flex-col hover:border-ember/35 transition-colors"
+      className="bg-white border border-obsidian/8 flex flex-col hover:border-ember/35 transition-colors rounded-2xl"
     >
       <div className={`relative h-24 bg-paper overflow-hidden sm:h-auto ${large ? 'sm:aspect-[4/3]' : 'sm:aspect-[3/2]'}`}>
         {image ? (
@@ -278,7 +278,7 @@ function RewardCard({
           </div>
         )}
         {reward.badge && (
-          <span className="absolute top-1.5 left-1.5 badge-brand text-[8px] font-black uppercase tracking-[0.08em] px-1.5 py-0.5 sm:top-3 sm:left-3 sm:text-[9px] sm:tracking-[0.12em] sm:px-2.5 sm:py-1">
+          <span className="absolute top-1.5 left-1.5 badge-brand text-[10px] font-bold uppercase tracking-[0.08em] px-1.5 py-0.5 sm:top-3 sm:left-3 sm:text-[11px] sm:tracking-[0.12em] sm:px-2.5 sm:py-1">
             {BADGE_LABELS[reward.badge]}
           </span>
         )}
@@ -301,17 +301,17 @@ function RewardCard({
 
         <div className="mt-auto pt-2 sm:mt-4 sm:pt-1">
           {redeemed ? (
-            <span className="w-full min-h-9 inline-flex items-center justify-center gap-1 py-2 border border-ember/30 text-ember text-[8px] font-black uppercase tracking-[0.08em] sm:gap-1.5 sm:py-3 sm:text-[10px] sm:tracking-[0.12em]">
+            <span className="w-full min-h-9 inline-flex items-center justify-center gap-1 py-2 border border-ember/30 text-ember text-[10px] font-bold uppercase tracking-[0.08em] sm:gap-1.5 sm:py-3 sm:text-[10px] sm:tracking-[0.12em] rounded-full">
               <Check size={13} /> Redeemed
             </span>
           ) : tierLocked ? (
-            <span className="w-full min-h-9 inline-flex items-center justify-center gap-1 py-2 border border-obsidian/10 text-obsidian/35 text-[8px] font-black uppercase tracking-[0.08em] sm:gap-1.5 sm:py-3 sm:text-[10px] sm:tracking-[0.12em]">
+            <span className="w-full min-h-9 inline-flex items-center justify-center gap-1 py-2 border border-obsidian/10 text-obsidian/35 text-[10px] font-bold uppercase tracking-[0.08em] sm:gap-1.5 sm:py-3 sm:text-[10px] sm:tracking-[0.12em] rounded-full">
               <Lock size={12} /> {tier?.name} tier
             </span>
           ) : !signedIn ? (
             <Link
               href="/signin?next=%2Fdiscover%3Ftab%3Drewards-shop"
-              className="w-full min-h-9 flex items-center justify-center px-1 py-2 text-center border border-obsidian/15 text-[8px] font-black uppercase tracking-[0.08em] text-obsidian/60 hover:border-ember hover:text-ember transition-colors sm:block sm:py-3 sm:text-[10px] sm:tracking-[0.12em]"
+              className="w-full min-h-9 flex items-center justify-center px-1 py-2 text-center border border-obsidian/15 text-[10px] font-bold uppercase tracking-[0.08em] text-obsidian/60 hover:border-ember hover:text-ember transition-colors sm:block sm:py-3 sm:text-[10px] sm:tracking-[0.12em] rounded-full"
             >
               Sign in to redeem
             </Link>
@@ -320,7 +320,7 @@ function RewardCard({
               type="button"
               onClick={onClaim}
               disabled={!affordable}
-              className="w-full min-h-9 px-1 py-2 btn-brand text-[8px] font-black uppercase tracking-[0.08em] disabled:opacity-40 sm:py-3 sm:text-[10px] sm:tracking-[0.12em]"
+              className="w-full min-h-9 px-1 py-2 btn-brand text-[10px] font-bold uppercase tracking-[0.08em] disabled:opacity-40 sm:py-3 sm:text-[10px] sm:tracking-[0.12em] rounded-full"
             >
               {affordable ? 'Redeem now' : `${(reward.costPoints - points).toLocaleString()} pts to go`}
             </button>
@@ -338,9 +338,9 @@ function CategoryMark({ category }: { category: RewardCategory }) {
 
 function RedemptionHistory({ redemptions }: { redemptions: Redemption[] }) {
   return (
-    <section className="bg-white border border-obsidian/8">
+    <section className="bg-white border border-obsidian/8 rounded-2xl">
       <div className="px-5 py-4 border-b border-obsidian/8">
-        <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50">
+        <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-obsidian/50">
           Your redemptions
         </h2>
       </div>
@@ -373,9 +373,9 @@ function EarnMoreStrip() {
     { icon: Gift, title: 'Refer friends', detail: 'Invite people and earn together.' },
   ];
   return (
-    <section className="brand-gradient text-white p-6 sm:p-8 grid lg:grid-cols-[minmax(0,1fr)_2fr] gap-6 lg:gap-10 items-center">
+    <section className="rounded-3xl brand-gradient text-white p-6 sm:p-8 grid lg:grid-cols-[minmax(0,1fr)_2fr] gap-6 lg:gap-10 items-center">
       <div>
-        <h2 className="font-logo font-black uppercase tracking-tight text-2xl">More points. More rewards.</h2>
+        <h2 className="font-serif font-light tracking-tight text-2xl">More points. More rewards.</h2>
         <p className="text-sm text-white/60 mt-2 leading-relaxed">
           Complete challenges, refer friends and shop to build a balance worth spending.
         </p>
@@ -470,8 +470,8 @@ function RedeemDialog({
 
         {done ? (
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-ember mb-2">Redeemed</p>
-            <h2 className="text-xl font-bold">{reward.name}</h2>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-ember mb-2">Redeemed</p>
+            <h2 className="text-xl font-serif font-light">{reward.name}</h2>
             <p className="font-mono text-2xl font-bold text-ember mt-4">{done.code}</p>
             <p className="text-sm text-obsidian/55 mt-2 leading-relaxed">
               Quote this reference to claim it. It also sits under your redemptions on this page.
@@ -479,17 +479,17 @@ function RedeemDialog({
             <button
               type="button"
               onClick={onClose}
-              className="mt-6 w-full py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em]"
+              className="mt-6 w-full py-3 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] rounded-full"
             >
               Done
             </button>
           </div>
         ) : (
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 mb-2">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian/40 mb-2">
               Confirm redemption
             </p>
-            <h2 className="text-xl font-bold">{reward.name}</h2>
+            <h2 className="text-xl font-serif font-light">{reward.name}</h2>
             <p className="text-sm text-obsidian/55 mt-2 leading-relaxed">{reward.detail}</p>
 
             <dl className="mt-5 pt-5 border-t border-obsidian/10 space-y-2 text-sm">
@@ -511,7 +511,7 @@ function RedeemDialog({
               type="button"
               onClick={confirm}
               disabled={sending}
-              className="mt-6 w-full py-3.5 btn-brand text-[11px] font-black uppercase tracking-[0.14em] disabled:opacity-50"
+              className="mt-6 w-full py-3.5 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] disabled:opacity-50 rounded-full"
             >
               {sending ? 'Redeeming…' : 'Confirm and redeem'}
             </button>

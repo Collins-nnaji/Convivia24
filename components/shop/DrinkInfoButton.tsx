@@ -125,7 +125,7 @@ export default function DrinkInfoButton({ slug, brand, tasteNote, className = ''
         >
           <div className="flex items-start justify-between gap-3 px-5 py-4 border-b border-obsidian/10 shrink-0" style={{ backgroundColor: '#ffffff' }}>
             <div className="min-w-0">
-              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-ember mb-1">Bottle guide</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-ember mb-1">Bottle guide</p>
               <h2 id={`drink-info-${slug}`} className="font-semibold text-obsidian leading-snug">
                 {displayName}
               </h2>
@@ -146,7 +146,7 @@ export default function DrinkInfoButton({ slug, brand, tasteNote, className = ''
             {!loading && error && !shownTaste && <p className="text-sm text-obsidian/55">{error}</p>}
             {shownTaste && (
               <section>
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-obsidian/35 mb-2">
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-obsidian/35 mb-2">
                   Tastes like
                 </p>
                 <p className="text-sm text-obsidian/75 leading-relaxed">{shownTaste}</p>
@@ -157,7 +157,7 @@ export default function DrinkInfoButton({ slug, brand, tasteNote, className = ''
             )}
             {!loading && info?.brandGuide && (
               <section>
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-obsidian/35 mb-2">
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-obsidian/35 mb-2">
                   About {info.brandGuide.name}
                 </p>
                 {(info.brandGuide.origin || info.brandGuide.founded) && (

@@ -77,7 +77,7 @@ export default function BrandPortal() {
         <p className="text-sm text-obsidian/60 mb-4">Sign in to open the brand portal.</p>
         <Link
           href="/signin?next=%2Fbrands%2Fportal"
-          className="inline-block px-5 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em]"
+          className="inline-block px-5 py-3 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] rounded-full"
         >
           Sign in
         </Link>
@@ -95,7 +95,7 @@ export default function BrandPortal() {
         </p>
         <Link
           href="/brands"
-          className="inline-block px-5 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em]"
+          className="inline-block px-5 py-3 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] rounded-full"
         >
           Find your brand
         </Link>
@@ -118,10 +118,10 @@ export default function BrandPortal() {
 
       <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-12 grid lg:grid-cols-[220px_1fr] gap-6 lg:gap-10 items-start">
         <aside className="lg:sticky lg:top-24">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/35 mb-3 px-3">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian/35 mb-3 px-3">
             Brand portal
           </p>
-          <nav className="bg-white border border-obsidian/8">
+          <nav className="bg-white border border-obsidian/8 rounded-2xl">
             <ul className="divide-y divide-obsidian/6">
               {SECTIONS.map(({ id, label, icon: Icon }) => (
                 <li key={id}>
@@ -132,7 +132,7 @@ export default function BrandPortal() {
                       section === id
                         ? 'text-ember font-semibold bg-ember/[0.04]'
                         : 'text-obsidian/60 hover:text-ember'
-                    }`}
+                    } rounded-full`}
                   >
                     <Icon size={16} className="shrink-0" />
                     {label}
@@ -155,7 +155,7 @@ export default function BrandPortal() {
             </ul>
           </nav>
 
-          <div className="mt-4 brand-gradient text-white p-5">
+          <div className="mt-4 rounded-2xl brand-gradient text-white p-5">
             <Headset size={18} className="text-white/70" />
             <p className="font-bold mt-2.5">Need help?</p>
             <p className="text-[12px] text-white/60 mt-1.5 leading-relaxed">
@@ -163,7 +163,7 @@ export default function BrandPortal() {
             </p>
             <Link
               href="/contact"
-              className="mt-4 inline-block px-4 py-2.5 bg-white text-obsidian text-[10px] font-black uppercase tracking-[0.12em]"
+              className="mt-4 inline-block px-4 py-2.5 bg-white text-obsidian text-[10px] font-bold uppercase tracking-[0.12em] rounded-full"
             >
               Contact support
             </Link>
@@ -173,7 +173,7 @@ export default function BrandPortal() {
         <div className="min-w-0 space-y-6">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <h1 className="font-logo font-black uppercase tracking-tight text-2xl sm:text-3xl">
+              <h1 className="font-serif font-light tracking-tight text-2xl sm:text-3xl">
                 <span className="brand-text">Welcome back, {portal.brand.name}</span>
               </h1>
               <p className="text-obsidian/50 mt-2 text-sm">
@@ -183,7 +183,7 @@ export default function BrandPortal() {
             <button
               type="button"
               onClick={() => setComposing(true)}
-              className="px-5 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.12em] inline-flex items-center gap-2"
+              className="px-5 py-3 btn-brand text-[11px] font-bold uppercase tracking-[0.12em] inline-flex items-center gap-2 rounded-full"
             >
               <Plus size={14} /> New campaign
             </button>
@@ -215,11 +215,11 @@ export function PortalOverview({ portal, onCompose }: { portal: PortalData; onCo
 
   return (
     <div className="space-y-6">
-      <section className="bg-obsidian text-white p-6 sm:p-8">
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/10 text-[10px] font-black uppercase tracking-[0.12em]">
+      <section className="bg-obsidian text-white p-6 sm:p-8 rounded-2xl">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/10 text-[10px] font-bold uppercase tracking-[0.12em] rounded-full">
           <BadgeCheck size={12} /> Verified brand
         </span>
-        <h2 className="font-logo font-black uppercase tracking-tight text-3xl mt-4">{portal.brand.name}</h2>
+        <h2 className="font-serif font-light tracking-tight text-3xl mt-4">{portal.brand.name}</h2>
         <p className="text-sm text-white/55 mt-2">{portal.brand.origin}</p>
         <ul className="flex flex-wrap gap-x-8 gap-y-3 mt-5 text-sm">
           <li className="text-white/60">
@@ -244,7 +244,7 @@ export function PortalOverview({ portal, onCompose }: { portal: PortalData; onCo
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05, duration: 0.3 }}
-            className="bg-white border border-obsidian/8 p-5"
+            className="bg-white border border-obsidian/8 p-5 rounded-2xl"
           >
             <div className="flex items-start justify-between gap-3">
               <p className="text-[11px] text-obsidian/40">{label}</p>
@@ -252,7 +252,7 @@ export function PortalOverview({ portal, onCompose }: { portal: PortalData; onCo
                 <Icon size={15} className="text-ember" />
               </span>
             </div>
-            <p className="font-logo font-black text-3xl tabular-nums mt-2 leading-none">
+            <p className="font-serif font-light text-3xl tabular-nums mt-2 leading-none">
               {value.toLocaleString()}
             </p>
           </motion.li>
@@ -266,9 +266,9 @@ export function PortalOverview({ portal, onCompose }: { portal: PortalData; onCo
         </div>
 
         <div className="space-y-6">
-          <section className="bg-white border border-obsidian/8">
+          <section className="bg-white border border-obsidian/8 rounded-2xl">
             <div className="px-5 py-4 border-b border-obsidian/8">
-              <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50">
+              <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-obsidian/50">
                 Top campaign
               </h2>
             </div>
@@ -291,7 +291,7 @@ export function PortalOverview({ portal, onCompose }: { portal: PortalData; onCo
                 </dl>
                 <Link
                   href={`/campaigns/${top.slug}`}
-                  className="mt-4 w-full py-3 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em] inline-flex items-center justify-center gap-1.5 hover:border-ember hover:text-ember transition-colors"
+                  className="mt-4 w-full py-3 border border-obsidian/15 text-[10px] font-bold uppercase tracking-[0.12em] inline-flex items-center justify-center gap-1.5 hover:border-ember hover:text-ember transition-colors rounded-full"
                 >
                   View campaign <ChevronRight size={13} />
                 </Link>
@@ -303,7 +303,7 @@ export function PortalOverview({ portal, onCompose }: { portal: PortalData; onCo
             )}
           </section>
 
-          <section className="bg-ember/[0.04] border border-ember/15 p-5 text-center">
+          <section className="bg-ember/[0.04] border border-ember/15 p-5 text-center rounded-2xl">
             <span className="w-11 h-11 rounded-full bg-ember/10 flex items-center justify-center mx-auto">
               <Megaphone size={18} className="text-ember" />
             </span>
@@ -314,7 +314,7 @@ export function PortalOverview({ portal, onCompose }: { portal: PortalData; onCo
             <button
               type="button"
               onClick={onCompose}
-              className="mt-4 w-full py-3 btn-brand text-[10px] font-black uppercase tracking-[0.12em]"
+              className="mt-4 w-full py-3 btn-brand text-[10px] font-bold uppercase tracking-[0.12em] rounded-full"
             >
               Create new campaign
             </button>
@@ -342,7 +342,7 @@ function JoinsChart({ joins }: { joins: JoinPoint[] }) {
   });
 
   return (
-    <section className="bg-white border border-obsidian/8">
+    <section className="bg-white border border-obsidian/8 rounded-2xl">
       <div className="px-5 py-4 border-b border-obsidian/8 flex items-center justify-between gap-4">
         <span className="inline-flex items-center gap-2">
           <BarChart3 size={16} className="text-ember" />
@@ -406,9 +406,9 @@ function CampaignsTable({
   compact?: boolean;
 }) {
   return (
-    <section className="bg-white border border-obsidian/8">
+    <section className="bg-white border border-obsidian/8 rounded-2xl">
       <div className="px-5 py-4 border-b border-obsidian/8 flex items-center justify-between gap-4">
-        <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50">
+        <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-obsidian/50">
           Your campaigns
         </h2>
         {compact ? (
@@ -417,7 +417,7 @@ function CampaignsTable({
           <button
             type="button"
             onClick={onCompose}
-            className="text-[11px] font-black uppercase tracking-[0.1em] text-ember inline-flex items-center gap-1"
+            className="text-[11px] font-bold uppercase tracking-[0.1em] text-ember inline-flex items-center gap-1"
           >
             <Plus size={12} /> New
           </button>
@@ -431,7 +431,7 @@ function CampaignsTable({
           <button
             type="button"
             onClick={onCompose}
-            className="mt-4 px-5 py-2.5 btn-brand text-[10px] font-black uppercase tracking-[0.12em]"
+            className="mt-4 px-5 py-2.5 btn-brand text-[10px] font-bold uppercase tracking-[0.12em] rounded-full"
           >
             Create your first
           </button>
@@ -441,7 +441,7 @@ function CampaignsTable({
           {/* The row is wider than a narrow column can hold, so it scrolls
               rather than crushing the campaign titles. */}
           <div className="overflow-x-auto">
-          <div className="hidden sm:grid grid-cols-[minmax(220px,2fr)_88px_80px_132px_112px] gap-3 px-5 py-3 border-b border-obsidian/8 text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/35 min-w-[660px]">
+          <div className="hidden sm:grid grid-cols-[minmax(220px,2fr)_88px_80px_132px_112px] gap-3 px-5 py-3 border-b border-obsidian/8 text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/35 min-w-[660px]">
             <span>Campaign</span>
             <span>Status</span>
             <span className="text-right">Participants</span>
@@ -467,7 +467,7 @@ function CampaignsTable({
                   </Link>
 
                   <span
-                    className={`inline-block w-fit px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.1em] mt-2 sm:mt-0 ${status.className}`}
+                    className={`inline-block w-fit px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] mt-2 sm:mt-0 ${status.className}`}
                   >
                     {status.label}
                   </span>
@@ -528,9 +528,9 @@ function Participants({ portal }: { portal: PortalData }) {
           { label: 'Tasks completed', value: portal.stats.tasksCompleted },
           { label: 'Points issued', value: portal.stats.pointsIssued },
         ].map((stat) => (
-          <li key={stat.label} className="bg-white border border-obsidian/8 p-5">
+          <li key={stat.label} className="bg-white border border-obsidian/8 p-5 rounded-2xl">
             <p className="text-[11px] text-obsidian/40">{stat.label}</p>
-            <p className="font-logo font-black text-2xl tabular-nums mt-1.5">
+            <p className="font-serif font-light text-2xl tabular-nums mt-1.5">
               {stat.value.toLocaleString()}
             </p>
           </li>
@@ -539,7 +539,7 @@ function Participants({ portal }: { portal: PortalData }) {
 
       <JoinsChart joins={portal.joins} />
 
-      <section className="bg-white border border-obsidian/8 p-5 sm:p-6">
+      <section className="bg-white border border-obsidian/8 p-5 sm:p-6 rounded-2xl">
         <h2 className="font-bold">Who is playing</h2>
         <p className="text-sm text-obsidian/55 mt-2 leading-relaxed max-w-lg">
           Leaderboards on each campaign show display names and scores. Convivia24 does not share
@@ -568,7 +568,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   return (
     <section className="bg-paper min-h-[60vh]">
       <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16">
-        <h1 className="font-logo font-black uppercase tracking-tight text-3xl brand-text mb-4">
+        <h1 className="font-serif font-light tracking-tight text-3xl brand-text mb-4">
           Brand portal
         </h1>
         {children}

@@ -102,17 +102,17 @@ function Portal({ slug }: { slug: string }) {
   if (!data) {
     return (
       <section className="min-h-[70vh] bg-paper px-5 py-16">
-        <div className="mx-auto max-w-md bg-white p-8 shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)]">
-          <p className="mb-2 text-[10px] font-black uppercase tracking-[0.28em] text-ember">Convivia24 · Supplier</p>
-          <h1 className="mb-1 text-2xl font-bold">Your stock portal</h1>
+        <div className="mx-auto max-w-md bg-white p-8 shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)] rounded-2xl">
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.28em] text-ember">Convivia24 · Supplier</p>
+          <h1 className="mb-1 text-2xl font-serif font-light tracking-tight">Your stock portal</h1>
           <p className="mb-6 font-mono text-xs text-obsidian/40">/supplier/{slug}</p>
           <a
             href={`/signin?next=${encodeURIComponent(`/supplier/${slug}`)}`}
-            className="btn-brand mb-5 block w-full rounded-xl py-3 text-center text-[11px] font-black uppercase tracking-[0.14em]"
+            className="btn-brand mb-5 block w-full rounded-xl py-3 text-center text-[11px] font-bold uppercase tracking-[0.14em]"
           >
             Sign in with your Convivia24 account
           </a>
-          <p className="mb-3 text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/35">Or use an access key</p>
+          <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-obsidian/35">Or use an access key</p>
           <form onSubmit={signIn} className="space-y-4">
             <input
               type="password"
@@ -126,7 +126,7 @@ function Portal({ slug }: { slug: string }) {
             <button
               type="submit"
               disabled={busy || !key.trim()}
-              className="w-full rounded-xl border border-obsidian/15 bg-white py-3 text-[11px] font-black uppercase tracking-[0.14em] text-obsidian hover:border-ember hover:text-ember disabled:opacity-50"
+              className="w-full rounded-xl border border-obsidian/15 bg-white py-3 text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian hover:border-ember hover:text-ember disabled:opacity-50"
             >
               {busy ? '…' : 'Open with key'}
             </button>
@@ -163,7 +163,7 @@ function Portal({ slug }: { slug: string }) {
           <button
             type="button"
             onClick={signOut}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-obsidian/15 px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/60 hover:bg-obsidian/[0.04]"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-obsidian/15 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/60 hover:bg-obsidian/[0.04]"
           >
             <LogOut size={13} /> Sign out
           </button>

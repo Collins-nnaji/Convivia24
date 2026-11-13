@@ -134,9 +134,9 @@ export default function PartnerPortalPage() {
   if (!signedIn || !user) {
     return (
       <section className="bg-paper min-h-[50vh] px-5 py-20">
-        <div className="max-w-md mx-auto bg-white p-8 shadow-sm">
+        <div className="max-w-md mx-auto bg-white p-8 shadow-sm rounded-2xl">
           <p className="text-sm text-obsidian/60 mb-4">Sign in to open your partner desk.</p>
-          <Link href="/signin?next=/partners/portal" className="inline-block px-5 py-2.5 btn-brand text-[11px] font-black uppercase tracking-[0.14em]">
+          <Link href="/signin?next=/partners/portal" className="inline-block px-5 py-2.5 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] rounded-full">
             Sign in
           </Link>
         </div>
@@ -157,8 +157,8 @@ export default function PartnerPortalPage() {
   return (
     <section className="bg-paper min-h-[70vh]">
       <div className="max-w-6xl mx-auto px-5 sm:px-8 py-10 sm:py-14">
-        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ember mb-2">Partner desk</p>
-        <h1 className="text-3xl font-bold mb-1">{outlet.venueName}</h1>
+        <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-ember mb-2">Partner desk</p>
+        <h1 className="text-3xl font-serif font-light tracking-tight mb-1">{outlet.venueName}</h1>
         <p className="text-sm text-obsidian/45 mb-8">
           {outlet.area} · Wholesale {WHOLESALE_OFF_PCT}% below retail
         </p>
@@ -174,9 +174,9 @@ export default function PartnerPortalPage() {
               key={id}
               type="button"
               onClick={() => setTab(id)}
-              className={`px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] ${
+              className={`px-4 py-2 text-[10px] font-bold uppercase tracking-[0.12em] ${
                 tab === id ? 'badge-brand' : 'bg-white border border-obsidian/10 text-obsidian/50'
-              }`}
+              } rounded-full`}
             >
               {label}
             </button>
@@ -198,7 +198,7 @@ export default function PartnerPortalPage() {
             <div className="lg:col-span-7 space-y-4">
               <h2 className="font-bold">Convert perks → gift cards</h2>
               {PREMIUM_CONVERSIONS.map((c) => (
-                <div key={c.id} className="flex items-center justify-between gap-4 bg-white border border-obsidian/8 p-4">
+                <div key={c.id} className="flex items-center justify-between gap-4 bg-white border border-obsidian/8 p-4 rounded-2xl">
                   <div>
                     <p className="text-sm font-semibold">{c.label}</p>
                     <p className="text-[11px] text-obsidian/45">{c.points.toLocaleString()} pts</p>
@@ -207,7 +207,7 @@ export default function PartnerPortalPage() {
                     type="button"
                     disabled={outlet.points < c.points}
                     onClick={() => convert(c.id)}
-                    className="px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] border border-obsidian/15 hover:border-ember hover:text-ember disabled:opacity-30"
+                    className="px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] border border-obsidian/15 hover:border-ember hover:text-ember disabled:opacity-30 rounded-full"
                   >
                     Convert
                   </button>
@@ -215,12 +215,12 @@ export default function PartnerPortalPage() {
               ))}
               {giftCards.length > 0 && (
                 <div className="pt-4">
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.16em] text-obsidian/40 mb-3">
+                  <h3 className="text-[10px] font-bold uppercase tracking-[0.16em] text-obsidian/40 mb-3">
                     Issued codes
                   </h3>
                   <ul className="space-y-2">
                     {giftCards.map((g) => (
-                      <li key={g.code} className="flex justify-between text-sm font-mono bg-white border border-obsidian/8 px-3 py-2">
+                      <li key={g.code} className="flex justify-between text-sm font-mono bg-white border border-obsidian/8 px-3 py-2 rounded-2xl">
                         <span>{g.code}</span>
                         <span className="text-obsidian/50">
                           {formatNgn(g.valueNgn)} {g.status !== 'active' ? `· ${g.status}` : ''}
@@ -236,9 +236,9 @@ export default function PartnerPortalPage() {
 
         {tab === 'stock' && (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm bg-white border border-obsidian/8">
+            <table className="w-full text-sm bg-white border border-obsidian/8 rounded-2xl">
               <thead>
-                <tr className="text-left text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40 border-b border-obsidian/8">
+                <tr className="text-left text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/40 border-b border-obsidian/8">
                   <th className="p-3">Bottle</th>
                   <th className="p-3">On hand</th>
                   <th className="p-3">Restock</th>
@@ -261,7 +261,7 @@ export default function PartnerPortalPage() {
                           min={0}
                           value={row.onHand}
                           onChange={(e) => setOnHand(row.slug, Number(e.target.value))}
-                          className="w-20 border border-obsidian/10 text-sm py-1 px-2 focus:border-ember focus:ring-0"
+                          className="w-20 border border-obsidian/10 text-sm py-1 px-2 focus:border-ember focus:ring-0 rounded-xl"
                         />
                       </td>
                       <td className="p-3">
@@ -271,7 +271,7 @@ export default function PartnerPortalPage() {
                             bumpCart(row.slug, 6);
                             setTab('wholesale');
                           }}
-                          className="text-[10px] font-black uppercase tracking-wider text-ember"
+                          className="text-[10px] font-bold uppercase tracking-wider text-ember"
                         >
                           +6 wholesale
                         </button>
@@ -297,7 +297,7 @@ export default function PartnerPortalPage() {
                 const qty = cart[d.slug] || 0;
                 const whole = wholesalePriceNgn(d.priceNgn);
                 return (
-                  <article key={d.slug} className="bg-white border border-obsidian/8 p-3">
+                  <article key={d.slug} className="bg-white border border-obsidian/8 p-3 rounded-2xl">
                     <div className="aspect-[3/4] relative mb-2 bg-paper">
                       <DrinkPhoto product={d} className="absolute inset-0 w-full h-full" />
                     </div>
@@ -317,7 +317,7 @@ export default function PartnerPortalPage() {
                 );
               })}
             </div>
-            <div className="sticky bottom-20 md:bottom-6 bg-white border border-obsidian/10 p-4 flex items-center justify-between gap-4 shadow-lg">
+            <div className="sticky bottom-20 md:bottom-6 bg-white border border-obsidian/10 p-4 flex items-center justify-between gap-4 shadow-lg rounded-2xl">
               <p className="text-sm">
                 Wholesale total <span className="font-bold">{formatNgn(wholesaleTotal)}</span>
               </p>
@@ -325,7 +325,7 @@ export default function PartnerPortalPage() {
                 type="button"
                 disabled={wholesaleTotal <= 0 || outlet.approvalStatus !== 'approved'}
                 onClick={restock}
-                className="px-6 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em] disabled:opacity-50"
+                className="px-6 py-3 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] disabled:opacity-50 rounded-full"
               >
                 Place restock
               </button>

@@ -109,7 +109,7 @@ export default function OrderTracking({ orderId }: { orderId: string }) {
         <p className="text-sm text-obsidian/60 mb-4">Sign in to track this order.</p>
         <Link
           href={`/signin?next=${encodeURIComponent(`/orders/${orderId}`)}`}
-          className="inline-block px-5 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em]"
+          className="inline-block px-5 py-3 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] rounded-full"
         >
           Sign in
         </Link>
@@ -121,7 +121,7 @@ export default function OrderTracking({ orderId }: { orderId: string }) {
     return (
       <Shell>
         <p className="text-sm text-ember mb-4">{error || 'Order not found.'}</p>
-        <Link href="/orders" className="text-[11px] font-black uppercase tracking-[0.14em] text-ember">
+        <Link href="/orders" className="text-[11px] font-bold uppercase tracking-[0.14em] text-ember">
           Back to orders →
         </Link>
       </Shell>
@@ -197,7 +197,7 @@ export function OrderTrackingView({ order, steps, onOrderChange }: { order: Trac
 
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="font-logo font-black uppercase tracking-tight text-3xl sm:text-4xl">
+            <h1 className="font-serif font-light tracking-tight text-3xl sm:text-4xl">
               <span className="brand-text">Track your order</span>
             </h1>
             <p className="text-sm text-obsidian/55 mt-2 inline-flex items-center gap-2">
@@ -219,22 +219,22 @@ export function OrderTrackingView({ order, steps, onOrderChange }: { order: Trac
 
           <Link
             href="/contact"
-            className="inline-flex items-center gap-2 px-5 py-3 bg-white border border-obsidian/12 text-[11px] font-black uppercase tracking-[0.12em] hover:border-ember hover:text-ember transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-3 bg-white border border-obsidian/12 text-[11px] font-bold uppercase tracking-[0.12em] hover:border-ember hover:text-ember transition-colors rounded-full"
           >
             <Headset size={15} /> Need help? Contact support
           </Link>
         </div>
 
         {/* Status + stepper */}
-        <div className="bg-white border border-obsidian/8 p-5 sm:p-7 mt-6">
+        <div className="bg-white border border-obsidian/8 p-5 sm:p-7 mt-6 rounded-2xl">
           {terminal ? (
             <div className="flex items-center gap-4">
               <span className="w-14 h-14 rounded-full bg-obsidian/8 flex items-center justify-center shrink-0">
                 <Package size={22} className="text-obsidian/40" />
               </span>
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/35">Status</p>
-                <p className="font-logo font-black uppercase tracking-tight text-xl mt-0.5">
+                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/35">Status</p>
+                <p className="font-serif font-light tracking-tight text-xl mt-0.5">
                   {ORDER_STATUS_LABELS[order.status]}
                 </p>
                 <p className="text-sm text-obsidian/50 mt-1">
@@ -249,8 +249,8 @@ export function OrderTrackingView({ order, steps, onOrderChange }: { order: Trac
                   <Truck size={22} className="text-white" />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/35">Status</p>
-                  <p className="font-logo font-black uppercase tracking-tight text-xl mt-0.5 leading-tight">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/35">Status</p>
+                  <p className="font-serif font-light tracking-tight text-xl mt-0.5 leading-tight">
                     {ORDER_STATUS_LABELS[order.status]}
                   </p>
                   {order.trackingNote && (
@@ -308,7 +308,7 @@ export function OrderTrackingView({ order, steps, onOrderChange }: { order: Trac
           <div className="min-w-0 space-y-6">
             {!terminal && <DeliveryPanel order={order} current={current} />}
 
-            <section className="bg-white border border-obsidian/8">
+            <section className="bg-white border border-obsidian/8 rounded-2xl">
               <div className="px-5 py-4 border-b border-obsidian/8">
                 <h2 className="text-lg font-bold">
                   Order items <span className="text-obsidian/30 tabular-nums">({order.items.length})</span>
@@ -321,7 +321,7 @@ export function OrderTrackingView({ order, steps, onOrderChange }: { order: Trac
                     <li key={item.slug} className="p-4 sm:px-5 flex items-center gap-4">
                       <Link
                         href={`/shop/${item.slug}`}
-                        className="relative w-12 h-16 shrink-0 bg-white border border-obsidian/8 overflow-hidden"
+                        className="relative w-12 h-16 shrink-0 bg-white border border-obsidian/8 overflow-hidden rounded-2xl"
                       >
                         <DrinkPhoto
                           product={product ?? { name: item.name, category: 'spirits' }}
@@ -347,8 +347,8 @@ export function OrderTrackingView({ order, steps, onOrderChange }: { order: Trac
               </ul>
             </section>
 
-            <section className="bg-white border p-5"><Link href={`/support?order=${order.id}`} className="text-ember font-semibold">Report a problem with this order</Link>{order.trackingUrl && <a href={order.trackingUrl} target="_blank" rel="noopener noreferrer" className="ml-4 text-ember">Track with courier</a>}</section>
-            <section className="bg-ember/[0.04] border border-ember/15 p-5 sm:p-6 flex items-center gap-5 flex-wrap">
+            <section className="bg-white border p-5 rounded-2xl"><Link href={`/support?order=${order.id}`} className="text-ember font-semibold">Report a problem with this order</Link>{order.trackingUrl && <a href={order.trackingUrl} target="_blank" rel="noopener noreferrer" className="ml-4 text-ember">Track with courier</a>}</section>
+            <section className="bg-ember/[0.04] border border-ember/15 p-5 sm:p-6 flex items-center gap-5 flex-wrap rounded-2xl">
               <span className="w-12 h-12 rounded-full bg-ember/10 flex items-center justify-center shrink-0">
                 <Users size={20} className="text-ember" />
               </span>
@@ -360,7 +360,7 @@ export function OrderTrackingView({ order, steps, onOrderChange }: { order: Trac
               </div>
               <Link
                 href="/shop/refer-and-earn"
-                className="px-5 py-3 border border-ember/40 text-ember text-[10px] font-black uppercase tracking-[0.12em] hover:bg-ember/5 transition-colors"
+                className="px-5 py-3 border border-ember/40 text-ember text-[10px] font-bold uppercase tracking-[0.12em] hover:bg-ember/5 transition-colors rounded-full"
               >
                 Invite friends
               </Link>
@@ -368,7 +368,7 @@ export function OrderTrackingView({ order, steps, onOrderChange }: { order: Trac
           </div>
 
           <div className="space-y-6">
-            <section className="bg-white border border-obsidian/8">
+            <section className="bg-white border border-obsidian/8 rounded-2xl">
               <div className="px-5 py-4 border-b border-obsidian/8 flex items-center gap-2.5">
                 <MapPin size={16} className="text-ember" />
                 <h2 className="font-bold text-sm">Delivery address</h2>
@@ -384,12 +384,12 @@ export function OrderTrackingView({ order, steps, onOrderChange }: { order: Trac
               </div>
             </section>
 
-            <section className="bg-white border border-obsidian/8">
+            <section className="bg-white border border-obsidian/8 rounded-2xl">
               <div className="px-5 py-4 border-b border-obsidian/8 flex items-center justify-between gap-4">
                 <h2 className="font-bold text-sm">Order summary</h2>
                 <Link
                   href={`/verify/${order.id}`}
-                  className="text-[11px] font-black uppercase tracking-[0.1em] text-ember hover:underline"
+                  className="text-[11px] font-bold uppercase tracking-[0.1em] text-ember hover:underline"
                 >
                   Verify order
                 </Link>
@@ -414,7 +414,7 @@ export function OrderTrackingView({ order, steps, onOrderChange }: { order: Trac
                 <div className="flex justify-between gap-4"><dt className="text-obsidian/50">Delivery</dt><dd>{formatNgn(Number(order.deliveryFeeNgn || 0))}</dd></div>
                 <div className="flex justify-between items-baseline gap-4 pt-3 border-t border-obsidian/10">
                   <dt className="font-semibold">Total</dt>
-                  <dd className="font-logo font-black text-xl tabular-nums">{formatNgn(order.totalNgn)}</dd>
+                  <dd className="font-serif font-light text-xl tabular-nums">{formatNgn(order.totalNgn)}</dd>
                 </div>
               </dl>
 
@@ -429,7 +429,7 @@ export function OrderTrackingView({ order, steps, onOrderChange }: { order: Trac
                     type="button"
                     disabled={claiming}
                     onClick={claimOrder}
-                    className="btn-brand rounded-lg px-4 py-2 text-[11px] font-black uppercase tracking-[0.12em] disabled:opacity-50"
+                    className="btn-brand rounded-lg px-4 py-2 text-[11px] font-bold uppercase tracking-[0.12em] disabled:opacity-50"
                   >
                     {claiming ? '…' : 'Claim points'}
                   </button>
@@ -448,7 +448,7 @@ export function OrderTrackingView({ order, steps, onOrderChange }: { order: Trac
               )}
             </section>
 
-            <section className="bg-white border border-obsidian/8">
+            <section className="bg-white border border-obsidian/8 rounded-2xl">
               <div className="px-5 py-4 border-b border-obsidian/8 flex items-center gap-2.5">
                 <Headset size={16} className="text-ember" />
                 <h2 className="font-bold text-sm">Need help?</h2>
@@ -459,7 +459,7 @@ export function OrderTrackingView({ order, steps, onOrderChange }: { order: Trac
                 </p>
                 <Link
                   href="/contact"
-                  className="mt-4 w-full py-3 btn-brand text-[10px] font-black uppercase tracking-[0.12em] inline-flex items-center justify-center gap-1.5"
+                  className="mt-4 w-full py-3 btn-brand text-[10px] font-bold uppercase tracking-[0.12em] inline-flex items-center justify-center gap-1.5 rounded-full"
                 >
                   Contact support <ChevronRight size={13} />
                 </Link>
@@ -476,7 +476,7 @@ export function OrderTrackingView({ order, steps, onOrderChange }: { order: Trac
 
         <Link
           href="/orders"
-          className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/40 hover:text-ember mt-8"
+          className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/40 hover:text-ember mt-8"
         >
           <ChevronLeft size={14} /> All orders
         </Link>
@@ -494,7 +494,7 @@ function DeliveryPanel({ order, current }: { order: TrackedOrder; current: Track
   const hasCourier = Boolean(order.courierName || order.riderPhone);
 
   return (
-    <section className="bg-white border border-obsidian/8">
+    <section className="bg-white border border-obsidian/8 rounded-2xl">
       <div className="px-5 py-4 border-b border-obsidian/8 flex items-center gap-2.5">
         <Truck size={16} className="text-ember" />
         <h2 className="font-bold">Delivery</h2>
@@ -505,7 +505,7 @@ function DeliveryPanel({ order, current }: { order: TrackedOrder; current: Track
           <div className="grid sm:grid-cols-2 gap-5">
             {order.courierName && (
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/35">
+                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/35">
                   Delivery partner
                 </p>
                 <p className="font-semibold mt-1.5">{order.courierName}</p>
@@ -513,7 +513,7 @@ function DeliveryPanel({ order, current }: { order: TrackedOrder; current: Track
             )}
             {order.riderPhone && (
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/35">Rider</p>
+                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/35">Rider</p>
                 <a
                   href={`tel:${order.riderPhone}`}
                   className="mt-1.5 inline-flex items-center gap-2 font-semibold text-ember hover:underline"
@@ -548,7 +548,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   return (
     <section className="bg-paper min-h-[60vh]">
       <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16">
-        <h1 className="font-logo font-black uppercase tracking-tight text-3xl brand-text mb-4">
+        <h1 className="font-serif font-light tracking-tight text-3xl brand-text mb-4">
           Track your order
         </h1>
         {children}

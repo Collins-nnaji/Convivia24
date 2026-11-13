@@ -64,7 +64,7 @@ export default function AccountingDesk() {
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3 print:hidden">
         <div className="flex flex-wrap items-end gap-3">
           <label className="block">
-            <span className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/45">Period</span>
+            <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/45">Period</span>
             <select
               value={period}
               onChange={(e) => setPeriod(e.target.value as PeriodKey)}
@@ -87,7 +87,7 @@ export default function AccountingDesk() {
                   role="tab"
                   aria-selected={on}
                   onClick={() => setBook(item.key)}
-                  className={`rounded-lg px-3 py-2 text-[11px] font-bold uppercase tracking-[0.12em] ${
+                  className={`rounded-full px-3 py-2 text-[11px] font-bold uppercase tracking-[0.12em] ${
                     on ? 'bg-white text-obsidian shadow-sm' : 'text-obsidian/45 hover:text-obsidian'
                   }`}
                 >
@@ -100,7 +100,7 @@ export default function AccountingDesk() {
         <button
           type="button"
           onClick={() => window.print()}
-          className="rounded-lg px-3 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/50 ring-1 ring-obsidian/10 hover:text-obsidian"
+          className="rounded-full px-3 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/50 ring-1 ring-obsidian/10 hover:text-obsidian"
         >
           Print
         </button>
@@ -160,8 +160,8 @@ function Headlines({ report }: { report: AccountingReport }) {
         const delta = change(card.value, card.prior);
         return (
           <div key={card.label} className="rounded-2xl bg-white p-4 ring-1 ring-obsidian/8">
-            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40">{card.label}</p>
-            <p className={`mt-1 text-2xl font-bold tabular-nums ${card.value < 0 ? 'text-ember' : 'text-obsidian'}`}>
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/40">{card.label}</p>
+            <p className={`mt-1 font-serif text-3xl font-light tabular-nums ${card.value < 0 ? 'text-ember' : 'text-obsidian'}`}>
               {money(card.value)}
             </p>
             <p className="mt-1 text-xs text-obsidian/45">{card.hint}</p>
@@ -255,9 +255,9 @@ function ProfitStatement({ report }: { report: AccountingReport }) {
           }
         />
       </Fold>
-      <div className="flex items-center justify-between bg-obsidian px-4 py-4 text-white">
+      <div className="flex items-center justify-between rounded-2xl bg-obsidian px-5 py-4 text-white">
         <span>
-          <span className="block text-[10px] font-black uppercase tracking-[0.14em] text-white/50">Net profit</span>
+          <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-white/50">Net profit</span>
           <span className="mt-0.5 block text-[11px] text-white/55">
             Gross margin {pnl.grossMarginPct}% · net margin {pnl.netMarginPct}%
           </span>
@@ -299,7 +299,7 @@ function Trend({ report, activeOnly }: { report: AccountingReport; activeOnly: b
   return (
     <div className="max-h-[28rem] overflow-auto">
       <table className="w-full min-w-[720px] text-sm">
-        <thead className="sticky top-0 bg-paper text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40">
+        <thead className="sticky top-0 bg-paper text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/40">
           <tr>
             <th className="px-4 py-3 text-left font-black">Period</th>
             <th className="px-3 py-3 text-right font-black">Orders</th>
@@ -389,13 +389,13 @@ function Balance({ report }: { report: AccountingReport }) {
           )}
         </Fold>
       </div>
-      <div className="grid sm:grid-cols-2 sm:divide-x sm:divide-white/10 bg-obsidian text-white">
+      <div className="grid overflow-hidden rounded-2xl sm:grid-cols-2 sm:divide-x sm:divide-white/10 bg-obsidian text-white">
         <div className="px-4 py-4">
-          <p className="text-[10px] font-black uppercase tracking-[0.14em] text-white/50">Equity</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/50">Equity</p>
           <p className="mt-1 text-xl font-bold tabular-nums">{money(b.equityNgn)}</p>
         </div>
         <div className="px-4 py-4">
-          <p className="text-[10px] font-black uppercase tracking-[0.14em] text-white/50">Lifetime net profit</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/50">Lifetime net profit</p>
           <p className="mt-1 text-xl font-bold tabular-nums">{money(b.lifetimeNetProfitNgn)}</p>
         </div>
       </div>
@@ -417,7 +417,7 @@ function Payouts({ report }: { report: AccountingReport }) {
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-sm">
-            <thead className="bg-paper text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40">
+            <thead className="bg-paper text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/40">
               <tr>
                 <th className="px-4 py-3 text-left font-black">Partner</th>
                 <th className="px-3 py-3 text-right font-black">Referred sales</th>
@@ -475,7 +475,7 @@ function Activity({ report }: { report: AccountingReport }) {
               type="button"
               aria-pressed={activeOnly}
               onClick={() => setActiveOnly((on) => !on)}
-              className={`rounded-lg px-3 py-2 text-[11px] font-bold uppercase tracking-[0.12em] ring-1 ${
+              className={`rounded-full px-3 py-2 text-[11px] font-bold uppercase tracking-[0.12em] ring-1 ${
                 activeOnly ? 'bg-obsidian text-white ring-obsidian' : 'text-obsidian/55 ring-obsidian/10 hover:text-obsidian'
               }`}
             >
@@ -546,7 +546,7 @@ function MixTable({
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
-        <thead className="bg-paper text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40">
+        <thead className="bg-paper text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/40">
           <tr>
             <th className="px-4 py-3 text-left font-black"> </th>
             <th className="px-3 py-3 text-right font-black">Orders</th>
@@ -586,7 +586,7 @@ function Ledger({
     <section className="overflow-hidden rounded-2xl border border-obsidian/10 bg-white">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-obsidian/8 px-4 py-3">
         <div>
-          <h2 className="text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/45">{title}</h2>
+          <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/45">{title}</h2>
           {note && <p className="mt-1 text-[11px] text-obsidian/45">{note}</p>}
         </div>
         {toolbar}

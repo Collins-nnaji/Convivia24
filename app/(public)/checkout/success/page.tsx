@@ -121,8 +121,8 @@ function SuccessBody() {
     return (
       <section className="bg-paper min-h-[70vh] -mt-16 pt-28 pb-20">
         <div className="max-w-xl mx-auto px-5 sm:px-8">
-          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ember mb-3">Confirming</p>
-          <h1 className="text-3xl font-bold text-obsidian mb-4">Checking your payment…</h1>
+          <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-ember mb-3">Confirming</p>
+          <h1 className="text-3xl font-serif font-light tracking-tight text-obsidian mb-4">Checking your payment…</h1>
         </div>
       </section>
     );
@@ -132,15 +132,15 @@ function SuccessBody() {
     return (
       <section className="bg-paper min-h-[70vh] -mt-16 pt-28 pb-20">
         <div className="max-w-xl mx-auto px-5 sm:px-8">
-          <h1 className="text-3xl font-bold text-obsidian mb-4">Payment not confirmed</h1>
+          <h1 className="text-3xl font-serif font-light tracking-tight text-obsidian mb-4">Payment not confirmed</h1>
           <p className="text-obsidian/60 leading-relaxed mb-6">{state.message}</p>
           <div className="flex flex-wrap gap-4">
-            <Link href="/checkout" className="px-6 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em]">
+            <Link href="/checkout" className="px-6 py-3 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] rounded-full">
               Return to checkout
             </Link>
             <Link
               href="/cart"
-              className="px-6 py-3 border border-obsidian/15 text-[11px] font-black uppercase tracking-[0.14em]"
+              className="px-6 py-3 border border-obsidian/15 text-[11px] font-bold uppercase tracking-[0.14em] rounded-full"
             >
               View cart
             </Link>
@@ -154,14 +154,14 @@ function SuccessBody() {
     return (
       <section className="bg-paper min-h-[70vh] -mt-16 pt-28 pb-20">
         <div className="max-w-xl mx-auto px-5 sm:px-8">
-          <h1 className="text-3xl font-bold text-obsidian mb-4">Payment still processing</h1>
+          <h1 className="text-3xl font-serif font-light tracking-tight text-obsidian mb-4">Payment still processing</h1>
           <p className="text-obsidian/60 leading-relaxed mb-6">
             If you completed Flutterwave, refresh in a moment. Your cart is kept until we confirm payment.
           </p>
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="px-6 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em]"
+            className="px-6 py-3 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] rounded-full"
           >
             Refresh status
           </button>
@@ -175,10 +175,10 @@ function SuccessBody() {
   return (
     <section className="bg-paper min-h-[70vh] -mt-16 pt-28 pb-20">
       <div className="max-w-xl mx-auto px-5 sm:px-8">
-        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ember mb-3">
+        <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-ember mb-3">
           {isManual ? 'Received' : 'Paid'}
         </p>
-        <h1 className="text-3xl sm:text-4xl font-bold text-obsidian mb-4">
+        <h1 className="text-3xl sm:text-4xl font-serif font-light tracking-tight text-obsidian mb-4">
           {isManual ? 'We have your drop.' : 'Your drinks are on the way.'}
         </h1>
         <p className="text-obsidian/60 leading-relaxed mb-6">
@@ -193,12 +193,12 @@ function SuccessBody() {
           <p className="text-xs text-obsidian/40 mb-8 font-mono break-all">Order {state.orderId}</p>
         )}
         <div className="flex flex-wrap gap-4">
-          <Link href="/shop" className="px-6 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em]">
+          <Link href="/shop" className="px-6 py-3 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] rounded-full">
             Shop more
           </Link>
           <Link
             href={eventsFallbackHref()}
-            className="px-6 py-3 border border-obsidian/15 text-[11px] font-black uppercase tracking-[0.14em]"
+            className="px-6 py-3 border border-obsidian/15 text-[11px] font-bold uppercase tracking-[0.14em] rounded-full"
           >
             {eventsEnabled ? "Tonight's events" : 'Plan your party'}
           </Link>

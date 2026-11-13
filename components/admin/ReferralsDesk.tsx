@@ -162,7 +162,7 @@ export default function ReferralsDesk({ onChanged }: { onChanged?: () => void })
 
       {/* ── Partners ─────────────────────────────────── */}
       <section>
-        <h2 className="text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/40 mb-3">
+        <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/40 mb-3">
           Partners
         </h2>
         {loading ? (
@@ -174,7 +174,7 @@ export default function ReferralsDesk({ onChanged }: { onChanged?: () => void })
         ) : (
           <ul className="space-y-3">
             {partners.map((p) => (
-              <li key={p.id} className="bg-white border border-obsidian/10 p-4">
+              <li key={p.id} className="bg-white border border-obsidian/10 p-4 rounded-2xl">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-obsidian">
@@ -226,7 +226,7 @@ export default function ReferralsDesk({ onChanged }: { onChanged?: () => void })
 
       {/* ── Commissions ──────────────────────────────── */}
       <section>
-        <h2 className="text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/40 mb-3">
+        <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/40 mb-3">
           Referred orders
         </h2>
         {attributions.length === 0 ? (
@@ -304,7 +304,7 @@ export default function ReferralsDesk({ onChanged }: { onChanged?: () => void })
 
       {/* ── Brand enquiries ──────────────────────────── */}
       <section>
-        <h2 className="text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/40 mb-3">
+        <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/40 mb-3">
           Brand enquiries ({enquiries.filter((e) => e.status === 'new').length} new)
         </h2>
         {enquiries.length === 0 ? (
@@ -314,7 +314,7 @@ export default function ReferralsDesk({ onChanged }: { onChanged?: () => void })
         ) : (
           <ul className="space-y-3">
             {enquiries.map((e) => (
-              <li key={e.id} className="bg-white border border-obsidian/10 p-4">
+              <li key={e.id} className="bg-white border border-obsidian/10 p-4 rounded-2xl">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-obsidian">

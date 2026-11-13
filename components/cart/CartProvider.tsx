@@ -14,6 +14,7 @@ import type { DrinkProduct } from '@/lib/drinks/catalog';
 import { findSellable } from '@/lib/catalog/sellable';
 import { useUser } from '@/components/auth/AuthProvider';
 import CartToast from '@/components/cart/CartToast';
+import { loadCatalog } from '@/lib/shop/use-catalog';
 
 export type CartLine = {
   slug: string;
@@ -82,11 +83,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const catalog = useRef(new Map<string, DrinkProduct>());
 
   useEffect(() => {
-    fetch('/api/shop/catalog').then((res) => res.ok ? res.json() : null).then((data) => {
-      if (!Array.isArray(data?.products)) return;
-      catalog.current = new Map(data.products.map((product: DrinkProduct) => [product.slug, product]));
+    loadCatalog().then((products) => {
+      if (!products) return;
+      catalog.current = new Map(products.map((product: DrinkProduct) => [product.slug, product]));
       setLines((previous) => normalizeLines(previous, catalog.current));
-    }).catch(() => {});
+    });
   }, []);
 
   const dismissToast = useCallback(() => {

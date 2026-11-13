@@ -150,13 +150,13 @@ export default function TriviaDrawDesk({ rounds, weeks, onDrawn }: { rounds: Rou
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-paper px-4 py-3">
           <div>
-            <p className="text-2xl font-bold tabular-nums text-obsidian">{eligible.length}</p>
+            <p className="font-serif text-3xl font-light tabular-nums text-obsidian">{eligible.length}</p>
             <p className="text-[11px] font-bold uppercase tracking-wider text-obsidian/45">in the hat{round ? ` · ${round.prizeLabel}` : ''}</p>
           </div>
           {alreadyDrawn ? (
             <p className="text-sm text-obsidian/55">Drawn {formatWhen(alreadyDrawn.drawnAt)} — <strong>{alreadyDrawn.winner.name}</strong></p>
           ) : (
-            <button type="button" disabled={busy === 'draw' || eligible.length === 0 || !round} onClick={draw} className="btn-brand rounded-lg px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.14em] disabled:opacity-40">
+            <button type="button" disabled={busy === 'draw' || eligible.length === 0 || !round} onClick={draw} className="btn-brand rounded-full px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.14em] disabled:opacity-40">
               {busy === 'draw' ? 'Drawing…' : 'Draw winner'}
             </button>
           )}
@@ -191,7 +191,7 @@ export default function TriviaDrawDesk({ rounds, weeks, onDrawn }: { rounds: Rou
                   <span className="text-xs text-obsidian/45">{formatWhen(d.drawnAt)} · {d.eligibleCount} in hat</span>
                 </div>
                 <p className="mt-1 text-sm">
-                  <span className="rounded bg-ember px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-white">{d.winner.status}</span>{' '}
+                  <span className="rounded bg-ember px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">{d.winner.status}</span>{' '}
                   <strong>{d.winner.name}</strong> · {d.winner.email}{d.winner.phone ? ` · ${d.winner.phone}` : ''} · <code className="text-xs">{d.winner.code}</code>
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px]">
@@ -199,7 +199,7 @@ export default function TriviaDrawDesk({ rounds, weeks, onDrawn }: { rounds: Rou
                     {d.winnerNotifiedAt ? `Winner emailed ${formatWhen(d.winnerNotifiedAt)}` : 'Winner not emailed'}
                   </span>
                   {mailOk && (
-                    <button type="button" disabled={busy === d.id + 'winner'} onClick={() => resend(d, 'winner')} className="inline-flex items-center gap-1 font-black uppercase tracking-wider text-obsidian/50 hover:text-ember disabled:opacity-40">
+                    <button type="button" disabled={busy === d.id + 'winner'} onClick={() => resend(d, 'winner')} className="inline-flex items-center gap-1 font-bold uppercase tracking-wider text-obsidian/50 hover:text-ember disabled:opacity-40">
                       <Mail size={11} /> {d.winnerNotifiedAt ? 'Resend' : 'Send'}
                     </button>
                   )}
@@ -207,7 +207,7 @@ export default function TriviaDrawDesk({ rounds, weeks, onDrawn }: { rounds: Rou
                     {d.othersNotifiedAt ? `${d.othersNotifiedCount} runners-up told` : 'Runners-up not told'}
                   </span>
                   {mailOk && !d.othersNotifiedAt && (
-                    <button type="button" disabled={busy === d.id + 'others'} onClick={() => resend(d, 'others')} className="font-black uppercase tracking-wider text-obsidian/50 hover:text-ember disabled:opacity-40">
+                    <button type="button" disabled={busy === d.id + 'others'} onClick={() => resend(d, 'others')} className="font-bold uppercase tracking-wider text-obsidian/50 hover:text-ember disabled:opacity-40">
                       Tell them
                     </button>
                   )}

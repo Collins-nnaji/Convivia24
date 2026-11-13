@@ -255,7 +255,7 @@ function CheckoutForm() {
   if (!authLoading && !user) {
     return (
       <Shell>
-        <h1 className="text-3xl font-bold mb-3">Sign in to check out</h1>
+        <h1 className="text-3xl font-serif font-light tracking-tight mb-3">Sign in to check out</h1>
         <p className="text-sm text-obsidian/55 mb-6 leading-relaxed max-w-lg">
           Orders are tied to your account so you can track them from paid to delivered, see your rider
           and ETA, and keep your delivery details for next time. Your cart is saved.
@@ -263,11 +263,11 @@ function CheckoutForm() {
         <div className="flex flex-wrap items-center gap-4">
           <Link
             href={`/signin?next=${encodeURIComponent('/checkout')}`}
-            className="px-6 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em]"
+            className="px-6 py-3 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] rounded-full"
           >
             Sign in to continue
           </Link>
-          <Link href="/cart" className="text-[11px] font-black uppercase tracking-[0.2em] text-obsidian/40">
+          <Link href="/cart" className="text-[11px] font-bold uppercase tracking-[0.2em] text-obsidian/40">
             Back to cart
           </Link>
         </div>
@@ -286,8 +286,8 @@ function CheckoutForm() {
   if (lines.length === 0) {
     return (
       <Shell>
-        <h1 className="text-3xl font-bold mb-4">Your cart is empty</h1>
-        <Link href="/shop" className="text-[11px] font-black uppercase tracking-[0.2em] text-ember">
+        <h1 className="text-3xl font-serif font-light tracking-tight mb-4">Your cart is empty</h1>
+        <Link href="/shop" className="text-[11px] font-bold uppercase tracking-[0.2em] text-ember">
           Shop drinks →
         </Link>
       </Shell>
@@ -297,13 +297,13 @@ function CheckoutForm() {
   if (minError) {
     return (
       <Shell>
-        <h1 className="text-3xl font-bold mb-3">Almost there</h1>
+        <h1 className="text-3xl font-serif font-light tracking-tight mb-3">Almost there</h1>
         <p className="text-sm text-obsidian/55 mb-6 leading-relaxed max-w-lg">{minError}</p>
         <div className="flex flex-wrap gap-4">
-          <Link href="/shop" className="text-[11px] font-black uppercase tracking-[0.2em] text-ember">
+          <Link href="/shop" className="text-[11px] font-bold uppercase tracking-[0.2em] text-ember">
             Shop drinks →
           </Link>
-          <Link href="/cart" className="text-[11px] font-black uppercase tracking-[0.2em] text-obsidian/40">
+          <Link href="/cart" className="text-[11px] font-bold uppercase tracking-[0.2em] text-obsidian/40">
             Back to cart
           </Link>
         </div>
@@ -329,8 +329,8 @@ function CheckoutForm() {
               aria-hidden
               className="mx-auto mb-5 h-10 w-10 rounded-full border-2 border-ember/25 border-t-ember animate-spin"
             />
-            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ember mb-2">Secure payment</p>
-            <h2 className="text-2xl font-bold text-obsidian mb-2">Opening Flutterwave…</h2>
+            <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-ember mb-2">Secure payment</p>
+            <h2 className="text-2xl font-serif font-light text-obsidian mb-2">Opening Flutterwave…</h2>
             <p className="text-sm text-obsidian/55 leading-relaxed">
               Taking you to Flutterwave to pay. Please don&apos;t close this page — nothing has been
               charged yet.
@@ -341,7 +341,7 @@ function CheckoutForm() {
       <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
         <div className="flex items-start justify-between gap-6 flex-wrap">
           <div>
-            <h1 className="font-logo font-black uppercase tracking-tight text-3xl sm:text-4xl brand-text">
+            <h1 className="font-serif font-light tracking-tight text-3xl sm:text-4xl brand-text">
               Checkout
             </h1>
             <p className="text-obsidian/50 mt-2 text-sm">
@@ -382,7 +382,7 @@ function CheckoutForm() {
               />
             )}
 
-            <ul className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 p-5 sm:p-6 bg-white border border-obsidian/8">
+            <ul className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 p-5 sm:p-6 bg-white border border-obsidian/8 rounded-2xl">
               <Assurance icon={Wine} label="100% authentic" detail="Original products only" />
               <Assurance icon={Lock} label="Secure checkout" detail="Your data is protected" />
               <Assurance icon={Truck} label="Delivery in supported areas across Nigeria" detail="Enabled delivery zones" />
@@ -391,14 +391,14 @@ function CheckoutForm() {
           </div>
 
           <aside className="lg:sticky lg:top-24">
-            <div className="bg-white border border-obsidian/8">
+            <div className="bg-white border border-obsidian/8 rounded-2xl">
               <div className="px-5 py-4 border-b border-obsidian/8 flex items-center justify-between gap-4">
-                <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50">
+                <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-obsidian/50">
                   Order summary
                 </h2>
                 <Link
                   href="/cart"
-                  className="text-[11px] font-black uppercase tracking-[0.1em] text-ember hover:underline"
+                  className="text-[11px] font-bold uppercase tracking-[0.1em] text-ember hover:underline"
                 >
                   Edit cart
                 </Link>
@@ -409,7 +409,7 @@ function CheckoutForm() {
                   const product = findSellable(l.slug);
                   return (
                     <li key={l.slug} className="px-5 py-3.5 flex items-center gap-3">
-                      <span className="relative w-11 h-14 shrink-0 bg-white border border-obsidian/8 overflow-hidden">
+                      <span className="relative w-11 h-14 shrink-0 bg-white border border-obsidian/8 overflow-hidden rounded-2xl">
                         <DrinkPhoto
                           product={product ?? { name: l.name, category: 'spirits' }}
                           className="absolute inset-0 w-full h-full"
@@ -455,7 +455,7 @@ function CheckoutForm() {
 
               <div className="px-5 pb-4 flex justify-between items-baseline gap-4">
                 <span className="font-semibold">Total</span>
-                <span className="font-logo font-black text-2xl tabular-nums">{formatNgn(payableNgn)}</span>
+                <span className="font-serif font-light text-2xl tabular-nums">{formatNgn(payableNgn)}</span>
               </div>
 
               {quoteLoading && <p className="px-5 pb-3 text-sm" role="status">Checking current prices and gift credit…</p>}
@@ -480,7 +480,7 @@ function CheckoutForm() {
                 <div className="px-5 py-3.5 border-t border-obsidian/8">
                   <Link
                     href="/guest-card"
-                    className="text-[10px] font-black uppercase tracking-[0.14em] text-ember"
+                    className="text-[10px] font-bold uppercase tracking-[0.14em] text-ember"
                   >
                     Activate Guest Card for perks →
                   </Link>
@@ -523,7 +523,7 @@ function Stepper({ current }: { current: number }) {
                 {done ? <Check size={13} /> : i + 1}
               </span>
               <span
-                className={`text-[11px] font-black uppercase tracking-[0.1em] hidden sm:inline ${
+                className={`text-[11px] font-bold uppercase tracking-[0.1em] hidden sm:inline ${
                   active ? 'text-obsidian' : 'text-obsidian/35'
                 }`}
               >
@@ -539,7 +539,7 @@ function Stepper({ current }: { current: number }) {
 }
 
 const inputClass =
-  'w-full border border-obsidian/12 focus:border-ember focus:ring-0 text-sm py-2.5 px-3 bg-white placeholder-obsidian/25';
+  'w-full rounded-xl border border-obsidian/12 focus:border-ember focus:ring-0 text-sm py-2.5 px-3 bg-white placeholder-obsidian/25';
 
 function Field({
   label,
@@ -584,7 +584,7 @@ function DeliveryStep({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
       onSubmit={onSubmit}
-      className="bg-white border border-obsidian/8"
+      className="bg-white border border-obsidian/8 rounded-2xl"
     >
       <div className="px-5 sm:px-6 py-4 border-b border-obsidian/8 flex items-center gap-2.5">
         <Truck size={17} className="text-ember" />
@@ -599,11 +599,11 @@ function DeliveryStep({
               key={mode}
               type="button"
               onClick={() => onChange('deliveryMode', mode)}
-              className={`px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.12em] transition-colors ${
+              className={`px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] transition-colors ${
                 details.deliveryMode === mode
                   ? 'bg-obsidian text-white'
                   : 'bg-white border border-obsidian/12 text-obsidian/45 hover:border-obsidian/30'
-              }`}
+              } rounded-full`}
             >
               {mode === 'address' ? 'Home / party address' : 'Club / lounge'}
             </button>
@@ -720,13 +720,13 @@ function DeliveryStep({
         <div className="flex items-center gap-3 flex-wrap">
           <button
             type="submit"
-            className="px-7 py-3.5 btn-brand text-[11px] font-black uppercase tracking-[0.14em]"
+            className="px-7 py-3.5 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] rounded-full"
           >
             Continue to review
           </button>
           <Link
             href="/cart"
-            className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/40 hover:text-ember"
+            className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/40 hover:text-ember"
           >
             <ChevronLeft size={14} /> Back to cart
           </Link>
@@ -769,7 +769,7 @@ function ReviewStep({
       transition={{ duration: 0.3 }}
       className="space-y-6"
     >
-      <div className="bg-white border border-obsidian/8">
+      <div className="bg-white border border-obsidian/8 rounded-2xl">
         <div className="px-5 sm:px-6 py-4 border-b border-obsidian/8 flex items-center justify-between gap-4">
           <span className="flex items-center gap-2.5">
             <MapPin size={17} className="text-ember" />
@@ -778,7 +778,7 @@ function ReviewStep({
           <button
             type="button"
             onClick={onEdit}
-            className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.1em] text-obsidian/45 hover:text-ember transition-colors"
+            className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-obsidian/45 hover:text-ember transition-colors"
           >
             <Pencil size={12} /> Edit
           </button>
@@ -795,7 +795,7 @@ function ReviewStep({
         </dl>
       </div>
 
-      <div className="bg-white border border-obsidian/8">
+      <div className="bg-white border border-obsidian/8 rounded-2xl">
         <div className="px-5 sm:px-6 py-4 border-b border-obsidian/8 flex items-center gap-2.5">
           <Tag size={17} className="text-ember" />
           <h2 className="font-bold">Gift card</h2>
@@ -815,14 +815,14 @@ function ReviewStep({
         </div>
       </div>
 
-      <div className="bg-white border border-obsidian/8 p-5 sm:p-6">
+      <div className="bg-white border border-obsidian/8 p-5 sm:p-6 rounded-2xl">
         {error && <p className="text-sm text-ember mb-4">{error}</p>}
 
         <button
           type="button"
           onClick={onPlace}
           disabled={loading}
-          className="w-full py-4 btn-brand text-[11px] font-black uppercase tracking-[0.14em] disabled:opacity-60 inline-flex items-center justify-center gap-2"
+          className="w-full py-4 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] disabled:opacity-60 inline-flex items-center justify-center gap-2 rounded-full"
         >
           <CreditCard size={15} />
           {phase === 'creating'
@@ -842,7 +842,7 @@ function ReviewStep({
         <button
           type="button"
           onClick={onEdit}
-          className="w-full mt-4 inline-flex items-center justify-center gap-1.5 text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/40 hover:text-ember"
+          className="w-full mt-4 inline-flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/40 hover:text-ember"
         >
           <ChevronLeft size={14} /> Back to delivery
         </button>

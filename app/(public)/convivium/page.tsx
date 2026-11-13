@@ -77,7 +77,7 @@ export default function ConviviumPage() {
 
   return (
     <>
-      <section className="relative bg-obsidian flex items-center overflow-hidden -mt-16 pt-16">
+      <section className="relative bg-obsidian flex items-center overflow-hidden mx-3 mt-4 rounded-3xl sm:mx-4 lg:mx-5">
         <div className="absolute inset-0">
           <div
             className="absolute inset-0"
@@ -112,7 +112,7 @@ export default function ConviviumPage() {
         </div>
       </section>
 
-      <section className="bg-obsidian py-14 sm:py-20 overflow-hidden border-t border-gold/10">
+      <section className="bg-obsidian py-14 sm:py-20 overflow-hidden mx-3 mt-4 rounded-3xl sm:mx-4 lg:mx-5">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <motion.div
             initial="hidden"
@@ -122,7 +122,7 @@ export default function ConviviumPage() {
             className="grid lg:grid-cols-2 gap-14 lg:gap-20 items-center"
           >
             <motion.div variants={fadeUp} className="order-2 lg:order-1">
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gold/60 mb-6">
+              <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-gold/60 mb-6">
                 Member Access Card
               </p>
               <ConviviumCard tier="FOUNDING MEMBER" name="A. ADEYEMI" />
@@ -147,15 +147,15 @@ export default function ConviviumPage() {
                 <div className="flex flex-wrap gap-x-10 gap-y-4">
                   <div>
                     <p className="font-display text-3xl italic text-gold">Lagos</p>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cream/40">First city</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-cream/40">First city</p>
                   </div>
                   <div>
                     <p className="font-display text-3xl italic text-gold">Monthly</p>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cream/40">Ritual drop</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-cream/40">Ritual drop</p>
                   </div>
                   <div>
                     <p className="font-display text-3xl italic text-gold">By application</p>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cream/40">Membership</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-cream/40">Membership</p>
                   </div>
                 </div>
               </div>
@@ -193,12 +193,12 @@ export default function ConviviumPage() {
                   }`}
                 >
                   {t.featured && (
-                    <span className="absolute -top-3 left-8 inline-flex items-center gap-1.5 px-3 py-1 rounded-full badge-brand text-[9px] font-black uppercase tracking-[0.2em]">
+                    <span className="absolute -top-3 left-8 inline-flex items-center gap-1.5 px-3 py-1 rounded-full badge-brand text-[11px] font-bold uppercase tracking-[0.2em]">
                       Most chosen
                     </span>
                   )}
                   <p
-                    className={`text-[10px] font-black uppercase tracking-[0.3em] mb-1 ${
+                    className={`text-[10px] font-bold uppercase tracking-[0.3em] mb-1 ${
                       t.featured ? 'text-gold/70' : 'text-gold-dark/70'
                     }`}
                   >
@@ -233,11 +233,11 @@ export default function ConviviumPage() {
                   <a
                     href={`#apply-${t.tierKey}`}
                     onClick={() => setApplyTier(t.tierKey)}
-                    className={`inline-flex items-center justify-center gap-2 px-6 py-3.5 text-[11px] font-black uppercase tracking-[0.2em] transition-colors ${
+                    className={`inline-flex items-center justify-center gap-2 px-6 py-3.5 text-[11px] font-bold uppercase tracking-[0.2em] transition-colors ${
                       t.featured
                         ? 'btn-brand'
                         : 'bg-obsidian hover:bg-obsidian/90 text-cream'
-                    }`}
+                    } rounded-full`}
                   >
                     Apply <ArrowRight size={13} />
                   </a>
@@ -252,7 +252,7 @@ export default function ConviviumPage() {
         </div>
       </section>
 
-      <section id={`apply-${applyTier}`} className="bg-obsidian py-14 sm:py-20 scroll-mt-20">
+      <section id={`apply-${applyTier}`} className="bg-obsidian py-14 sm:py-20 scroll-mt-20 mx-3 mt-4 rounded-3xl sm:mx-4 lg:mx-5">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-12 items-start">
           <div>
             <SectionLabel>Apply</SectionLabel>
@@ -275,11 +275,11 @@ export default function ConviviumPage() {
                     setApplyTier(t);
                     window.history.replaceState(null, '', `#apply-${t}`);
                   }}
-                  className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.15em] transition-colors ${
+                  className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] transition-colors ${
                     applyTier === t
                       ? 'badge-brand'
                       : 'border border-gold/30 text-cream/50 hover:text-cream'
-                  }`}
+                  } rounded-full`}
                 >
                   {t}
                 </button>
@@ -296,7 +296,7 @@ export default function ConviviumPage() {
         </div>
       </section>
 
-      <section className="brand-gradient">
+      <section className="brand-gradient mb-6 mx-3 mt-4 rounded-3xl sm:mx-4 lg:mx-5">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-12 sm:py-16 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
           <div>
             <h2 className="font-display text-2xl sm:text-4xl italic text-cream mb-2">
@@ -306,7 +306,7 @@ export default function ConviviumPage() {
           </div>
           <Link
             href="/shop"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-obsidian hover:bg-obsidian/90 text-cream text-[11px] font-black uppercase tracking-[0.2em] transition-colors shrink-0"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-obsidian hover:bg-obsidian/90 text-cream text-[11px] font-bold uppercase tracking-[0.2em] transition-colors shrink-0 rounded-full"
           >
             Shop drinks <ArrowRight size={14} />
           </Link>

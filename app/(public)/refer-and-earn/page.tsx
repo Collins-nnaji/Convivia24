@@ -40,7 +40,7 @@ export default function ReferPage() {
     <section className="bg-paper min-h-[70vh]">
       <div className="max-w-5xl mx-auto px-5 sm:px-8 pt-6 sm:pt-8 pb-16 sm:pb-24">
         <header className="mb-10">
-          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ember mb-2">
+          <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-ember mb-2">
             Partner programme
           </p>
           <h1 className="font-wordmark text-lg sm:text-xl md:text-2xl text-obsidian mb-3">
@@ -54,7 +54,7 @@ export default function ReferPage() {
 
         <ol className="grid gap-4 sm:grid-cols-3 mb-12">
           {STEPS.map(({ icon: Icon, title, body }, i) => (
-            <li key={title} className="bg-white border border-obsidian/10 p-5">
+            <li key={title} className="bg-white border border-obsidian/10 p-5 rounded-2xl">
               <div className="flex items-center gap-2 mb-2">
                 <Icon size={15} className="text-ember" />
                 <span className="text-[10px] uppercase tracking-wider text-obsidian/35">

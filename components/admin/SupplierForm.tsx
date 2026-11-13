@@ -77,7 +77,7 @@ export default function SupplierForm({
         <AdminInput label="City" value={form.city || ''} onChange={(e) => set('city', e.target.value)} />
       </div>
       <div>
-        <p className="mb-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/45">
+        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/45">
           Delivery areas <span className="font-normal normal-case tracking-normal text-obsidian/35">— none selected = anywhere in the city</span>
         </p>
         <div className="flex flex-wrap gap-1.5">
@@ -89,7 +89,7 @@ export default function SupplierForm({
         </div>
       </div>
       <div>
-        <p className="mb-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/45">Categories they can fill</p>
+        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/45">Categories they can fill</p>
         <div className="flex flex-wrap gap-1.5">
           {CATEGORIES.map((c) => (
             <button key={c} type="button" onClick={() => set('categories', toggle(form.categories, c))} className={chip(Boolean(form.categories?.includes(c)))}>
@@ -112,10 +112,10 @@ export default function SupplierForm({
       </div>
       <AdminTextArea label="Notes" rows={2} value={form.notes || ''} onChange={(e) => set('notes', e.target.value)} placeholder="Pickup hours, account manager, terms…" />
       <div className="flex gap-2">
-        <button type="submit" disabled={saving} className="btn-brand px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] disabled:opacity-50">
+        <button type="submit" disabled={saving} className="btn-brand px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] disabled:opacity-50">
           {saving ? 'Saving…' : initial ? 'Save changes' : 'Create supplier'}
         </button>
-        <button type="button" onClick={onCancel} className="px-4 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/45 hover:text-obsidian">
+        <button type="button" onClick={onCancel} className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/45 hover:text-obsidian">
           Cancel
         </button>
       </div>

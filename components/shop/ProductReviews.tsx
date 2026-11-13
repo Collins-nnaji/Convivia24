@@ -81,14 +81,14 @@ export default function ProductReviews({
   }
 
   return (
-    <div className="bg-white border border-obsidian/8 p-5 sm:p-7">
+    <div className="bg-white border border-obsidian/8 p-5 sm:p-7 rounded-2xl">
       <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
         <h2 className="text-lg font-bold">Customer reviews</h2>
         {signedIn && !alreadyReviewed && !writing && (
           <button
             type="button"
             onClick={() => setWriting(true)}
-            className="px-4 py-2.5 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em] hover:border-ember hover:text-ember transition-colors"
+            className="px-4 py-2.5 border border-obsidian/15 text-[10px] font-bold uppercase tracking-[0.12em] hover:border-ember hover:text-ember transition-colors rounded-full"
           >
             Write a review
           </button>
@@ -102,7 +102,7 @@ export default function ProductReviews({
       ) : (
         <div className="grid sm:grid-cols-[200px_1fr] gap-6 sm:gap-8">
           <div>
-            <p className="font-logo font-black text-4xl leading-none tabular-nums">
+            <p className="font-serif font-light text-4xl leading-none tabular-nums">
               {summary.average.toFixed(1)}
             </p>
             <Stars value={summary.average} size={16} className="mt-2" />
@@ -158,7 +158,7 @@ export default function ProductReviews({
                 <button
                   type="button"
                   onClick={() => setShowAll((v) => !v)}
-                  className="text-[11px] font-black uppercase tracking-[0.12em] text-ember"
+                  className="text-[11px] font-bold uppercase tracking-[0.12em] text-ember"
                 >
                   {showAll ? 'Show fewer' : `View all ${reviews.length} reviews`}
                 </button>
@@ -192,14 +192,14 @@ function EmptyState({
         <button
           type="button"
           onClick={onWrite}
-          className="mt-4 px-5 py-2.5 btn-brand text-[10px] font-black uppercase tracking-[0.14em]"
+          className="mt-4 px-5 py-2.5 btn-brand text-[10px] font-bold uppercase tracking-[0.14em] rounded-full"
         >
           Write a review
         </button>
       ) : (
         <Link
           href={`/signin?next=${encodeURIComponent(pathname)}`}
-          className="mt-4 inline-block px-5 py-2.5 btn-brand text-[10px] font-black uppercase tracking-[0.14em]"
+          className="mt-4 inline-block px-5 py-2.5 btn-brand text-[10px] font-bold uppercase tracking-[0.14em] rounded-full"
         >
           Sign in to review
         </Link>
@@ -248,7 +248,7 @@ function ReviewForm({
 
   return (
     <form onSubmit={submit} className="mt-6 pt-6 border-t border-obsidian/8">
-      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 mb-2">Your rating</p>
+      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian/40 mb-2">Your rating</p>
       <div className="flex items-center gap-1 mb-4" onMouseLeave={() => setHover(0)}>
         {[1, 2, 3, 4, 5].map((i) => (
           <button
@@ -269,7 +269,7 @@ function ReviewForm({
       </div>
 
       <label className="block">
-        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 block mb-1">
+        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian/40 block mb-1">
           How does it drink?
         </span>
         <textarea
@@ -288,14 +288,14 @@ function ReviewForm({
         <button
           type="submit"
           disabled={sending || rating === 0}
-          className="px-5 py-3 btn-brand text-[10px] font-black uppercase tracking-[0.14em] disabled:opacity-50"
+          className="px-5 py-3 btn-brand text-[10px] font-bold uppercase tracking-[0.14em] disabled:opacity-50 rounded-full"
         >
           {sending ? 'Posting…' : 'Post review'}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="px-5 py-3 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em]"
+          className="px-5 py-3 border border-obsidian/15 text-[10px] font-bold uppercase tracking-[0.12em] rounded-full"
         >
           Cancel
         </button>

@@ -24,7 +24,7 @@ export default function HeroTriviaCard() {
         className="group relative flex min-h-[220px] overflow-hidden rounded-2xl brand-gradient text-white sm:min-h-[260px]"
       >
         <div className="relative z-10 flex flex-1 flex-col justify-center p-5 sm:p-6">
-          <p className="text-[9px] font-wordmark-sm text-white/60 mb-2">Drink trivia</p>
+          <p className="text-[11px] font-wordmark-sm text-white/60 mb-2">Drink trivia</p>
           <h2 className="font-wordmark text-2xl sm:text-3xl leading-tight">Know your {round.brand}?</h2>
           <p className="mt-2 max-w-xs text-sm leading-relaxed text-white/70">
             {round.questions.length} questions · 250 pts · draw for a {round.prizeLabel}.
@@ -45,7 +45,7 @@ export default function HeroTriviaCard() {
               className="object-contain p-4 drop-shadow-[0_18px_30px_rgba(0,0,0,0.45)]"
             />
           )}
-          <span className="absolute right-3 top-3 inline-flex items-center gap-1 bg-white/10 px-2 py-1 text-[9px] font-wordmark-sm">
+          <span className="absolute right-3 top-3 inline-flex items-center gap-1 bg-white/10 px-2 py-1 text-[11px] font-wordmark-sm">
             <Gift size={11} /> Draw
           </span>
         </div>

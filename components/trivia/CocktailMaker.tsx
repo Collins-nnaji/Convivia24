@@ -162,17 +162,17 @@ export default function CocktailMaker({
         <section className="min-h-[420px] rounded-2xl brand-gradient p-5 text-white sm:p-8">
           {recipe ? (
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/50">Your recipe</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/50">Your recipe</p>
               <h2 className="mt-2 font-wordmark text-3xl sm:text-4xl">{recipe.name}</h2>
               <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/65">{recipe.description}</p>
               <div className="mt-6 grid gap-6 sm:grid-cols-2">
-                <div><h3 className="text-xs font-black uppercase tracking-wider text-white/50">Ingredients</h3><ul className="mt-3 space-y-2 text-sm">{recipe.ingredients.map((item) => <li key={item}>· {item}</li>)}</ul></div>
-                <div><h3 className="text-xs font-black uppercase tracking-wider text-white/50">Method</h3><ol className="mt-3 space-y-3 text-sm">{recipe.steps.map((step, index) => <li key={step} className="flex gap-2"><span className="text-ember">{index + 1}.</span>{step}</li>)}</ol></div>
+                <div><h3 className="text-xs font-bold uppercase tracking-wider text-white/50">Ingredients</h3><ul className="mt-3 space-y-2 text-sm">{recipe.ingredients.map((item) => <li key={item}>· {item}</li>)}</ul></div>
+                <div><h3 className="text-xs font-bold uppercase tracking-wider text-white/50">Method</h3><ol className="mt-3 space-y-3 text-sm">{recipe.steps.map((step, index) => <li key={step} className="flex gap-2"><span className="text-ember">{index + 1}.</span>{step}</li>)}</ol></div>
               </div>
               <div className="mt-7 grid grid-cols-3 gap-2 border-t border-white/10 pt-5 text-xs"><div><span className="block text-white/40">Glass</span>{recipe.glass}</div><div><span className="block text-white/40">Garnish</span>{recipe.garnish}</div><div><span className="block text-white/40">Strength</span>{recipe.strength}</div></div>
               {recipe.variations && recipe.variations.length > 0 && (
                 <div className="mt-7 border-t border-white/10 pt-5">
-                  <h3 className="text-xs font-black uppercase tracking-wider text-white/50">More ways to make it</h3>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-white/50">More ways to make it</h3>
                   <div className="mt-3 grid gap-2 sm:grid-cols-3">
                     {recipe.variations.map((variation) => (
                       <div key={variation.name} className="border border-white/10 bg-white/[0.06] p-3">

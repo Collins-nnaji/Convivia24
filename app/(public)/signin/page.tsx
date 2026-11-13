@@ -67,16 +67,16 @@ function SignInInner() {
     <section className="bg-paper min-h-screen py-16 sm:py-24">
       <div className="max-w-md mx-auto px-5 sm:px-8">
         <SectionLabel>Welcome</SectionLabel>
-        <h1 className="font-display text-4xl sm:text-5xl font-light italic text-obsidian tracking-tight mb-3">
+        <h1 className="font-serif text-4xl sm:text-5xl font-light italic text-obsidian tracking-tight mb-3">
           {mode === 'signup' ? 'Create your account.' : 'Sign in to Convivia24.'}
         </h1>
         <p className="text-obsidian/55 mb-8 leading-relaxed">
           One account for shop orders, party invites, and your Guest Card — synced everywhere you sign in.
         </p>
 
-        <div className="bg-white border border-obsidian/12 shadow-sm p-6 sm:p-8">
+        <div className="bg-white border border-obsidian/12 shadow-sm p-6 sm:p-8 rounded-2xl">
           {!authConfigured && (
-            <p className="mb-5 text-amber-700 text-xs bg-amber-50 border border-amber-200 p-3">
+            <p className="mb-5 text-amber-700 text-xs bg-amber-50 border border-amber-200 p-3 rounded-xl">
               Authentication isn&apos;t configured on this environment yet.
             </p>
           )}
@@ -84,7 +84,7 @@ function SignInInner() {
           <button
             onClick={google}
             disabled={busy || !authConfigured}
-            className="w-full inline-flex items-center justify-center gap-3 bg-white border border-obsidian/20 hover:border-gold hover:bg-paper text-obsidian text-sm font-semibold py-3.5 transition-colors disabled:opacity-50"
+            className="w-full inline-flex items-center justify-center gap-3 bg-white border border-obsidian/20 hover:border-gold hover:bg-paper text-obsidian text-sm font-semibold py-3.5 transition-colors disabled:opacity-50 rounded-full"
           >
             <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
               <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z" />
@@ -110,7 +110,7 @@ function SignInInner() {
                 autoComplete="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full border border-obsidian/15 px-4 py-3 text-sm text-obsidian placeholder:text-obsidian/35 focus:outline-none focus:border-gold"
+                className="w-full border border-obsidian/15 px-4 py-3 text-sm text-obsidian placeholder:text-obsidian/35 focus:outline-none focus:border-gold rounded-xl"
               />
             )}
             <input
@@ -120,7 +120,7 @@ function SignInInner() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-obsidian/15 px-4 py-3 text-sm text-obsidian placeholder:text-obsidian/35 focus:outline-none focus:border-gold"
+              className="w-full border border-obsidian/15 px-4 py-3 text-sm text-obsidian placeholder:text-obsidian/35 focus:outline-none focus:border-gold rounded-xl"
             />
             <input
               type="password"
@@ -130,12 +130,12 @@ function SignInInner() {
               autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-obsidian/15 px-4 py-3 text-sm text-obsidian placeholder:text-obsidian/35 focus:outline-none focus:border-gold"
+              className="w-full border border-obsidian/15 px-4 py-3 text-sm text-obsidian placeholder:text-obsidian/35 focus:outline-none focus:border-gold rounded-xl"
             />
             <button
               type="submit"
               disabled={busy || !authConfigured}
-              className="w-full bg-obsidian hover:bg-obsidian/90 text-paper text-sm font-semibold py-3.5 transition-colors disabled:opacity-50"
+              className="w-full bg-obsidian hover:bg-obsidian/90 text-paper text-sm font-semibold py-3.5 transition-colors disabled:opacity-50 rounded-full"
             >
               {formLoading ? 'Please wait…' : mode === 'signup' ? 'Create account' : 'Sign in'}
             </button>

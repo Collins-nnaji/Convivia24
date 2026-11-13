@@ -124,7 +124,7 @@ export default function SupplierOrdersDesk({
 
       <div className="overflow-x-auto rounded-2xl border border-obsidian/10 bg-white">
         <table className="w-full min-w-[860px] text-sm">
-          <thead className="bg-paper text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/45">
+          <thead className="bg-paper text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/45">
             <tr>
               <th className="w-8 py-2.5 pl-3" />
               <th className="px-2 py-2.5 text-left">Order</th>
@@ -177,7 +177,7 @@ export default function SupplierOrdersDesk({
                   </td>
                   <td className="px-2 py-2.5 text-right tabular-nums text-obsidian/70">{o.costNgn != null ? formatNgn(o.costNgn) : '—'}</td>
                   <td className="px-2 py-2.5">
-                    <span className={`inline-block rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ring-1 ${TONE[o.status] ?? 'bg-obsidian/[0.06] text-obsidian/60 ring-obsidian/10'}`}>
+                    <span className={`inline-block rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ring-1 ${TONE[o.status] ?? 'bg-obsidian/[0.06] text-obsidian/60 ring-obsidian/10'}`}>
                       {ORDER_STATUS_LABELS[status] ?? o.status}
                     </span>
                   </td>
@@ -187,7 +187,7 @@ export default function SupplierOrdersDesk({
                         type="button"
                         disabled={busy === o.id}
                         onClick={() => move(o, next.to)}
-                        className="btn-brand px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-40"
+                        className="btn-brand px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] disabled:opacity-40 rounded-full"
                       >
                         {busy === o.id ? '…' : next.label}
                       </button>
@@ -258,7 +258,7 @@ function TrackingForm({
 
   return (
     <div className="space-y-3">
-      <p className="text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40">Rider &amp; ETA — shown to the customer</p>
+      <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/40">Rider &amp; ETA — shown to the customer</p>
       <div className="grid gap-3 sm:grid-cols-2">
         <AdminSelect label="Courier" value={courierName} onChange={setCourierName} placeholder="Choose…" options={COURIERS} />
         <AdminInput label="Rider phone" value={riderPhone} onChange={(e) => setRiderPhone(e.target.value)} placeholder="+234…" />
@@ -278,7 +278,7 @@ function TrackingForm({
             trackingNote, deliveryProof, recipientAgeChecked,
           })
         }
-        className="rounded-lg border border-obsidian/15 px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/70 hover:border-ember hover:text-ember disabled:opacity-40"
+        className="rounded-lg border border-obsidian/15 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/70 hover:border-ember hover:text-ember disabled:opacity-40"
       >
         {saving ? '…' : 'Save rider details'}
       </button>

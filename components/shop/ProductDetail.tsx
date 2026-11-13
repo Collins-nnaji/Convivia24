@@ -32,9 +32,11 @@ import DrinkInfoButton from '@/components/shop/DrinkInfoButton';
 import { useWishlist } from '@/lib/shop/wishlist';
 import { productFacts, tastingProfile } from '@/lib/drinks/tasting';
 import {
+  BADGE_LABELS,
   CATEGORY_LABELS,
   formatNgn,
   relatedDrinks,
+  savingNgn,
   sizeOptionsFor,
   type DrinkProduct,
 } from '@/lib/drinks/catalog';
@@ -112,11 +114,11 @@ export default function ProductDetail({ product }: { product: DrinkProduct }) {
           <ProductGallery product={product} />
 
           <div>
-            <span className="inline-block px-3 py-1 bg-ember/6 text-ember text-[10px] font-black uppercase tracking-[0.16em]">
+            <span className="inline-block px-3 py-1 bg-ember/6 text-ember text-[10px] font-bold uppercase tracking-[0.16em] rounded-full">
               {CATEGORY_LABELS[product.category]}
             </span>
 
-            <h1 className="text-3xl sm:text-4xl font-bold text-obsidian mt-3 flex items-center gap-2 flex-wrap">
+            <h1 className="text-3xl sm:text-4xl font-serif font-light tracking-tight text-obsidian mt-3 flex items-center gap-2 flex-wrap">
               {product.name}
               <DrinkInfoButton slug={product.slug} brand={product.brand} size="md" />
             </h1>
@@ -137,7 +139,24 @@ export default function ProductDetail({ product }: { product: DrinkProduct }) {
               )}
             </div>
 
-            <p className="text-2xl sm:text-3xl font-bold brand-text mt-4">{formatNgn(product.priceNgn)}</p>
+            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+              <p className={`text-2xl sm:text-3xl font-bold ${savingNgn(product) > 0 ? 'text-ember' : 'brand-text'}`}>
+                {formatNgn(product.priceNgn)}
+              </p>
+              {savingNgn(product) > 0 && product.compareAtNgn && (
+                <>
+                  <span className="text-lg text-obsidian/40 line-through">{formatNgn(product.compareAtNgn)}</span>
+                  <span className="rounded-full bg-lilac px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-obsidian">
+                    Save {formatNgn(savingNgn(product))}
+                  </span>
+                </>
+              )}
+              {product.badge && (
+                <span className="rounded-full bg-obsidian px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-white">
+                  {BADGE_LABELS[product.badge]}
+                </span>
+              )}
+            </div>
             <p className="text-obsidian/60 leading-relaxed mt-3">{product.tagline}</p>
 
             <ul className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-5 pt-5 border-t border-obsidian/8">
@@ -151,10 +170,10 @@ export default function ProductDetail({ product }: { product: DrinkProduct }) {
 
             <div className="mt-6 grid sm:grid-cols-[auto_1fr] gap-3 items-start">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 mb-2">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian/40 mb-2">
                   Quantity
                 </p>
-                <div className="flex items-center border border-obsidian/15 bg-white w-fit">
+                <div className="flex items-center overflow-hidden rounded-full border border-obsidian/15 bg-white w-fit">
                   <button
                     type="button"
                     aria-label="Decrease"
@@ -187,7 +206,7 @@ export default function ProductDetail({ product }: { product: DrinkProduct }) {
                   type="button"
                   onClick={handleAdd}
                   disabled={soldOut}
-                  className="py-3.5 btn-brand text-[11px] font-black uppercase tracking-[0.14em] inline-flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="py-3.5 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] inline-flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <AnimatePresence mode="wait" initial={false}>
                     {added ? (
@@ -217,14 +236,14 @@ export default function ProductDetail({ product }: { product: DrinkProduct }) {
                   type="button"
                   onClick={buyNow}
                   disabled={soldOut}
-                  className="py-3.5 bg-white border border-ember/40 text-ember text-[11px] font-black uppercase tracking-[0.14em] hover:bg-ember/5 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                  className="rounded-full py-3.5 bg-white border border-ember/40 text-ember text-[11px] font-bold uppercase tracking-[0.14em] hover:bg-ember/5 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Buy now
                 </button>
               </div>
             </div>
 
-            <ul className="grid grid-cols-2 gap-x-5 gap-y-4 mt-7 p-5 bg-white border border-obsidian/8">
+            <ul className="grid grid-cols-2 gap-x-5 gap-y-4 mt-7 p-5 bg-white border border-obsidian/8 rounded-2xl">
               <Promise icon={ShieldCheck} label="Secure payment" detail="Encrypted checkout" />
               <Promise icon={Truck} label="Delivery in supported areas across Nigeria" detail="Supported delivery zones" />
               <Promise icon={Wine} label="Authentic products" detail="No parallel imports" />
@@ -236,7 +255,7 @@ export default function ProductDetail({ product }: { product: DrinkProduct }) {
                 type="button"
                 onClick={toggle}
                 aria-pressed={saved}
-                className={`py-3 border text-[11px] font-black uppercase tracking-[0.12em] inline-flex items-center justify-center gap-2 transition-colors ${
+                className={`py-3 border text-[11px] font-bold uppercase tracking-[0.12em] inline-flex items-center justify-center gap-2 transition-colors ${
                   saved
                     ? 'border-ember text-ember bg-ember/5'
                     : 'border-obsidian/15 text-obsidian/70 hover:border-ember hover:text-ember'
@@ -248,7 +267,7 @@ export default function ProductDetail({ product }: { product: DrinkProduct }) {
               <button
                 type="button"
                 onClick={share}
-                className="py-3 border border-obsidian/15 text-obsidian/70 text-[11px] font-black uppercase tracking-[0.12em] inline-flex items-center justify-center gap-2 hover:border-ember hover:text-ember transition-colors"
+                className="py-3 border border-obsidian/15 text-obsidian/70 text-[11px] font-bold uppercase tracking-[0.12em] inline-flex items-center justify-center gap-2 hover:border-ember hover:text-ember transition-colors"
               >
                 <Share2 size={14} /> {shared ? 'Link copied' : 'Share product'}
               </button>
@@ -258,7 +277,7 @@ export default function ProductDetail({ product }: { product: DrinkProduct }) {
 
         <div className="mt-12 sm:mt-16 grid lg:grid-cols-[1fr_360px] gap-6 lg:gap-8 items-start">
           <div className="min-w-0">
-            <div className="bg-white border border-obsidian/8">
+            <div className="bg-white border border-obsidian/8 rounded-2xl">
               <div className="flex overflow-x-auto scrollbar-hide border-b border-obsidian/8">
                 {TABS.map(([id, label]) => (
                   <span key={id} className="contents">
@@ -352,7 +371,7 @@ export default function ProductDetail({ product }: { product: DrinkProduct }) {
           </div>
         </div>
 
-        <ProductAssurances className="mt-10 sm:mt-14 p-6 sm:p-8 bg-white border border-obsidian/8" />
+        <ProductAssurances className="mt-10 sm:mt-14 p-6 sm:p-8 bg-white border border-obsidian/8 rounded-2xl" />
       </div>
     </section>
   );
@@ -415,18 +434,18 @@ function SizeSelector({
 }) {
   return (
     <div className="mt-6">
-      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 mb-2">Select size</p>
+      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian/40 mb-2">Select size</p>
       <div className="flex flex-wrap gap-2.5">
         {sizes.map((size) =>
           size.slug === product.slug ? (
-            <span key={size.slug} aria-current="true" className="px-5 py-2.5 bg-ember/8 border border-ember/25 text-ember text-sm font-medium">
+            <span key={size.slug} aria-current="true" className="rounded-full px-5 py-2.5 bg-ember/8 border border-ember/25 text-ember text-sm font-medium">
               {size.volume}
             </span>
           ) : (
             <Link
               key={size.slug}
               href={`/shop/${size.slug}`}
-              className="px-5 py-2.5 bg-white border border-obsidian/12 text-sm text-obsidian/65 hover:border-ember hover:text-ember transition-colors"
+              className="rounded-full px-5 py-2.5 bg-white border border-obsidian/12 text-sm text-obsidian/65 hover:border-ember hover:text-ember transition-colors"
             >
               {size.volume}
             </Link>

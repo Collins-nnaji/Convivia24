@@ -49,13 +49,13 @@ const ACTOR_TONE: Record<SupplierAuditEntry['actor'], string> = {
 function ActivityList({ entries, showSupplier }: { entries: AuditRow[]; showSupplier?: boolean }) {
   if (entries.length === 0) return <p className="text-sm text-obsidian/45">No activity yet.</p>;
   return (
-    <ul className="divide-y divide-obsidian/8 rounded-xl border border-obsidian/10 bg-white">
+    <ul className="divide-y divide-obsidian/8 rounded-2xl bg-white ring-1 ring-obsidian/[0.06]">
       {entries.map((e) => (
         <li key={e.id} className="flex flex-wrap items-center gap-2.5 px-3 py-2.5 text-sm">
           <span className="w-28 shrink-0 text-[11px] tabular-nums text-obsidian/40">
             {new Date(e.createdAt).toLocaleString('en-NG', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}
           </span>
-          <span className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider ${ACTOR_TONE[e.actor]}`}>
+          <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${ACTOR_TONE[e.actor]}`}>
             {e.actor === 'admin' ? 'Desk' : e.actor}
           </span>
           {showSupplier && <span className="font-semibold text-obsidian">{e.supplierName}</span>}
@@ -228,7 +228,7 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
         ].map(([label, value]) => (
           <div key={label} className="bg-white p-4">
             <p className="text-[10px] uppercase tracking-wider text-obsidian/40">{label}</p>
-            <p className="mt-1 text-2xl font-bold tabular-nums text-obsidian">{value}</p>
+            <p className="mt-1 font-serif text-3xl font-light tabular-nums text-obsidian">{value}</p>
           </div>
         ))}
       </div>
@@ -247,7 +247,7 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-bold text-obsidian">{selected.name}</h2>
+                  <h2 className="text-xl font-serif font-light text-obsidian">{selected.name}</h2>
                   <button type="button" onClick={reloadAll} className="text-obsidian/40 hover:text-obsidian" title="Refresh">
                     <RefreshCw size={14} />
                   </button>
@@ -264,7 +264,7 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
               <button
                 type="button"
                 onClick={() => setMode('edit')}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-obsidian/15 px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/70 hover:border-ember hover:text-ember"
+                className="inline-flex items-center gap-1.5 rounded-full border border-obsidian/15 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/70 hover:border-ember hover:text-ember"
               >
                 <Pencil size={12} /> Edit partner
               </button>
@@ -308,9 +308,9 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
                   />
                 </label>
 
-                <div className="overflow-x-auto rounded-xl border border-obsidian/10 bg-white">
+                <div className="overflow-x-auto rounded-2xl bg-white ring-1 ring-obsidian/[0.06]">
                   <table className="w-full min-w-[720px] text-sm">
-                    <thead className="bg-paper text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/45">
+                    <thead className="bg-paper text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/45">
                       <tr>
                         <th className="px-3 py-3 text-left">SKU</th>
                         <th className="px-3 py-3 text-right">Retail</th>
@@ -366,7 +366,7 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
                                 type="button"
                                 disabled={row.derived || !dirty || savingSlug === row.slug}
                                 onClick={() => saveCost(row.slug)}
-                                className="border border-obsidian/15 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.1em] hover:border-ember hover:text-ember disabled:opacity-35"
+                                className="border border-obsidian/15 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.1em] hover:border-ember hover:text-ember disabled:opacity-35"
                               >
                                 {savingSlug === row.slug ? '…' : 'Save'}
                               </button>

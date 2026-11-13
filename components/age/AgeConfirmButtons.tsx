@@ -15,13 +15,13 @@ export default function AgeConfirmButtons() {
           setTimeout(() => setPending(true), 0);
         }}
         aria-busy={pending}
-        className="flex-1 px-5 py-3.5 btn-brand text-[11px] font-black uppercase tracking-[0.15em]"
+        className="flex-1 rounded-full bg-obsidian px-5 py-3.5 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-ember disabled:opacity-60"
       >
         {pending ? 'Entering…' : 'Yes — enter'}
       </button>
       <a
         href="https://www.google.com"
-        className="flex-1 text-center px-5 py-3.5 border border-obsidian/15 text-obsidian/60 hover:text-obsidian text-[11px] font-black uppercase tracking-[0.15em]"
+        className="flex-1 rounded-full border border-obsidian/20 px-5 py-3.5 text-center text-xs font-bold uppercase tracking-[0.12em] text-obsidian/70 transition hover:border-obsidian hover:text-obsidian"
       >
         No
       </a>

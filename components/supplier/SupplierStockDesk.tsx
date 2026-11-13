@@ -110,7 +110,7 @@ export default function SupplierStockDesk({
 
       <div className="overflow-x-auto rounded-2xl border border-obsidian/10 bg-white">
         <table className="w-full min-w-[760px] text-sm">
-          <thead className="bg-paper text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/45">
+          <thead className="bg-paper text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/45">
             <tr>
               <th className="px-3 py-3 text-left">Bottle</th>
               <th className="px-3 py-3 text-right">Retail</th>
@@ -212,7 +212,7 @@ function ShelfLine({
           <button
             type="button"
             onClick={() => setAdding(true)}
-            className="inline-flex items-center gap-1 rounded-lg border border-ember/40 px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider text-ember hover:bg-ember/5"
+            className="inline-flex items-center gap-1 rounded-lg border border-ember/40 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-ember hover:bg-ember/5"
           >
             <Plus size={12} /> Add
           </button>
@@ -252,7 +252,7 @@ function ShelfLine({
       </td>
       <td className="px-3 py-2.5 text-right">
         {listed && (
-          <button type="button" onClick={onRemove} disabled={busy} className="text-[10px] font-black uppercase tracking-wider text-obsidian/40 hover:text-ember disabled:opacity-40">
+          <button type="button" onClick={onRemove} disabled={busy} className="text-[10px] font-bold uppercase tracking-wider text-obsidian/40 hover:text-ember disabled:opacity-40">
             Remove
           </button>
         )}

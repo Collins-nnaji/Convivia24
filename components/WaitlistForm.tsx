@@ -61,7 +61,7 @@ export default function WaitlistForm({
 
   const inputClass =
     'bg-transparent border-0 border-b border-gold/20 focus:border-gold focus:ring-0 text-cream text-sm py-2.5 px-0 placeholder-cream/20 transition-colors';
-  const labelClass = 'text-[9px] font-black uppercase tracking-[0.3em] text-gold/60 block mb-1.5';
+  const labelClass = 'text-[11px] font-bold uppercase tracking-[0.3em] text-gold/60 block mb-1.5';
 
   if (success) {
     return (
@@ -106,7 +106,7 @@ export default function WaitlistForm({
           <button
             type="submit"
             disabled={loading}
-            className="shrink-0 px-5 py-2.5 border border-gold/40 text-gold text-[10px] font-black uppercase tracking-[0.2em] hover:bg-gold/10 transition-colors disabled:opacity-60"
+            className="shrink-0 px-5 py-2.5 border border-gold/40 text-gold text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-gold/10 transition-colors disabled:opacity-60 rounded-full"
           >
             {loading ? 'Joining...' : 'Join Waitlist'}
           </button>
@@ -118,7 +118,7 @@ export default function WaitlistForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-w-sm">
-      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gold/50">
+      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gold/50">
         Applying for · {tier}
       </p>
       <div>
@@ -152,7 +152,7 @@ export default function WaitlistForm({
       <button
         type="submit"
         disabled={loading}
-        className="w-full border border-gold/40 text-gold text-[10px] font-black uppercase tracking-[0.2em] py-3 hover:bg-gold/10 transition-colors disabled:opacity-60"
+        className="w-full border border-gold/40 text-gold text-[10px] font-bold uppercase tracking-[0.2em] py-3 hover:bg-gold/10 transition-colors disabled:opacity-60 rounded-full"
       >
         {loading ? 'Joining...' : 'Join the Waitlist'}
       </button>

@@ -61,7 +61,7 @@ export default function PlanShareActions({ input, disabled }: { input: PlanShare
           type="button"
           onClick={shareImage}
           disabled={disabled || busy !== null}
-          className="inline-flex items-center gap-2 px-4 py-3 sm:py-2.5 btn-brand text-[11px] sm:text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-4 py-3 sm:py-2.5 btn-brand text-[11px] sm:text-[10px] font-bold uppercase tracking-[0.12em] disabled:opacity-50 rounded-full"
         >
           <Share2 size={14} /> {busy === 'share' ? 'Preparing…' : 'Share plan'}
         </button>
@@ -69,7 +69,7 @@ export default function PlanShareActions({ input, disabled }: { input: PlanShare
           type="button"
           onClick={downloadImage}
           disabled={disabled || busy !== null}
-          className="inline-flex items-center gap-2 px-4 py-3 sm:py-2.5 border border-obsidian/15 text-[11px] sm:text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-4 py-3 sm:py-2.5 border border-obsidian/15 text-[11px] sm:text-[10px] font-bold uppercase tracking-[0.12em] disabled:opacity-50 rounded-full"
         >
           <Download size={14} /> {busy === 'image' ? 'Saving…' : 'Download image'}
         </button>

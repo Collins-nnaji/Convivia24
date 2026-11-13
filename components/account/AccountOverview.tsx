@@ -48,22 +48,22 @@ export default function AccountOverview({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-logo font-black uppercase tracking-tight text-2xl sm:text-3xl">
+        <h1 className="font-serif font-light tracking-tight text-2xl sm:text-3xl">
           <span className="brand-text">My profile</span>
         </h1>
         <p className="text-obsidian/50 mt-2 text-sm">Your account, points and taste at a glance.</p>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 items-start">
-        <div className="bg-white border border-obsidian/8 p-5 sm:p-6">
+        <div className="bg-white border border-obsidian/8 p-5 sm:p-6 rounded-2xl">
           <div className="flex items-center gap-4">
-            <span className="w-16 h-16 rounded-full bg-ember/8 flex items-center justify-center shrink-0 font-logo font-black text-xl text-ember">
+            <span className="w-16 h-16 rounded-full bg-ember/8 flex items-center justify-center shrink-0 font-serif font-light text-xl text-ember">
               {(user?.name || user?.email || '?').slice(0, 1).toUpperCase()}
             </span>
             <div className="min-w-0">
               <p className="font-bold text-lg leading-snug truncate">{user?.name || 'Your account'}</p>
               <p className="text-[12px] text-obsidian/45 mt-1 truncate">{user?.email}</p>
-              <span className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 bg-ember/6 text-ember text-[10px] font-black uppercase tracking-[0.12em]">
+              <span className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 bg-ember/6 text-ember text-[10px] font-bold uppercase tracking-[0.12em] rounded-full">
                 <Trophy size={11} /> {tier.name} member
               </span>
             </div>
@@ -83,14 +83,14 @@ export default function AccountOverview({
           </p>
         </div>
 
-        <div className="bg-obsidian text-white">
+        <div className="overflow-hidden rounded-2xl bg-obsidian text-white">
           <div className="p-5 sm:p-6">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/45">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">
               Your points balance
             </p>
             <div className="flex items-center gap-3 mt-2">
               <Star size={22} className="text-ember fill-ember shrink-0" />
-              <p className="font-logo font-black text-3xl tracking-tight tabular-nums">
+              <p className="font-serif font-light text-3xl tracking-tight tabular-nums">
                 {points.toLocaleString()} PTS
               </p>
             </div>
@@ -117,15 +117,15 @@ export default function AccountOverview({
 
           <Link
             href="/discover/rewards"
-            className="block px-5 sm:px-6 py-3.5 border-t border-white/10 text-[11px] font-black uppercase tracking-[0.12em] text-white/70 hover:text-white transition-colors"
+            className="block px-5 sm:px-6 py-3.5 border-t border-white/10 text-[11px] font-bold uppercase tracking-[0.12em] text-white/70 hover:text-white transition-colors"
           >
             View rewards shop <ChevronRight size={13} className="inline" />
           </Link>
         </div>
       </div>
 
-      <div className="bg-white border border-obsidian/8 p-5 sm:p-6">
-        <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50 mb-4">
+      <div className="bg-white border border-obsidian/8 p-5 sm:p-6 rounded-2xl">
+        <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-obsidian/50 mb-4">
           Your taste profile summary
         </h2>
 
@@ -148,7 +148,7 @@ export default function AccountOverview({
               <button
                 type="button"
                 onClick={onOpenTaste}
-                className="mt-4 px-5 py-2.5 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em] hover:border-ember hover:text-ember transition-colors"
+                className="mt-4 px-5 py-2.5 border border-obsidian/15 text-[10px] font-bold uppercase tracking-[0.12em] hover:border-ember hover:text-ember transition-colors rounded-full"
               >
                 View full taste profile
               </button>
@@ -163,7 +163,7 @@ export default function AccountOverview({
             <button
               type="button"
               onClick={onOpenTaste}
-              className="mt-4 px-5 py-2.5 btn-brand text-[10px] font-black uppercase tracking-[0.14em]"
+              className="mt-4 px-5 py-2.5 btn-brand text-[10px] font-bold uppercase tracking-[0.14em] rounded-full"
             >
               Build my profile
             </button>
@@ -203,7 +203,7 @@ function Stat({ icon: Icon, label, value }: { icon: typeof Star; label: string; 
   return (
     <li className="p-4 text-center">
       <Icon size={15} className="mx-auto text-white/45 mb-1.5" />
-      <p className="font-logo font-black text-lg tabular-nums leading-none">{value.toLocaleString()}</p>
+      <p className="font-serif font-light text-lg tabular-nums leading-none">{value.toLocaleString()}</p>
       <p className="text-[10px] text-white/40 mt-1.5">{label}</p>
     </li>
   );
@@ -223,7 +223,7 @@ function QuickLink({
   return (
     <Link
       href={href}
-      className="group bg-white border border-obsidian/8 p-5 flex items-center gap-4 hover:border-ember/35 transition-colors"
+      className="group bg-white border border-obsidian/8 p-5 flex items-center gap-4 hover:border-ember/35 transition-colors rounded-2xl"
     >
       <span className="w-10 h-10 rounded-full bg-ember/6 flex items-center justify-center shrink-0">
         <Icon size={17} className="text-ember" />

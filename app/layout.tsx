@@ -1,5 +1,5 @@
 import './globals.css';
-import { Montserrat, Outfit } from 'next/font/google';
+import { Fraunces, Montserrat, Outfit } from 'next/font/google';
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import AuthProvider from '@/components/auth/AuthProvider';
@@ -18,6 +18,14 @@ const outfit = Outfit({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-outfit',
+});
+
+/** Editorial serif for storefront section headings. */
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-fraunces',
+  axes: ['opsz', 'SOFT'],
 });
 
 const montserrat = Montserrat({
@@ -149,7 +157,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className={`${outfit.variable} ${montserrat.variable} font-sans bg-paper text-obsidian antialiased`} suppressHydrationWarning>
+      <body className={`${outfit.variable} ${montserrat.variable} ${fraunces.variable} font-sans bg-paper text-obsidian antialiased`} suppressHydrationWarning>
         <AuthProvider>{children}</AuthProvider>
         <Script
           id="google-analytics-init"

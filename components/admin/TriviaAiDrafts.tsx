@@ -75,7 +75,7 @@ export default function TriviaAiDrafts({
             onClick={generate}
             disabled={loading || !aiOk || !roundSlug}
             title={aiOk ? undefined : 'Azure OpenAI is not configured'}
-            className="btn-brand inline-flex items-center gap-1.5 rounded-lg px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-40"
+            className="btn-brand inline-flex items-center gap-1.5 rounded-full px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] disabled:opacity-40"
           >
             {loading ? <RefreshCw size={13} className="animate-spin" /> : <Wand2 size={13} />} {loading ? 'Drafting…' : drafts.length ? 'Draft more' : 'Draft questions'}
           </button>
@@ -102,10 +102,10 @@ export default function TriviaAiDrafts({
               </div>
               <AdminInput value={d.explainer} onChange={(e) => patch(i, { explainer: e.target.value })} placeholder="Explainer" className="text-[13px]" aria-label="Explainer" />
               <div className="flex gap-2">
-                <button type="button" disabled={adding === i} onClick={() => add(i)} className="inline-flex items-center gap-1.5 rounded-lg bg-obsidian px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-white hover:bg-ember disabled:opacity-40">
+                <button type="button" disabled={adding === i} onClick={() => add(i)} className="inline-flex items-center gap-1.5 rounded-full bg-obsidian px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-white hover:bg-ember disabled:opacity-40">
                   <Check size={12} /> Add to round
                 </button>
-                <button type="button" onClick={() => setDrafts((x) => x.filter((_, j) => j !== i))} className="inline-flex items-center gap-1.5 rounded-lg border border-obsidian/15 px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/60 hover:border-ember hover:text-ember">
+                <button type="button" onClick={() => setDrafts((x) => x.filter((_, j) => j !== i))} className="inline-flex items-center gap-1.5 rounded-full border border-obsidian/15 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/60 hover:border-ember hover:text-ember">
                   <Trash2 size={12} /> Drop
                 </button>
               </div>

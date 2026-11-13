@@ -106,7 +106,7 @@ export default function SupplierPortalPanel({ supplier, onChanged }: { supplier:
         <button type="button" onClick={() => copy(portalUrl, 'Link')} className="grid h-7 w-7 place-items-center rounded text-obsidian/45 hover:bg-obsidian/[0.06] hover:text-obsidian" title="Copy link">
           <Copy size={13} />
         </button>
-        <a href={portalPath} target="_blank" rel="noreferrer" className="text-[10px] font-black uppercase tracking-wider text-ember">
+        <a href={portalPath} target="_blank" rel="noreferrer" className="text-[10px] font-bold uppercase tracking-wider text-ember">
           Open
         </a>
       </div>
@@ -120,7 +120,7 @@ export default function SupplierPortalPanel({ supplier, onChanged }: { supplier:
 
       {/* Anyone on this list signs in with a normal Convivia24 account — no key needed. */}
       <div className="mb-4 rounded-xl border border-obsidian/10 bg-paper/60 p-3">
-        <p className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/50">
+        <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/50">
           <Mail size={12} /> Sign in with an account
         </p>
         <p className="mt-1 text-[12px] text-obsidian/55">
@@ -157,18 +157,18 @@ export default function SupplierPortalPanel({ supplier, onChanged }: { supplier:
             placeholder="name@supplier.com"
             className="min-w-0 flex-1 rounded-lg border border-obsidian/12 bg-white px-3 py-2 text-sm focus:border-ember focus:ring-0"
           />
-          <button type="submit" disabled={busy || !newEmail.trim()} className="rounded-lg border border-obsidian/15 px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] hover:border-ember hover:text-ember disabled:opacity-40">
+          <button type="submit" disabled={busy || !newEmail.trim()} className="rounded-full border border-obsidian/15 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] hover:border-ember hover:text-ember disabled:opacity-40">
             Add
           </button>
         </form>
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <button type="button" onClick={issueKey} disabled={busy} className="inline-flex items-center gap-1.5 btn-brand px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-50">
+        <button type="button" onClick={issueKey} disabled={busy} className="inline-flex items-center gap-1.5 btn-brand px-4 py-2 text-[10px] font-bold uppercase tracking-[0.12em] disabled:opacity-50">
           <KeyRound size={13} /> {supplier.hasAccessKey ? 'Rotate key' : 'Issue access key'}
         </button>
         {supplier.hasAccessKey && (
-          <button type="button" onClick={revokeKey} disabled={busy} className="inline-flex items-center gap-1.5 rounded-lg border border-ember/40 px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-ember disabled:opacity-50">
+          <button type="button" onClick={revokeKey} disabled={busy} className="inline-flex items-center gap-1.5 rounded-full border border-ember/40 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-ember disabled:opacity-50">
             <ShieldOff size={13} /> Revoke
           </button>
         )}
@@ -181,7 +181,7 @@ export default function SupplierPortalPanel({ supplier, onChanged }: { supplier:
         onClose={() => setIssued(null)}
         size="sm"
         footer={
-          <button type="button" onClick={() => setIssued(null)} className="rounded-lg bg-obsidian px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] text-white">
+          <button type="button" onClick={() => setIssued(null)} className="rounded-full bg-obsidian px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] text-white">
             Done
           </button>
         }

@@ -53,7 +53,7 @@ export default function CirclesPanel() {
   return (
     <div>
       <div className="mb-8 max-w-xl">
-        <h2 className="font-bold text-2xl text-gray-900 mb-2 flex items-center gap-2">
+        <h2 className="font-serif font-light text-2xl text-gray-900 mb-2 flex items-center gap-2">
           <MessageCircle size={22} className="text-ember" />
           Circles
         </h2>

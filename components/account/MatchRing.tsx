@@ -26,8 +26,8 @@ export default function MatchRing({ value, size = 108 }: { value: number; size?:
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-logo font-black text-2xl leading-none tabular-nums">{value}%</span>
-        <span className="text-[8px] font-black uppercase tracking-[0.16em] text-obsidian/40 mt-1">
+        <span className="font-serif font-light text-2xl leading-none tabular-nums">{value}%</span>
+        <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-obsidian/40 mt-1">
           Match score
         </span>
       </div>

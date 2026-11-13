@@ -1,6 +1,6 @@
 import sql from '@/lib/db';
 import { getPackageBySlug } from '@/lib/packages/catalog';
-import { DRINKS, type DrinkCategory, type DrinkProduct } from '@/lib/drinks/catalog';
+import { DRINKS, isProductBadge, type DrinkCategory, type DrinkProduct, type ProductBadge } from '@/lib/drinks/catalog';
 import { findSellable } from '@/lib/catalog/sellable';
 import { allRatingAggregates } from '@/lib/drinks/reviews';
 import { TASTE_NOTES } from '@/lib/drinks/brand-guide';
@@ -28,6 +28,13 @@ export type InventoryRow = {
   taste_note: string | null;
   source: string;
   available: number;
+  /** Merchandising — null until the storefront migration has run or the desk sets them. */
+  compare_at_ngn: number | null;
+  featured: boolean | null;
+  badge: ProductBadge | null;
+  origin: string | null;
+  merch_rank: number;
+  created_at: string | null;
 };
 
 export async function listInventory(activeOnly = false): Promise<InventoryRow[]> {
@@ -102,6 +109,12 @@ function mapRow(r: Record<string, unknown>): InventoryRow {
     taste_note: (r.taste_note as string) || null,
     source: String(r.source || 'seed'),
     available: Math.max(0, onHand - reserved),
+    compare_at_ngn: r.compare_at_ngn != null ? Number(r.compare_at_ngn) : null,
+    featured: typeof r.featured === 'boolean' ? r.featured : null,
+    badge: isProductBadge(r.badge) ? r.badge : null,
+    origin: (r.origin as string) || null,
+    merch_rank: Number(r.merch_rank ?? 0) || 0,
+    created_at: r.created_at ? new Date(r.created_at as string).toISOString() : null,
   };
 }
 
@@ -232,6 +245,12 @@ export async function adminStockList(): Promise<AdminStockRow[]> {
     taste_note: TASTE_NOTES[d.slug] || null,
     source: 'catalog',
     available: 0,
+    compare_at_ngn: null,
+    featured: d.featured ?? null,
+    badge: null,
+    origin: d.origin || null,
+    merch_rank: 0,
+    created_at: null,
     tracked: false,
   }));
   /**
@@ -255,6 +274,8 @@ export async function adminStockList(): Promise<AdminStockRow[]> {
       volume: r.volume || d?.volume || null,
       abv: r.abv ?? d?.abv ?? null,
       tagline: r.tagline || d?.tagline || null,
+      origin: r.origin || d?.origin || null,
+      featured: r.featured ?? d?.featured ?? null,
     };
   });
 
@@ -290,6 +311,12 @@ export async function editStockRow(
     brandFounded?: string;
     brandHistory?: string;
     brandStyle?: string;
+    /** Merchandising — `null` clears. */
+    compareAtNgn?: number | null;
+    featured?: boolean | null;
+    badge?: ProductBadge | null;
+    origin?: string | null;
+    merchRank?: number;
   },
   actor: MovementActor = { kind: 'system' }
 ): Promise<InventoryRow | null> {
@@ -378,8 +405,35 @@ export async function editStockRow(
     ) SELECT * FROM changed
   `;
   if (!rows[0]) return null;
-  const row = mapRow(rows[0]);
-  return row;
+
+  // Merchandising lives in its own statement so stock/price edits keep working on a database
+  // that has not run the storefront migration yet.
+  const merch = {
+    setCompare: patch.compareAtNgn !== undefined,
+    compare: patch.compareAtNgn == null ? null : Math.max(0, Math.floor(patch.compareAtNgn)),
+    setFeatured: patch.featured !== undefined,
+    featured: patch.featured ?? null,
+    setBadge: patch.badge !== undefined,
+    badge: patch.badge ?? null,
+    setOrigin: patch.origin !== undefined,
+    origin: patch.origin?.trim() || null,
+    rank: patch.merchRank != null && Number.isFinite(patch.merchRank) ? Math.floor(patch.merchRank) : null,
+  };
+  if (merch.setCompare || merch.setFeatured || merch.setBadge || merch.setOrigin || merch.rank != null) {
+    const merchRows = await sql`
+      UPDATE inventory SET
+        compare_at_ngn = CASE WHEN ${merch.setCompare} THEN ${merch.compare}::integer ELSE compare_at_ngn END,
+        featured = CASE WHEN ${merch.setFeatured} THEN ${merch.featured}::boolean ELSE featured END,
+        badge = CASE WHEN ${merch.setBadge} THEN ${merch.badge}::text ELSE badge END,
+        origin = CASE WHEN ${merch.setOrigin} THEN ${merch.origin}::text ELSE origin END,
+        merch_rank = COALESCE(${merch.rank}::integer, merch_rank),
+        updated_at = NOW()
+      WHERE slug = ${slug}
+      RETURNING *
+    `;
+    if (merchRows[0]) return mapRow(merchRows[0]);
+  }
+  return mapRow(rows[0]);
 }
 
 export type MovementActor = { kind: 'system' | 'admin' | 'supplier'; label?: string | null; supplierId?: string | null };
@@ -433,6 +487,22 @@ export async function fulfillStockForOrder(_lines: StockLine[], orderId: string)
   await sql`SELECT c24_finish_stock(${orderId}::uuid, true)`;
 }
 
+/** Merchandising fields from an inventory row, falling back to the seed bottle where unset. */
+function merchFields(inv: InventoryRow, priceNgn: number, seed?: DrinkProduct): Partial<DrinkProduct> {
+  const compareAtNgn = inv.compare_at_ngn && inv.compare_at_ngn > priceNgn ? inv.compare_at_ngn : undefined;
+  return {
+    featured: inv.featured ?? seed?.featured ?? false,
+    // An explicit compare-at price decides "on offer"; otherwise keep the seed's deal flag.
+    deal: inv.compare_at_ngn != null ? Boolean(compareAtNgn) : seed?.deal,
+    compareAtNgn,
+    badge: inv.badge ?? undefined,
+    origin: inv.origin || seed?.origin,
+    merchRank: inv.merch_rank || 0,
+    // Seeded bottles all share the migration's timestamp, so only desk-listed SKUs count as new.
+    listedAt: seed ? undefined : inv.created_at ?? undefined,
+  };
+}
+
 /** Merge static catalog + admin inventory into shop products with live stock. */
 export async function shopCatalog(): Promise<
   (DrinkProduct & {
@@ -465,13 +535,19 @@ export async function shopCatalog(): Promise<
   const fromCatalog = DRINKS.filter((d) => bySlug.get(d.slug)?.active !== false).map((d) => {
     const inv = bySlug.get(d.slug);
     const available = inv ? inv.available : undefined;
+    const priceNgn = inv?.price_ngn && inv.price_ngn > 0 ? inv.price_ngn : d.priceNgn;
     return {
       ...d,
+      // Desk edits win over the seed file for everything a merchandiser can change.
+      ...(inv ? merchFields(inv, priceNgn, d) : {}),
+      brand: inv?.brand || d.brand,
+      tagline: inv?.tagline || d.tagline,
+      description: inv?.description || d.description,
       onHand: inv?.on_hand,
       available,
       lowStock: inv ? inv.available <= inv.low_stock_threshold : false,
       image: inv?.image_url || d.image,
-      priceNgn: inv?.price_ngn && inv.price_ngn > 0 ? inv.price_ngn : d.priceNgn,
+      priceNgn,
       minOrderQty: inv?.min_order_qty ?? d.minOrderQty ?? 1,
       tasteNote: inv?.taste_note || TASTE_NOTES[d.slug] || null,
       rating: ratings[d.slug]?.average ?? 0,
@@ -502,6 +578,7 @@ export async function shopCatalog(): Promise<
       description: s.description || s.tagline || '',
       image: s.image_url || undefined,
       featured: false,
+      ...merchFields(s, Number(s.price_ngn)),
       onHand: s.on_hand,
       available: s.available,
       lowStock: s.available <= s.low_stock_threshold,

@@ -125,7 +125,7 @@ function PracticeRounds({
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="truncate text-[11px] font-bold uppercase tracking-[0.16em] text-obsidian/40">{round.house}</p>
-                  <p className="mt-0.5 font-logo text-lg font-extrabold uppercase tracking-tight">{round.brand}</p>
+                  <p className="mt-0.5 font-serif text-xl font-light tracking-tight">{round.brand}</p>
                 </div>
                 <HouseGlyph glyph={round.glyph} className="h-9 w-9 shrink-0 text-ember/45" />
               </div>

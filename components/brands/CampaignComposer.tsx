@@ -111,7 +111,7 @@ export default function CampaignComposer({
       >
         <div className="sticky top-0 bg-white border-b border-obsidian/8 px-6 py-4 flex items-center justify-between gap-4 z-10">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-ember">{brandName}</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-ember">{brandName}</p>
             <h2 className="text-lg font-bold mt-0.5">New campaign</h2>
           </div>
           <button type="button" onClick={onClose} aria-label="Close" className="text-obsidian/35 hover:text-obsidian">
@@ -219,7 +219,7 @@ export default function CampaignComposer({
                     { id: `task-${prev.length + 1}`, title: '', detail: '', points: 100 },
                   ])
                 }
-                className="text-[11px] font-black uppercase tracking-[0.1em] text-ember inline-flex items-center gap-1"
+                className="text-[11px] font-bold uppercase tracking-[0.1em] text-ember inline-flex items-center gap-1"
               >
                 <Plus size={12} /> Add task
               </button>
@@ -289,14 +289,14 @@ export default function CampaignComposer({
             <button
               type="submit"
               disabled={sending}
-              className="flex-1 py-3.5 btn-brand text-[11px] font-black uppercase tracking-[0.14em] disabled:opacity-50"
+              className="flex-1 py-3.5 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] disabled:opacity-50"
             >
               {sending ? 'Saving…' : published ? 'Publish campaign' : 'Save draft'}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-3.5 border border-obsidian/15 text-[11px] font-black uppercase tracking-[0.12em]"
+              className="px-6 py-3.5 border border-obsidian/15 text-[11px] font-bold uppercase tracking-[0.12em] rounded-full"
             >
               Cancel
             </button>

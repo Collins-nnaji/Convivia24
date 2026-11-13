@@ -34,9 +34,9 @@ export default function StandingCard() {
 
   if (!standing?.claimed) {
     return (
-      <div className="bg-white p-5 shadow-sm mb-8 flex items-center justify-between gap-4 flex-wrap">
+      <div className="bg-white p-5 shadow-sm mb-8 flex items-center justify-between gap-4 flex-wrap rounded-2xl">
         <p className="text-sm text-obsidian/60">Activate your Guest Card to start earning a shop discount.</p>
-        <Link href="/guest-card" className="px-4 py-2 btn-brand text-[10px] font-black uppercase tracking-[0.12em]">
+        <Link href="/guest-card" className="px-4 py-2 btn-brand text-[10px] font-bold uppercase tracking-[0.12em] rounded-full">
           Activate
         </Link>
       </div>
@@ -49,14 +49,14 @@ export default function StandingCard() {
       : 100;
 
   return (
-    <div className="bg-white p-5 sm:p-6 shadow-sm mb-8">
+    <div className="bg-white p-5 sm:p-6 shadow-sm mb-8 rounded-2xl">
       <div className="flex items-center justify-between gap-4 mb-3">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-ember">{standing.tierName} tier</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-ember">{standing.tierName} tier</p>
           <p className="text-2xl font-bold tabular-nums">{standing.points.toLocaleString()} pts</p>
         </div>
         {standing.discountPct > 0 && (
-          <span className="text-[11px] font-black uppercase tracking-[0.1em] px-3 py-1.5 bg-emerald-50 text-emerald-700">
+          <span className="text-[11px] font-bold uppercase tracking-[0.1em] px-3 py-1.5 bg-emerald-50 text-emerald-700">
             {standing.discountPct}% off every order
           </span>
         )}

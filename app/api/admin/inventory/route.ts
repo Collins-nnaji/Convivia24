@@ -14,6 +14,7 @@ import { notifyRestockAlerts } from '@/lib/shop/restock-alerts';
 import { captureApiError } from '@/lib/sentry';
 import { chat, aiConfigured } from '@/lib/ai/azure';
 import { listSupplierCatalog } from '@/lib/suppliers/sku-prices';
+import { isProductBadge } from '@/lib/drinks/catalog';
 
 async function handleGET() {
   const gate = await requireAdmin('inventory');
@@ -83,6 +84,19 @@ async function handlePOST(req: NextRequest) {
         if (body.brandFounded !== undefined) patch.brandFounded = String(body.brandFounded || '');
         if (body.brandHistory !== undefined) patch.brandHistory = String(body.brandHistory || '');
         if (body.brandStyle !== undefined) patch.brandStyle = String(body.brandStyle || '');
+        // Merchandising: blank string / null clears the field.
+        if (body.compareAtNgn !== undefined) {
+          patch.compareAtNgn = body.compareAtNgn === '' || body.compareAtNgn == null ? null : Number(body.compareAtNgn);
+        }
+        if (body.featured !== undefined) patch.featured = body.featured == null ? null : Boolean(body.featured);
+        if (body.badge !== undefined) {
+          if (body.badge && !isProductBadge(body.badge)) {
+            return NextResponse.json({ error: 'Unknown badge.' }, { status: 400 });
+          }
+          patch.badge = body.badge || null;
+        }
+        if (body.origin !== undefined) patch.origin = body.origin == null ? null : String(body.origin).slice(0, 60);
+        if (body.merchRank != null && body.merchRank !== '') patch.merchRank = Number(body.merchRank);
         if (Object.values(patch).some((v) => typeof v === 'number' && !Number.isFinite(v))) {
           return NextResponse.json({ error: 'Numbers must be valid.' }, { status: 400 });
         }

@@ -76,7 +76,7 @@ export default function OverviewDesk({
       </section>
 
       <section>
-        <h2 className="mb-3 text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/40">Needs a hand</h2>
+        <h2 className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/40">Needs a hand</h2>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {queue.map((q) => (
             <button
@@ -88,8 +88,8 @@ export default function OverviewDesk({
               }`}
             >
               <span className="min-w-0">
-                <span className="block text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/45">{q.label}</span>
-                <span className={`mt-1 block text-2xl font-bold tabular-nums ${q.hot ? 'text-ember' : 'text-obsidian/40'}`}>
+                <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/45">{q.label}</span>
+                <span className={`mt-1 block font-serif text-3xl font-light tabular-nums ${q.hot ? 'text-ember' : 'text-obsidian/40'}`}>
                   {q.value}
                 </span>
                 <span className="mt-1 block text-xs text-obsidian/45">{q.hint}</span>
@@ -110,8 +110,8 @@ export default function OverviewDesk({
 function Stat({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="bg-white p-5">
-      <p className="text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40">{label}</p>
-      <p className="mt-1 text-3xl font-bold tabular-nums text-obsidian">{children}</p>
+      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/40">{label}</p>
+      <p className="mt-1 font-serif text-4xl font-light tabular-nums text-obsidian">{children}</p>
     </div>
   );
 }

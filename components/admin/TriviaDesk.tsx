@@ -196,7 +196,7 @@ export default function TriviaDesk({ onChanged }: { onChanged?: () => void }) {
     <>
       {error && <p className="mb-6 text-sm text-ember">{error}</p>}
 
-      <div className="mb-12 bg-white p-6 shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)] sm:p-8">
+      <div className="mb-12 bg-white p-6 shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)] sm:p-8 rounded-2xl">
         <h2 className="font-bold">Brand of the week</h2>
         <p className="mb-5 mt-1 text-sm text-obsidian/50">
           One sponsoring house plays at a time. The week covering today is live on /discover; every other round stays
@@ -209,7 +209,7 @@ export default function TriviaDesk({ onChanged }: { onChanged?: () => void }) {
             type="button"
             onClick={scheduleWeek}
             disabled={!weekRound || !weekStart}
-            className="btn-brand px-5 py-3 text-[11px] font-black uppercase tracking-[0.14em] disabled:opacity-40"
+            className="btn-brand px-5 py-3 text-[11px] font-bold uppercase tracking-[0.14em] disabled:opacity-40"
           >
             Set week
           </button>
@@ -224,15 +224,15 @@ export default function TriviaDesk({ onChanged }: { onChanged?: () => void }) {
                 </span>
                 <span className="text-sm font-medium">{rounds.find((r) => r.slug === week.roundSlug)?.brand || week.roundSlug}</span>
                 {week.live && (
-                  <span className="bg-ember px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.12em] text-white">Live</span>
+                  <span className="bg-ember px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.12em] text-white">Live</span>
                 )}
                 {!week.published && (
-                  <span className="bg-paper px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.12em] text-obsidian/45">Hidden</span>
+                  <span className="bg-paper px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/45">Hidden</span>
                 )}
                 <button
                   type="button"
                   onClick={() => removeWeek(week)}
-                  className="ml-auto text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40 hover:text-ember"
+                  className="ml-auto text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/40 hover:text-ember"
                 >
                   Remove
                 </button>
@@ -253,7 +253,7 @@ export default function TriviaDesk({ onChanged }: { onChanged?: () => void }) {
       </div>
 
       <div className="mb-12 grid gap-6 lg:grid-cols-[1fr_.9fr]">
-        <form onSubmit={addQuestion} className="space-y-4 bg-white p-6 shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)]">
+        <form onSubmit={addQuestion} className="space-y-4 bg-white p-6 shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)] rounded-2xl">
           <div>
             <h2 className="font-bold">Add trivia question</h2>
             <p className="mt-1 text-sm text-obsidian/50">
@@ -283,19 +283,19 @@ export default function TriviaDesk({ onChanged }: { onChanged?: () => void }) {
                 options={[0, 1, 2, 3].map((i) => ({ value: String(i), label: `Answer ${i + 1}` }))}
               />
               <AdminTextArea name="explainer" label="Answer explanation" rows={2} />
-              <button type="submit" className="btn-brand px-5 py-3 text-[11px] font-black uppercase tracking-[0.12em]">
+              <button type="submit" className="btn-brand px-5 py-3 text-[11px] font-bold uppercase tracking-[0.12em]">
                 Add question
               </button>
             </fieldset>
           )}
         </form>
 
-        <div className="bg-white p-6 shadow-sm">
+        <div className="bg-white p-6 shadow-sm rounded-2xl">
           <h2 className="font-bold">Added questions ({questions.length})</h2>
           <div className="mt-4 max-h-[32rem] divide-y divide-obsidian/8 overflow-y-auto">
             {questions.map((question) => (
               <div key={question.databaseId} className="py-3">
-                <p className="text-[10px] font-black uppercase tracking-[0.12em] text-ember">
+                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-ember">
                   {rounds.find((round) => round.slug === question.roundSlug)?.brand || question.roundSlug}
                 </p>
                 <p className="mt-1 text-sm font-semibold text-obsidian">{question.prompt}</p>
@@ -303,7 +303,7 @@ export default function TriviaDesk({ onChanged }: { onChanged?: () => void }) {
                 <button
                   type="button"
                   onClick={() => removeQuestion(question)}
-                  className="mt-2 text-[10px] font-black uppercase tracking-[0.12em] text-ember"
+                  className="mt-2 text-[10px] font-bold uppercase tracking-[0.12em] text-ember"
                 >
                   Remove
                 </button>
@@ -336,13 +336,13 @@ export default function TriviaDesk({ onChanged }: { onChanged?: () => void }) {
       </div>
       <div className="space-y-3">
         {visibleEntries.map((entry) => (
-          <div key={entry.id} className="flex flex-col gap-4 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:p-5">
+          <div key={entry.id} className="flex flex-col gap-4 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:p-5 rounded-2xl">
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="font-medium">{entry.name}</p>
-                <span className="bg-paper px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.12em] text-obsidian/50">{entry.brand}</span>
+                <span className="bg-paper px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/50">{entry.brand}</span>
                 <span
-                  className={`px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.12em] ${
+                  className={`px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.12em] ${
                     ENTRY_TONE[entry.status] ?? 'bg-paper text-obsidian/45'
                   }`}
                 >
@@ -362,7 +362,7 @@ export default function TriviaDesk({ onChanged }: { onChanged?: () => void }) {
                   type="button"
                   disabled={entry.status === status}
                   onClick={() => setEntryStatus(entry, status)}
-                  className="border border-obsidian/15 px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-35"
+                  className="border border-obsidian/15 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] disabled:opacity-35"
                 >
                   {status}
                 </button>
@@ -370,7 +370,7 @@ export default function TriviaDesk({ onChanged }: { onChanged?: () => void }) {
               <button
                 type="button"
                 onClick={() => deleteEntry(entry)}
-                className="border border-ember/40 px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-ember"
+                className="border border-ember/40 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-ember"
               >
                 Delete
               </button>

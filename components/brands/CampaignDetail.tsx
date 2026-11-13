@@ -115,7 +115,7 @@ export default function CampaignDetail({
 
   return (
     <section className="bg-paper min-h-[70vh]">
-      <div className="relative overflow-hidden brand-gradient text-white">
+      <div className="relative overflow-hidden brand-gradient text-white mx-3 mt-4 rounded-3xl sm:mx-4 lg:mx-5">
         <motion.div
           aria-hidden
           className="absolute -right-20 -top-24 w-[440px] h-[440px] rounded-full bg-ember/25 blur-3xl"
@@ -152,13 +152,13 @@ export default function CampaignDetail({
             {brand && (
               <Link
                 href={`/brands/${brand.slug}`}
-                className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.14em] text-white/60 hover:text-white transition-colors"
+                className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.14em] text-white/60 hover:text-white transition-colors"
               >
                 {brand.name}
               </Link>
             )}
 
-            <span className="ml-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/12 text-[9px] font-black uppercase tracking-[0.16em]">
+            <span className="ml-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/12 text-[11px] font-bold uppercase tracking-[0.16em] rounded-full">
               {campaign.live ? 'Live campaign' : 'Closed'}
             </span>
 
@@ -166,7 +166,7 @@ export default function CampaignDetail({
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45 }}
-              className="font-logo font-black tracking-tight uppercase text-3xl sm:text-5xl leading-[0.95] mt-4"
+              className="font-serif font-light tracking-tight text-3xl sm:text-5xl leading-[0.95] mt-4"
             >
               {campaign.title}
             </motion.h1>
@@ -192,7 +192,7 @@ export default function CampaignDetail({
               {me.joined ? (
                 <a
                   href="#campaign-tasks"
-                  className="px-6 py-3.5 bg-white text-obsidian text-[11px] font-black uppercase tracking-[0.14em]"
+                  className="px-6 py-3.5 bg-white text-obsidian text-[11px] font-bold uppercase tracking-[0.14em] rounded-full"
                 >
                   Continue challenge
                 </a>
@@ -201,14 +201,14 @@ export default function CampaignDetail({
                   type="button"
                   onClick={() => post({ action: 'join' })}
                   disabled={busy || !campaign.live}
-                  className="px-6 py-3.5 bg-white text-obsidian text-[11px] font-black uppercase tracking-[0.14em] disabled:opacity-50"
+                  className="px-6 py-3.5 bg-white text-obsidian text-[11px] font-bold uppercase tracking-[0.14em] disabled:opacity-50 rounded-full"
                 >
                   {busy ? 'Joining…' : campaign.live ? 'Join challenge' : 'Campaign closed'}
                 </button>
               ) : (
                 <Link
                   href={`/signin?next=${encodeURIComponent(pathname || '/brands')}`}
-                  className="px-6 py-3.5 bg-white text-obsidian text-[11px] font-black uppercase tracking-[0.14em]"
+                  className="px-6 py-3.5 bg-white text-obsidian text-[11px] font-bold uppercase tracking-[0.14em] rounded-full"
                 >
                   Sign in to join
                 </Link>
@@ -217,7 +217,7 @@ export default function CampaignDetail({
               <button
                 type="button"
                 onClick={share}
-                className="px-6 py-3.5 border border-white/35 hover:border-white text-[11px] font-black uppercase tracking-[0.14em] inline-flex items-center gap-2 transition-colors"
+                className="px-6 py-3.5 border border-white/35 hover:border-white text-[11px] font-bold uppercase tracking-[0.14em] inline-flex items-center gap-2 transition-colors rounded-full"
               >
                 <Share2 size={14} /> {shared ? 'Link copied' : 'Share challenge'}
               </button>
@@ -251,7 +251,7 @@ export default function CampaignDetail({
 
       <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-12 grid lg:grid-cols-[1fr_320px] gap-6 lg:gap-8 items-start">
         <div className="min-w-0 space-y-6">
-          <section className="bg-white border border-obsidian/8 p-5 sm:p-7">
+          <section className="bg-white border border-obsidian/8 p-5 sm:p-7 rounded-2xl">
             <h2 className="text-lg font-bold mb-5">How it works</h2>
             <ol className="grid sm:grid-cols-5 gap-5">
               {HOW_IT_WORKS.map(({ icon: Icon, title, detail }, i) => (
@@ -268,7 +268,7 @@ export default function CampaignDetail({
             </ol>
           </section>
 
-          <section id="campaign-tasks" className="bg-white border border-obsidian/8 scroll-mt-24">
+          <section id="campaign-tasks" className="bg-white border border-obsidian/8 scroll-mt-24 rounded-2xl">
             <div className="px-5 py-4 border-b border-obsidian/8 flex items-center justify-between gap-4">
               <h2 className="text-lg font-bold">Tasks</h2>
               <span className="text-[12px] text-obsidian/40 tabular-nums">
@@ -303,7 +303,7 @@ export default function CampaignDetail({
                         {task.points} pts
                       </span>
                       {complete ? (
-                        <span className="px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.1em] text-ember shrink-0">
+                        <span className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.1em] text-ember shrink-0">
                           Done
                         </span>
                       ) : (
@@ -311,7 +311,7 @@ export default function CampaignDetail({
                           type="button"
                           onClick={() => post({ action: 'complete', taskId: task.id })}
                           disabled={busy || !me.joined || !campaign.live}
-                          className="px-4 py-2.5 btn-brand text-[10px] font-black uppercase tracking-[0.1em] shrink-0 disabled:opacity-40"
+                          className="px-4 py-2.5 btn-brand text-[10px] font-bold uppercase tracking-[0.1em] shrink-0 disabled:opacity-40 rounded-full"
                         >
                           Mark done
                         </button>
@@ -333,19 +333,19 @@ export default function CampaignDetail({
 
           <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 items-start">
             {brand && (
-              <section className="bg-white border border-obsidian/8 p-5 sm:p-6">
+              <section className="bg-white border border-obsidian/8 p-5 sm:p-6 rounded-2xl">
                 <h2 className="text-lg font-bold">About the brand</h2>
                 <p className="text-sm text-obsidian/55 mt-3 leading-relaxed">{brand.info.history}</p>
                 <Link
                   href={`/brands/${brand.slug}`}
-                  className="mt-4 inline-flex items-center gap-1.5 px-5 py-2.5 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em] hover:border-ember hover:text-ember transition-colors"
+                  className="mt-4 inline-flex items-center gap-1.5 px-5 py-2.5 border border-obsidian/15 text-[10px] font-bold uppercase tracking-[0.12em] hover:border-ember hover:text-ember transition-colors rounded-full"
                 >
                   Explore {brand.name} <ChevronRight size={13} />
                 </Link>
               </section>
             )}
 
-            <section className="bg-white border border-obsidian/8 p-5 sm:p-6">
+            <section className="bg-white border border-obsidian/8 p-5 sm:p-6 rounded-2xl">
               <h2 className="text-lg font-bold">Rules &amp; guidelines</h2>
               <ul className="mt-3 space-y-2.5">
                 {(campaign.rules.length > 0 ? campaign.rules : DEFAULT_RULES).map((rule) => (
@@ -357,7 +357,7 @@ export default function CampaignDetail({
               </ul>
               <Link
                 href="/terms-of-use"
-                className="mt-4 inline-block text-[11px] font-black uppercase tracking-[0.12em] text-ember"
+                className="mt-4 inline-block text-[11px] font-bold uppercase tracking-[0.12em] text-ember"
               >
                 View full terms →
               </Link>
@@ -375,12 +375,12 @@ export default function CampaignDetail({
       {others.length > 0 && (
         <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-14 sm:pb-20">
           <div className="flex items-center justify-between gap-4 mb-4">
-            <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50">
+            <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-obsidian/50">
               You may also like
             </h2>
             <Link
               href="/brands"
-              className="text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/40 hover:text-ember inline-flex items-center gap-1 transition-colors"
+              className="text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/40 hover:text-ember inline-flex items-center gap-1 transition-colors"
             >
               View all challenges <ChevronRight size={13} />
             </Link>
@@ -390,7 +390,7 @@ export default function CampaignDetail({
               <li key={other.id}>
                 <Link
                   href={`/campaigns/${other.slug}`}
-                  className="group block h-full bg-white border border-obsidian/8 p-4 hover:border-ember/35 transition-colors"
+                  className="group block h-full bg-white border border-obsidian/8 p-4 hover:border-ember/35 transition-colors rounded-2xl"
                 >
                   <p className="text-[13px] font-semibold leading-snug line-clamp-2">{other.title}</p>
                   <p className="text-[12px] font-bold text-ember tabular-nums mt-2">
@@ -422,7 +422,7 @@ function HeroStat({ icon: Icon, value, label }: { icon: typeof Star; value: stri
     <li className="flex items-center gap-2.5">
       <Icon size={17} className="text-white/50 shrink-0" />
       <span>
-        <span className="block font-logo font-black text-lg leading-none tabular-nums">{value}</span>
+        <span className="block font-serif font-light text-lg leading-none tabular-nums">{value}</span>
         <span className="block text-[11px] text-white/45 mt-1">{label}</span>
       </span>
     </li>
@@ -432,7 +432,7 @@ function HeroStat({ icon: Icon, value, label }: { icon: typeof Star; value: stri
 function Leaderboard({ board, me }: { board: LeaderboardRow[]; me: Participation }) {
   const MEDALS = ['🥇', '🥈', '🥉'];
   return (
-    <section className="bg-white border border-obsidian/8">
+    <section className="bg-white border border-obsidian/8 rounded-2xl">
       <div className="px-5 py-4 border-b border-obsidian/8">
         <h2 className="text-lg font-bold">Leaderboard</h2>
       </div>
@@ -443,7 +443,7 @@ function Leaderboard({ board, me }: { board: LeaderboardRow[]; me: Participation
         </p>
       ) : (
         <>
-          <div className="hidden sm:grid grid-cols-[60px_1fr_100px_110px] gap-4 px-5 py-3 border-b border-obsidian/8 text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/35">
+          <div className="hidden sm:grid grid-cols-[60px_1fr_100px_110px] gap-4 px-5 py-3 border-b border-obsidian/8 text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/35">
             <span>Rank</span>
             <span>Participant</span>
             <span className="text-right">Points</span>
@@ -489,14 +489,14 @@ function Leaderboard({ board, me }: { board: LeaderboardRow[]; me: Participation
 
 function RewardsPanel({ campaign }: { campaign: Campaign }) {
   return (
-    <section className="brand-gradient text-white p-5 sm:p-6">
+    <section className="brand-gradient text-white p-5 sm:p-6 rounded-2xl">
       <h2 className="text-lg font-bold">Challenge rewards</h2>
       <p className="text-[12px] text-white/60 mt-1.5 leading-relaxed">
         Complete tasks, earn points, and unlock rewards from the shop.
       </p>
 
       <div className="mt-5 pt-5 border-t border-white/15">
-        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/45">Top reward</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/45">Top reward</p>
         <p className="font-semibold mt-1.5">{campaign.topReward || 'Points to spend in the rewards shop'}</p>
         <p className="mt-2 inline-flex items-center gap-1.5 text-sm font-bold">
           <Star size={13} className="fill-current" /> {campaign.rewardPoints.toLocaleString()} pts
@@ -505,7 +505,7 @@ function RewardsPanel({ campaign }: { campaign: Campaign }) {
 
       <Link
         href="/discover/rewards"
-        className="mt-5 w-full py-3 bg-white text-obsidian text-[10px] font-black uppercase tracking-[0.12em] inline-flex items-center justify-center gap-1.5"
+        className="mt-5 w-full py-3 bg-white text-obsidian text-[10px] font-bold uppercase tracking-[0.12em] inline-flex items-center justify-center gap-1.5 rounded-full"
       >
         View all rewards <ChevronRight size={13} />
       </Link>
@@ -531,9 +531,9 @@ function DetailsPanel({
   ];
 
   return (
-    <section className="bg-white border border-obsidian/8">
+    <section className="bg-white border border-obsidian/8 rounded-2xl">
       <div className="px-5 py-4 border-b border-obsidian/8">
-        <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50">
+        <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-obsidian/50">
           Campaign details
         </h2>
       </div>
@@ -564,9 +564,9 @@ function ProgressPanel({
   const circumference = 2 * Math.PI * r;
 
   return (
-    <section className="bg-white border border-obsidian/8">
+    <section className="bg-white border border-obsidian/8 rounded-2xl">
       <div className="px-5 py-4 border-b border-obsidian/8">
-        <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50">
+        <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-obsidian/50">
           Your progress
         </h2>
       </div>
@@ -596,7 +596,7 @@ function ProgressPanel({
                   transition={{ duration: 0.9, ease: 'easeOut' }}
                 />
               </svg>
-              <span className="absolute inset-0 flex items-center justify-center font-logo font-black text-xl tabular-nums">
+              <span className="absolute inset-0 flex items-center justify-center font-serif font-light text-xl tabular-nums">
                 {pct}%
               </span>
             </div>
@@ -635,7 +635,7 @@ function ProgressPanel({
 
           <a
             href="#campaign-tasks"
-            className="mt-5 w-full py-3 btn-brand text-[10px] font-black uppercase tracking-[0.12em] inline-flex items-center justify-center"
+            className="mt-5 w-full py-3 btn-brand text-[10px] font-bold uppercase tracking-[0.12em] inline-flex items-center justify-center rounded-full"
           >
             Continue challenge
           </a>

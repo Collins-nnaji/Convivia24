@@ -47,7 +47,7 @@ export default function OrderTrackingStepper({ status, courierName, riderPhone, 
                   aria-hidden
                 />
                 <span
-                  className={`mt-1.5 text-[9px] font-black uppercase tracking-[0.08em] text-center leading-tight max-w-[4.5rem] ${
+                  className={`mt-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-center leading-tight max-w-[4.5rem] ${
                     done ? 'text-obsidian/70' : 'text-obsidian/30'
                   }`}
                 >

@@ -15,14 +15,14 @@ export default async function AdminLabelPage({ params }: { params: Promise<{ id:
     <section className="bg-white min-h-screen flex flex-col items-center py-10 px-5 print:py-0">
       <div className="w-[260px] border-2 border-obsidian p-4 text-center print:border-black">
         <p className="font-wordmark text-lg text-obsidian mb-0.5">CONVIVIA24</p>
-        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-ember mb-3">
+        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-ember mb-3">
           Verified original
         </p>
         <div className="flex justify-center mb-3">
           <AuthenticityQr value={verifyUrl(id)} size={140} />
         </div>
         <p className="text-sm font-mono font-bold text-obsidian">{verifyCode(id)}</p>
-        <p className="text-[9px] text-obsidian/50 mt-1">Scan to verify at convivia24.com/verify</p>
+        <p className="text-[11px] text-obsidian/50 mt-1">Scan to verify at convivia24.com/verify</p>
       </div>
 
       <p className="text-xs text-obsidian/50 mt-6 print:hidden max-w-xs text-center">

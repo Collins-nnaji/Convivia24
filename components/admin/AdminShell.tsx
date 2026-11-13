@@ -66,20 +66,20 @@ export default function AdminShell({
             type="button"
             onClick={() => pick(t.key)}
             aria-current={on ? 'page' : undefined}
-            className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold transition-colors ${
+            className={`group flex items-center gap-3 rounded-full px-3.5 py-2.5 text-left text-sm font-semibold transition-colors ${
               on
-                ? 'bg-ember/[0.09] text-ember ring-1 ring-ember/20'
-                : 'text-obsidian/60 hover:bg-obsidian/[0.04] hover:text-obsidian'
+                ? 'bg-obsidian text-white shadow-[0_8px_20px_-12px_rgba(10,10,10,0.6)]'
+                : 'text-obsidian/60 hover:bg-shell hover:text-obsidian'
             }`}
           >
-            <span className={`shrink-0 ${on ? 'text-ember' : 'text-obsidian/35 group-hover:text-obsidian/60'}`}>
+            <span className={`shrink-0 ${on ? 'text-saffron' : 'text-obsidian/35 group-hover:text-obsidian/60'}`}>
               {t.icon}
             </span>
             <span className="min-w-0 flex-1 truncate">{t.label}</span>
             {typeof t.count === 'number' && (
               <span
-                className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-black tabular-nums ${
-                  on ? 'bg-ember/15 text-ember' : 'bg-obsidian/[0.06] text-obsidian/45'
+                className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold tabular-nums ${
+                  on ? 'bg-white/15 text-white' : 'bg-ember/10 text-ember'
                 }`}
               >
                 {t.count}
@@ -92,12 +92,12 @@ export default function AdminShell({
   );
 
   return (
-    <div className="min-h-screen bg-paper">
+    <div className="min-h-screen bg-[#f7f4ef]">
       {/* ── Desktop sidebar. Fixed under the site header so it stays while the desk scrolls. */}
       <aside className="fixed top-[4.5rem] bottom-0 left-0 z-30 hidden w-64 flex-col border-r border-obsidian/8 bg-white lg:flex">
         <div className="px-5 pt-6 pb-4">
-          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ember">Convivia24</p>
-          <h1 className="mt-1 text-xl font-bold text-obsidian">{title}</h1>
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-ember">Convivia24 desk</p>
+          <h1 className="mt-1 font-serif text-[1.7rem] font-light tracking-tight text-obsidian">{title}</h1>
           {subtitle && <div className="mt-1.5 text-[11px] leading-relaxed text-obsidian/45">{subtitle}</div>}
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-6">{nav}</div>
@@ -115,8 +115,8 @@ export default function AdminShell({
           >
             <div className="flex items-start justify-between gap-3 px-5 pt-6 pb-4">
               <div className="min-w-0">
-                <p className="text-[9px] font-black uppercase tracking-[0.3em] text-ember">Convivia24</p>
-                <h2 className="mt-1 text-xl font-bold text-obsidian">{title}</h2>
+                <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-ember">Convivia24</p>
+                <h2 className="mt-1 text-xl font-serif font-light text-obsidian">{title}</h2>
               </div>
               <button
                 type="button"
@@ -145,7 +145,7 @@ export default function AdminShell({
               <Menu size={20} />
             </button>
             <div className="min-w-0 flex-1">
-              <h2 className="truncate text-base font-bold text-obsidian sm:text-lg">
+              <h2 className="truncate font-serif text-xl font-light tracking-tight text-obsidian sm:text-2xl">
                 {activeTab?.label ?? title}
               </h2>
               <div className="truncate text-[11px] text-obsidian/45 lg:hidden">{subtitle}</div>

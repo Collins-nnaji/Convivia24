@@ -27,17 +27,17 @@ export default function SupplierOverview({ data, onGo }: { data: PortalData; onG
     <div className="space-y-8">
       <section className="grid gap-px overflow-hidden rounded-2xl border border-obsidian/10 bg-obsidian/10 sm:grid-cols-2">
         <div className="bg-white p-5">
-          <p className="text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40">SKUs you stock</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/40">SKUs you stock</p>
           <p className="mt-1 text-3xl font-bold tabular-nums text-obsidian">{listed.length}</p>
         </div>
         <div className="bg-white p-5">
-          <p className="text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40">Bottles on your shelf</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/40">Bottles on your shelf</p>
           <p className="mt-1 text-3xl font-bold tabular-nums text-obsidian">{bottlesOnShelf}</p>
         </div>
       </section>
 
       <section>
-        <h2 className="mb-3 text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/40">Needs a hand</h2>
+        <h2 className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/40">Needs a hand</h2>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {tiles.map((t) => (
             <button
@@ -49,7 +49,7 @@ export default function SupplierOverview({ data, onGo }: { data: PortalData; onG
               }`}
             >
               <span className="min-w-0">
-                <span className="block text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/45">{t.label}</span>
+                <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/45">{t.label}</span>
                 <span className={`mt-1 block text-2xl font-bold tabular-nums ${t.hot ? 'text-ember' : 'text-obsidian/40'}`}>{t.value}</span>
                 <span className="mt-1 block text-xs text-obsidian/45">{t.hint}</span>
               </span>
@@ -61,7 +61,7 @@ export default function SupplierOverview({ data, onGo }: { data: PortalData; onG
 
       {toPack.length > 0 && (
         <section>
-          <h2 className="mb-3 text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/40">Next up</h2>
+          <h2 className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/40">Next up</h2>
           <ul className="divide-y divide-obsidian/8 rounded-2xl border border-obsidian/10 bg-white">
             {toPack.slice(0, 5).map((o) => (
               <li key={o.id} className="flex flex-wrap items-center gap-3 px-4 py-3 text-sm">
@@ -72,12 +72,12 @@ export default function SupplierOverview({ data, onGo }: { data: PortalData; onG
                   {o.items.slice(0, 4).map((i) => (
                     <span key={i.slug} title={`${i.name} × ${i.qty}`} className="relative grid h-9 w-7 place-items-center overflow-hidden rounded bg-paper">
                       {i.imageUrl ? <Image src={i.imageUrl} alt="" width={28} height={36} className="h-9 w-7 object-contain" /> : <span className="h-5 w-2 rounded-sm bg-obsidian/10" />}
-                      <span className="absolute -bottom-0.5 -right-0.5 rounded-full bg-obsidian px-1 text-[9px] font-black text-white">{i.qty}</span>
+                      <span className="absolute -bottom-0.5 -right-0.5 rounded-full bg-obsidian px-1 text-[11px] font-black text-white">{i.qty}</span>
                     </span>
                   ))}
                   {o.items.length > 4 && <span>+{o.items.length - 4}</span>}
                 </span>
-                <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-amber-700 ring-1 ring-amber-200">
+                <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700 ring-1 ring-amber-200">
                   {ORDER_STATUS_LABELS[o.status as OrderStatus]}
                 </span>
                 {o.costNgn != null && <span className="text-xs tabular-nums text-obsidian/45">{formatNgn(o.costNgn)}</span>}
@@ -89,7 +89,7 @@ export default function SupplierOverview({ data, onGo }: { data: PortalData; onG
 
       {data.activity.length > 0 && (
         <section>
-          <h2 className="mb-3 text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/40">Recent activity</h2>
+          <h2 className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/40">Recent activity</h2>
           <ul className="space-y-1.5 text-sm text-obsidian/70">
             {data.activity.slice(0, 6).map((e) => (
               <li key={e.id} className="flex gap-3">

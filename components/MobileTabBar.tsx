@@ -59,14 +59,14 @@ export default function MobileTabBar() {
                 className={active ? 'text-ember' : accent ? 'text-ember/60' : 'text-obsidian/40'}
               />
               <span
-                className={`text-[10px] sm:text-xs font-black uppercase tracking-[0.08em] ${
+                className={`text-[10px] sm:text-xs font-bold uppercase tracking-[0.08em] ${
                   active ? 'text-ember' : accent ? 'text-ember/55' : 'text-obsidian/35'
                 }`}
               >
                 {label}
               </span>
               {href === '/cart' && mounted && count > 0 && (
-                <span className="absolute top-1.5 right-[18%] min-w-[16px] h-4 px-1 rounded-full bg-obsidian text-white text-[8px] font-black flex items-center justify-center">
+                <span className="absolute top-1.5 right-[18%] min-w-[16px] h-4 px-1 rounded-full bg-obsidian text-white text-[10px] font-black flex items-center justify-center">
                   {count}
                 </span>
               )}

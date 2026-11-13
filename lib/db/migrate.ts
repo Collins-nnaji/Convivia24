@@ -104,6 +104,8 @@ async function migrate() {
     'lib/db/desk-raffle-giftcards.sql',
     'lib/db/launch-readiness.sql',
     'lib/db/platform-audit.sql',
+    // Merchandising columns on inventory + admin-edited storefront blocks.
+    'lib/db/storefront.sql',
   ];
   const schema = schemaFiles
     .map(f => readFileSync(join(process.cwd(), f), 'utf-8'))

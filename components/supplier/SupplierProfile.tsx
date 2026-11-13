@@ -65,7 +65,7 @@ export default function SupplierProfile({
           We can deliver same day
         </label>
         <AdminTextArea label="Notes for the desk" rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Opening hours, pickup instructions, anything useful" />
-        <button type="submit" disabled={saving} className="btn-brand px-6 py-3 text-[11px] font-black uppercase tracking-[0.14em] disabled:opacity-50">
+        <button type="submit" disabled={saving} className="btn-brand px-6 py-3 text-[11px] font-bold uppercase tracking-[0.14em] disabled:opacity-50 rounded-full">
           {saving ? 'Saving…' : 'Save details'}
         </button>
       </form>

@@ -3,6 +3,8 @@ module.exports = {
   content: [
     "./app/**/*.{js,jsx,ts,tsx}",
     "./components/**/*.{js,jsx,ts,tsx}",
+    // Storefront themes keep their class names in lib/storefront/blocks.ts.
+    "./lib/storefront/**/*.{js,ts,tsx}",
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
@@ -49,14 +51,22 @@ module.exports = {
           muted:   '#D4CFC8',
         },
         champagne: '#8B2A22',
+        // Storefront accents — warm, Lagos-at-golden-hour. Use for tiles and badges, not text.
+        palm:    { DEFAULT: '#0E4D3F', light: '#14634F', dark: '#08322A' },
+        saffron: { DEFAULT: '#F2A33A', light: '#F7C277' },
+        blush:   { DEFAULT: '#F6C9BE', light: '#FBE3DC' },
+        lilac:   { DEFAULT: '#B9B3F5', dark: '#7C74E8' },
+        shell:   '#F6F1EA',
         paper: {
           DEFAULT: '#FAFAF8',
           dark:    '#F0EEEC',
         },
       },
       fontFamily: {
-        display: ['var(--font-outfit)', 'sans-serif'],
+        // Legacy display headlines share the storefront's editorial serif.
+        display: ['var(--font-fraunces)', 'Georgia', 'serif'],
         logo:    ['var(--font-montserrat)', 'sans-serif'],
+        serif:   ['var(--font-fraunces)', 'Georgia', 'serif'],
         sans:    ['var(--font-outfit)', 'sans-serif'],
       },
       animation: {

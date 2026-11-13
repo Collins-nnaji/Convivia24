@@ -103,7 +103,7 @@ export default function BrandProfile({ brand, campaigns }: { brand: Brand; campa
       </AnimatePresence>
 
       {/* Hero */}
-      <div className="relative overflow-hidden brand-gradient text-white">
+      <div className="relative overflow-hidden brand-gradient text-white mx-3 mt-4 rounded-3xl sm:mx-4 lg:mx-5">
         <motion.div
           aria-hidden
           className="absolute -right-20 -top-24 w-[460px] h-[460px] rounded-full bg-ember/25 blur-3xl"
@@ -133,7 +133,7 @@ export default function BrandProfile({ brand, campaigns }: { brand: Brand; campa
 
         <div className="relative max-w-6xl mx-auto px-5 sm:px-8 pb-10 pt-8 sm:pb-14 grid md:grid-cols-12 gap-8 items-center">
           <div className="md:col-span-7 min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-[0.24em] text-white/45">
+            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/45">
               {brand.info.origin}
               {brand.info.founded && <> · est. {brand.info.founded}</>}
             </p>
@@ -141,7 +141,7 @@ export default function BrandProfile({ brand, campaigns }: { brand: Brand; campa
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45 }}
-              className="font-logo font-black tracking-tight uppercase text-4xl sm:text-6xl leading-[0.92] mt-3"
+              className="font-serif font-light tracking-tight text-4xl sm:text-6xl leading-[0.92] mt-3"
             >
               {brand.name}
             </motion.h1>
@@ -152,7 +152,7 @@ export default function BrandProfile({ brand, campaigns }: { brand: Brand; campa
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <a
                 href="#brand-shop"
-                className="px-6 py-3.5 bg-white text-obsidian text-[11px] font-black uppercase tracking-[0.14em]"
+                className="px-6 py-3.5 bg-white text-obsidian text-[11px] font-bold uppercase tracking-[0.14em] rounded-full"
               >
                 Explore products
               </a>
@@ -162,9 +162,9 @@ export default function BrandProfile({ brand, campaigns }: { brand: Brand; campa
                   onClick={toggleFollow}
                   disabled={busy}
                   aria-pressed={following}
-                  className={`px-6 py-3.5 border text-[11px] font-black uppercase tracking-[0.14em] inline-flex items-center gap-2 transition-colors disabled:opacity-60 ${
+                  className={`px-6 py-3.5 border text-[11px] font-bold uppercase tracking-[0.14em] inline-flex items-center gap-2 transition-colors disabled:opacity-60 ${
                     following ? 'border-white bg-white/15' : 'border-white/35 hover:border-white'
-                  }`}
+                  } rounded-full`}
                 >
                   <Heart size={14} fill={following ? 'currentColor' : 'none'} />
                   {following ? 'Following' : 'Follow brand'}
@@ -172,7 +172,7 @@ export default function BrandProfile({ brand, campaigns }: { brand: Brand; campa
               ) : (
                 <Link
                   href={`/signin?next=${encodeURIComponent(pathname || '/brands')}`}
-                  className="px-6 py-3.5 border border-white/35 hover:border-white text-[11px] font-black uppercase tracking-[0.14em] inline-flex items-center gap-2 transition-colors"
+                  className="px-6 py-3.5 border border-white/35 hover:border-white text-[11px] font-bold uppercase tracking-[0.14em] inline-flex items-center gap-2 transition-colors rounded-full"
                 >
                   <Heart size={14} /> Follow brand
                 </Link>
@@ -204,10 +204,10 @@ export default function BrandProfile({ brand, campaigns }: { brand: Brand; campa
       </div>
 
       <div className="max-w-6xl mx-auto px-5 sm:px-8 -mt-6 relative z-10">
-        <ul className="grid grid-cols-2 sm:grid-cols-4 bg-white border border-obsidian/8 divide-x divide-y sm:divide-y-0 divide-obsidian/6 shadow-[0_18px_50px_-40px_rgba(10,10,10,0.6)]">
+        <ul className="grid grid-cols-2 sm:grid-cols-4 bg-white border border-obsidian/8 divide-x divide-y sm:divide-y-0 divide-obsidian/6 shadow-[0_18px_50px_-40px_rgba(10,10,10,0.6)] overflow-hidden rounded-2xl">
           {stats.map((stat) => (
             <li key={stat.label} className="p-5 text-center">
-              <p className="font-logo font-black text-2xl tabular-nums leading-none">{stat.value}</p>
+              <p className="font-serif font-light text-2xl tabular-nums leading-none">{stat.value}</p>
               <p className="text-[11px] text-obsidian/40 mt-1.5">{stat.label}</p>
             </li>
           ))}
@@ -216,13 +216,13 @@ export default function BrandProfile({ brand, campaigns }: { brand: Brand; campa
 
       <div className="max-w-6xl mx-auto px-5 sm:px-8 py-10 sm:py-14 space-y-10 sm:space-y-14">
         <div className="grid lg:grid-cols-[1fr_320px] gap-6 lg:gap-8 items-start">
-          <section id="brand-shop" className="bg-white border border-obsidian/8 scroll-mt-24">
+          <section id="brand-shop" className="bg-white border border-obsidian/8 scroll-mt-24 rounded-2xl">
             <div className="px-5 py-4 border-b border-obsidian/8 flex items-center justify-between gap-4">
               <h2 className="text-lg font-bold">Shop {brand.name}</h2>
               {brand.products.length > 0 && (
                 <Link
                   href={`/shop?q=${encodeURIComponent(brand.name)}`}
-                  className="text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/40 hover:text-ember inline-flex items-center gap-1 transition-colors"
+                  className="text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/40 hover:text-ember inline-flex items-center gap-1 transition-colors"
                 >
                   View all products <ChevronRight size={13} />
                 </Link>
@@ -245,7 +245,7 @@ export default function BrandProfile({ brand, campaigns }: { brand: Brand; campa
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: Math.min(i, 5) * 0.05, duration: 0.3 }}
-                      className="border border-obsidian/8 hover:border-ember/35 transition-colors flex flex-col"
+                      className="border border-obsidian/8 hover:border-ember/35 transition-colors flex flex-col overflow-hidden rounded-xl"
                     >
                       <Link href={`/shop/${product.slug}`} className="relative block aspect-[3/4] bg-white overflow-hidden">
                         {product.image ? (
@@ -259,7 +259,7 @@ export default function BrandProfile({ brand, campaigns }: { brand: Brand; campa
                           />
                         )}
                         {soldOut && (
-                          <span className="absolute left-2 bottom-2 z-10 rounded-md bg-obsidian/70 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
+                          <span className="absolute left-2 bottom-2 z-10 rounded-md bg-obsidian/70 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white">
                             Out of stock
                           </span>
                         )}
@@ -275,7 +275,7 @@ export default function BrandProfile({ brand, campaigns }: { brand: Brand; campa
                         {soldOut ? (
                           <Link
                             href={`/shop/${product.slug}`}
-                            className="mt-3 w-full py-2.5 text-center text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/45 ring-1 ring-obsidian/10"
+                            className="mt-3 w-full py-2.5 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/45 ring-1 ring-obsidian/10"
                           >
                             Out of stock · notify
                           </Link>
@@ -283,7 +283,7 @@ export default function BrandProfile({ brand, campaigns }: { brand: Brand; campa
                           <button
                             type="button"
                             onClick={() => addProduct(product.slug, 1)}
-                            className="mt-3 w-full py-2.5 btn-brand text-[10px] font-black uppercase tracking-[0.12em] inline-flex items-center justify-center gap-1.5"
+                            className="mt-3 w-full py-2.5 btn-brand text-[10px] font-bold uppercase tracking-[0.12em] inline-flex items-center justify-center gap-1.5 rounded-full"
                           >
                             <Plus size={12} /> Add to cart
                           </button>
@@ -303,21 +303,21 @@ export default function BrandProfile({ brand, campaigns }: { brand: Brand; campa
         </div>
 
         <div className="grid lg:grid-cols-[1fr_320px] gap-6 lg:gap-8 items-start">
-          <section className="bg-obsidian text-white p-6 sm:p-8">
-            <h2 className="font-logo font-black uppercase tracking-tight text-2xl">Our story</h2>
+          <section className="bg-obsidian text-white p-6 sm:p-8 rounded-2xl">
+            <h2 className="font-serif font-light tracking-tight text-2xl">Our story</h2>
             <p className="text-sm text-white/60 mt-3 leading-relaxed max-w-xl">{brand.info.history}</p>
             {brand.info.style && (
               <p className="text-sm text-white/50 mt-3 leading-relaxed max-w-xl">{brand.info.style}</p>
             )}
             <Link
               href={`/shop?q=${encodeURIComponent(brand.name)}`}
-              className="mt-6 inline-flex items-center gap-2 px-5 py-3 border border-white/30 hover:border-white text-[11px] font-black uppercase tracking-[0.12em] transition-colors"
+              className="mt-6 inline-flex items-center gap-2 px-5 py-3 border border-white/30 hover:border-white text-[11px] font-bold uppercase tracking-[0.12em] transition-colors rounded-full"
             >
               Shop the range <ChevronRight size={13} />
             </Link>
           </section>
 
-          <section className="bg-white border border-obsidian/8 p-5 sm:p-6 text-center">
+          <section className="bg-white border border-obsidian/8 p-5 sm:p-6 text-center rounded-2xl">
             <span className="w-11 h-11 rounded-full bg-ember/8 flex items-center justify-center mx-auto">
               <Star size={19} className="text-ember" />
             </span>
@@ -327,7 +327,7 @@ export default function BrandProfile({ brand, campaigns }: { brand: Brand; campa
             </p>
             <Link
               href="/discover/trivia#challenges"
-              className="mt-4 inline-block w-full py-3 btn-brand text-[10px] font-black uppercase tracking-[0.12em]"
+              className="mt-4 inline-block w-full py-3 btn-brand text-[10px] font-bold uppercase tracking-[0.12em] rounded-full"
             >
               See all challenges
             </Link>
@@ -335,7 +335,7 @@ export default function BrandProfile({ brand, campaigns }: { brand: Brand; campa
         </div>
 
         <section>
-          <ul className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 p-6 sm:p-8 bg-white border border-obsidian/8">
+          <ul className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 p-6 sm:p-8 bg-white border border-obsidian/8 rounded-2xl">
             {BRAND_PILLARS.map((pillar, i) => {
               const Icon = PILLAR_ICONS[i] ?? ShieldCheck;
               return (
@@ -357,14 +357,14 @@ function BrandChallenges({ brand, campaigns }: { brand: Brand; campaigns: Campai
   const hasAny = brand.rounds.length > 0 || campaigns.length > 0;
 
   return (
-    <section className="bg-obsidian text-white">
+    <section className="overflow-hidden rounded-2xl bg-obsidian text-white">
       <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between gap-4">
-        <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-white/70">
+        <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/70">
           Brand challenges
         </h2>
         <Link
           href="/discover/trivia#challenges"
-          className="text-[11px] font-black uppercase tracking-[0.1em] text-white/45 hover:text-white transition-colors"
+          className="text-[11px] font-bold uppercase tracking-[0.1em] text-white/45 hover:text-white transition-colors"
         >
           View all
         </Link>
@@ -411,7 +411,7 @@ function BrandChallenges({ brand, campaigns }: { brand: Brand; campaigns: Campai
       <div className="p-4 border-t border-white/10">
         <Link
           href="/discover"
-          className="w-full py-3 bg-white text-obsidian text-[10px] font-black uppercase tracking-[0.12em] inline-flex items-center justify-center"
+          className="w-full py-3 bg-white text-obsidian text-[10px] font-bold uppercase tracking-[0.12em] inline-flex items-center justify-center rounded-full"
         >
           Join challenges
         </Link>
@@ -422,8 +422,8 @@ function BrandChallenges({ brand, campaigns }: { brand: Brand; campaigns: Campai
 
 function ClaimPanel({ brand, onClaim }: { brand: Brand; onClaim: () => void }) {
   return (
-    <section className="bg-white border border-obsidian/8 p-5 sm:p-6">
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-obsidian/[0.04] text-obsidian/50 text-[10px] font-black uppercase tracking-[0.12em]">
+    <section className="bg-white border border-obsidian/8 p-5 sm:p-6 rounded-2xl">
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-obsidian/[0.04] text-obsidian/50 text-[10px] font-bold uppercase tracking-[0.12em] rounded-full">
         <BadgeCheck size={12} /> Managed by Convivia24
       </span>
       <h2 className="font-bold mt-3">Is this your brand?</h2>
@@ -434,7 +434,7 @@ function ClaimPanel({ brand, onClaim }: { brand: Brand; onClaim: () => void }) {
       <button
         type="button"
         onClick={onClaim}
-        className="mt-4 w-full py-3 border border-obsidian/15 text-[10px] font-black uppercase tracking-[0.12em] hover:border-ember hover:text-ember transition-colors"
+        className="mt-4 w-full py-3 border border-obsidian/15 text-[10px] font-bold uppercase tracking-[0.12em] hover:border-ember hover:text-ember transition-colors rounded-full"
       >
         Claim this brand
       </button>

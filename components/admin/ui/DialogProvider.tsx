@@ -84,14 +84,14 @@ export default function DialogProvider({ children }: { children: ReactNode }) {
             <button
               type="button"
               onClick={() => settle(false)}
-              className="px-5 py-2.5 rounded-lg border border-obsidian/15 text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/70 transition-colors hover:bg-obsidian/[0.04]"
+              className="px-5 py-2.5 rounded-full border border-obsidian/15 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/70 transition-colors hover:bg-obsidian/[0.04]"
             >
               {confirmState?.cancelLabel ?? 'Cancel'}
             </button>
             <button
               type="button"
               onClick={() => settle(true)}
-              className={`px-5 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-[0.12em] text-white transition-opacity hover:opacity-90 ${
+              className={`px-5 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-[0.12em] text-white transition-opacity hover:opacity-90 ${
                 confirmState?.tone === 'danger' ? 'bg-ember' : 'bg-obsidian'
               }`}
             >

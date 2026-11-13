@@ -110,9 +110,8 @@ export default function ContactPage() {
 
   return (
     <section className="bg-paper min-h-[70vh] pb-20 md:pb-14">
-      <div className="relative overflow-hidden border-b border-obsidian/8">
-        <div className="absolute inset-0 brand-gradient opacity-[0.07]" />
-        <div className="relative max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-5 pt-10 pb-10 sm:pt-14 sm:pb-12">
+      <div className="relative mx-3 mt-4 overflow-hidden rounded-3xl bg-shell sm:mx-4 lg:mx-5">
+        <div className="relative max-w-[1600px] mx-auto px-6 pt-10 pb-10 sm:px-10 sm:pt-14 sm:pb-12 lg:px-14">
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
             <div className="max-w-2xl">
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-ember mb-3">Contact</p>
@@ -223,7 +222,7 @@ export default function ContactPage() {
               ) : (
                 <form key={tier} onSubmit={submitApplication} className="space-y-5">
                   <div>
-                    <h2 className="text-xl font-bold text-obsidian mb-1">
+                    <h2 className="text-xl font-serif font-light text-obsidian mb-1">
                       {tier === 'outlet' ? 'Outlet enquiry' : 'Brand enquiry'}
                     </h2>
                     <p className="text-sm text-obsidian/55">

@@ -115,7 +115,7 @@ export default async function VerifyPage({ params }: { params: Promise<{ id: str
         sealed stock — never parallel or counterfeit imports.
       </p>
 
-      <div className="bg-white border border-obsidian/8 shadow-sm p-5 text-left mb-6">
+      <div className="bg-white border border-obsidian/8 shadow-sm p-5 text-left mb-6 rounded-2xl">
         <div className="flex items-center justify-between mb-3 pb-3 border-b border-obsidian/6">
           <span className="text-[10px] font-wordmark-sm text-obsidian/40">Authenticity code</span>
           <span className="text-sm font-mono font-semibold text-obsidian">{verifyCode(order.id)}</span>

@@ -18,9 +18,9 @@ export default async function SupplierIndexPage() {
 
   return (
     <section className="min-h-[70vh] bg-paper px-5 py-16">
-      <div className="mx-auto max-w-md bg-white p-8 shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)]">
-        <p className="mb-2 text-[10px] font-black uppercase tracking-[0.28em] text-ember">Convivia24 · Supplier</p>
-        <h1 className="mb-3 text-2xl font-bold">Supplier portal</h1>
+      <div className="mx-auto max-w-md bg-white p-8 shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)] rounded-2xl">
+        <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.28em] text-ember">Convivia24 · Supplier</p>
+        <h1 className="mb-3 text-2xl font-serif font-light tracking-tight">Supplier portal</h1>
         {user ? (
           <p className="text-sm text-obsidian/60">
             <strong>{user.email}</strong> is not on any supplier&apos;s sign-in list yet. Ask the Convivia24 desk to add it, or open
@@ -31,7 +31,7 @@ export default async function SupplierIndexPage() {
             <p className="text-sm text-obsidian/60">
               Sign in with the Convivia24 account the desk added for you, or open the portal link they sent you and use your access key.
             </p>
-            <Link href="/signin?next=%2Fsupplier" className="btn-brand mt-5 block w-full rounded-xl py-3 text-center text-[11px] font-black uppercase tracking-[0.14em]">
+            <Link href="/signin?next=%2Fsupplier" className="btn-brand mt-5 block w-full rounded-xl py-3 text-center text-[11px] font-bold uppercase tracking-[0.14em]">
               Sign in
             </Link>
           </>

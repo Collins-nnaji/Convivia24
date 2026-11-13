@@ -15,11 +15,11 @@ export default function EventDisplayCard({
   return (
     <Link
       href={`/events/${event.id}`}
-      className="group bg-white border border-obsidian/8 hover:border-ember/35 transition-colors overflow-hidden shadow-sm flex flex-col"
+      className="group bg-white border border-obsidian/8 hover:border-ember/35 transition-colors overflow-hidden shadow-sm flex flex-col rounded-2xl"
     >
       <NightArt kind={tagToArt(event.tag)} label={event.tag} className="aspect-[16/10]" />
       <div className="p-4 flex-1 flex flex-col">
-        <p className="text-[10px] font-black uppercase tracking-[0.14em] text-ember mb-1 flex items-center gap-1">
+        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-ember mb-1 flex items-center gap-1">
           <CalendarDays size={11} /> {formatEventWhen(event)}
         </p>
         <h3 className="font-semibold text-obsidian leading-snug">{event.title}</h3>

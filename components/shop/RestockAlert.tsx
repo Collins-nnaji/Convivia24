@@ -54,7 +54,7 @@ export default function RestockAlert({ slug, name }: { slug: string; name: strin
       <p className="mt-1 text-[13px] text-obsidian/55">Leave your email and we&apos;ll tell you when it&apos;s back on the shelf.</p>
       <div className="mt-3 flex gap-2">
         <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="min-w-0 flex-1 rounded-lg border border-obsidian/12 px-3 py-2.5 text-sm focus:border-ember focus:ring-0" />
-        <button type="submit" disabled={state === 'busy'} className="btn-brand rounded-lg px-4 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] disabled:opacity-50">
+        <button type="submit" disabled={state === 'busy'} className="btn-brand rounded-lg px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] disabled:opacity-50">
           {state === 'busy' ? '…' : 'Notify me'}
         </button>
       </div>

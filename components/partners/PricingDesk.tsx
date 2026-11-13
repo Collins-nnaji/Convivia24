@@ -84,7 +84,7 @@ export default function PricingDesk() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="font-logo font-extrabold uppercase tracking-tight text-2xl">Menu margin desk</h2>
+        <h2 className="font-serif font-light tracking-tight text-2xl">Menu margin desk</h2>
         <p className="text-sm text-obsidian/55 mt-1 max-w-2xl">
           Put in what a bottle costs you and what you charge a guest. We work out your pour cost, the price that hits
           your target margin, what each line earns per month, and what you would save buying the same bottles wholesale
@@ -112,8 +112,8 @@ export default function PricingDesk() {
       {analysis && (analysis.upliftNgn > 0 || analysis.wholesaleSavingNgn > 0) && (
         <div className="grid sm:grid-cols-2 gap-4">
           {analysis.upliftNgn > 0 && (
-            <div className="bg-white p-5 border-l-2 border-ember shadow-sm">
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-ember mb-1 flex items-center gap-1.5">
+            <div className="bg-white p-5 border-l-2 border-ember shadow-sm rounded-2xl">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-ember mb-1 flex items-center gap-1.5">
                 <TrendingUp size={13} /> Pricing headroom
               </p>
               <p className="text-2xl font-bold">{formatNgn(analysis.upliftNgn)}</p>
@@ -123,8 +123,8 @@ export default function PricingDesk() {
             </div>
           )}
           {analysis.wholesaleSavingNgn > 0 && (
-            <div className="bg-white p-5 border-l-2 border-obsidian shadow-sm">
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-obsidian/60 mb-1 flex items-center gap-1.5">
+            <div className="bg-white p-5 border-l-2 border-obsidian shadow-sm rounded-2xl">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-obsidian/60 mb-1 flex items-center gap-1.5">
                 <ArrowUpRight size={13} /> Wholesale saving
               </p>
               <p className="text-2xl font-bold">{formatNgn(analysis.wholesaleSavingNgn)}</p>
@@ -136,9 +136,9 @@ export default function PricingDesk() {
         </div>
       )}
 
-      <div className="bg-white p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row sm:items-end gap-5">
+      <div className="bg-white p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row sm:items-end gap-5 rounded-2xl">
         <label className="flex-1">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 block mb-2">
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian/40 block mb-2">
             Target gross margin · {target}%
           </span>
           <input
@@ -158,7 +158,7 @@ export default function PricingDesk() {
         </label>
         <div className="flex items-end gap-2">
           <label className="min-w-0">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/40 block mb-1">
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian/40 block mb-1">
               Add from our catalog
             </span>
             <select value={addSlug} onChange={(e) => setAddSlug(e.target.value)} className={inputClass}>
@@ -173,7 +173,7 @@ export default function PricingDesk() {
             type="button"
             disabled={busy || !addSlug}
             onClick={() => post({ action: 'add-from-catalog', slug: addSlug })}
-            className="px-4 py-2.5 btn-brand text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-40 inline-flex items-center gap-1.5 shrink-0"
+            className="px-4 py-2.5 btn-brand text-[10px] font-bold uppercase tracking-[0.12em] disabled:opacity-40 inline-flex items-center gap-1.5 shrink-0 rounded-full"
           >
             <Plus size={13} /> Add
           </button>
@@ -192,8 +192,8 @@ export default function PricingDesk() {
       </div>
 
       {analysis && analysis.underPriced.length > 0 && (
-        <div className="bg-white p-5 sm:p-6 shadow-sm">
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-ember mb-3 flex items-center gap-1.5">
+        <div className="bg-white p-5 sm:p-6 shadow-sm rounded-2xl">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-ember mb-3 flex items-center gap-1.5">
             <AlertTriangle size={13} /> Lines below your target
           </p>
           <ul className="space-y-2">
@@ -227,8 +227,8 @@ function Stat({
   accent?: boolean;
 }) {
   return (
-    <div className="bg-white p-5 shadow-sm">
-      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-obsidian/35">{label}</p>
+    <div className="bg-white p-5 shadow-sm rounded-2xl">
+      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-obsidian/35">{label}</p>
       <p className={`text-2xl font-bold mt-1 ${accent ? 'brand-text' : ''}`}>{value}</p>
       {note && <p className="text-[11px] text-obsidian/40 mt-1">{note}</p>}
     </div>
@@ -267,7 +267,7 @@ function PricingRow({
   const verdict = VERDICT_COPY[item.verdict];
 
   return (
-    <div className="bg-white p-4 sm:p-5 shadow-sm">
+    <div className="bg-white p-4 sm:p-5 shadow-sm rounded-2xl">
       <div className="flex items-start justify-between gap-3 mb-4">
         <div className="min-w-0">
           <p className="font-medium truncate">{item.name}</p>
@@ -276,32 +276,32 @@ function PricingRow({
             {item.markupMultiple}× markup
           </p>
         </div>
-        <span className={`text-[9px] font-black uppercase tracking-[0.12em] px-2 py-0.5 shrink-0 ${verdict.className}`}>
+        <span className={`text-[11px] font-bold uppercase tracking-[0.12em] px-2 py-0.5 shrink-0 ${verdict.className}`}>
           {verdict.label}
         </span>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <label className="block">
-          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-obsidian/40 block mb-1">
+          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-obsidian/40 block mb-1">
             Bottle cost
           </span>
           <input type="number" min={0} inputMode="numeric" value={cost} onChange={(e) => setCost(e.target.value)} className={inputClass} />
         </label>
         <label className="block">
-          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-obsidian/40 block mb-1">
+          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-obsidian/40 block mb-1">
             Menu price / serving
           </span>
           <input type="number" min={0} inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value)} className={inputClass} />
         </label>
         <label className="block">
-          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-obsidian/40 block mb-1">
+          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-obsidian/40 block mb-1">
             Servings / bottle
           </span>
           <input type="number" min={1} inputMode="numeric" value={servings} onChange={(e) => setServings(e.target.value)} className={inputClass} />
         </label>
         <label className="block">
-          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-obsidian/40 block mb-1">
+          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-obsidian/40 block mb-1">
             Bottles / month
           </span>
           <input type="number" min={0} inputMode="numeric" value={volume} onChange={(e) => setVolume(e.target.value)} className={inputClass} />
@@ -347,7 +347,7 @@ function PricingRow({
               bottlesPerMonth: volume,
             })
           }
-          className="px-4 py-2.5 btn-brand text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-35"
+          className="px-4 py-2.5 btn-brand text-[10px] font-bold uppercase tracking-[0.12em] disabled:opacity-35 rounded-full"
         >
           Save line
         </button>
@@ -368,7 +368,7 @@ function PricingRow({
 function Metric({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div>
-      <p className="text-[10px] font-black uppercase tracking-[0.16em] text-obsidian/35">{label}</p>
+      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-obsidian/35">{label}</p>
       <p className="font-semibold tabular-nums">{value}</p>
       {sub && <p className="text-[11px] text-obsidian/40">{sub}</p>}
     </div>

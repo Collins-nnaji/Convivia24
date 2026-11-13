@@ -6,8 +6,8 @@ export default function CardPage() {
       <div className="relative overflow-hidden border-b border-obsidian/8">
         <div className="absolute inset-0 brand-gradient opacity-[0.08]" />
         <div className="relative max-w-6xl mx-auto px-5 sm:px-8 pt-12 pb-10">
-          <p className="text-[10px] font-black uppercase tracking-[0.28em] text-ember mb-3">Loyalty</p>
-          <h1 className="font-logo font-black tracking-tight uppercase text-3xl sm:text-4xl text-obsidian">
+          <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-ember mb-3">Loyalty</p>
+          <h1 className="font-serif font-light tracking-tight text-3xl sm:text-4xl text-obsidian">
             Guest Card
           </h1>
           <p className="text-base text-obsidian/55 mt-3 max-w-lg">

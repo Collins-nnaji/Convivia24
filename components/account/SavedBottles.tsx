@@ -40,7 +40,7 @@ export default function SavedBottles() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-logo font-black uppercase tracking-tight text-2xl sm:text-3xl">
+        <h1 className="font-serif font-light tracking-tight text-2xl sm:text-3xl">
           <span className="brand-text">Saved bottles</span>
         </h1>
         <p className="text-obsidian/50 mt-2 text-sm">
@@ -50,12 +50,12 @@ export default function SavedBottles() {
       </div>
 
       {products.length === 0 ? (
-        <div className="bg-white border border-obsidian/8 p-10 text-center">
+        <div className="bg-white border border-obsidian/8 p-10 text-center rounded-2xl">
           <Heart size={28} className="mx-auto text-ember/30 mb-3" />
           <p className="text-sm text-obsidian/55">Nothing saved yet.</p>
           <Link
             href="/shop"
-            className="mt-4 inline-block px-5 py-2.5 btn-brand text-[10px] font-black uppercase tracking-[0.14em]"
+            className="mt-4 inline-block px-5 py-2.5 btn-brand text-[10px] font-bold uppercase tracking-[0.14em] rounded-full"
           >
             Browse the shop
           </Link>
@@ -87,7 +87,7 @@ function SavedCard({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index, 6) * 0.04, duration: 0.3 }}
-      className="bg-white border border-obsidian/8 hover:border-ember/35 transition-colors"
+      className="bg-white border border-obsidian/8 hover:border-ember/35 transition-colors rounded-2xl"
     >
       <div className="relative">
         <Link href={`/shop/${product.slug}`} className="relative block aspect-[4/3] bg-white overflow-hidden">
@@ -106,7 +106,7 @@ function SavedCard({
           type="button"
           onClick={toggle}
           aria-label={`Remove ${product.name} from saved`}
-          className="absolute top-3 right-3 w-8 h-8 bg-white/90 border border-obsidian/8 flex items-center justify-center text-obsidian/35 hover:text-ember transition-colors"
+          className="absolute top-3 right-3 w-8 h-8 bg-white/90 border border-obsidian/8 flex items-center justify-center text-obsidian/35 hover:text-ember transition-colors rounded-2xl"
         >
           <X size={14} />
         </button>
@@ -123,7 +123,7 @@ function SavedCard({
         <button
           type="button"
           onClick={onAdd}
-          className="w-full mt-3 py-2.5 btn-brand text-[10px] font-black uppercase tracking-[0.12em]"
+          className="w-full mt-3 py-2.5 btn-brand text-[10px] font-bold uppercase tracking-[0.12em] rounded-full"
         >
           Add to cart
         </button>

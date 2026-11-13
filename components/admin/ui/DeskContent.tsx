@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 export const deskField = 'w-full rounded-lg border border-obsidian/20 bg-white px-3 py-2 text-sm focus:border-ember focus:ring-ember';
-export const deskButton = 'rounded-lg border border-obsidian/20 px-3 py-2 text-sm font-semibold hover:bg-obsidian/5 disabled:opacity-40';
+export const deskButton = 'rounded-full border border-obsidian/20 bg-white px-4 py-2 text-sm font-semibold hover:border-obsidian disabled:opacity-40';
 export function DeskHeader({ title, description, loading, busy, error, message, reload }: {
   title: string; description: string; loading: boolean; busy: boolean; error: string; message: string; reload: () => Promise<boolean>;
 }) {
@@ -12,11 +12,11 @@ export function DeskHeader({ title, description, loading, busy, error, message, 
   </header>;
 }
 export function DeskPanel({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
-  return <section className="space-y-4 rounded-xl border border-obsidian/10 bg-white p-5"><h3 className="text-lg font-bold">{title}</h3>{description && <p className="text-sm text-obsidian/60">{description}</p>}{children}</section>;
+  return <section className="space-y-4 rounded-2xl bg-white p-5 ring-1 ring-obsidian/[0.06] sm:p-6"><h3 className="font-serif text-xl font-light text-obsidian">{title}</h3>{description && <p className="text-sm text-obsidian/60">{description}</p>}{children}</section>;
 }
 export function DeskEmpty({ children }: { children: ReactNode }) {
-  return <p className="rounded-lg border border-dashed border-obsidian/15 p-4 text-sm text-obsidian/60">{children}</p>;
+  return <p className="rounded-2xl border border-dashed border-obsidian/15 bg-white/60 p-5 text-sm text-obsidian/60">{children}</p>;
 }
 export function DeskStats({ items }: { items: { label: string; value: number }[] }) {
-  return <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{items.map(item => <div key={item.label} className="rounded-xl border border-obsidian/10 bg-white p-4"><p className="text-sm text-obsidian/60">{item.label}</p><p className="mt-1 text-2xl font-bold">{item.value}</p></div>)}</div>;
+  return <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{items.map(item => <div key={item.label} className="rounded-2xl bg-white p-5 ring-1 ring-obsidian/[0.06]"><p className="text-sm text-obsidian/60">{item.label}</p><p className="mt-1 font-serif text-3xl font-light tabular-nums text-obsidian">{item.value}</p></div>)}</div>;
 }

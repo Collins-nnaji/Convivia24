@@ -13,12 +13,12 @@ export default function RelatedProducts({ products }: { products: DrinkProduct[]
   if (products.length === 0) return null;
 
   return (
-    <div className="bg-white border border-obsidian/8">
+    <div className="bg-white border border-obsidian/8 rounded-2xl">
       <div className="px-5 py-4 border-b border-obsidian/8 flex items-center justify-between gap-4">
         <h2 className="text-lg font-bold">You may also like</h2>
         <Link
           href="/shop"
-          className="text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/40 hover:text-ember transition-colors"
+          className="text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/40 hover:text-ember transition-colors"
         >
           View all
         </Link>

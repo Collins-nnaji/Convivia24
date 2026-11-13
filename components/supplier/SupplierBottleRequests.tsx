@@ -69,7 +69,7 @@ export default function SupplierBottleRequests({ base, onApproved }: { base: str
             <AdminInput label="Bottles you hold" type="number" min={0} value={form.onHand} onChange={(e) => set('onHand', e.target.value)} />
           </div>
           <AdminTextArea label="Anything else" rows={2} value={form.note} onChange={(e) => set('note', e.target.value)} className="min-h-[52px]" />
-          <button type="submit" disabled={busy || !form.name.trim()} className="btn-brand rounded-lg px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] disabled:opacity-40">
+          <button type="submit" disabled={busy || !form.name.trim()} className="btn-brand rounded-lg px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] disabled:opacity-40">
             {busy ? 'Sending…' : 'Send to the desk'}
           </button>
         </form>
@@ -78,7 +78,7 @@ export default function SupplierBottleRequests({ base, onApproved }: { base: str
         <ul className="divide-y divide-obsidian/6 border-t border-obsidian/8">
           {requests.map((r) => (
             <li key={r.id} className="flex flex-wrap items-center gap-3 px-4 py-2.5 text-sm">
-              <span className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider ${TONE[r.status]}`}>{r.status}</span>
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${TONE[r.status]}`}>{r.status}</span>
               <span className="font-semibold">{r.name}</span>
               <span className="text-xs text-obsidian/45">{[r.brand, r.volume, r.costNgn != null ? formatNgn(r.costNgn) : null].filter(Boolean).join(' · ')}</span>
               {r.decisionNote && <span className="text-xs text-obsidian/55">— {r.decisionNote}</span>}

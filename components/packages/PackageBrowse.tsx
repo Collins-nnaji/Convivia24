@@ -152,15 +152,15 @@ export default function PackageBrowse({
                     </div>
                     <dl className="mt-3 grid max-w-xl grid-cols-3 divide-x divide-obsidian/10">
                       <div className="min-w-0 py-1 pr-2.5 sm:pr-3">
-                        <dt className="text-[9px] font-black uppercase tracking-[0.1em] text-obsidian/35 sm:text-[10px]">Guests</dt>
+                        <dt className="text-[11px] font-bold uppercase tracking-[0.1em] text-obsidian/35 sm:text-[10px]">Guests</dt>
                         <dd className="mt-0.5 truncate text-sm font-semibold tabular-nums text-obsidian sm:text-base">~{pkg.guests}</dd>
                       </div>
                       <div className="min-w-0 px-2.5 py-1 sm:px-3">
-                        <dt className="text-[9px] font-black uppercase tracking-[0.1em] text-obsidian/35 sm:text-[10px]">Bottles</dt>
+                        <dt className="text-[11px] font-bold uppercase tracking-[0.1em] text-obsidian/35 sm:text-[10px]">Bottles</dt>
                         <dd className="mt-0.5 truncate text-sm font-semibold tabular-nums text-obsidian sm:text-base">{bottleCount(pkg)}</dd>
                       </div>
                       <div className="min-w-0 py-1 pl-2.5 sm:pl-3">
-                        <dt className="text-[9px] font-black uppercase tracking-[0.1em] text-obsidian/35 sm:text-[10px]">Per guest</dt>
+                        <dt className="text-[11px] font-bold uppercase tracking-[0.1em] text-obsidian/35 sm:text-[10px]">Per guest</dt>
                         <dd className="mt-0.5 truncate text-sm font-semibold tabular-nums text-obsidian sm:text-base">{formatNgn(spendPerGuestNgn(pkg))}</dd>
                       </div>
                     </dl>
@@ -195,15 +195,15 @@ export default function PackageBrowse({
                     {saving > 0 && (
                       <dl className="mb-6 grid grid-cols-3 overflow-hidden rounded-xl border border-obsidian/8 bg-white divide-x divide-obsidian/8">
                         <div className="p-3 sm:p-4 min-w-0">
-                          <dt className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.1em] text-obsidian/35">Separate</dt>
+                          <dt className="text-[11px] sm:text-[10px] font-bold uppercase tracking-[0.1em] text-obsidian/35">Separate</dt>
                           <dd className="mt-1 text-sm sm:text-lg text-obsidian/50 line-through tabular-nums truncate">{formatNgn(individualTotal)}</dd>
                         </div>
                         <div className="p-3 sm:p-4 min-w-0">
-                          <dt className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.1em] text-obsidian/35">Package</dt>
+                          <dt className="text-[11px] sm:text-[10px] font-bold uppercase tracking-[0.1em] text-obsidian/35">Package</dt>
                           <dd className="mt-1 text-sm sm:text-lg font-bold text-obsidian tabular-nums truncate">{formatNgn(pkg.priceNgn)}</dd>
                         </div>
                         <div className="p-3 sm:p-4 min-w-0 bg-emerald-50/70">
-                          <dt className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.1em] text-emerald-700">You save</dt>
+                          <dt className="text-[11px] sm:text-[10px] font-bold uppercase tracking-[0.1em] text-emerald-700">You save</dt>
                           <dd className="mt-1 text-sm sm:text-lg font-bold text-emerald-700 tabular-nums truncate">{formatNgn(saving)}</dd>
                         </div>
                       </dl>

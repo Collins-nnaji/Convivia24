@@ -96,7 +96,7 @@ export default function OnboardingFlow({
                 className="text-center"
               >
                 <span className="inline-flex w-16 h-16 items-center justify-center rounded-2xl brand-gradient text-white mb-7"> </span>
-                <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-light italic brand-text leading-tight">
+                <h1 className="font-serif text-5xl sm:text-6xl lg:text-7xl font-light italic brand-text leading-tight">
                   {firstName ? `Hi ${firstName},` : 'Welcome,'}
                 </h1>
                 <p className="text-obsidian/60 text-lg sm:text-xl mt-5 leading-relaxed max-w-xl mx-auto">
@@ -104,7 +104,7 @@ export default function OnboardingFlow({
                 </p>
                 <button
                   onClick={() => setStep(0)}
-                  className="btn-brand mt-9 inline-flex items-center gap-2 px-8 py-4 rounded-xl text-[13px] font-black uppercase tracking-[0.18em]"
+                  className="btn-brand mt-9 inline-flex items-center gap-2 px-8 py-4 rounded-xl text-[13px] font-bold uppercase tracking-[0.18em]"
                 >
                   Let&rsquo;s begin <ArrowRight size={16} />
                 </button>
@@ -115,7 +115,7 @@ export default function OnboardingFlow({
                 initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }}
                 transition={{ duration: 0.25 }}
               >
-                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-gold-dark mb-3">
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gold-dark mb-3">
                   Question {step + 1} of {total}
                 </p>
                 <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl italic text-obsidian leading-snug">{q!.title}</h2>
@@ -166,7 +166,7 @@ export default function OnboardingFlow({
                       type="button"
                       onClick={() => canAdvance && setStep((s) => s + 1)}
                       disabled={!canAdvance}
-                      className="btn-brand inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-[12px] font-black uppercase tracking-[0.15em]"
+                      className="btn-brand inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-[12px] font-bold uppercase tracking-[0.15em]"
                     >
                       Next <ArrowRight size={15} />
                     </button>
@@ -175,7 +175,7 @@ export default function OnboardingFlow({
                       type="button"
                       onClick={finish}
                       disabled={!canAdvance || saving}
-                      className="btn-brand inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-[12px] font-black uppercase tracking-[0.15em]"
+                      className="btn-brand inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-[12px] font-bold uppercase tracking-[0.15em]"
                     >
                       {saving ? 'Saving…' : <>Finish <Check size={15} /></>}
                     </button>

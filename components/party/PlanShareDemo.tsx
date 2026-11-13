@@ -19,7 +19,7 @@ export default function PlanShareDemo() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="mb-10 border border-obsidian/10 bg-white">
+    <div className="mb-10 border border-obsidian/10 bg-white rounded-2xl">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -27,7 +27,7 @@ export default function PlanShareDemo() {
         className="w-full flex items-center justify-between gap-4 px-5 py-3.5 text-left"
       >
         <span>
-          <span className="block text-[11px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-ember">
+          <span className="block text-[11px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-ember">
             Sample download
           </span>
           <span className="block text-base sm:text-sm text-obsidian/55 mt-0.5">

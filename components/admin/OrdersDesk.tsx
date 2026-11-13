@@ -229,8 +229,8 @@ function RefundDialog({ order, busy, onClose, onConfirm }: { order: AdminOrder; 
       onClose={onClose}
       footer={
         <>
-          <button type="button" onClick={onClose} className="rounded-lg border border-obsidian/15 px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/70">Cancel</button>
-          <button type="button" disabled={!valid || busy} onClick={() => onConfirm(n, reason)} className="rounded-lg bg-ember px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] text-white disabled:opacity-40">
+          <button type="button" onClick={onClose} className="rounded-full border border-obsidian/15 px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/70">Cancel</button>
+          <button type="button" disabled={!valid || busy} onClick={() => onConfirm(n, reason)} className="rounded-full bg-ember px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] text-white disabled:opacity-40">
             {busy ? '…' : partial ? `Refund ${formatNgn(n)} · keep order open` : 'Refund in full · close order'}
           </button>
         </>
@@ -268,8 +268,8 @@ function EditDialog({ order, busy, onClose, onSave }: { order: AdminOrder; busy:
       onClose={onClose}
       footer={
         <>
-          <button type="button" onClick={onClose} className="rounded-lg border border-obsidian/15 px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/70">Cancel</button>
-          <button type="button" disabled={busy || !f.fullName.trim() || !f.addressLine1.trim()} onClick={() => onSave(f)} className="btn-brand rounded-lg px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] disabled:opacity-40">
+          <button type="button" onClick={onClose} className="rounded-full border border-obsidian/15 px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/70">Cancel</button>
+          <button type="button" disabled={busy || !f.fullName.trim() || !f.addressLine1.trim()} onClick={() => onSave(f)} className="btn-brand rounded-full px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] disabled:opacity-40">
             {busy ? '…' : 'Save details'}
           </button>
         </>
@@ -315,7 +315,7 @@ function TrackingForm({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-2 text-[10px] font-black uppercase tracking-[0.1em] text-obsidian/40 hover:text-ember"
+        className="mt-2 text-[10px] font-bold uppercase tracking-[0.1em] text-obsidian/40 hover:text-ember"
       >
         {order.courierName || order.etaAt ? `Rider: ${order.courierName || '—'} · edit tracking` : '+ Add rider / ETA'}
       </button>
@@ -355,14 +355,14 @@ function TrackingForm({
             });
             if (ok) setOpen(false);
           }}
-          className="btn-brand px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-40"
+          className="btn-brand px-4 py-2 text-[10px] font-bold uppercase tracking-[0.12em] disabled:opacity-40"
         >
           {saving ? '…' : 'Save tracking'}
         </button>
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40"
+          className="px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/40"
         >
           Close
         </button>

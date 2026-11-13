@@ -86,10 +86,10 @@ export default function BottleRequestsPanel({ onChanged }: { onChanged?: () => v
                   <AdminInput label="Retail price (₦)" hint={suggestedMargin != null ? `${suggestedMargin}% margin` : undefined} type="number" min={1} value={prices[r.id] || ''} onChange={(e) => setPrices((p) => ({ ...p, [r.id]: e.target.value }))} />
                   <AdminInput label="Note to supplier" hint="optional" value={notes[r.id] || ''} onChange={(e) => setNotes((n) => ({ ...n, [r.id]: e.target.value }))} />
                   <div className="flex gap-2">
-                    <button type="button" disabled={busy === r.id || !(Number(prices[r.id]) > 0)} onClick={() => decide(r, 'approve')} className="btn-brand rounded-lg px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.12em] disabled:opacity-40">
+                    <button type="button" disabled={busy === r.id || !(Number(prices[r.id]) > 0)} onClick={() => decide(r, 'approve')} className="btn-brand rounded-full px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] disabled:opacity-40">
                       List it
                     </button>
-                    <button type="button" disabled={busy === r.id} onClick={() => decide(r, 'decline')} className="rounded-lg border border-obsidian/15 px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/60 hover:border-ember hover:text-ember disabled:opacity-40">
+                    <button type="button" disabled={busy === r.id} onClick={() => decide(r, 'decline')} className="rounded-full border border-obsidian/15 px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/60 hover:border-ember hover:text-ember disabled:opacity-40">
                       Decline
                     </button>
                   </div>
@@ -100,10 +100,10 @@ export default function BottleRequestsPanel({ onChanged }: { onChanged?: () => v
         </ul>
       )}
       {decided.length > 0 && (
-        <ul className="divide-y divide-obsidian/6 rounded-xl border border-obsidian/10 bg-white text-sm">
+        <ul className="divide-y divide-obsidian/6 rounded-2xl bg-white ring-1 ring-obsidian/[0.06] text-sm">
           {decided.slice(0, 20).map((r) => (
             <li key={r.id} className="flex flex-wrap items-center gap-3 px-3 py-2">
-              <span className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider ${r.status === 'approved' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>{r.status}</span>
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${r.status === 'approved' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>{r.status}</span>
               <span className="font-semibold">{r.name}</span>
               <span className="text-xs text-obsidian/45">{r.supplierName}{r.createdSlug ? ` · ${r.createdSlug}` : ''}{r.decisionNote ? ` · ${r.decisionNote}` : ''}</span>
             </li>

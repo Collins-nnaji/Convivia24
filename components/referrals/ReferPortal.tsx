@@ -69,7 +69,7 @@ export default function ReferPortal() {
 
   if (!user) {
     return (
-      <div className="bg-white border border-obsidian/10 p-6">
+      <div className="bg-white border border-obsidian/10 p-6 rounded-2xl">
         <h2 className="font-semibold text-obsidian mb-2">Sign in to see your referrals</h2>
         <p className="text-sm text-obsidian/55 mb-4 leading-relaxed">
           Use the same email you applied with and we will connect your account automatically.
@@ -85,7 +85,7 @@ export default function ReferPortal() {
 
   if (noPartner || !data) {
     return (
-      <div className="bg-white border border-obsidian/10 p-6">
+      <div className="bg-white border border-obsidian/10 p-6 rounded-2xl">
         <h2 className="font-semibold text-obsidian mb-2">You are not a partner yet</h2>
         <p className="text-sm text-obsidian/55 mb-4 leading-relaxed">
           We could not find a referral partner under {user.email}. Apply and you will get a code
@@ -103,7 +103,7 @@ export default function ReferPortal() {
 
   return (
     <div className="space-y-8">
-      <div className="bg-white border border-obsidian/10 p-6">
+      <div className="bg-white border border-obsidian/10 p-6 rounded-2xl">
         <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
           <div>
             <p className="text-[10px] uppercase tracking-wider text-obsidian/40 mb-1">Your code</p>
@@ -113,13 +113,13 @@ export default function ReferPortal() {
             </p>
           </div>
           <span
-            className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-1 ${
+            className={`text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 ${
               partner.status === 'active'
                 ? 'badge-brand'
                 : partner.status === 'pending'
                   ? 'bg-obsidian/10 text-obsidian/50'
                   : 'bg-ember/10 text-ember'
-            }`}
+            } rounded-full`}
           >
             {partner.status}
           </span>
@@ -166,7 +166,7 @@ export default function ReferPortal() {
       </dl>
 
       <div>
-        <h2 className="text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/40 mb-3">
+        <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/40 mb-3">
           Recent referrals
         </h2>
         {data.recent.length === 0 ? (

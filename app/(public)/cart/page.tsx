@@ -10,6 +10,7 @@ import {
   Plus,
   QrCode,
   ShieldCheck,
+  ShoppingBag,
   Star,
   Tag,
   Trash2,
@@ -27,6 +28,7 @@ import { pointsFromOrderItems } from '@/lib/loyalty/program';
 import { catalogMinOrderQty, minimumOrderError } from '@/lib/commerce/minimum-order';
 import { eventsEnabled } from '@/lib/features';
 import { eventsFallbackHref } from '@/lib/nav';
+import StateCard from '@/components/ui/StateCard';
 
 export default function CartPage() {
   const { lines, subtotalNgn, setQty, remove } = useCart();
@@ -66,15 +68,17 @@ export default function CartPage() {
   if (lines.length === 0) {
     return (
       <section className="bg-paper min-h-[70vh]">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16">
-          <h1 className="font-logo font-black uppercase tracking-tight text-3xl brand-text">Your cart</h1>
-          <p className="text-obsidian/55 mt-4">Nothing in the cart yet.</p>
-          <Link
-            href="/shop"
-            className="mt-6 inline-flex items-center gap-2 px-6 py-3.5 btn-brand text-[11px] font-black uppercase tracking-[0.14em]"
-          >
-            Shop drinks <ArrowRight size={14} />
-          </Link>
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-10 sm:py-14">
+          <h1 className="mb-6 font-serif text-[2rem] font-light tracking-tight text-obsidian sm:text-[2.6rem]">Your basket</h1>
+          <StateCard
+            icon={ShoppingBag}
+            title="Your basket is empty"
+            body="Cognac, Champagne, whisky and ready-made party packs — delivered in supported areas across Nigeria."
+            actions={[
+              { label: 'Shop drinks', href: '/shop' },
+              { label: 'Party packs', href: '/shop?section=packages', primary: false },
+            ]}
+          />
         </div>
       </section>
     );
@@ -85,7 +89,7 @@ export default function CartPage() {
       <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="font-logo font-black uppercase tracking-tight text-3xl sm:text-4xl">
+            <h1 className="font-serif font-light tracking-tight text-3xl sm:text-4xl">
               <span className="brand-text">Your cart</span>{' '}
               <span className="text-obsidian/30 tabular-nums">({lines.length})</span>
             </h1>
@@ -98,15 +102,15 @@ export default function CartPage() {
 
         <Link
           href="/shop"
-          className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/45 hover:text-ember mt-5"
+          className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/45 hover:text-ember mt-5"
         >
           <ChevronLeft size={14} /> Continue shopping
         </Link>
 
         <div className="grid lg:grid-cols-[1fr_360px] gap-6 lg:gap-8 items-start mt-6">
           <div className="min-w-0 space-y-6">
-            <div className="bg-white border border-obsidian/8">
-              <div className="hidden sm:grid grid-cols-[1fr_110px_130px_110px] gap-4 px-5 py-3 border-b border-obsidian/8 text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/35">
+            <div className="bg-white border border-obsidian/8 rounded-2xl">
+              <div className="hidden sm:grid grid-cols-[1fr_110px_130px_110px] gap-4 px-5 py-3 border-b border-obsidian/8 text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/35">
                 <span>Item</span>
                 <span className="text-right">Price</span>
                 <span className="text-center">Quantity</span>
@@ -125,7 +129,7 @@ export default function CartPage() {
                     <div className="flex items-center gap-4 min-w-0">
                       <Link
                         href={`/shop/${line.slug}`}
-                        className="relative shrink-0 w-14 h-[72px] border border-obsidian/8 bg-white overflow-hidden"
+                        className="relative shrink-0 w-14 h-[72px] border border-obsidian/8 bg-white overflow-hidden rounded-2xl"
                       >
                         <DrinkPhoto
                           product={findSellable(line.slug) ?? { name: line.name, category: 'spirits' }}
@@ -161,7 +165,7 @@ export default function CartPage() {
                     </p>
 
                     <div className="flex items-center justify-between sm:justify-center gap-4 mt-4 sm:mt-0">
-                      <div className="flex items-center border border-obsidian/15">
+                      <div className="flex items-center overflow-hidden rounded-full border border-obsidian/15">
                         <button
                           type="button"
                           aria-label="Decrease"
@@ -198,7 +202,7 @@ export default function CartPage() {
 
             {suggestions.length > 0 && <RelatedProducts products={suggestions} />}
 
-            <ul className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 p-5 sm:p-6 bg-white border border-obsidian/8">
+            <ul className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 p-5 sm:p-6 bg-white border border-obsidian/8 rounded-2xl">
               <Assurance icon={ShieldCheck} label="Secure payment" detail="Encrypted checkout" />
               <Assurance icon={Truck} label="Delivery in supported areas across Nigeria" detail="Supported delivery zones" />
               <Assurance icon={Wine} label="Authentic products" detail="No parallel imports" />
@@ -209,8 +213,8 @@ export default function CartPage() {
           <aside className="lg:sticky lg:top-24 space-y-4">
             <GuestCardStrip />
 
-            <div className="bg-white border border-obsidian/8 p-5 sm:p-6">
-              <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50 mb-4">
+            <div className="bg-white border border-obsidian/8 p-5 sm:p-6 rounded-2xl">
+              <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-obsidian/50 mb-4">
                 Order summary
               </h2>
 
@@ -235,7 +239,7 @@ export default function CartPage() {
 
               <div className="flex justify-between items-baseline gap-4 mt-4 pt-4 border-t border-obsidian/10">
                 <span className="font-semibold">Total</span>
-                <span className="font-logo font-black text-2xl tabular-nums">{formatNgn(totalNgn)}</span>
+                <span className="font-serif font-light text-2xl tabular-nums">{formatNgn(totalNgn)}</span>
               </div>
 
               {pointsEarned > 0 && (
@@ -261,7 +265,7 @@ export default function CartPage() {
                 <>
                   <span
                     aria-disabled="true"
-                    className="mt-5 flex items-center justify-center gap-2 w-full py-3.5 bg-obsidian/10 text-obsidian/40 text-[11px] font-black uppercase tracking-[0.14em] cursor-not-allowed"
+                    className="mt-5 flex items-center justify-center gap-2 w-full py-3.5 bg-obsidian/10 text-obsidian/40 text-[11px] font-bold uppercase tracking-[0.14em] cursor-not-allowed rounded-full"
                   >
                     Proceed to checkout
                   </span>
@@ -276,7 +280,7 @@ export default function CartPage() {
               ) : (
                 <Link
                   href="/checkout"
-                  className="mt-5 flex items-center justify-center gap-2 w-full py-3.5 btn-brand text-[11px] font-black uppercase tracking-[0.14em]"
+                  className="mt-5 flex items-center justify-center gap-2 w-full py-3.5 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] rounded-full"
                 >
                   Proceed to checkout <ArrowRight size={14} />
                 </Link>
@@ -284,7 +288,7 @@ export default function CartPage() {
 
               <Link
                 href={eventsFallbackHref()}
-                className="block text-center text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/35 hover:text-ember mt-3"
+                className="block text-center text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/35 hover:text-ember mt-3"
               >
                 {eventsEnabled ? 'Or drop to an event →' : 'Or plan your party →'}
               </Link>

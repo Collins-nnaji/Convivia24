@@ -45,7 +45,7 @@ export default function GuestCardPanel() {
         />
         {enrolled && (
           <div className="mt-8">
-            <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/40 mb-2">
+            <div className="flex justify-between text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/40 mb-2">
               <span>{tier.name}</span>
               <span>{upcoming ? `${upcoming.name} · ${upcoming.minPoints.toLocaleString()} pts` : 'Top tier'}</span>
             </div>
@@ -67,7 +67,7 @@ export default function GuestCardPanel() {
 
       <div className="lg:col-span-7 space-y-8">
         {!enrolled ? (
-          <form onSubmit={onEnroll} className="bg-white border border-obsidian/8 p-6 space-y-4 shadow-sm">
+          <form onSubmit={onEnroll} className="bg-white border border-obsidian/8 p-6 space-y-4 shadow-sm rounded-2xl">
             <h2 className="font-bold">Activate your card</h2>
             <p className="text-sm text-obsidian/50">
               Tier discounts at checkout, and gift cards issued from the partner desk.
@@ -87,13 +87,13 @@ export default function GuestCardPanel() {
               placeholder="Email"
               className="w-full border-0 border-b border-obsidian/15 focus:border-ember focus:ring-0 text-sm py-2"
             />
-            <button type="submit" className="px-6 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em]">
+            <button type="submit" className="px-6 py-3 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] rounded-full">
               Get the card · 400 pts
             </button>
           </form>
         ) : (
           <>
-            <div className="bg-white border border-obsidian/8 p-5">
+            <div className="bg-white border border-obsidian/8 p-5 rounded-2xl">
               <h2 className="font-bold mb-2">Spend your points</h2>
               <p className="text-sm text-obsidian/60">
                 Bottles and Convivia merch live in the rewards shop. Your tier discount already comes off at checkout —
@@ -101,13 +101,13 @@ export default function GuestCardPanel() {
               </p>
               <Link
                 href="/discover/rewards"
-                className="mt-4 inline-flex text-[11px] font-black uppercase tracking-[0.14em] text-ember"
+                className="mt-4 inline-flex text-[11px] font-bold uppercase tracking-[0.14em] text-ember"
               >
                 Open rewards →
               </Link>
             </div>
 
-            <div className="bg-white border border-obsidian/8 p-5">
+            <div className="bg-white border border-obsidian/8 p-5 rounded-2xl">
               <p className="text-sm text-obsidian/60">
                 Have a gift card code from a partner venue?{' '}
                 <Link href="/shop" className="text-ember font-semibold">

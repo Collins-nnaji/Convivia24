@@ -30,7 +30,7 @@ export default function TastingNotesCard({ slug, className = '' }: { slug: strin
           {ROWS.map(({ key, label, icon: Icon }) => (
             <li key={key} className="px-5 py-3 flex items-start gap-3">
               <Icon size={14} className="text-ember shrink-0 mt-0.5" />
-              <span className="text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/40 w-14 shrink-0 mt-0.5">
+              <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/40 w-14 shrink-0 mt-0.5">
                 {label}
               </span>
               <span className="text-sm text-obsidian/65 leading-snug">{profile[key]}</span>

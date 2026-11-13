@@ -291,7 +291,7 @@ export default function EventsExplorer() {
               {featured.length > 0 && (
                 <section className="mt-8">
                   <div className="flex items-center justify-between gap-4 mb-4">
-                    <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50">
+                    <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-obsidian/50">
                       Featured events
                     </h2>
                     <span className="text-[11px] text-obsidian/35">Soonest first</span>
@@ -305,9 +305,9 @@ export default function EventsExplorer() {
               )}
 
               <div className="grid lg:grid-cols-[1fr_320px] gap-6 lg:gap-8 items-start mt-10">
-                <section className="bg-white border border-obsidian/8">
+                <section className="bg-white border border-obsidian/8 rounded-2xl">
                   <div className="px-5 py-4 border-b border-obsidian/8 flex items-center justify-between gap-4">
-                    <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50">
+                    <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-obsidian/50">
                       Upcoming events
                     </h2>
                     <span className="text-[11px] text-obsidian/35 tabular-nums">
@@ -343,7 +343,7 @@ export default function EventsExplorer() {
                           <button
                             type="button"
                             onClick={() => setShown((n) => n + PAGE_SIZE)}
-                            className="w-full py-3 border border-obsidian/12 text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/60 hover:border-ember hover:text-ember transition-colors inline-flex items-center justify-center gap-2"
+                            className="w-full py-3 border border-obsidian/12 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/60 hover:border-ember hover:text-ember transition-colors inline-flex items-center justify-center gap-2 rounded-full"
                           >
                             Load more events <ChevronDown size={14} />
                           </button>
@@ -411,7 +411,7 @@ function EventsHero({ tonightCount }: { tonightCount: number }) {
         </motion.p>
 
         {tonightCount > 0 && (
-          <p className="mt-5 inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.14em] text-ember">
+          <p className="mt-5 inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.14em] text-ember">
             <motion.span
               className="w-1.5 h-1.5 rounded-full bg-ember"
               animate={{ opacity: [1, 0.25, 1] }}
@@ -449,7 +449,7 @@ function Toolbar(props: {
   const isEvents = props.tab === 'events';
 
   return (
-    <div className="bg-white border border-obsidian/8 p-3 sm:p-4">
+    <div className="bg-white border border-obsidian/8 p-3 sm:p-4 rounded-2xl">
       <div className="flex flex-wrap items-center gap-2.5">
         <div className="relative flex-1 min-w-[200px]">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-obsidian/30" />
@@ -530,7 +530,7 @@ function Toolbar(props: {
         <button
           type="button"
           onClick={props.onNearMe}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2.5 border border-obsidian/12 text-[11px] font-black uppercase tracking-[0.1em] text-obsidian/60 hover:border-ember hover:text-ember transition-colors"
+          className="inline-flex items-center gap-1.5 px-3.5 py-2.5 border border-obsidian/12 text-[11px] font-bold uppercase tracking-[0.1em] text-obsidian/60 hover:border-ember hover:text-ember transition-colors rounded-full"
         >
           <NavIcon size={13} /> Near me
         </button>
@@ -571,7 +571,7 @@ function Toolbar(props: {
               type="date"
               value={props.date}
               onChange={(e) => props.onDate(e.target.value)}
-              className="text-xs border border-obsidian/12 px-2.5 py-1.5 focus:border-ember focus:ring-0"
+              className="text-xs border border-obsidian/12 px-2.5 py-1.5 focus:border-ember focus:ring-0 rounded-xl"
             />
           </label>
           {props.geoMsg && <span className="text-[11px] text-obsidian/35">{props.geoMsg}</span>}
@@ -579,7 +579,7 @@ function Toolbar(props: {
             <button
               type="button"
               onClick={props.onClear}
-              className="ml-auto text-[11px] font-black uppercase tracking-[0.1em] text-obsidian/35 hover:text-ember inline-flex items-center gap-1"
+              className="ml-auto text-[11px] font-bold uppercase tracking-[0.1em] text-obsidian/35 hover:text-ember inline-flex items-center gap-1"
             >
               <X size={11} /> Clear filters
             </button>
@@ -644,11 +644,11 @@ function FeaturedEventCard({
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.06, duration: 0.35 }}
-      className="bg-white border border-obsidian/8 hover:border-ember/35 transition-colors flex flex-col"
+      className="bg-white border border-obsidian/8 hover:border-ember/35 transition-colors flex flex-col rounded-2xl"
     >
       <div className="relative">
         <NightArt kind={tagToArt(event.tag)} label={event.tag} className="aspect-[16/10]" />
-        <span className="absolute top-3 left-3 badge-brand text-[9px] font-black uppercase tracking-[0.14em] px-2.5 py-1">
+        <span className="absolute top-3 left-3 badge-brand text-[11px] font-bold uppercase tracking-[0.14em] px-2.5 py-1">
           {tonight ? 'Tonight' : 'Featured'}
         </span>
         <span className="absolute top-3 right-3 w-8 h-8 bg-white/90 flex items-center justify-center">
@@ -679,7 +679,7 @@ function FeaturedEventCard({
           </p>
           <Link
             href={`/events/${event.id}`}
-            className="px-4 py-2.5 btn-brand text-[10px] font-black uppercase tracking-[0.12em]"
+            className="px-4 py-2.5 btn-brand text-[10px] font-bold uppercase tracking-[0.12em] rounded-full"
           >
             View & RSVP
           </Link>
@@ -711,9 +711,9 @@ function UpcomingRow({
       className="p-4 flex items-center gap-3 sm:gap-4"
     >
       <div className="w-12 shrink-0 text-center border border-obsidian/10 py-2">
-        <p className="text-[9px] font-black uppercase tracking-[0.1em] text-ember">{month}</p>
-        <p className="font-logo font-black text-lg leading-none tabular-nums">{day}</p>
-        <p className="text-[9px] font-black uppercase tracking-[0.1em] text-obsidian/35 mt-0.5">{weekday}</p>
+        <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-ember">{month}</p>
+        <p className="font-serif font-light text-lg leading-none tabular-nums">{day}</p>
+        <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-obsidian/35 mt-0.5">{weekday}</p>
       </div>
 
       <NightArt
@@ -743,7 +743,7 @@ function UpcomingRow({
       <div className="shrink-0 flex flex-col items-end gap-2">
         <Link
           href={`/events/${event.id}`}
-          className="px-4 py-2.5 btn-brand text-[10px] font-black uppercase tracking-[0.12em] whitespace-nowrap"
+          className="px-4 py-2.5 btn-brand text-[10px] font-bold uppercase tracking-[0.12em] whitespace-nowrap rounded-full"
         >
           View & RSVP
         </Link>
@@ -774,9 +774,9 @@ function CategoryPanel({
   ];
 
   return (
-    <section className="bg-white border border-obsidian/8">
+    <section className="bg-white border border-obsidian/8 rounded-2xl">
       <div className="px-5 py-4 border-b border-obsidian/8">
-        <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50">
+        <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-obsidian/50">
           Event categories
         </h2>
       </div>
@@ -824,9 +824,9 @@ const PERKS = [
 
 function PerksPanel() {
   return (
-    <section className="bg-white border border-obsidian/8">
+    <section className="bg-white border border-obsidian/8 rounded-2xl">
       <div className="px-5 py-4 border-b border-obsidian/8">
-        <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-obsidian/50">
+        <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-obsidian/50">
           Your event perks
         </h2>
       </div>
@@ -846,7 +846,7 @@ function PerksPanel() {
       <div className="p-4 border-t border-obsidian/8">
         <Link
           href="/discover/rewards"
-          className="w-full py-3 btn-brand text-[10px] font-black uppercase tracking-[0.12em] inline-flex items-center justify-center gap-1.5"
+          className="w-full py-3 btn-brand text-[10px] font-bold uppercase tracking-[0.12em] inline-flex items-center justify-center gap-1.5 rounded-full"
         >
           Explore rewards <ChevronRight size={13} />
         </Link>
@@ -859,7 +859,7 @@ function VenueCard({ venue }: { venue: APIVenue }) {
   return (
     <Link
       href={`/events/venues/${venue.slug}`}
-      className="group block bg-white border border-obsidian/8 hover:border-ember/35 transition-colors overflow-hidden"
+      className="group block bg-white border border-obsidian/8 hover:border-ember/35 transition-colors overflow-hidden rounded-2xl"
     >
       <div className="relative aspect-[4/3] bg-paper overflow-hidden">
         {venue.photoUrl ? (

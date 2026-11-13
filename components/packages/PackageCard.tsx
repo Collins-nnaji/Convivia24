@@ -26,15 +26,15 @@ export default function PackageCard({ pkg }: { pkg: EventPackage }) {
 
         <dl className="mb-4 mt-3 grid grid-cols-3 divide-x divide-obsidian/10">
           <div className="min-w-0 py-1 pr-2">
-            <dt className="text-[8px] font-black uppercase tracking-wider text-obsidian/35">Guests</dt>
+            <dt className="text-[10px] font-bold uppercase tracking-wider text-obsidian/35">Guests</dt>
             <dd className="mt-0.5 truncate text-sm font-semibold tabular-nums">~{pkg.guests}</dd>
           </div>
           <div className="min-w-0 px-2 py-1">
-            <dt className="text-[8px] font-black uppercase tracking-wider text-obsidian/35">Bottles</dt>
+            <dt className="text-[10px] font-bold uppercase tracking-wider text-obsidian/35">Bottles</dt>
             <dd className="mt-0.5 truncate text-sm font-semibold tabular-nums">{bottleCount(pkg)}</dd>
           </div>
           <div className="min-w-0 py-1 pl-2">
-            <dt className="text-[8px] font-black uppercase tracking-wider text-obsidian/35">Per guest</dt>
+            <dt className="text-[10px] font-bold uppercase tracking-wider text-obsidian/35">Per guest</dt>
             <dd className="mt-0.5 truncate text-sm font-semibold tabular-nums">{formatNgn(spendPerGuestNgn(pkg))}</dd>
           </div>
         </dl>

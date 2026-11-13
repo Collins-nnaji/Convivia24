@@ -28,7 +28,7 @@ function Verification() {
   }
 
   return <section className="min-h-[70vh] bg-paper px-5 py-16"><div className="mx-auto max-w-md space-y-5 rounded-xl bg-white p-8">
-    <h1 className="text-2xl font-bold">Verify your email</h1>
+    <h1 className="text-2xl font-serif font-light tracking-tight">Verify your email</h1>
     <p>Verify the email attached to your account. {user && <>You are signed in as {user.email}.</>}</p>
     {loading ? <p>Checking your account…</p> : user ? <>
       <button className="btn-brand px-4 py-2" disabled={busy} onClick={() => void send()}>{busy ? 'Sending…' : 'Send verification email'}</button>

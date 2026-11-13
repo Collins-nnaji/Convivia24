@@ -22,16 +22,16 @@ export default function BarChart({ title, subtitle, unit, data, highlight, sourc
   const max = Math.max(...data.map((d) => d.value));
 
   return (
-    <figure className="bg-white border border-obsidian/8 p-5 sm:p-6">
+    <figure className="rounded-2xl bg-white p-5 ring-1 ring-obsidian/[0.06] sm:p-6">
       <div className="flex items-start justify-between gap-4 mb-5">
         <figcaption>
-          <h3 className="text-base sm:text-lg font-bold text-obsidian leading-snug">{title}</h3>
+          <h3 className="font-serif text-xl font-light leading-snug text-obsidian">{title}</h3>
           <p className="text-[13px] text-obsidian/55 mt-1">{subtitle}</p>
         </figcaption>
         <button
           type="button"
           onClick={() => setTable((t) => !t)}
-          className="shrink-0 text-[10px] font-black uppercase tracking-[0.14em] text-obsidian/50 hover:text-ember border border-obsidian/10 px-2.5 py-1.5"
+          className="shrink-0 rounded-full border border-obsidian/15 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-obsidian/60 hover:border-obsidian hover:text-obsidian"
           aria-pressed={table}
         >
           {table ? 'Chart' : 'Table'}

@@ -107,7 +107,7 @@ export default function SourcingDesk({
 
       {/* ── Margin summary ─────────────────────────────── */}
       <section>
-        <h2 className="text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/40 mb-3">
+        <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/40 mb-3">
           Margin · last {orders.length} orders
         </h2>
         <dl className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-obsidian/10 border border-obsidian/10">
@@ -137,15 +137,15 @@ export default function SourcingDesk({
         <p className="text-sm text-obsidian/50 mb-4">
           Record what your supplier charged for each order. Manage wholesale costs per SKU in the <strong>Supplier</strong> tab.
         </p>
-        <h2 className="text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/40 mb-3">
+        <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/40 mb-3">
           Assign orders ({unsourced.length} outstanding)
         </h2>
 
         {live.length === 0 ? (
           <p className="text-sm text-obsidian/45">No live orders to source.</p>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-obsidian/10 bg-white">
-          <div className="grid min-w-[900px] grid-cols-[1.4fr_.65fr_2fr] gap-4 border-b border-obsidian/10 bg-paper px-4 py-3 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/40">
+          <div className="overflow-x-auto rounded-2xl bg-white ring-1 ring-obsidian/[0.06]">
+          <div className="grid min-w-[900px] grid-cols-[1.4fr_.65fr_2fr] gap-4 border-b border-obsidian/10 bg-paper px-4 py-3 text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/40">
             <span>Order &amp; contents</span><span className="text-right">Revenue / margin</span><span>Supplier cost &amp; notes</span>
           </div>
           <ul className="min-w-[900px] divide-y divide-obsidian/8">
@@ -166,7 +166,7 @@ export default function SourcingDesk({
               const dirty = Boolean(drafts[order.id]);
 
               return (
-                <li key={order.id} className="grid grid-cols-[1.4fr_.65fr_2fr] gap-4 bg-white p-4 hover:bg-paper/30">
+                <li key={order.id} className="grid grid-cols-[1.4fr_.65fr_2fr] gap-4 bg-white p-4 hover:bg-paper/30 rounded-2xl">
                   <div className="min-w-0">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-obsidian">

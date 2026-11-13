@@ -137,7 +137,7 @@ export default function VenueDetailPage() {
     return (
       <section className="bg-[#FAFAFA] min-h-[60vh] px-5 py-20">
         <div className="max-w-lg mx-auto text-center">
-          <h1 className="text-2xl font-bold mb-3 text-gray-900">Venue not found</h1>
+          <h1 className="text-2xl font-serif font-light tracking-tight mb-3 text-obsidian">Venue not found</h1>
           <Link href="/events?tab=venues" className="text-ember text-sm font-medium">
             ← Back to venues
           </Link>
@@ -164,7 +164,7 @@ export default function VenueDetailPage() {
           <span className="inline-block px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white bg-white/20 backdrop-blur-sm rounded-full mb-2 capitalize">
             {venue.kind}
           </span>
-          <h1 className="text-3xl sm:text-4xl font-bold text-white">{venue.name}</h1>
+          <h1 className="text-3xl sm:text-4xl font-serif font-light tracking-tight text-white">{venue.name}</h1>
           <p className="text-white/70 text-sm mt-1 flex items-center gap-2">
             <MapPin size={13} /> {venue.area} · {venue.address}
           </p>

@@ -118,7 +118,7 @@ export default function PriceListImport({ onApplied }: { onApplied: () => void }
   return (
     <section className="space-y-4">
       <div>
-        <h2 className="text-[11px] font-black uppercase tracking-[0.14em] text-obsidian/40 mb-1">
+        <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/40 mb-1">
           Price list import
         </h2>
         <p className="text-[11px] text-obsidian/50 max-w-prose">

@@ -100,7 +100,7 @@ export default function BrandClaimDialog({ brand, onClose }: { brand: Brand; onC
         {done ? (
           <div className="p-6 sm:p-8">
             <BadgeCheck size={26} className="text-ember" />
-            <h2 className="text-xl font-bold mt-3">Claim received</h2>
+            <h2 className="text-xl font-serif font-light mt-3">Claim received</h2>
             <p className="text-sm text-obsidian/55 mt-2 leading-relaxed">
               We&apos;ll verify you work for {brand.name} and come back to the email you gave us. The page
               stays under Convivia24 management until that is done.
@@ -108,15 +108,15 @@ export default function BrandClaimDialog({ brand, onClose }: { brand: Brand; onC
             <button
               type="button"
               onClick={onClose}
-              className="mt-6 w-full py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em]"
+              className="mt-6 w-full py-3 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] rounded-full"
             >
               Done
             </button>
           </div>
         ) : (
           <form onSubmit={submit} className="p-6 sm:p-8">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-ember">Brand ownership</p>
-            <h2 className="text-xl font-bold mt-2">Claim {brand.name}</h2>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-ember">Brand ownership</p>
+            <h2 className="text-xl font-serif font-light mt-2">Claim {brand.name}</h2>
             <p className="text-sm text-obsidian/55 mt-2 leading-relaxed">
               This page is written and run by Convivia24. Tell us who you are at the house and we&apos;ll
               verify the claim before handing over the story, imagery and campaigns.
@@ -203,7 +203,7 @@ export default function BrandClaimDialog({ brand, onClose }: { brand: Brand; onC
             <button
               type="submit"
               disabled={sending}
-              className="mt-6 w-full py-3.5 btn-brand text-[11px] font-black uppercase tracking-[0.14em] disabled:opacity-50"
+              className="mt-6 w-full py-3.5 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] disabled:opacity-50 rounded-full"
             >
               {sending ? 'Sending…' : 'Submit claim'}
             </button>

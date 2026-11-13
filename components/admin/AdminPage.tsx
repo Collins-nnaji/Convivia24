@@ -14,6 +14,7 @@ import ReferralsDesk from '@/components/admin/ReferralsDesk';
 import GiftCardsDesk from '@/components/admin/GiftCardsDesk';
 import TriviaDesk from '@/components/admin/TriviaDesk';
 import ContentDesk from '@/components/admin/ContentDesk';
+import StorefrontDesk from '@/components/admin/StorefrontDesk';
 import ReadinessDesk from '@/components/admin/ReadinessDesk';
 import RefundsDesk from '@/components/admin/RefundsDesk';
 import SupportDesk from '@/components/admin/SupportDesk';
@@ -26,14 +27,14 @@ import AccountingDesk from '@/components/admin/AccountingDesk';
 import AnalyticsDesk from '@/components/admin/AnalyticsDesk';
 import { useAdminOrders } from '@/components/admin/useAdminOrders';
 import { EMPTY_SUMMARY, type AdminSummary } from '@/components/admin/types';
-import { BarChart3, CalendarDays, Gift, Landmark, LayoutDashboard, PackageSearch, Share2, ShoppingBag, Trophy, Truck, Wine } from 'lucide-react';
+import { BarChart3, CalendarDays, Gift, Landmark, LayoutDashboard, PackageSearch, Share2, ShoppingBag, Store, Trophy, Truck, Wine } from 'lucide-react';
 
-const TAB_KEYS = ['overview', 'accounting', 'analytics', 'drinks', 'orders', 'sourcing', 'suppliers', 'referrals', 'giftcards', 'trivia', 'content', 'delivery', 'operations', 'staff', 'support', 'refunds', 'readiness', 'audit'] as const;
+const TAB_KEYS = ['overview', 'accounting', 'analytics', 'drinks', 'orders', 'sourcing', 'suppliers', 'referrals', 'giftcards', 'trivia', 'content', 'storefront', 'delivery', 'operations', 'staff', 'support', 'refunds', 'readiness', 'audit'] as const;
 type TabKey = (typeof TAB_KEYS)[number];
 const TAB_PERMISSIONS: Record<TabKey, AdminPermission> = {
   overview: 'read', analytics: 'read', accounting: 'finance', orders: 'orders', sourcing: 'orders',
   drinks: 'inventory', suppliers: 'inventory', referrals: 'finance', giftcards: 'finance',
-  trivia: 'content', content: 'content', delivery: 'operations', operations: 'read',
+  trivia: 'content', content: 'content', storefront: 'content', delivery: 'operations', operations: 'read',
   audit: 'owner', staff: 'owner', support: 'operations', refunds: 'finance', readiness: 'owner',
 };
 
@@ -109,9 +110,9 @@ function AdminDesk({ initialTab }: { initialTab: TabKey }) {
   if (!authed) {
     return (
       <section className="min-h-[70vh] bg-paper px-5 py-16">
-        <div className="mx-auto max-w-md bg-white p-8 shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)]">
-          <p className="mb-2 text-[10px] font-black uppercase tracking-[0.28em] text-ember">Convivia24</p>
-          <h1 className="mb-4 text-2xl font-bold">Desk</h1>
+        <div className="mx-auto max-w-md bg-white p-8 shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)] rounded-2xl">
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.28em] text-ember">Convivia24</p>
+          <h1 className="mb-4 text-2xl font-serif font-light tracking-tight">Desk</h1>
           <p className="mb-6 text-sm text-obsidian/50">
             Sign in with your verified staff account to access the admin desk.
           </p>
@@ -152,6 +153,7 @@ function AdminDesk({ initialTab }: { initialTab: TabKey }) {
     },
     { key: 'giftcards', label: 'Gift cards', icon: <Gift size={17} /> },
     { key: 'trivia', label: 'Trivia', count: pill(summary.prizesUnclaimed), icon: <Trophy size={17} /> },
+    { key: 'storefront', label: 'Storefront', icon: <Store size={17} /> },
     { key: 'content', label: 'Events & venues', count: pill(summary.contentPending), icon: <CalendarDays size={17} /> },
   ];
 
@@ -189,6 +191,7 @@ function AdminDesk({ initialTab }: { initialTab: TabKey }) {
       {tab === 'giftcards' && <GiftCardsDesk onChanged={loadSummary} />}
       {tab === 'trivia' && <TriviaDesk onChanged={loadSummary} />}
       {tab === 'content' && <ContentDesk onChanged={loadSummary} />}
+      {tab === 'storefront' && <StorefrontDesk />}
       </> : <div className="space-y-3 rounded-xl bg-white p-5"><p role="alert">Your staff role does not have access to this section.</p><button className="btn-brand px-4 py-2" onClick={() => go('overview')}>Open overview</button></div>}
     </AdminShell>
   );

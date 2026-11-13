@@ -18,7 +18,7 @@ const supplierId = '00000000-0000-0000-0000-000000000001';
 beforeAll(async () => {
   db = new PGlite();
   await db.exec(readFileSync('lib/db/bootstrap.sql', 'utf8'));
-  for (const file of ['schema.sql', 'venues-migration.sql', 'ecommerce.sql', 'suppliers-portal.sql', 'desk-raffle-giftcards.sql', 'launch-readiness.sql']) {
+  for (const file of ['schema.sql', 'venues-migration.sql', 'ecommerce.sql', 'suppliers-portal.sql', 'desk-raffle-giftcards.sql', 'launch-readiness.sql', 'storefront.sql']) {
     await db.exec(readFileSync('lib/db/' + file, 'utf8'));
   }
   mocks.sql.mockImplementation(async (parts: TemplateStringsArray, ...values: unknown[]) => {

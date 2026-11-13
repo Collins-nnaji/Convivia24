@@ -41,7 +41,7 @@ export default function AuditDesk() {
         <label className="text-sm">Result<select className={deskField} value={draft.outcome} onChange={event => setDraft({ ...draft, outcome: event.target.value })}><option value="">All results</option><option value="success">Successful / recorded</option><option value="rejected">Rejected requests</option><option value="failed">Server errors</option></select></label>
         <label className="text-sm">From<input className={deskField} type="date" value={draft.from} onChange={event => setDraft({ ...draft, from: event.target.value })} /></label>
         <label className="text-sm">Through<input className={deskField} type="date" min={draft.from || undefined} value={draft.to} onChange={event => setDraft({ ...draft, to: event.target.value })} /></label>
-        <div className="flex items-end gap-2"><button className="btn-brand rounded-lg px-4 py-2" disabled={desk.loading}>Apply filters</button><button type="button" className={deskButton} onClick={() => apply(blank)}>Clear</button></div>
+        <div className="flex items-end gap-2"><button className="btn-brand rounded-full px-4 py-2" disabled={desk.loading}>Apply filters</button><button type="button" className={deskButton} onClick={() => apply(blank)}>Clear</button></div>
       </form>
     </DeskPanel>
     {data && <>

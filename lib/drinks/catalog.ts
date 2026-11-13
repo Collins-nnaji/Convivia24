@@ -36,7 +36,44 @@ export type DrinkProduct = {
    * Inventory `min_order_qty` overrides this when set in admin.
    */
   minOrderQty?: number;
+  /** "Was" price. Higher than `priceNgn` ⇒ on offer, rendered as SAVE ₦X. Set in the admin desk. */
+  compareAtNgn?: number;
+  /** One merchandising ribbon. Set in the admin desk. */
+  badge?: ProductBadge;
+  /** Manual Recommended order; higher first. */
+  merchRank?: number;
+  /** ISO time the SKU was first listed — "New in". */
+  listedAt?: string;
 };
+
+export const PRODUCT_BADGES = ['new', 'best-seller', 'staff-pick', 'exclusive', 'limited', 'gift'] as const;
+export type ProductBadge = (typeof PRODUCT_BADGES)[number];
+
+export const BADGE_LABELS: Record<ProductBadge, string> = {
+  new: 'New in',
+  'best-seller': 'Best seller',
+  'staff-pick': 'Staff pick',
+  exclusive: 'Exclusive',
+  limited: 'Limited',
+  gift: 'Great gift',
+};
+
+export function isProductBadge(value: unknown): value is ProductBadge {
+  return typeof value === 'string' && (PRODUCT_BADGES as readonly string[]).includes(value);
+}
+
+/** Naira saved when the bottle carries a higher compare-at price; 0 otherwise. */
+export function savingNgn(product: Pick<DrinkProduct, 'priceNgn' | 'compareAtNgn'>): number {
+  const was = product.compareAtNgn ?? 0;
+  return was > product.priceNgn ? was - product.priceNgn : 0;
+}
+
+/** Compact naira for badges: ₦5k, ₦12.5k, ₦1.2m. */
+export function formatNgnShort(amount: number): string {
+  if (amount >= 1_000_000) return `₦${+(amount / 1_000_000).toFixed(1)}m`;
+  if (amount >= 1_000) return `₦${+(amount / 1_000).toFixed(1)}k`;
+  return `₦${Math.round(amount)}`;
+}
 
 /** Payment-smoke SKU — order at least its min qty in tests. */
 export const SAMPLE_PAYMENT_SLUG = 'mojito-fusion';

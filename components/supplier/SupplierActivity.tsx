@@ -26,7 +26,7 @@ export default function SupplierActivity({ entries }: { entries: SupplierAuditEn
               <span className="w-32 shrink-0 text-xs tabular-nums text-obsidian/40">
                 {new Date(e.createdAt).toLocaleString('en-NG', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}
               </span>
-              <span className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider ${ACTOR_TONE[e.actor]}`}>
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${ACTOR_TONE[e.actor]}`}>
                 {ACTOR_LABEL[e.actor]}
               </span>
               <span className="text-obsidian/75">{describeAudit(e)}</span>

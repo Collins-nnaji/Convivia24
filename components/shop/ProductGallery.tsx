@@ -51,7 +51,7 @@ export default function ProductGallery({ product }: { product: DrinkProduct }) {
       )}
 
       <div className="relative flex-1 min-w-0">
-        <div className="relative aspect-square bg-white border border-obsidian/8 overflow-hidden">
+        <div className="relative aspect-square bg-white border border-obsidian/8 overflow-hidden rounded-2xl">
           {current ? (
             <>
               <motion.div
@@ -88,7 +88,7 @@ export default function ProductGallery({ product }: { product: DrinkProduct }) {
           )}
 
           {product.deal && (
-            <span className="absolute top-4 left-4 badge-brand text-[9px] font-black uppercase tracking-wider px-2.5 py-1">
+            <span className="absolute top-4 left-4 badge-brand text-[11px] font-bold uppercase tracking-wider px-2.5 py-1">
               Hot deal
             </span>
           )}

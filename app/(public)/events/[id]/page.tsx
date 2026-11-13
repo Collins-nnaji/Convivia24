@@ -112,7 +112,7 @@ export default function EventDetailPage() {
     return (
       <section className="bg-[#FAFAFA] min-h-[60vh] px-5 py-20">
         <div className="max-w-lg mx-auto text-center">
-          <h1 className="text-2xl font-bold mb-3 text-gray-900">Event not found</h1>
+          <h1 className="text-2xl font-serif font-light tracking-tight mb-3 text-obsidian">Event not found</h1>
           <Link href="/events" className="text-ember text-sm font-medium">
             ← Back to events
           </Link>
@@ -145,7 +145,7 @@ export default function EventDetailPage() {
           <span className="inline-block px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white bg-white/20 backdrop-blur-sm rounded-full mb-2">
             {event.tag}
           </span>
-          <h1 className="text-3xl sm:text-4xl font-bold text-white">{event.title}</h1>
+          <h1 className="text-3xl sm:text-4xl font-serif font-light tracking-tight text-white">{event.title}</h1>
         </div>
       </div>
 

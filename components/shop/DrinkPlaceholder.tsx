@@ -95,7 +95,7 @@ export default function DrinkPlaceholder({ category, name, className = '', water
       <BottleSvg category={category} accent={tone.accent} ink={tone.ink} />
       {name ? (
         <p
-          className="relative z-[1] px-3 text-center text-[10px] font-black uppercase tracking-[0.14em] line-clamp-2"
+          className="relative z-[1] px-3 text-center text-[10px] font-bold uppercase tracking-[0.14em] line-clamp-2"
           style={{ color: tone.ink }}
         >
           {name}

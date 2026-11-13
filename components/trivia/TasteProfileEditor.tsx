@@ -125,7 +125,7 @@ export default function TasteProfileEditor({
       >
         <div className="flex items-center justify-between gap-4 px-6 pt-6">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-ember">Taste profile</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-ember">Taste profile</p>
             <p className="text-[11px] text-obsidian/40 mt-1 tabular-nums">
               Step {step + 1} of {STEPS.length}
             </p>
@@ -157,7 +157,7 @@ export default function TasteProfileEditor({
             transition={{ duration: 0.24 }}
             className="p-6"
           >
-            <h2 className="text-xl font-bold leading-snug">{current.title}</h2>
+            <h2 className="text-xl font-serif font-light leading-snug">{current.title}</h2>
             <p className="text-sm text-obsidian/45 mt-1 mb-5">{current.hint}</p>
 
             <div className="grid grid-cols-2 gap-2.5">
@@ -188,7 +188,7 @@ export default function TasteProfileEditor({
             <button
               type="button"
               onClick={() => setStep(step - 1)}
-              className="px-5 py-3 border border-obsidian/15 text-[11px] font-black uppercase tracking-[0.12em]"
+              className="px-5 py-3 border border-obsidian/15 text-[11px] font-bold uppercase tracking-[0.12em] rounded-full"
             >
               Back
             </button>
@@ -204,7 +204,7 @@ export default function TasteProfileEditor({
                 setStep(step + 1);
               }
             }}
-            className="flex-1 px-6 py-3 btn-brand text-[11px] font-black uppercase tracking-[0.14em] disabled:opacity-50"
+            className="flex-1 px-6 py-3 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] disabled:opacity-50 rounded-full"
           >
             {last ? 'Save profile' : 'Next'}
           </button>

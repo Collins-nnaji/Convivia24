@@ -16,6 +16,7 @@ import {
   FlaskConical,
   Target,
   User,
+  UserRound,
 } from 'lucide-react';
 import { useUser } from '@/components/auth/AuthProvider';
 import AccountSettings from '@/components/account/AccountSettings';
@@ -23,6 +24,7 @@ import AccountOverview from '@/components/account/AccountOverview';
 import TasteProfilePanel from '@/components/account/TasteProfilePanel';
 import SavedBottles from '@/components/account/SavedBottles';
 import { useTriviaHub } from '@/components/trivia/use-hub';
+import StateCard from '@/components/ui/StateCard';
 
 type Section = 'overview' | 'taste' | 'saved' | 'settings';
 
@@ -60,17 +62,18 @@ export default function AccountShell() {
   if (!loading && !user) {
     return (
       <section className="bg-paper min-h-[70vh]">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16">
-          <h1 className="font-logo font-black uppercase tracking-tight text-3xl brand-text">My account</h1>
-          <p className="text-obsidian/55 mt-4 max-w-md leading-relaxed">
-            Sign in to see your points, taste profile, orders and saved bottles.
-          </p>
-          <Link
-            href="/signin?next=%2Fmy-account"
-            className="mt-6 inline-block px-6 py-3.5 btn-brand text-[11px] font-black uppercase tracking-[0.14em]"
-          >
-            Sign in
-          </Link>
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-10 sm:py-14">
+          <h1 className="mb-6 font-serif text-[2rem] font-light tracking-tight text-obsidian sm:text-[2.6rem]">My account</h1>
+          <StateCard
+            icon={UserRound}
+            tone="lilac"
+            title="Sign in to your account"
+            body="See your points, taste profile, orders and saved bottles in one place."
+            actions={[
+              { label: 'Sign in', href: '/signin?next=%2Fmy-account' },
+              { label: 'Keep shopping', href: '/shop', primary: false },
+            ]}
+          />
         </div>
       </section>
     );
@@ -80,11 +83,11 @@ export default function AccountShell() {
     <section className="bg-paper min-h-[70vh]">
       <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-12 grid lg:grid-cols-[240px_1fr] gap-6 lg:gap-10 items-start">
         <aside className="lg:sticky lg:top-24">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/35 mb-3 px-3">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian/35 mb-3 px-3">
             My account
           </p>
 
-          <nav className="bg-white border border-obsidian/8">
+          <nav className="bg-white border border-obsidian/8 rounded-2xl">
             <ul className="divide-y divide-obsidian/6">
               {SECTIONS.map(({ id, label, icon: Icon }) => (
                 <li key={id}>
@@ -95,7 +98,7 @@ export default function AccountShell() {
                       section === id
                         ? 'text-ember font-semibold bg-ember/[0.04]'
                         : 'text-obsidian/60 hover:text-ember'
-                    }`}
+                    } rounded-full`}
                   >
                     <Icon size={16} className="shrink-0" />
                     {label}
@@ -129,14 +132,14 @@ export default function AccountShell() {
             </ul>
           </nav>
 
-          <div className="mt-4 brand-gradient text-white p-5">
-            <p className="font-logo font-black uppercase tracking-tight text-lg">Refer &amp; earn</p>
+          <div className="mt-4 rounded-2xl brand-gradient text-white p-5">
+            <p className="font-serif font-light tracking-tight text-lg">Refer &amp; earn</p>
             <p className="text-[12px] text-white/60 mt-1.5 leading-relaxed">
               Invite friends to Convivia24 and earn together.
             </p>
             <Link
               href="/shop/refer-and-earn"
-              className="mt-4 inline-flex items-center gap-1.5 px-4 py-2.5 bg-white text-obsidian text-[10px] font-black uppercase tracking-[0.12em]"
+              className="mt-4 inline-flex items-center gap-1.5 px-4 py-2.5 bg-white text-obsidian text-[10px] font-bold uppercase tracking-[0.12em] rounded-full"
             >
               <Bookmark size={12} /> Invite friends
             </Link>

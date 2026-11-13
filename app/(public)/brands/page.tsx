@@ -58,7 +58,7 @@ export default function BrandsPage() {
                     <span className="block text-[11px] font-bold uppercase tracking-[0.16em] text-obsidian/45">
                       {brand.info.origin}
                     </span>
-                    <span className="block font-logo font-extrabold uppercase tracking-tight text-lg mt-1">
+                    <span className="block font-serif font-light tracking-tight text-lg mt-1">
                       {brand.name}
                     </span>
                     <span className="block text-[13px] text-obsidian/55 mt-2 leading-relaxed line-clamp-2">

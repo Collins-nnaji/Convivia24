@@ -14,8 +14,8 @@ export default function PrivacyPage() {
   return (
     <section className="bg-paper min-h-[70vh]">
       <div className="max-w-3xl mx-auto px-5 sm:px-8 py-12 sm:py-16">
-        <p className="text-[10px] font-black uppercase tracking-[0.28em] text-ember mb-3">Legal · 18+</p>
-        <h1 className="font-logo font-black tracking-tight uppercase text-3xl sm:text-4xl text-obsidian mb-3">
+        <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-ember mb-3">Legal · 18+</p>
+        <h1 className="font-serif font-light tracking-tight text-3xl sm:text-4xl text-obsidian mb-3">
           Privacy Policy
         </h1>
         <p className="text-sm text-obsidian/45 mb-10">Last updated: 16 August 2026</p>

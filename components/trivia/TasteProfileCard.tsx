@@ -28,8 +28,8 @@ function MatchRing({ value }: { value: number }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-logo font-black text-xl leading-none tabular-nums">{value}%</span>
-        <span className="text-[8px] font-black uppercase tracking-[0.16em] text-obsidian/40 mt-0.5">Match</span>
+        <span className="font-serif font-light text-xl leading-none tabular-nums">{value}%</span>
+        <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-obsidian/40 mt-0.5">Match</span>
       </div>
     </div>
   );
@@ -51,15 +51,15 @@ export default function TasteProfileCard({
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.1 }}
-      className="bg-white border border-obsidian/8 shadow-[0_18px_50px_-30px_rgba(10,10,10,0.45)]"
+      className="bg-white border border-obsidian/8 shadow-[0_18px_50px_-30px_rgba(10,10,10,0.45)] rounded-2xl"
     >
       <div className="p-5 sm:p-6">
         <div className="flex items-center justify-between gap-3 mb-4">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian/45">Your taste profile</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian/45">Your taste profile</p>
           <button
             type="button"
             onClick={onEdit}
-            className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-obsidian/45 hover:text-ember transition-colors"
+            className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/45 hover:text-ember transition-colors"
           >
             {built ? 'Edit' : 'Build'} <Pencil size={12} />
           </button>
@@ -93,7 +93,7 @@ export default function TasteProfileCard({
               <button
                 type="button"
                 onClick={onEdit}
-                className="px-5 py-2.5 btn-brand text-[10px] font-black uppercase tracking-[0.14em]"
+                className="px-5 py-2.5 btn-brand text-[10px] font-bold uppercase tracking-[0.14em] rounded-full"
               >
                 Build my profile
               </button>

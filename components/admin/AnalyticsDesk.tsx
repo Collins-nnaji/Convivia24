@@ -11,7 +11,7 @@ const pct = (part: number, total: number) => total ? `${(part / total * 100).toF
 const words = (value: string) => value.replace(/[_:-]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 type Pane = 'overview' | 'commerce' | 'api' | 'engagement';
 function Stats({ items }: { items: { label: string; value: ReactNode; detail?: string }[] }) {
-  return <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{items.map(item => <div key={item.label} className="rounded-xl border border-obsidian/10 bg-white p-5"><p className="text-sm text-obsidian/60">{item.label}</p><p className="mt-2 text-2xl font-bold tabular-nums break-words">{item.value}</p>{item.detail && <p className="mt-2 text-xs text-obsidian/60">{item.detail}</p>}</div>)}</div>;
+  return <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{items.map(item => <div key={item.label} className="rounded-2xl bg-white ring-1 ring-obsidian/[0.06] p-5"><p className="text-sm text-obsidian/60">{item.label}</p><p className="mt-2 font-serif text-3xl font-light tabular-nums break-words">{item.value}</p>{item.detail && <p className="mt-2 text-xs text-obsidian/60">{item.detail}</p>}</div>)}</div>;
 }
 function Table({ title, columns, rows }: { title: string; columns: string[]; rows: ReactNode[][] }) {
   const [page, setPage] = useState(0); const pages = Math.max(1, Math.ceil(rows.length / 20)); const current = Math.min(page, pages - 1);

@@ -125,13 +125,13 @@ function EventsPane({ onChanged }: { onChanged?: () => void }) {
     <>
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm text-obsidian/50">{upcoming.length} upcoming · {past.length} past</p>
-        <button type="button" onClick={() => setForm({ ...EMPTY_EVENT, venueSlug: venues[0]?.slug || '' })} className="btn-brand inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em]">
+        <button type="button" onClick={() => setForm({ ...EMPTY_EVENT, venueSlug: venues[0]?.slug || '' })} className="btn-brand inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em]">
           <Plus size={13} /> New event
         </button>
       </div>
       <EventList rows={upcoming} busy={busy} onEdit={(ev) => setForm({ id: ev.id, title: ev.title, venueSlug: ev.venueSlug, tag: ev.tag, blurb: ev.blurb, expected: ev.expected, coverNgn: ev.coverNgn != null ? String(ev.coverNgn) : '', startsAt: toLocal(ev.startsAtIso), endsAt: toLocal(ev.endsAtIso), published: ev.published })} onToggle={togglePublished} onDelete={remove} />
       {past.length > 0 && (
-        <details className="rounded-xl border border-obsidian/10 bg-white">
+        <details className="rounded-2xl bg-white ring-1 ring-obsidian/[0.06]">
           <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-obsidian/60">Past events ({past.length})</summary>
           <div className="border-t border-obsidian/8">
             <EventList rows={past} busy={busy} onEdit={() => {}} onToggle={togglePublished} onDelete={remove} />
@@ -142,8 +142,8 @@ function EventsPane({ onChanged }: { onChanged?: () => void }) {
       {form && (
         <Modal open size="lg" title={form.id ? 'Edit event' : 'New event'} onClose={() => setForm(null)} footer={
           <>
-            <button type="button" onClick={() => setForm(null)} className="rounded-lg border border-obsidian/15 px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/70">Cancel</button>
-            <button type="submit" form="event-form" disabled={busy === 'save'} className="btn-brand rounded-lg px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] disabled:opacity-40">{busy === 'save' ? 'Saving…' : 'Save event'}</button>
+            <button type="button" onClick={() => setForm(null)} className="rounded-full border border-obsidian/15 px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/70">Cancel</button>
+            <button type="submit" form="event-form" disabled={busy === 'save'} className="btn-brand rounded-full px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] disabled:opacity-40">{busy === 'save' ? 'Saving…' : 'Save event'}</button>
           </>
         }>
           <form id="event-form" onSubmit={save} className="grid gap-3 sm:grid-cols-2">
@@ -168,7 +168,7 @@ function EventsPane({ onChanged }: { onChanged?: () => void }) {
 function EventList({ rows, busy, onEdit, onToggle, onDelete }: { rows: EventRow[]; busy: string; onEdit: (e: EventRow) => void; onToggle: (e: EventRow) => void; onDelete: (e: EventRow) => void }) {
   if (rows.length === 0) return <p className="text-sm text-obsidian/45">No events.</p>;
   return (
-    <ul className="divide-y divide-obsidian/6 rounded-xl border border-obsidian/10 bg-white">
+    <ul className="divide-y divide-obsidian/6 rounded-2xl bg-white ring-1 ring-obsidian/[0.06]">
       {rows.map((ev) => (
         <li key={ev.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
           <div className="min-w-0 flex-1">
@@ -179,7 +179,7 @@ function EventList({ rows, busy, onEdit, onToggle, onDelete }: { rows: EventRow[
             </p>
             <p className="text-xs text-obsidian/50">{ev.venue?.name || ev.venueSlug} · {formatWhen(ev.startsAtIso)}{ev.coverNgn ? ` · ${formatNgn(ev.coverNgn)}` : ' · free'}</p>
           </div>
-          <button type="button" disabled={busy === ev.id} onClick={() => onToggle(ev)} className="rounded-lg border border-obsidian/15 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-obsidian/60 hover:border-ember hover:text-ember disabled:opacity-40">{ev.published ? 'Unpublish' : 'Publish'}</button>
+          <button type="button" disabled={busy === ev.id} onClick={() => onToggle(ev)} className="rounded-full border border-obsidian/15 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-obsidian/60 hover:border-ember hover:text-ember disabled:opacity-40">{ev.published ? 'Unpublish' : 'Publish'}</button>
           <button type="button" onClick={() => onEdit(ev)} className="grid h-8 w-8 place-items-center rounded text-obsidian/40 hover:bg-obsidian/[0.06] hover:text-obsidian"><Pencil size={14} /></button>
           <button type="button" onClick={() => onDelete(ev)} className="grid h-8 w-8 place-items-center rounded text-obsidian/40 hover:bg-red-50 hover:text-red-600"><Trash2 size={14} /></button>
         </li>
@@ -267,7 +267,7 @@ function CampaignsPane({ onChanged }: { onChanged?: () => void }) {
     <>
       {pendingClaims.length > 0 && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50/40 p-4">
-          <p className="text-[11px] font-black uppercase tracking-[0.14em] text-amber-800">Brand ownership claims ({pendingClaims.length})</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-amber-800">Brand ownership claims ({pendingClaims.length})</p>
           <ul className="mt-2 divide-y divide-amber-200/60">
             {pendingClaims.map((c) => (
               <li key={c.id} className="flex flex-wrap items-center gap-3 py-2 text-sm">
@@ -275,8 +275,8 @@ function CampaignsPane({ onChanged }: { onChanged?: () => void }) {
                   <strong>{c.brandName}</strong> · {c.contactName}{c.role ? ` (${c.role})` : ''} · {c.email}{c.phone ? ` · ${c.phone}` : ''}
                   {c.message && <span className="block text-xs text-obsidian/55">“{c.message}”</span>}
                 </span>
-                <button type="button" disabled={busy === c.id} onClick={() => setClaim(c, 'approved')} className="btn-brand rounded-lg px-3 py-1.5 text-[10px] font-black uppercase tracking-wider disabled:opacity-40">Approve</button>
-                <button type="button" disabled={busy === c.id} onClick={() => setClaim(c, 'rejected')} className="rounded-lg border border-obsidian/15 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-obsidian/60 disabled:opacity-40">Reject</button>
+                <button type="button" disabled={busy === c.id} onClick={() => setClaim(c, 'approved')} className="btn-brand rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider disabled:opacity-40">Approve</button>
+                <button type="button" disabled={busy === c.id} onClick={() => setClaim(c, 'rejected')} className="rounded-full border border-obsidian/15 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-obsidian/60 disabled:opacity-40">Reject</button>
               </li>
             ))}
           </ul>
@@ -285,14 +285,14 @@ function CampaignsPane({ onChanged }: { onChanged?: () => void }) {
 
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm text-obsidian/50">{campaigns.filter((c) => c.live).length} live · {campaigns.length} total</p>
-        <button type="button" onClick={() => setForm({ ...EMPTY_CAMPAIGN, brandSlug: brands[0]?.slug || '' })} className="btn-brand inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em]">
+        <button type="button" onClick={() => setForm({ ...EMPTY_CAMPAIGN, brandSlug: brands[0]?.slug || '' })} className="btn-brand inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em]">
           <Plus size={13} /> New campaign
         </button>
       </div>
       {campaigns.length === 0 ? (
         <p className="text-sm text-obsidian/45">No campaigns yet.</p>
       ) : (
-        <ul className="divide-y divide-obsidian/6 rounded-xl border border-obsidian/10 bg-white">
+        <ul className="divide-y divide-obsidian/6 rounded-2xl bg-white ring-1 ring-obsidian/[0.06]">
           {campaigns.map((c) => (
             <li key={c.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
               <div className="min-w-0 flex-1">
@@ -312,8 +312,8 @@ function CampaignsPane({ onChanged }: { onChanged?: () => void }) {
       {form && (
         <Modal open size="lg" title={form.existing ? 'Edit campaign' : 'New campaign'} onClose={() => setForm(null)} footer={
           <>
-            <button type="button" onClick={() => setForm(null)} className="rounded-lg border border-obsidian/15 px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/70">Cancel</button>
-            <button type="submit" form="campaign-form" disabled={busy === 'save'} className="btn-brand rounded-lg px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] disabled:opacity-40">{busy === 'save' ? 'Saving…' : 'Save campaign'}</button>
+            <button type="button" onClick={() => setForm(null)} className="rounded-full border border-obsidian/15 px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/70">Cancel</button>
+            <button type="submit" form="campaign-form" disabled={busy === 'save'} className="btn-brand rounded-full px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] disabled:opacity-40">{busy === 'save' ? 'Saving…' : 'Save campaign'}</button>
           </>
         }>
           <form id="campaign-form" onSubmit={save} className="grid gap-3 sm:grid-cols-2">
@@ -418,9 +418,9 @@ function VenuesPane({ onChanged }: { onChanged?: () => void }) {
         </p>
         <p className="text-xs text-obsidian/50">{v.area} · {v.followerCount} followers · {v.reviewCount} reviews{v.source === 'partner_submission' ? ' · submitted by partner' : ''}</p>
       </div>
-      {v.status === 'pending' && <button type="button" disabled={busy === v.id} onClick={() => setStatus(v, 'active')} className="btn-brand rounded-lg px-3 py-1.5 text-[10px] font-black uppercase tracking-wider disabled:opacity-40">Approve</button>}
-      {v.status === 'active' && <button type="button" disabled={busy === v.id} onClick={() => setStatus(v, 'suspended')} className="rounded-lg border border-obsidian/15 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-obsidian/60 hover:border-ember hover:text-ember disabled:opacity-40">Suspend</button>}
-      {v.status === 'suspended' && <button type="button" disabled={busy === v.id} onClick={() => setStatus(v, 'active')} className="rounded-lg border border-obsidian/15 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-obsidian/60 disabled:opacity-40">Reactivate</button>}
+      {v.status === 'pending' && <button type="button" disabled={busy === v.id} onClick={() => setStatus(v, 'active')} className="btn-brand rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider disabled:opacity-40">Approve</button>}
+      {v.status === 'active' && <button type="button" disabled={busy === v.id} onClick={() => setStatus(v, 'suspended')} className="rounded-full border border-obsidian/15 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-obsidian/60 hover:border-ember hover:text-ember disabled:opacity-40">Suspend</button>}
+      {v.status === 'suspended' && <button type="button" disabled={busy === v.id} onClick={() => setStatus(v, 'active')} className="rounded-full border border-obsidian/15 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-obsidian/60 disabled:opacity-40">Reactivate</button>}
       <button type="button" onClick={() => edit(v)} className="grid h-8 w-8 place-items-center rounded text-obsidian/40 hover:bg-obsidian/[0.06] hover:text-obsidian"><Pencil size={14} /></button>
       <button type="button" onClick={() => remove(v)} className="grid h-8 w-8 place-items-center rounded text-obsidian/40 hover:bg-red-50 hover:text-red-600"><Trash2 size={14} /></button>
     </li>
@@ -430,18 +430,18 @@ function VenuesPane({ onChanged }: { onChanged?: () => void }) {
     <>
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm text-obsidian/50">{venues.filter((v) => v.status === 'active').length} active{pending.length ? ` · ${pending.length} awaiting approval` : ''}</p>
-        <button type="button" onClick={() => setForm({ ...EMPTY_VENUE, areaId: areas[0]?.id || '' })} className="btn-brand inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em]">
+        <button type="button" onClick={() => setForm({ ...EMPTY_VENUE, areaId: areas[0]?.id || '' })} className="btn-brand inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em]">
           <Plus size={13} /> New venue
         </button>
       </div>
       {pending.length > 0 && <ul className="divide-y divide-amber-200/60 rounded-xl border border-amber-200 bg-amber-50/40">{pending.map(row)}</ul>}
-      {rest.length === 0 ? <p className="text-sm text-obsidian/45">No venues in the database yet (the seeded catalog still shows on the site).</p> : <ul className="divide-y divide-obsidian/6 rounded-xl border border-obsidian/10 bg-white">{rest.map(row)}</ul>}
+      {rest.length === 0 ? <p className="text-sm text-obsidian/45">No venues in the database yet (the seeded catalog still shows on the site).</p> : <ul className="divide-y divide-obsidian/6 rounded-2xl bg-white ring-1 ring-obsidian/[0.06]">{rest.map(row)}</ul>}
 
       {form && (
         <Modal open size="lg" title={form.id ? `Edit ${form.name}` : 'New venue'} onClose={() => setForm(null)} footer={
           <>
-            <button type="button" onClick={() => setForm(null)} className="rounded-lg border border-obsidian/15 px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] text-obsidian/70">Cancel</button>
-            <button type="submit" form="venue-form" disabled={busy === 'save'} className="btn-brand rounded-lg px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] disabled:opacity-40">{busy === 'save' ? 'Saving…' : 'Save venue'}</button>
+            <button type="button" onClick={() => setForm(null)} className="rounded-full border border-obsidian/15 px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/70">Cancel</button>
+            <button type="submit" form="venue-form" disabled={busy === 'save'} className="btn-brand rounded-full px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] disabled:opacity-40">{busy === 'save' ? 'Saving…' : 'Save venue'}</button>
           </>
         }>
           <form id="venue-form" onSubmit={save} className="grid gap-3 sm:grid-cols-2">
