@@ -20,6 +20,7 @@ export function primaryNavLinks(): NavLink[] {
     icon: 'gift',
   });
   links.push({ label: 'Brands', href: '/brands' });
+  links.push({ label: 'Trends', href: '/trends' });
   if (eventsEnabled) links.push({ label: 'Events & venues', href: '/events' });
   return links;
 }
