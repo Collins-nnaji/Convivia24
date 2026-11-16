@@ -196,7 +196,7 @@ test('analytics charts expose exact values and tables work across views', async 
   await expect(page.getByRole('button', { name: '2026-10-02: 2', exact: true })).toBeVisible();
   await page.getByRole('group', { name: /Collected orders chart/ }).scrollIntoViewIfNeeded();
   await page.screenshot({ path: `/tmp/convivia-admin-chart-${page.viewportSize()?.width}.png` });
-  await page.getByRole('button', { name: 'Commerce', exact: true }).click();
+  // The dashboard shows every section at once — no view switching.
   await expect(page.getByRole('table', { name: 'Top products' })).toContainText('Test drink');
   await page.getByRole('button', { name: 'API usage', exact: true }).click();
   await expect(page.getByRole('table', { name: 'API route usage' })).toContainText('5.0%');

@@ -13,13 +13,13 @@ export default function AnalyticsChart({ title, points, format }: { title: strin
   const shown = points.slice(-30);
   const current = shown.find(p => p.label === selected) || shown.at(-1);
   const max = Math.max(4, Math.ceil(Math.max(0, ...shown.map(p => p.value)) / 4) * 4);
-  const width = Math.max(availableWidth, shown.length * 42 + 100, 280); const height = 280;
-  const left = 85; const bottom = 225; const plotHeight = 175;
+  const width = Math.max(availableWidth, shown.length * 42 + 100, 280); const height = 220;
+  const left = 70; const bottom = 178; const plotHeight = 140;
   const step = (width - left - 20) / Math.max(1, shown.length);
   if (!shown.length) return <p className="rounded-lg bg-paper p-4 text-sm text-obsidian/60">No data recorded in this period.</p>;
-  return <div className="space-y-3">
+  return <div className="space-y-2">
     <p className="flex flex-wrap justify-between gap-2 text-sm"><span className="font-semibold">{current?.label}</span><span className="font-bold tabular-nums text-ember">{format(current?.value || 0)}</span></p>
-    <div ref={container} className="overflow-x-auto rounded-lg border border-obsidian/10 bg-paper/50">
+    <div ref={container} className="overflow-x-auto">
       <svg aria-label={`${title} chart. Focus a bar to read its date and value.`} role="group" viewBox={`0 0 ${width} ${height}`} className="w-full" style={{ minWidth: Math.max(280, shown.length * 42 + 100) }}>
         {[0, 0.25, 0.5, 0.75, 1].map(ratio => <g key={ratio}><line x1={left} x2={width - 20} y1={bottom - ratio * plotHeight} y2={bottom - ratio * plotHeight} stroke="#dedbd7" /><text x={left - 8} y={bottom - ratio * plotHeight + 4} textAnchor="end" fontSize="11" fill="#6b625a">{new Intl.NumberFormat('en-NG', { notation: 'compact', maximumFractionDigits: 1 }).format(max * ratio)}</text></g>)}
         {shown.map((point, index) => {
@@ -28,6 +28,6 @@ export default function AnalyticsChart({ title, points, format }: { title: strin
         })}
       </svg>
     </div>
-    <p className="text-xs text-obsidian/60">{points.length > 30 ? 'Chart shows the latest 30 recorded days. The table includes all recorded days. ' : ''}Hover or focus a bar for its exact value. Dates use the Lagos calendar; days without recorded activity are listed only when available in the source.</p>
+    {points.length > 30 && <p className="text-[11px] text-obsidian/55">Latest 30 days shown — every day is in Daily figures below.</p>}
   </div>;
 }

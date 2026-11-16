@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { formatNgn } from '@/lib/drinks/catalog';
 import AdminShell, { type AdminGroup, type AdminTab } from '@/components/admin/AdminShell';
 import DialogProvider from '@/components/admin/ui/DialogProvider';
-import OverviewDesk from '@/components/admin/OverviewDesk';
+import DashboardDesk from '@/components/admin/DashboardDesk';
 import DrinksDesk from '@/components/admin/DrinksDesk';
 import OrdersDesk from '@/components/admin/OrdersDesk';
 import FulfilDesk from '@/components/admin/FulfilDesk';
@@ -25,7 +25,6 @@ import OperationsDesk from '@/components/admin/OperationsDesk';
 import DeliveryDesk from '@/components/admin/DeliveryDesk';
 import AccountingDesk from '@/components/admin/AccountingDesk';
 import FinanceDesk from '@/components/admin/FinanceDesk';
-import AnalyticsDesk from '@/components/admin/AnalyticsDesk';
 import { useAdminOrders } from '@/components/admin/useAdminOrders';
 import { EMPTY_SUMMARY, type AdminSummary } from '@/components/admin/types';
 import { Landmark, LayoutDashboard, Megaphone, Settings2, ShoppingBag, Users, Wine } from 'lucide-react';
@@ -151,7 +150,7 @@ function AdminDesk({ initialTab }: { initialTab: TabKey }) {
   const pill = (n: number) => (n > 0 ? n : undefined);
   // Every page of the desk, by key. Labels are what staff see in the sidebar and sub-page bar.
   const page: Record<TabKey, Omit<AdminTab, 'key' | 'icon'>> = {
-    overview: { label: 'Dashboard', hint: 'Today at a glance, what needs a hand, and how the business is performing.' },
+    overview: { label: 'Dashboard' },
     analytics: { label: 'Analytics' },
     orders: { label: 'All orders', hint: 'Full history with date and status filters, exports, refunds and edits.' },
     fulfil: { label: 'Fulfil', count: pill(summary.ordersToFulfil), hint: 'Open orders, oldest first. Expand (+) an order to confirm payment, record the supplier cost, dispatch and mark delivered.' },
@@ -206,12 +205,7 @@ function AdminDesk({ initialTab }: { initialTab: TabKey }) {
   return (
     <AdminShell title="Desk" subtitle={subtitle} groups={groups} active={tab} onSelect={go}>
       {hasAdminPermission(staffRole, TAB_PERMISSIONS[tab]) ? <>
-      {tab === 'overview' && (
-        <div className="space-y-6">
-          <OverviewDesk summary={summary} onGo={go} />
-          <AnalyticsDesk />
-        </div>
-      )}
+      {tab === 'overview' && <DashboardDesk summary={summary} onGo={go} />}
       {tab === 'readiness' && <ReadinessDesk />}
       {tab === 'refunds' && <RefundsDesk />}
       {tab === 'support' && <SupportDesk />}
