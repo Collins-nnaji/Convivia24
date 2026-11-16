@@ -365,6 +365,18 @@ async function handlePATCH(req: NextRequest) {
 
     // Tracking is its own action — rider, ETA and note change without touching status, so
     // editing a phone number never re-sends the customer their "out for delivery" message.
+    // A signed link the rider opens on their phone to mark this one order delivered.
+    if (body.action === 'rider-link') {
+      const [o] = await sql`SELECT status FROM ritual_orders WHERE id = ${orderId} LIMIT 1`;
+      if (!o) return NextResponse.json({ error: 'Order not found.' }, { status: 404 });
+      if (['pending', 'awaiting_payment', 'cancelled', 'refunded'].includes(String(o.status))) {
+        return NextResponse.json({ error: 'Only paid orders get a rider link.' }, { status: 400 });
+      }
+      const { createRiderToken, RIDER_LINK_HOURS } = await import('@/lib/delivery/rider-link');
+      await sql`INSERT INTO admin_audit(actor, action, subject) VALUES(${gate.actor}, 'order.rider-link', ${orderId})`;
+      return NextResponse.json({ ok: true, path: `/deliver/${createRiderToken(orderId)}`, hours: RIDER_LINK_HOURS });
+    }
+
     if (body.action === 'tracking') {
       const result = await applyOrderTracking(orderId, tracking, { kind: 'admin' });
       if (!result) return NextResponse.json({ error: 'Order not found.' }, { status: 404 });

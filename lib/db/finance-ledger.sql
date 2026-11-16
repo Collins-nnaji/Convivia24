@@ -47,3 +47,6 @@ CREATE INDEX IF NOT EXISTS idx_payouts_payee ON payouts(kind, payee_key);
 -- One live profit-share line per partner per month, so the monthly close can re-run safely.
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_payouts_profit_share
   ON payouts(payee_key, period) WHERE kind = 'profit_share' AND status <> 'void';
+
+-- Photo or PDF of the receipt, uploaded from the Expenses page.
+ALTER TABLE business_expenses ADD COLUMN IF NOT EXISTS receipt_url TEXT;

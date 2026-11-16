@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import Image from 'next/image';
-import { Check, Phone, Printer, Search } from 'lucide-react';
+import { Check, Link2, Phone, Printer, Search } from 'lucide-react';
 import { formatNgn } from '@/lib/drinks/catalog';
 import { ORDER_STATUS_LABELS, type OrderStatus } from '@/lib/commerce/status';
 import type { Supplier } from '@/lib/suppliers/repo';
@@ -10,6 +10,7 @@ import { PlusMinus, deskField } from './ui/DeskContent';
 import type { AdminOrder } from './types';
 import type { useAdminOrders } from './useAdminOrders';
 import { useOrderActions } from './useOrderActions';
+import { lateness } from '@/lib/commerce/lateness';
 
 /**
  * Fulfil: the open-order queue, oldest first. Each order walks one line of steps —
@@ -17,9 +18,10 @@ import { useOrderActions } from './useOrderActions';
  * delivered — and the row's main button is always the next step.
  */
 
-type Stage = 'all' | 'payment' | 'prepare' | 'packed' | 'out';
+type Stage = 'all' | 'late' | 'payment' | 'prepare' | 'packed' | 'out';
 const STAGES: { key: Stage; label: string; statuses: OrderStatus[] }[] = [
   { key: 'all', label: 'All open', statuses: ['awaiting_payment', 'paid', 'processing', 'packed', 'out_for_delivery'] },
+  { key: 'late', label: 'Late', statuses: ['awaiting_payment', 'paid', 'processing', 'packed', 'out_for_delivery'] },
   { key: 'payment', label: 'Awaiting payment', statuses: ['awaiting_payment'] },
   { key: 'prepare', label: 'To prepare', statuses: ['paid', 'processing'] },
   { key: 'packed', label: 'Packed', statuses: ['packed'] },
@@ -78,17 +80,31 @@ export default function FulfilDesk({
       .catch(() => {});
   }, []);
 
-  const counts = useMemo(() => Object.fromEntries(STAGES.map((s) => [s.key, orders.filter((o) => s.statuses.includes(o.status)).length])), [orders]);
+  // Re-evaluate "late" every minute without a reload.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+  const isLate = useCallback((o: AdminOrder) => lateness(o, now).late, [now]);
+  const counts = useMemo(
+    () =>
+      Object.fromEntries(
+        STAGES.map((s) => [s.key, orders.filter((o) => s.statuses.includes(o.status) && (s.key !== 'late' || isLate(o))).length])
+      ),
+    [orders, isLate]
+  );
   const rows = useMemo(() => {
     const st = STAGES.find((s) => s.key === stage)!;
     const q = query.trim().toLowerCase();
     // Orders finished in this session stay visible (ticked) until the next refresh.
     return orders.filter(
       (o) =>
-        (st.statuses.includes(o.status) || (stage === 'all' && ['delivered', 'fulfilled'].includes(o.status))) &&
+        ((st.statuses.includes(o.status) && (stage !== 'late' || isLate(o))) ||
+          (stage === 'all' && ['delivered', 'fulfilled'].includes(o.status))) &&
         (!q || [o.fullName, o.phone, o.area, o.id, o.email].some((v) => (v || '').toLowerCase().includes(q)))
     );
-  }, [orders, stage, query]);
+  }, [orders, stage, query, isLate]);
 
   return (
     <div className="space-y-3">
@@ -100,7 +116,9 @@ export default function FulfilDesk({
               type="button"
               onClick={() => setStage(s.key)}
               className={`flex h-9 items-center gap-1.5 px-3 text-sm font-semibold ${i > 0 ? 'border-l border-obsidian/15' : ''} ${
-                stage === s.key ? 'bg-obsidian text-white' : 'bg-white text-obsidian/75 hover:bg-obsidian/[0.05]'
+                stage === s.key
+                  ? s.key === 'late' ? 'bg-red-700 text-white' : 'bg-obsidian text-white'
+                  : s.key === 'late' && (counts.late ?? 0) > 0 ? 'bg-red-50 text-red-800 hover:bg-red-100' : 'bg-white text-obsidian/75 hover:bg-obsidian/[0.05]'
               }`}
             >
               {s.label}
@@ -182,6 +200,7 @@ function FulfilRow({
 }) {
   const done = stepsDone(o);
   const delivered = done[4];
+  const late = lateness(o);
   const itemsCount = o.items.reduce((n, i) => n + i.qty, 0);
 
   // The one button that moves the order on.
@@ -195,7 +214,11 @@ function FulfilRow({
 
   return (
     <>
-      <tr className={`border-t border-obsidian/10 align-middle ${open ? 'bg-shell' : delivered ? 'bg-emerald-50/40' : 'bg-white hover:bg-obsidian/[0.02]'}`}>
+      <tr
+        className={`border-t border-obsidian/10 align-middle ${late.late ? 'shadow-[inset_3px_0_0_0_#b91c1c]' : ''} ${
+          open ? 'bg-shell' : delivered ? 'bg-emerald-50/40' : late.late ? 'bg-red-50/50 hover:bg-red-50' : 'bg-white hover:bg-obsidian/[0.02]'
+        }`}
+      >
         <td className="py-2 pl-3">
           <button type="button" onClick={onToggle} aria-expanded={open} aria-label={open ? 'Collapse order' : 'Expand order'}>
             <PlusMinus open={open} />
@@ -204,6 +227,11 @@ function FulfilRow({
         <td className="px-2 py-2">
           <p className="font-mono text-xs font-bold text-obsidian">#{o.id.slice(0, 8).toUpperCase()}</p>
           <p className="text-[11px] text-obsidian/60">{ago(o.createdAt)} · {ORDER_STATUS_LABELS[o.status]}</p>
+          {late.late && (
+            <span className="mt-0.5 inline-block rounded bg-red-700 px-1.5 py-px text-[10px] font-bold uppercase tracking-wide text-white" title="Past the time allowed for this stage">
+              Late · {late.label}
+            </span>
+          )}
         </td>
         <td className="max-w-[220px] px-2 py-2">
           <p className="truncate font-semibold text-obsidian">{o.fullName}</p>
@@ -278,6 +306,7 @@ function OrderWorkbench({ order: o, busy, suppliers, couriers, actions }: { orde
   const [deliveryCost, setDeliveryCost] = useState(o.courierCostNgn != null ? String(o.courierCostNgn) : '');
   const [reference, setReference] = useState(o.courierReference || '');
   const [trackingUrl, setTrackingUrl] = useState(o.trackingUrl || '');
+  const [riderUrl, setRiderUrl] = useState('');
 
   useEffect(() => {
     if (!supplierId && suppliers[0]) setSupplierId(suppliers[0].id);
@@ -439,7 +468,27 @@ function OrderWorkbench({ order: o, busy, suppliers, couriers, actions }: { orde
             <button type="button" disabled={busy} onClick={() => actions.saveTracking(o, tracking())} className={secondary}>
               Save details only
             </button>
+            {paid && !['delivered', 'fulfilled'].includes(o.status) && (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={async () => setRiderUrl((await actions.riderLink(o)) || '')}
+                className={secondary}
+                title="A link the rider opens on their phone to mark this order delivered, with the receiver's name and a photo"
+              >
+                <Link2 size={13} /> Rider link
+              </button>
+            )}
           </div>
+          {riderUrl && (
+            <input
+              readOnly
+              value={riderUrl}
+              onFocus={(e) => e.currentTarget.select()}
+              aria-label="Rider link"
+              className={`${field} mt-2 font-mono text-[11px]`}
+            />
+          )}
         </Panel>
       </div>
 

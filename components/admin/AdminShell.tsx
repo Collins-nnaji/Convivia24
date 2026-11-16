@@ -52,6 +52,8 @@ export default function AdminShell({
   title,
   subtitle,
   actions,
+  sidebarFooter,
+  sidebarTop,
   children,
 }: {
   /** A flat list of pages (supplier portal). */
@@ -63,6 +65,10 @@ export default function AdminShell({
   title: string;
   subtitle?: ReactNode;
   actions?: ReactNode;
+  /** Pinned to the bottom of the sidebar (e.g. order alerts). */
+  sidebarFooter?: ReactNode;
+  /** Under the brand at the top of the sidebar (e.g. desk search). */
+  sidebarTop?: ReactNode;
   children: ReactNode;
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -147,8 +153,12 @@ export default function AdminShell({
     <div className="min-h-screen bg-white">
       {/* ── Desktop sidebar. Fixed under the site header so it stays while the desk scrolls. */}
       <aside className="fixed bottom-0 left-0 top-[4.5rem] z-30 hidden w-56 flex-col border-r border-obsidian/15 bg-[#faf8f5] lg:flex">
-        <div className="border-b border-obsidian/10 px-4 py-2.5">{brand}</div>
+        <div className="space-y-2 border-b border-obsidian/10 px-4 py-2.5">
+          {brand}
+          {sidebarTop}
+        </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-2 py-2">{nav}</div>
+        {sidebarFooter && <div className="border-t border-obsidian/10 px-3 py-2.5">{sidebarFooter}</div>}
       </aside>
 
       {/* ── Mobile drawer ───────────────────────────────────────── */}
@@ -167,7 +177,9 @@ export default function AdminShell({
                 <X size={18} />
               </button>
             </div>
+            {sidebarTop && <div className="px-3 pt-2">{sidebarTop}</div>}
             <div className="flex-1 overflow-y-auto px-2 py-3">{nav}</div>
+            {sidebarFooter && <div className="border-t border-obsidian/10 px-3 py-2.5">{sidebarFooter}</div>}
           </aside>
         </div>
       )}

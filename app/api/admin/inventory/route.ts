@@ -1,7 +1,7 @@
 import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
-import { listInventory, upsertAdminProduct, adminStockList, editStockRow, StockEditError } from '@/lib/inventory';
+import { listInventory, upsertAdminProduct, adminStockList, editStockRow, isStockReason, StockEditError } from '@/lib/inventory';
 import { allSupplierStock, setSupplierStock, stockForSlug } from '@/lib/suppliers/stock';
 import { listSuppliers } from '@/lib/suppliers/repo';
 import { uploadBlob, validateImageFile, blobConfigured } from '@/lib/azure/blob';
@@ -97,6 +97,11 @@ async function handlePOST(req: NextRequest) {
         }
         if (body.origin !== undefined) patch.origin = body.origin == null ? null : String(body.origin).slice(0, 60);
         if (body.merchRank != null && body.merchRank !== '') patch.merchRank = Number(body.merchRank);
+        if (body.stockReason !== undefined && body.stockReason !== '') {
+          if (!isStockReason(body.stockReason)) return NextResponse.json({ error: 'Unknown stock reason.' }, { status: 400 });
+          patch.stockReason = body.stockReason;
+          patch.stockNote = typeof body.stockNote === 'string' ? body.stockNote : null;
+        }
         if (Object.values(patch).some((v) => typeof v === 'number' && !Number.isFinite(v))) {
           return NextResponse.json({ error: 'Numbers must be valid.' }, { status: 400 });
         }

@@ -294,6 +294,21 @@ export class StockEditError extends Error {
  * undefined is untouched. Seeded catalog SKUs are inserted on first edit so
  * their stock can be managed alongside admin-uploaded ones.
  */
+/** Reasons the desk can give for changing on-hand. Only 'restock' has its own movement code. */
+export const STOCK_REASONS = {
+  restock: 'Restock received',
+  count: 'Stock count correction',
+  breakage: 'Breakage / damaged',
+  gift: 'Gift / sample',
+  return: 'Customer return',
+  theft: 'Missing / theft',
+  other: 'Other',
+} as const;
+export type StockReason = keyof typeof STOCK_REASONS;
+export function isStockReason(v: unknown): v is StockReason {
+  return typeof v === 'string' && v in STOCK_REASONS;
+}
+
 export async function editStockRow(
   slug: string,
   patch: {
@@ -317,6 +332,9 @@ export async function editStockRow(
     badge?: ProductBadge | null;
     origin?: string | null;
     merchRank?: number;
+    /** Why on-hand changed (restock, breakage, count…) — written to the stock history. */
+    stockReason?: StockReason;
+    stockNote?: string | null;
   },
   actor: MovementActor = { kind: 'system' }
 ): Promise<InventoryRow | null> {
@@ -371,6 +389,11 @@ export async function editStockRow(
     });
   }
 
+  const movementReason = patch.stockReason === 'restock' ? 'restock' : 'adjust';
+  const reasonText = patch.stockReason
+    ? [STOCK_REASONS[patch.stockReason], patch.stockNote?.trim().slice(0, 200)].filter(Boolean).join(' — ')
+    : null;
+
   const rows = await sql`
     WITH previous AS MATERIALIZED (
       SELECT * FROM inventory WHERE slug = ${slug} FOR UPDATE
@@ -391,8 +414,9 @@ export async function editStockRow(
     RETURNING *
     ), logged AS (
       INSERT INTO inventory_movements (slug, delta_on_hand, reason, note, actor, actor_label)
-      SELECT c.slug, c.on_hand - p.on_hand, 'adjust',
+      SELECT c.slug, c.on_hand - p.on_hand, ${movementReason},
         concat_ws('; ',
+          CASE WHEN c.on_hand IS DISTINCT FROM p.on_hand THEN ${reasonText} END,
           CASE WHEN c.price_ngn IS DISTINCT FROM p.price_ngn THEN
             'Retail (NGN): ' || COALESCE(p.price_ngn::text, 'unset') || ' → ' || COALESCE(c.price_ngn::text, 'unset') END,
           CASE WHEN c.cost_ngn IS DISTINCT FROM p.cost_ngn THEN

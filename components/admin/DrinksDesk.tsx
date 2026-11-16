@@ -11,6 +11,7 @@ import { derivedPackCost, isDerivedCostSku } from '@/lib/suppliers/pack-cost';
 import { DEFAULT_MARKUP, quoteRetail, type MarkupPolicy } from '@/lib/pricing/checkout-fees';
 import PriceListImport from './PriceListImport';
 import PricePolicyBar from './PricePolicyBar';
+import RestockPanel from './RestockPanel';
 import { useDialogs } from './ui/DialogProvider';
 import { AdminInput, AdminLabel, AdminSelect, AdminTextArea, adminInputClass } from './ui/Fields';
 import { readError } from './types';
@@ -114,6 +115,7 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
   const [stockCategory, setStockCategory] = useState('bottles');
   const [onlyLow, setOnlyLow] = useState(false);
   const [policy, setPolicy] = useState<MarkupPolicy>(DEFAULT_MARKUP);
+  const [restockFor, setRestockFor] = useState<{ slug: string; nonce: number } | null>(null);
 
   const load = useCallback(async () => {
     const res = await fetch('/api/admin/inventory');
@@ -422,6 +424,18 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
         </div>
       </Disclosure>
 
+      <div className="mb-4">
+        <RestockPanel
+          bottles={items.filter((i) => !isDerivedCostSku(i.slug)).map((i) => ({ slug: i.slug, name: i.name }))}
+          suppliers={suppliers.map((s) => ({ id: s.id, name: s.name }))}
+          prefill={restockFor}
+          onReceived={() => {
+            void load();
+            onChanged?.();
+          }}
+        />
+      </div>
+
       <div className="mb-1 flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-bold">Live stock</h2>
         <div className="flex items-center gap-2">
@@ -515,6 +529,7 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
                 onSetSupplierCost={setSupplierCost}
                 defaultCostOf={(slug) => items.find((i) => i.slug === slug)?.cost_ngn ?? null}
                 policy={policy}
+                onRestock={() => setRestockFor({ slug: item.slug, nonce: Date.now() })}
               />
             ))}
           </tbody>
@@ -745,7 +760,9 @@ function StockRow({
   onSetSupplierCost,
   defaultCostOf,
   policy,
+  onRestock,
 }: {
+  onRestock: () => void;
   item: Item;
   saving: boolean;
   onSave: (patch: Record<string, unknown>) => void;
@@ -766,6 +783,8 @@ function StockRow({
   const [threshold, setThreshold] = useState(String(item.low_stock_threshold));
   const [minOrder, setMinOrder] = useState(String(item.min_order_qty ?? 1));
   const [tasteNote, setTasteNote] = useState(item.taste_note || '');
+  const [stockReason, setStockReason] = useState('');
+  const [stockNote, setStockNote] = useState('');
 
   useEffect(() => {
     setOnHand(String(item.on_hand));
@@ -827,15 +846,20 @@ function StockRow({
     ...(lowStock ? [{ label: 'Low stock', tone: 'bg-amber-50 text-amber-800 ring-amber-200' }] : []),
     ...(item.featured ? [{ label: 'Featured', tone: 'bg-ember/10 text-ember ring-ember/20' }] : []),
   ];
-  const save = () =>
+  const onHandChanged = !derived && onHand !== String(item.on_hand);
+  const save = () => {
     onSave({
       ...(derived ? {} : { onHand }),
+      ...(onHandChanged ? { stockReason, stockNote } : {}),
       priceNgn: price === '' ? undefined : price,
       ...(isPack ? {} : { costNgn: cost === '' ? null : cost }),
       lowStockThreshold: threshold,
       minOrderQty: minOrder,
       tasteNote,
     });
+    setStockReason('');
+    setStockNote('');
+  };
   const panes: { key: DrawerPane; label: string }[] = [
     { key: 'settings', label: 'Stock rules' },
     ...(suppliers.length > 0 ? [{ key: 'suppliers' as const, label: `Suppliers (${suppliers.length})` }] : []),
@@ -900,6 +924,28 @@ function StockRow({
           ) : (
             <input aria-label="On hand" type="number" min={0} inputMode="numeric" value={onHand} onChange={(e) => setOnHand(e.target.value)} className={cell} />
           )}
+          {onHandChanged && (
+            <div className="mt-1 space-y-1">
+              <select
+                aria-label="Why did stock change?"
+                value={stockReason}
+                onChange={(e) => setStockReason(e.target.value)}
+                className={`${adminInputClass} h-8 w-full py-1 text-[11px] ${stockReason ? '' : 'border-amber-500 bg-amber-50'}`}
+              >
+                <option value="">Why? (required)</option>
+                <option value="restock">Restock received</option>
+                <option value="count">Stock count correction</option>
+                <option value="breakage">Breakage / damaged</option>
+                <option value="gift">Gift / sample</option>
+                <option value="return">Customer return</option>
+                <option value="theft">Missing / theft</option>
+                <option value="other">Other</option>
+              </select>
+              {stockReason && (
+                <input value={stockNote} onChange={(e) => setStockNote(e.target.value)} placeholder="Note (optional)" maxLength={200} className={`${adminInputClass} h-8 w-full py-1 text-[11px]`} />
+              )}
+            </div>
+          )}
           <p className="mt-0.5 text-[11px] tabular-nums text-obsidian/55">{item.available} free</p>
         </td>
         <td className="w-32 px-2 py-2 text-right">
@@ -952,7 +998,8 @@ function StockRow({
         <td className="w-24 py-2 pl-2 pr-3 text-right">
           <button
             type="button"
-            disabled={saving || !dirty}
+            disabled={saving || !dirty || (onHandChanged && !stockReason)}
+            title={onHandChanged && !stockReason ? 'Say why the stock changed first' : undefined}
             onClick={save}
             className="btn-brand h-9 rounded-md px-3 text-xs font-bold disabled:opacity-30"
           >
@@ -980,6 +1027,11 @@ function StockRow({
                   </button>
                 ))}
                 <span className="flex-1" />
+                {!isPack && (
+                  <button type="button" onClick={onRestock} className={btn}>
+                    Restock…
+                  </button>
+                )}
                 <button type="button" disabled={saving} onClick={() => onSave({ active: !item.active })} className={btn}>
                   {item.active ? 'Hide from shop' : 'List in shop'}
                 </button>

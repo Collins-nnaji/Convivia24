@@ -54,6 +54,7 @@ type FinanceData = {
     amountNgn: number;
     paidTo: string | null;
     reference: string | null;
+    receiptUrl: string | null;
     createdBy: string;
     voided: boolean;
     voidReason: string | null;
@@ -63,7 +64,23 @@ type FinanceData = {
   suppliers: { id: string; name: string; active: boolean; orders: number; owedNgn: number; paidNgn: number; queuedNgn: number; dueNgn: number }[];
   commissions: { count: number; owedNgn: number };
   categories: string[];
+  receiptUpload: boolean;
 };
+
+/** Download rows as a CSV file (opens straight in Excel / Google Sheets). */
+function downloadCsv(filename: string, header: string[], rows: (string | number | null)[][]) {
+  const cell = (v: string | number | null) => {
+    const s = v == null ? '' : String(v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const csv = [header, ...rows].map((r) => r.map(cell).join(',')).join('\n');
+  const url = URL.createObjectURL(new Blob([`\ufeff${csv}`], { type: 'text/csv;charset=utf-8' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
 
 export type FinanceView = 'share' | 'expenses' | 'payouts';
 
@@ -384,10 +401,29 @@ function ExpensesView({
   const total = live.reduce((n, e) => n + e.amountNgn, 0);
   const today = new Date(Date.now() + 3_600_000).toISOString().slice(0, 10);
 
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
-    const body = Object.fromEntries(new FormData(form)) as Record<string, string>;
+    const fd = new FormData(form);
+    const file = fd.get('receipt');
+    fd.delete('receipt');
+    const body = Object.fromEntries(fd) as Record<string, string>;
+    setUploadError('');
+    if (file instanceof File && file.size > 0) {
+      setUploading(true);
+      const up = new FormData();
+      up.append('receipt', file);
+      const res = await fetch('/api/admin/finance', { method: 'POST', body: up });
+      setUploading(false);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setUploadError(data.error || 'Receipt upload failed.');
+        return;
+      }
+      body.receiptUrl = data.url;
+    }
     if (await onAdd(body)) form.reset();
   }
 
@@ -439,17 +475,43 @@ function ExpensesView({
               Receipt / transfer reference
               <input name="reference" maxLength={120} placeholder="Optional" className={`${deskField} mt-1`} />
             </label>
+            {data.receiptUpload && (
+              <label className="text-xs font-semibold text-obsidian/70 sm:col-span-2 lg:col-span-2">
+                Receipt photo
+                <input name="receipt" type="file" accept="image/*" capture="environment" className="mt-1 block w-full text-xs" />
+              </label>
+            )}
             <div className="flex items-end sm:col-span-2 lg:col-span-4">
-              <button type="submit" disabled={busy} className="btn-brand h-10 rounded-md px-4 text-sm font-bold disabled:opacity-40">
-                {busy ? 'Saving…' : 'Add expense'}
+              <button type="submit" disabled={busy || uploading} className="btn-brand h-10 rounded-md px-4 text-sm font-bold disabled:opacity-40">
+                {uploading ? 'Uploading receipt…' : busy ? 'Saving…' : 'Add expense'}
               </button>
+              {uploadError && <p className="ml-3 text-xs font-semibold text-red-700">{uploadError}</p>}
               <p className="ml-3 text-xs text-obsidian/60">Expenses reduce net profit before the partner split.</p>
             </div>
           </form>
         )}
       </Card>
 
-      <Card title={`Expenses · ${data.period.label}`}>
+      <Card
+        title={`Expenses · ${data.period.label}`}
+        action={
+          data.expenses.length > 0 ? (
+            <button
+              type="button"
+              onClick={() =>
+                downloadCsv(
+                  `expenses-${data.period.key}.csv`,
+                  ['Date', 'Category', 'Description', 'Paid to', 'Reference', 'Amount (NGN)', 'Status', 'Receipt', 'Recorded by'],
+                  data.expenses.map((e) => [e.spentOn, e.category, e.description, e.paidTo, e.reference, e.amountNgn, e.voided ? `void: ${e.voidReason}` : 'counted', e.receiptUrl, e.createdBy])
+                )
+              }
+              className={smallBtn}
+            >
+              Export CSV
+            </button>
+          ) : undefined
+        }
+      >
         {data.expenses.length === 0 ? (
           <p className="px-4 py-4 text-sm text-obsidian/60">Nothing recorded for this month.</p>
         ) : (
@@ -475,6 +537,11 @@ function ExpensesView({
                     <td className={td}>
                       {e.description}
                       {e.reference && <span className="block text-xs text-obsidian/55">Ref {e.reference}</span>}
+                      {e.receiptUrl && (
+                        <a href={e.receiptUrl} target="_blank" rel="noreferrer" className="block text-xs font-semibold text-ember no-underline hover:underline">
+                          View receipt
+                        </a>
+                      )}
                       {e.voided && <span className="block text-xs no-underline">Voided: {e.voidReason}</span>}
                     </td>
                     <td className={td}>{e.paidTo || '—'}</td>
@@ -671,12 +738,28 @@ function PayoutsView({
       <Card
         title="Payout log"
         action={
+          <div className="flex items-center gap-2">
+          <button
+            type="button"
+            disabled={rows.length === 0}
+            onClick={() =>
+              downloadCsv(
+                `payouts-${data.period.key}.csv`,
+                ['Created', 'Payee', 'Type', 'Period', 'Amount (NGN)', 'Status', 'Paid on', 'Reference', 'Note'],
+                rows.map((p) => [p.createdAt.slice(0, 10), p.payeeName, KIND_LABEL[p.kind], p.period, p.amountNgn, p.status, p.paidAt?.slice(0, 10) ?? null, p.reference, p.note])
+              )
+            }
+            className={smallBtn}
+          >
+            Export CSV
+          </button>
           <div className="inline-flex overflow-hidden rounded-md border border-obsidian/20 text-xs font-semibold">
             {(['pending', 'all'] as const).map((f) => (
               <button key={f} type="button" onClick={() => setFilter(f)} className={`px-2.5 py-1 ${filter === f ? 'bg-obsidian text-white' : 'bg-white text-obsidian/70'}`}>
                 {f === 'pending' ? `Pending (${pending.length})` : 'All'}
               </button>
             ))}
+          </div>
           </div>
         }
       >

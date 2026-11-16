@@ -6,6 +6,7 @@ import {
   booksAmount,
   isPeriodKey,
   periodRange,
+  comparisonRange,
   type PeriodKey,
 } from '@/lib/accounting/statements';
 import { apiUsageDaysForPeriod, readApiUsage } from '@/lib/analytics/api-usage';
@@ -16,6 +17,7 @@ import { pointsLiabilityNgn } from '@/lib/loyalty/program';
 import { flutterwaveSecret } from '@/lib/payments/flutterwave';
 import { redisConfigured } from '@/lib/redis';
 import sql from '@/lib/db';
+import { profit } from '@/lib/accounting/queries';
 
 export type { AnalyticsReport } from '@/lib/analytics/types';
 export { PERIODS, isPeriodKey, type PeriodKey } from '@/lib/accounting/statements';
@@ -117,13 +119,51 @@ export async function buildAnalyticsReport(period: PeriodKey): Promise<Analytics
       readApiUsage(apiDays),
     ]);
 
+  // Comparison and profit are extras: if they fail, the report still loads without them.
+  const prior = comparisonRange(period);
+  const [prevRow, pnl, prevPnl] = await Promise.all([
+    prior
+      ? one(sql`
+          SELECT
+            COUNT(*) FILTER (WHERE status NOT IN ('pending','awaiting_payment','cancelled'))::int AS orders,
+            COALESCE(SUM(COALESCE(total_ngn, subtotal_ngn) - COALESCE(refunded_ngn, 0)) FILTER (
+              WHERE status NOT IN ('pending','awaiting_payment','cancelled')), 0)::bigint AS revenue,
+            COALESCE(SUM(refunded_ngn), 0)::bigint AS refunded
+          FROM ritual_orders
+          WHERE created_at >= ${prior.from}::timestamptz AND created_at < ${prior.to}::timestamptz
+        `).catch(() => null)
+      : Promise.resolve(null),
+    profit(from, to).catch(() => null),
+    prior ? profit(prior.from, prior.to).catch(() => null) : Promise.resolve(null),
+  ]);
+
   const orders = num(ordersRow as Record<string, unknown>, 'orders');
   const revenueNgn = num(ordersRow as Record<string, unknown>, 'revenue');
   const points = num(loyaltyRow as Record<string, unknown>, 'points');
 
+  const prevOrders = prevRow ? num(prevRow as Record<string, unknown>, 'orders') : 0;
+  const prevRevenue = prevRow ? num(prevRow as Record<string, unknown>, 'revenue') : 0;
+
   return {
     period,
     range: { from, to, label: range.label },
+    previous: prevRow
+      ? {
+          label: prior!.label,
+          orders: prevOrders,
+          revenueNgn: prevRevenue,
+          aovNgn: prevOrders > 0 ? Math.round(prevRevenue / prevOrders) : 0,
+          refundedNgn: num(prevRow as Record<string, unknown>, 'refunded'),
+        }
+      : null,
+    profit: pnl
+      ? {
+          grossProfitNgn: pnl.grossProfitNgn,
+          netProfitNgn: pnl.netProfitNgn,
+          netMarginPct: pnl.netMarginPct,
+          prevNetProfitNgn: prevPnl ? prevPnl.netProfitNgn : null,
+        }
+      : null,
     commerce: {
       orders,
       revenueNgn,

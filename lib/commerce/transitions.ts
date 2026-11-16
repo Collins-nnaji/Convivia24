@@ -19,7 +19,9 @@ export type TrackingPatch = {
 
 export type TransitionActor =
   | { kind: 'admin'; label?: string }
-  | { kind: 'supplier'; supplierId: string; label?: string | null };
+  | { kind: 'supplier'; supplierId: string; label?: string | null }
+  /** Whoever opened a signed rider link (lib/delivery/rider-link.ts). */
+  | { kind: 'rider'; label?: string };
 
 export type TransitionResult =
   | { ok: true; orderId: string; status: OrderStatus; changed: boolean }
@@ -79,8 +81,8 @@ export async function applyOrderTracking(orderId: string, patch: TrackingPatch, 
   if (supplierId) {
     await logSupplierAction({
       supplierId,
-      actor: actor.kind,
-      actorLabel: actor.kind === 'supplier' ? actor.label : 'desk',
+      actor: actor.kind === 'rider' ? 'system' : actor.kind,
+      actorLabel: actor.kind === 'supplier' ? actor.label : actor.kind === 'rider' ? 'rider link' : 'desk',
       action: 'order.tracking',
       orderId,
       detail: { courierName: order.courier_name, etaAt: order.eta_at },
@@ -158,8 +160,8 @@ export async function applyOrderStatus(
   if (supplierId) {
     await logSupplierAction({
       supplierId,
-      actor: opts.actor.kind,
-      actorLabel: opts.actor.kind === 'supplier' ? opts.actor.label : 'desk',
+      actor: opts.actor.kind === 'rider' ? 'system' : opts.actor.kind,
+      actorLabel: opts.actor.kind === 'supplier' ? opts.actor.label : opts.actor.kind === 'rider' ? 'rider link' : 'desk',
       action: 'order.status',
       orderId,
       detail: { from, to: status, note },

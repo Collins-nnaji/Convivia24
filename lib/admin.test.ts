@@ -33,12 +33,23 @@ describe('staff admin access', () => {
     mocks.user.mockResolvedValue({ id: 'owner', email, emailVerified: true });
     expect(await requireAdmin('owner')).toMatchObject({ ok: true, role: 'owner' });
   });
-  it('does not grant admin access through staff directory records', async () => {
+  it('grants a verified staff record its own limited role', async () => {
     mocks.user.mockResolvedValue({ id: 'staff', email: 'staff@example.com', emailVerified: true });
     mocks.sql.mockResolvedValue([{ role: 'operations' }]);
-    expect(await requireAdmin('orders')).toMatchObject({ ok: false, status: 401 });
-    expect(await requireAdmin('owner')).toMatchObject({ ok: false, status: 401 });
+    expect(await requireAdmin('orders')).toMatchObject({ ok: true, role: 'operations' });
+    expect(await requireAdmin('finance')).toMatchObject({ ok: false, status: 403 });
+    expect(await requireAdmin('owner')).toMatchObject({ ok: false, status: 403 });
+  });
+  it('requires a verified email before a staff record opens the desk', async () => {
+    mocks.user.mockResolvedValue({ id: 'staff', email: 'staff@example.com', emailVerified: false });
+    mocks.sql.mockResolvedValue([{ role: 'operations' }]);
+    expect(await adminIdentity()).toBeNull();
     expect(mocks.sql).not.toHaveBeenCalled();
+  });
+  it('never grants owner through a staff record', async () => {
+    mocks.user.mockResolvedValue({ id: 'staff', email: 'staff@example.com', emailVerified: true });
+    mocks.sql.mockResolvedValue([{ role: 'owner' }]);
+    expect(await adminIdentity()).toBeNull();
   });
   it('rejects invalid database roles', async () => {
     mocks.user.mockResolvedValue({ id: 'staff', email: 'staff@example.com', emailVerified: true });

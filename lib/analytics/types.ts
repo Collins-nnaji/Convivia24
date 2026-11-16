@@ -24,6 +24,10 @@ export type ApiUsageReport = {
 export type AnalyticsReport = {
   period: PeriodKey;
   range: { from: string; to: string; label: string };
+  /** The same totals for the period before, for "vs previous" deltas. Null for all-time. */
+  previous?: { label: string; orders: number; revenueNgn: number; aovNgn: number; refundedNgn: number } | null;
+  /** Profit after every cost (same figure as Accounts). Null if it could not be worked out. */
+  profit?: { grossProfitNgn: number; netProfitNgn: number; netMarginPct: number; prevNetProfitNgn: number | null } | null;
   commerce: {
     orders: number;
     revenueNgn: number;

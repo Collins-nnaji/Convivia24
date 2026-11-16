@@ -40,6 +40,22 @@ function Kpi({ label, value, sub, tone }: { label: string; value: ReactNode; sub
   );
 }
 
+/** "+12% vs last 30 days" — green up, red down; refunds read the other way round. */
+function Delta({ now, prev, label, invert = false }: { now: number; prev: number | null | undefined; label?: string; invert?: boolean }) {
+  if (prev == null) return null;
+  if (prev === 0 && now === 0) return <span className="text-obsidian/50">no change{label ? ` vs ${label}` : ''}</span>;
+  const pct = prev === 0 ? null : Math.round(((now - prev) / Math.abs(prev)) * 100);
+  const up = now > prev;
+  const good = invert ? !up : up;
+  const text = pct == null ? 'new' : `${up ? '+' : ''}${pct}%`;
+  return (
+    <span className={`font-semibold ${now === prev ? 'text-obsidian/50' : good ? 'text-emerald-700' : 'text-red-600'}`}>
+      {now === prev ? 'no change' : `${up ? '▲' : '▼'} ${text}`}
+      <span className="font-normal text-obsidian/50">{label ? ` vs ${label.toLowerCase()}` : ''}</span>
+    </span>
+  );
+}
+
 function Rows({ rows }: { rows: [string, ReactNode][] }) {
   return (
     <dl className="divide-y divide-obsidian/8 text-sm">
@@ -99,11 +115,35 @@ export default function DashboardDesk({ summary, onGo }: { summary: AdminSummary
       {/* KPI strip: today on the left, the period after it */}
       <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-obsidian/15 bg-obsidian/15 md:grid-cols-3 xl:grid-cols-6">
         <Kpi label="Today" value={formatNgn(summary.todayRevenueNgn)} sub={`${summary.todayOrders} order${summary.todayOrders === 1 ? '' : 's'}`} tone="text-ember" />
-        <Kpi label="Net revenue" value={r ? formatNgn(r.commerce.revenueNgn) : '—'} sub="After refunds, incl. delivery" />
-        <Kpi label="Orders" value={r ? n(r.commerce.orders) : '—'} sub="Collected" />
-        <Kpi label="Average order" value={r ? formatNgn(r.commerce.aovNgn) : '—'} />
-        <Kpi label="Refunded" value={r ? formatNgn(r.commerce.refundedNgn) : '—'} tone={r && r.commerce.refundedNgn > 0 ? 'text-red-600' : undefined} />
-        <Kpi label="Loyalty members" value={r ? n(r.loyalty.members) : '—'} sub={r ? `${n(r.loyalty.pointsAwardedInPeriod)} pts earned` : undefined} />
+        <Kpi
+          label="Net revenue"
+          value={r ? formatNgn(r.commerce.revenueNgn) : '—'}
+          sub={r?.previous ? <Delta now={r.commerce.revenueNgn} prev={r.previous.revenueNgn} label={r.previous.label} /> : 'After refunds, incl. delivery'}
+        />
+        <Kpi
+          label="Net profit"
+          value={r?.profit ? formatNgn(r.profit.netProfitNgn) : '—'}
+          tone={r?.profit ? (r.profit.netProfitNgn < 0 ? 'text-red-600' : 'text-emerald-700') : undefined}
+          sub={
+            r?.profit ? (
+              r.profit.prevNetProfitNgn != null ? (
+                <Delta now={r.profit.netProfitNgn} prev={r.profit.prevNetProfitNgn} label={r.previous?.label} />
+              ) : (
+                `${r.profit.netMarginPct}% margin`
+              )
+            ) : (
+              'After all costs'
+            )
+          }
+        />
+        <Kpi label="Orders" value={r ? n(r.commerce.orders) : '—'} sub={r?.previous ? <Delta now={r.commerce.orders} prev={r.previous.orders} /> : 'Collected'} />
+        <Kpi label="Average order" value={r ? formatNgn(r.commerce.aovNgn) : '—'} sub={r?.previous ? <Delta now={r.commerce.aovNgn} prev={r.previous.aovNgn} /> : undefined} />
+        <Kpi
+          label="Refunded"
+          value={r ? formatNgn(r.commerce.refundedNgn) : '—'}
+          tone={r && r.commerce.refundedNgn > 0 ? 'text-red-600' : undefined}
+          sub={r?.previous ? <Delta now={r.commerce.refundedNgn} prev={r.previous.refundedNgn} invert /> : undefined}
+        />
       </div>
 
       {/* Trend + what needs someone */}
@@ -210,6 +250,7 @@ export default function DashboardDesk({ summary, onGo }: { summary: AdminSummary
                 ['Products listed', n(r.inventory.activeSkus)],
                 ['Units on hand', n(r.inventory.onHandUnits)],
                 ['Low stock', <span key="l" className={r.inventory.lowStock > 0 ? 'text-amber-700' : ''}>{n(r.inventory.lowStock)}</span>],
+                ['Loyalty members', `${n(r.loyalty.members)} · ${n(r.loyalty.pointsAwardedInPeriod)} pts earned`],
                 ['Points outstanding', n(r.loyalty.pointsOutstanding)],
                 ['Points liability', formatNgn(r.loyalty.pointsLiabilityNgn)],
               ]}

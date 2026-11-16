@@ -163,6 +163,20 @@ export function useOrderActions(store: OrdersStore, onChanged?: () => void, mirr
     onChanged?.();
   }
 
+  /** Copies a signed rider link for this order (valid 48h) and returns it. */
+  async function riderLink(order: AdminOrder) {
+    const data = await patch(order, { action: 'rider-link' }, 'Could not create a rider link.');
+    if (!data?.path) return null;
+    const url = `${window.location.origin}${data.path}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      notify(`Rider link copied — valid ${data.hours}h. Send it to the rider.`);
+    } catch {
+      notify('Rider link ready — copy it from the box.');
+    }
+    return url;
+  }
+
   /** Which supplier filled the order and what they charged — the real margin and supplier balance. */
   async function saveSourcing(order: AdminOrder, supplierId: string, costNgn: number, note?: string) {
     const data = await patch(order, { action: 'source', supplierId, supplierCostNgn: costNgn, sourcingNote: note ?? order.sourcingNote ?? '' }, 'Could not save the supplier cost.');
@@ -216,6 +230,7 @@ export function useOrderActions(store: OrdersStore, onChanged?: () => void, mirr
     recordBankTransfer,
     saveTracking,
     saveSourcing,
+    riderLink,
     refund: setRefunding,
     edit: setEditing,
     deleteOrder,

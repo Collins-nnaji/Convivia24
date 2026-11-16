@@ -64,5 +64,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/((?!_next/static|_next/image|favicon.ico|api|admin|supplier|age-check|terms|privacy|.*\\..*).*)'],
+  matcher: ['/admin/:path*', '/((?!_next/static|_next/image|favicon.ico|api|admin|supplier|deliver|age-check|terms|privacy|.*\\..*).*)'],
 };

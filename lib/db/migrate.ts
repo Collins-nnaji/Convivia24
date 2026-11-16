@@ -108,6 +108,8 @@ async function migrate() {
     'lib/db/storefront.sql',
     // Manual expenses and payouts (partner profit share, supplier settlements).
     'lib/db/finance-ledger.sql',
+    // Restock requests to suppliers.
+    'lib/db/restock.sql',
   ];
   const schema = schemaFiles
     .map(f => readFileSync(join(process.cwd(), f), 'utf-8'))

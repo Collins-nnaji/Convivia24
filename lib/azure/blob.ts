@@ -5,7 +5,7 @@ import sql from '@/lib/db';
 export const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif'] as const;
 export const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 
-export type MediaPurpose = 'stock-image' | 'admin-media' | 'event-cover' | 'party-invite';
+export type MediaPurpose = 'stock-image' | 'admin-media' | 'event-cover' | 'party-invite' | 'delivery-proof';
 
 export function blobConfigured(): boolean {
   return !!process.env.AZURE_STORAGE_CONNECTION_STRING;

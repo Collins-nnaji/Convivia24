@@ -4,6 +4,7 @@ import { requireAdmin } from '@/lib/admin';
 import { adminEmails } from '@/lib/admin-emails';
 import sql, { apiErrorResponse } from '@/lib/db';
 import { captureApiError } from '@/lib/sentry';
+import { blobConfigured, uploadBlob, validateImageFile } from '@/lib/azure/blob';
 import { profit } from '@/lib/accounting/queries';
 import {
   EXPENSE_CATEGORIES,
@@ -91,7 +92,7 @@ async function handleGET(req: NextRequest) {
     const [pnl, expenses, byCategory, payoutRows, supplierRows, commissionRow] = await Promise.all([
       profit(range.from, range.to),
       sql`
-        SELECT id, spent_on, category, description, amount_ngn, paid_to, reference, created_by, created_at, voided_at, void_reason
+        SELECT id, spent_on, category, description, amount_ngn, paid_to, reference, receipt_url, created_by, created_at, voided_at, void_reason
         FROM business_expenses
         WHERE spent_on >= (${range.from}::timestamptz AT TIME ZONE 'Africa/Lagos')::date
           AND spent_on < (${range.to}::timestamptz AT TIME ZONE 'Africa/Lagos')::date
@@ -176,6 +177,7 @@ async function handleGET(req: NextRequest) {
         amountNgn: n(r.amount_ngn),
         paidTo: r.paid_to ? String(r.paid_to) : null,
         reference: r.reference ? String(r.reference) : null,
+        receiptUrl: r.receipt_url ? String(r.receipt_url) : null,
         createdBy: String(r.created_by),
         voided: Boolean(r.voided_at),
         voidReason: r.void_reason ? String(r.void_reason) : null,
@@ -212,6 +214,7 @@ async function handleGET(req: NextRequest) {
       }),
       commissions: { count: n(commissionRow[0]?.count), owedNgn: n(commissionRow[0]?.total) },
       categories: EXPENSE_CATEGORIES,
+      receiptUpload: blobConfigured(),
     });
   } catch (err) {
     captureApiError(err, { route: 'admin/finance GET' });
@@ -225,6 +228,16 @@ async function handlePOST(req: NextRequest) {
   if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
   const actor = gate.actorLabel || gate.actor;
   try {
+    // Receipt photo for an expense — returns the URL; the expense is saved separately.
+    if ((req.headers.get('content-type') || '').includes('multipart/form-data')) {
+      if (!blobConfigured()) return NextResponse.json({ error: 'File storage is not configured.' }, { status: 503 });
+      const file = (await req.formData()).get('receipt');
+      if (!(file instanceof File)) return NextResponse.json({ error: 'Attach the receipt.' }, { status: 400 });
+      const invalid = validateImageFile(file);
+      if (invalid) return NextResponse.json({ error: invalid }, { status: 400 });
+      const uploaded = await uploadBlob(Buffer.from(await file.arrayBuffer()), file.type, { filename: file.name, purpose: 'admin-media' });
+      return NextResponse.json({ url: uploaded.url }, { status: 201 });
+    }
     const body = await req.json().catch(() => ({}));
     const action = text(body.action, 40);
 
@@ -238,8 +251,9 @@ async function handlePOST(req: NextRequest) {
       if (!description) return NextResponse.json({ error: 'Describe what the money was for.' }, { status: 400 });
       if (!amountNgn) return NextResponse.json({ error: 'Enter an amount above zero.' }, { status: 400 });
       const [row] = await sql`
-        INSERT INTO business_expenses(spent_on, category, description, amount_ngn, paid_to, reference, created_by)
-        VALUES(${spentOn}::date, ${category}, ${description}, ${amountNgn}, ${text(body.paidTo) || null}, ${text(body.reference, 120) || null}, ${actor})
+        INSERT INTO business_expenses(spent_on, category, description, amount_ngn, paid_to, reference, receipt_url, created_by)
+        VALUES(${spentOn}::date, ${category}, ${description}, ${amountNgn}, ${text(body.paidTo) || null}, ${text(body.reference, 120) || null},
+               ${/^https:\/\//.test(text(body.receiptUrl, 1000)) ? text(body.receiptUrl, 1000) : null}, ${actor})
         RETURNING id
       `;
       await audit(actor, 'expense.added', String(row.id), { spentOn, category, amountNgn });
