@@ -82,11 +82,11 @@ export default function SupplierPortalPanel({ supplier, onChanged }: { supplier:
   }
 
   return (
-    <div className="rounded-2xl border border-obsidian/10 bg-white p-5">
+    <div className="rounded-lg border border-obsidian/10 bg-white p-4">
       <div className="mb-3 flex items-start justify-between gap-3">
         <div>
           <h3 className="font-bold">Supplier portal</h3>
-          <p className="text-xs text-obsidian/45">Their own URL to manage stock, prices and the orders routed to them.</p>
+          <p className="text-xs text-obsidian/60">Their own URL to manage stock, prices and the orders routed to them.</p>
         </div>
         <label className="flex items-center gap-2 text-xs text-obsidian/60">
           <input
@@ -101,9 +101,9 @@ export default function SupplierPortalPanel({ supplier, onChanged }: { supplier:
       </div>
 
       <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg bg-paper px-3 py-2">
-        <Link2 size={14} className="text-obsidian/40" />
+        <Link2 size={14} className="text-obsidian/55" />
         <code className="min-w-0 flex-1 truncate text-xs">{portalUrl}</code>
-        <button type="button" onClick={() => copy(portalUrl, 'Link')} className="grid h-7 w-7 place-items-center rounded text-obsidian/45 hover:bg-obsidian/[0.06] hover:text-obsidian" title="Copy link">
+        <button type="button" onClick={() => copy(portalUrl, 'Link')} className="grid h-7 w-7 place-items-center rounded text-obsidian/60 hover:bg-obsidian/[0.06] hover:text-obsidian" title="Copy link">
           <Copy size={13} />
         </button>
         <a href={portalPath} target="_blank" rel="noreferrer" className="text-[10px] font-bold uppercase tracking-wider text-ember">
@@ -112,15 +112,15 @@ export default function SupplierPortalPanel({ supplier, onChanged }: { supplier:
       </div>
 
       <dl className="mb-4 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs text-obsidian/60">
-        <dt className="text-obsidian/40">Access key</dt>
+        <dt className="text-obsidian/55">Access key</dt>
         <dd>{supplier.hasAccessKey ? `Issued ${supplier.accessKeyIssuedAt ? formatWhen(supplier.accessKeyIssuedAt) : ''}` : 'Not issued'}</dd>
-        <dt className="text-obsidian/40">Last seen</dt>
+        <dt className="text-obsidian/55">Last seen</dt>
         <dd>{supplier.lastSeenAt ? formatWhen(supplier.lastSeenAt) : 'Never'}</dd>
       </dl>
 
       {/* Anyone on this list signs in with a normal Convivia24 account — no key needed. */}
       <div className="mb-4 rounded-xl border border-obsidian/10 bg-paper/60 p-3">
-        <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/50">
+        <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/65">
           <Mail size={12} /> Sign in with an account
         </p>
         <p className="mt-1 text-[12px] text-obsidian/55">
@@ -130,7 +130,7 @@ export default function SupplierPortalPanel({ supplier, onChanged }: { supplier:
           {supplier.email && (
             <li className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[12px] font-semibold text-obsidian/70 ring-1 ring-obsidian/10" title="Contact email — always allowed">
               {supplier.email}
-              <span className="text-[10px] font-bold uppercase tracking-wider text-obsidian/35">contact</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-obsidian/65">contact</span>
             </li>
           )}
           {supplier.portalEmails.map((email) => (
@@ -141,13 +141,13 @@ export default function SupplierPortalPanel({ supplier, onChanged }: { supplier:
                 disabled={busy}
                 onClick={() => saveEmails(supplier.portalEmails.filter((e) => e !== email))}
                 aria-label={`Remove ${email}`}
-                className="grid h-4 w-4 place-items-center rounded-full text-obsidian/35 hover:bg-obsidian/10 hover:text-obsidian"
+                className="grid h-4 w-4 place-items-center rounded-full text-obsidian/65 hover:bg-obsidian/10 hover:text-obsidian"
               >
                 <X size={11} />
               </button>
             </li>
           ))}
-          {!supplier.email && supplier.portalEmails.length === 0 && <li className="text-[12px] text-obsidian/40">No emails yet.</li>}
+          {!supplier.email && supplier.portalEmails.length === 0 && <li className="text-[12px] text-obsidian/55">No emails yet.</li>}
         </ul>
         <form onSubmit={addEmail} className="mt-2 flex gap-2">
           <input
@@ -189,7 +189,7 @@ export default function SupplierPortalPanel({ supplier, onChanged }: { supplier:
         <div className="space-y-3">
           <div className="flex items-center gap-2 rounded-lg bg-paper px-3 py-3">
             <code className="flex-1 font-mono text-base tracking-wider">{issued}</code>
-            <button type="button" onClick={() => issued && copy(issued, 'Key')} className="grid h-8 w-8 place-items-center rounded text-obsidian/50 hover:bg-obsidian/[0.06]" title="Copy key">
+            <button type="button" onClick={() => issued && copy(issued, 'Key')} className="grid h-8 w-8 place-items-center rounded text-obsidian/65 hover:bg-obsidian/[0.06]" title="Copy key">
               <Copy size={14} />
             </button>
           </div>

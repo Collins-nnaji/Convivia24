@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { PlusMinus } from './ui/DeskContent';
 import Image from 'next/image';
-import { ChevronDown, ChevronRight, Download, Pencil, Printer, Search, Trash2, Undo2 } from 'lucide-react';
+import { Download, Pencil, Printer, Search, Trash2, Undo2 } from 'lucide-react';
 import { formatNgn } from '@/lib/drinks/catalog';
 import {
   ORDER_STATUS_LABELS,
@@ -78,10 +79,10 @@ const STATUS_TONE: Partial<Record<OrderStatus, string>> = {
   out_for_delivery: 'bg-sky-50 text-sky-700 ring-sky-200',
   delivered: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
   fulfilled: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-  cancelled: 'bg-obsidian/[0.06] text-obsidian/50 ring-obsidian/10',
+  cancelled: 'bg-obsidian/[0.06] text-obsidian/65 ring-obsidian/10',
   refunded: 'bg-red-50 text-red-700 ring-red-200',
-  awaiting_payment: 'bg-obsidian/[0.06] text-obsidian/50 ring-obsidian/10',
-  pending: 'bg-obsidian/[0.06] text-obsidian/50 ring-obsidian/10',
+  awaiting_payment: 'bg-obsidian/[0.06] text-obsidian/65 ring-obsidian/10',
+  pending: 'bg-obsidian/[0.06] text-obsidian/65 ring-obsidian/10',
 };
 
 /**
@@ -232,7 +233,7 @@ export default function OrdersLedger({
   return (
     <div>
       {/* ── Controls ─────────────────────────────────────────── */}
-      <div className="mb-4 rounded-2xl border border-obsidian/[0.08] bg-white p-3 shadow-sm">
+      <div className="mb-4 rounded-lg border border-obsidian/[0.08] bg-white p-3">
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex flex-wrap gap-1">
             {RANGES.map((r) => (
@@ -264,7 +265,7 @@ export default function OrdersLedger({
               aria-label="From date"
               className="rounded-lg border border-obsidian/12 px-2 py-1.5 text-xs text-obsidian focus:border-ember focus:ring-0"
             />
-            <span className="text-xs text-obsidian/35">→</span>
+            <span className="text-xs text-obsidian/65">→</span>
             <input
               type="date"
               value={to}
@@ -279,7 +280,7 @@ export default function OrdersLedger({
 
           <div className="ml-auto flex flex-wrap items-center gap-2">
             <label className="relative">
-              <Search size={14} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-obsidian/35" />
+              <Search size={14} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-obsidian/65" />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -324,10 +325,10 @@ export default function OrdersLedger({
       </div>
 
       {/* ── The sheet ────────────────────────────────────────── */}
-      <div className="overflow-x-auto rounded-2xl border border-obsidian/[0.08] bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-lg border border-obsidian/[0.08] bg-white">
         <table className="w-full min-w-[1000px] border-collapse text-sm">
           <thead className="sticky top-0 z-10 bg-paper/95 backdrop-blur">
-            <tr className="text-left text-[10px] font-bold uppercase tracking-[0.1em] text-obsidian/45">
+            <tr className="text-left text-[10px] font-bold uppercase tracking-[0.1em] text-obsidian/60">
               <th className="w-8 border-b border-obsidian/10 py-2.5 pl-3" />
               <th className="border-b border-obsidian/10 px-2 py-2.5">Date</th>
               <th className="border-b border-obsidian/10 px-2 py-2.5">Order</th>
@@ -364,29 +365,29 @@ export default function OrdersLedger({
                       onClick={() => toggle(o.id)}
                       aria-expanded={open}
                       aria-label={open ? 'Hide line items' : 'Show line items'}
-                      className="grid h-6 w-6 place-items-center rounded text-obsidian/40 hover:bg-obsidian/[0.06] hover:text-obsidian"
+                      className="grid place-items-center rounded"
                     >
-                      {open ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
+                      <PlusMinus open={open} />
                     </button>
                   </td>
                   <td className="whitespace-nowrap px-2 py-2 text-xs text-obsidian/70">
                     {dateCell(o.createdAt)}
-                    <span className="block text-[10px] text-obsidian/35">{timeCell(o.createdAt)}</span>
+                    <span className="block text-[10px] text-obsidian/65">{timeCell(o.createdAt)}</span>
                   </td>
                   <td className="px-2 py-2 font-mono text-xs text-obsidian/70">{o.id.slice(0, 8).toUpperCase()}</td>
                   <td className="max-w-[190px] px-2 py-2">
                     <span className="block truncate text-[13px] font-semibold text-obsidian">{o.fullName}</span>
-                    <span className="block truncate text-[11px] text-obsidian/45">{o.email}</span>
+                    <span className="block truncate text-[11px] text-obsidian/60">{o.email}</span>
                   </td>
                   <td className="max-w-[170px] px-2 py-2">
                     <span className="block truncate text-xs text-obsidian/70">{o.area || o.city || '—'}</span>
-                    <span className="block truncate text-[11px] text-obsidian/40">{o.addressLine1}</span>
+                    <span className="block truncate text-[11px] text-obsidian/55">{o.addressLine1}</span>
                   </td>
                   <td className="px-2 py-2 text-right text-xs tabular-nums text-obsidian/70">{units}</td>
                   <td className="px-2 py-2 text-right text-xs tabular-nums text-obsidian/70">
                     {formatNgn(o.subtotalNgn)}
                   </td>
-                  <td className="px-2 py-2 text-right text-xs tabular-nums text-obsidian/45">
+                  <td className="px-2 py-2 text-right text-xs tabular-nums text-obsidian/60">
                     {discounts > 0 ? `−${formatNgn(discounts)}` : '—'}
                   </td>
                   <td className="px-2 py-2 text-right text-[13px] font-bold tabular-nums text-obsidian">
@@ -432,7 +433,7 @@ export default function OrdersLedger({
                         onClick={() => onEdit(o)}
                         disabled={updatingOrder === o.id}
                         title="Edit delivery details"
-                        className="mr-1 inline-grid h-7 w-7 place-items-center rounded text-obsidian/40 hover:bg-obsidian/[0.06] hover:text-obsidian disabled:opacity-40"
+                        className="mr-1 inline-grid h-7 w-7 place-items-center rounded text-obsidian/55 hover:bg-obsidian/[0.06] hover:text-obsidian disabled:opacity-40"
                       >
                         <Pencil size={14} />
                       </button>
@@ -443,7 +444,7 @@ export default function OrdersLedger({
                         target="_blank"
                         rel="noreferrer"
                         title="Print authenticity label"
-                        className="mr-1 inline-grid h-7 w-7 place-items-center rounded text-obsidian/40 hover:bg-obsidian/[0.06] hover:text-obsidian"
+                        className="mr-1 inline-grid h-7 w-7 place-items-center rounded text-obsidian/55 hover:bg-obsidian/[0.06] hover:text-obsidian"
                       >
                         <Printer size={14} />
                       </a>
@@ -454,7 +455,7 @@ export default function OrdersLedger({
                         onClick={() => onRefund(o)}
                         disabled={updatingOrder === o.id}
                         title="Refund order"
-                        className="mr-1 inline-grid h-7 w-7 place-items-center rounded text-obsidian/40 hover:bg-ember/10 hover:text-ember disabled:opacity-40"
+                        className="mr-1 inline-grid h-7 w-7 place-items-center rounded text-obsidian/55 hover:bg-ember/10 hover:text-ember disabled:opacity-40"
                       >
                         <Undo2 size={14} />
                       </button>
@@ -465,7 +466,7 @@ export default function OrdersLedger({
                         onClick={() => onDelete(o)}
                         disabled={updatingOrder === o.id}
                         title="Delete order"
-                        className="inline-grid h-7 w-7 place-items-center rounded text-obsidian/40 hover:bg-red-50 hover:text-red-600 disabled:opacity-40"
+                        className="inline-grid h-7 w-7 place-items-center rounded text-obsidian/55 hover:bg-red-50 hover:text-red-600 disabled:opacity-40"
                       >
                         <Trash2 size={14} />
                       </button>
@@ -480,12 +481,12 @@ export default function OrdersLedger({
                     <td colSpan={10} className="px-2 py-3">
                       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
                         <div>
-                          <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/40">
+                          <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/55">
                             Line items
                           </p>
                           <table className="w-full text-xs">
                             <thead>
-                              <tr className="text-left text-[10px] uppercase tracking-wider text-obsidian/35">
+                              <tr className="text-left text-[10px] uppercase tracking-wider text-obsidian/65">
                                 <th className="py-1 font-bold">Item</th>
                                 <th className="py-1 text-right font-bold">Qty</th>
                                 <th className="py-1 text-right font-bold">Unit</th>
@@ -525,19 +526,19 @@ export default function OrdersLedger({
                         </div>
 
                         <div className="space-y-2 text-xs">
-                          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/40">
+                          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/55">
                             Fulfilment
                           </p>
                           <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-obsidian/60">
-                            <dt className="text-obsidian/40">Phone</dt>
+                            <dt className="text-obsidian/55">Phone</dt>
                             <dd>{o.phone || '—'}</dd>
-                            <dt className="text-obsidian/40">Address</dt>
+                            <dt className="text-obsidian/55">Address</dt>
                             <dd>
                               {o.addressLine1}
                               {o.addressLine2 ? `, ${o.addressLine2}` : ''}
                               {o.area ? `, ${o.area}` : ''}
                             </dd>
-                            <dt className="text-obsidian/40">Payment</dt>
+                            <dt className="text-obsidian/55">Payment</dt>
                             <dd>
                               <BankTransfer
                                 order={o}
@@ -545,7 +546,7 @@ export default function OrdersLedger({
                                 onRecord={onRecordBank}
                               />
                             </dd>
-                            <dt className="text-obsidian/40">Routed to</dt>
+                            <dt className="text-obsidian/55">Routed to</dt>
                             <dd>
                               {o.routedSupplierName ? (
                                 <>
@@ -560,12 +561,12 @@ export default function OrdersLedger({
                                 'Unrouted — source manually'
                               )}
                             </dd>
-                            <dt className="text-obsidian/40">Supplier</dt>
+                            <dt className="text-obsidian/55">Supplier</dt>
                             <dd>
                               {o.supplierName || 'Not sourced'}
                               {o.supplierCostNgn != null ? ` · ${formatNgn(o.supplierCostNgn)}` : ''}
                             </dd>
-                            <dt className="text-obsidian/40">Margin</dt>
+                            <dt className="text-obsidian/55">Margin</dt>
                             <dd
                               className={
                                 o.margin.sourced
@@ -581,7 +582,7 @@ export default function OrdersLedger({
                             </dd>
                             {o.notes && (
                               <>
-                                <dt className="text-obsidian/40">Notes</dt>
+                                <dt className="text-obsidian/55">Notes</dt>
                                 <dd>{o.notes}</dd>
                               </>
                             )}
@@ -600,12 +601,12 @@ export default function OrdersLedger({
             <tfoot>
               <tr className="border-t-2 border-obsidian/15 bg-paper/60 text-[13px] font-bold text-obsidian">
                 <td />
-                <td className="px-2 py-2.5 text-xs uppercase tracking-wider text-obsidian/45" colSpan={4}>
+                <td className="px-2 py-2.5 text-xs uppercase tracking-wider text-obsidian/60" colSpan={4}>
                   {totals.count} order{totals.count === 1 ? '' : 's'}
                 </td>
                 <td className="px-2 py-2.5 text-right tabular-nums">{totals.units}</td>
                 <td className="px-2 py-2.5 text-right tabular-nums">{formatNgn(totals.subtotal)}</td>
-                <td className="px-2 py-2.5 text-right tabular-nums text-obsidian/50">
+                <td className="px-2 py-2.5 text-right tabular-nums text-obsidian/65">
                   {totals.discounts > 0 ? `−${formatNgn(totals.discounts)}` : '—'}
                 </td>
                 <td className="px-2 py-2.5 text-right tabular-nums">{formatNgn(net)}</td>
@@ -616,12 +617,12 @@ export default function OrdersLedger({
         </table>
 
         {rows.length === 0 && !loading && (
-          <p className="px-4 py-10 text-center text-sm text-obsidian/45">
+          <p className="px-4 py-10 text-center text-sm text-obsidian/60">
             No orders in this range. Widen the dates or clear the filters.
           </p>
         )}
         {(hasMore || loading) && (
-          <div className="flex items-center justify-center gap-3 border-t border-obsidian/[0.06] px-4 py-3 text-xs text-obsidian/50">
+          <div className="flex items-center justify-center gap-3 border-t border-obsidian/[0.06] px-4 py-3 text-xs text-obsidian/65">
             <span>
               {rows.length} of {total}
             </span>
@@ -689,7 +690,7 @@ function BankTransfer({
       )}
       {!closed && open && (
         <div className="space-y-2 rounded-lg bg-white p-2 ring-1 ring-obsidian/10">
-          <label className="block text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/40">
+          <label className="block text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/55">
             Transfer reference
             <input
               value={reference}
@@ -698,7 +699,7 @@ function BankTransfer({
               className={`${adminInputClass} mt-1 w-full py-1.5`}
             />
           </label>
-          <p className="text-[11px] leading-relaxed text-obsidian/45">
+          <p className="text-[11px] leading-relaxed text-obsidian/60">
             {`The customer paid the Access Bank account. This is credited in full, with no Flutterwave fee${
               order.status === 'awaiting_payment' ? ', and the order is marked paid' : ''
             }.${
@@ -719,7 +720,7 @@ function BankTransfer({
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="rounded-lg px-2.5 py-1.5 text-[11px] font-bold text-obsidian/50"
+              className="rounded-lg px-2.5 py-1.5 text-[11px] font-bold text-obsidian/65"
             >
               Cancel
             </button>
@@ -733,7 +734,7 @@ function BankTransfer({
 function Stat({ label, value, tone }: { label: string; value: string; tone?: 'good' | 'bad' | 'muted' }) {
   return (
     <div className="bg-white px-3 py-2">
-      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/35">{label}</p>
+      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/65">{label}</p>
       <p
         className={`mt-0.5 text-sm font-bold tabular-nums ${
           tone === 'good'
@@ -741,7 +742,7 @@ function Stat({ label, value, tone }: { label: string; value: string; tone?: 'go
             : tone === 'bad'
               ? 'text-red-600'
               : tone === 'muted'
-                ? 'text-obsidian/45'
+                ? 'text-obsidian/60'
                 : 'text-obsidian'
         }`}
       >

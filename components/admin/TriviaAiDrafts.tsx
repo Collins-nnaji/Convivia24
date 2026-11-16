@@ -61,11 +61,11 @@ export default function TriviaAiDrafts({
   }
 
   return (
-    <div className="rounded-2xl border border-obsidian/10 bg-white p-5">
+    <div className="rounded-lg border border-obsidian/10 bg-white p-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h3 className="font-bold">Draft questions with AI</h3>
-          <p className="text-sm text-obsidian/50">For {roundLabel}. Review each one — edit, add or drop it. Nothing is saved until you add it.</p>
+          <p className="text-sm text-obsidian/65">For {roundLabel}. Review each one — edit, add or drop it. Nothing is saved until you add it.</p>
         </div>
         <div className="flex flex-wrap items-end gap-2">
           <AdminSelect label="How many" value={count} onChange={setCount} options={['3', '5', '8', '10']} className="w-24 py-2" />

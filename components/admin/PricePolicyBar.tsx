@@ -73,10 +73,10 @@ export default function PricePolicyBar({ onChange }: { onChange: (policy: Markup
   }
 
   return (
-    <section className="mb-6 rounded-2xl border border-obsidian/10 bg-white p-4">
+    <section className="mb-3 rounded-lg border border-obsidian/10 bg-white p-4">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/40">Markup</h2>
+          <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/55">Markup</h2>
           <p className="mt-1 max-w-xl text-sm leading-relaxed text-obsidian/55">
             Suggested retail covers the supplier cost, Flutterwave at 2% plus VAT, and Access Bank’s transfer, account
             fee and ₦4 alert. The markup below is ours, and each row can still take a different price.
@@ -113,7 +113,7 @@ export default function PricePolicyBar({ onChange }: { onChange: (policy: Markup
           </button>
         </div>
       </div>
-      <p className="mt-3 text-[11px] text-obsidian/40">
+      <p className="mt-3 text-[11px] text-obsidian/55">
         Now {saved.markupPct}%{saved.markupFlatNgn > 0 ? ` + ${formatNgn(saved.markupFlatNgn)}` : ''}. A suggestion prices
         the bottle as its own checkout, then rounds up to the next ₦100.
       </p>

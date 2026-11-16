@@ -6,6 +6,7 @@ import { ChevronDown, ChevronRight, Phone } from 'lucide-react';
 import { ORDER_STATUS_LABELS, ORDER_TRANSITIONS, type OrderStatus } from '@/lib/commerce/status';
 import { formatNgn } from '@/lib/drinks/catalog';
 import { useDialogs } from '@/components/admin/ui/DialogProvider';
+import DeliveredDialog from '@/components/admin/ui/DeliveredDialog';
 import { AdminInput, AdminSelect } from '@/components/admin/ui/Fields';
 import { OPEN_STATUSES, readError, type SupplierOrder } from './types';
 
@@ -46,10 +47,11 @@ export default function SupplierOrdersDesk({
   statuses: OrderStatus[];
   onChanged: () => Promise<unknown>;
 }) {
-  const { confirm, notify } = useDialogs();
+  const { notify } = useDialogs();
   const [view, setView] = useState<'open' | 'done' | 'all'>('open');
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState('');
+  const [delivering, setDelivering] = useState<SupplierOrder | null>(null);
 
   const rows = useMemo(() => {
     if (view === 'open') return orders.filter((o) => OPEN_STATUSES.has(o.status));
@@ -85,27 +87,31 @@ export default function SupplierOrdersDesk({
     }
   }
 
-  async function move(order: SupplierOrder, to: OrderStatus) {
-    if (to === 'delivered') {
-      const ok = await confirm({
-        title: 'Mark this order delivered?',
-        message: (
-          <>
-            The bottles leave your stock for good and <strong>{order.fullName}</strong> is told the order arrived. Only do this
-            once it is in their hands.
-          </>
-        ),
-        confirmLabel: 'Delivered',
-      });
-      if (!ok) return;
+  async function move(order: SupplierOrder, to: OrderStatus, proof?: { deliveryProof: string; recipientAgeChecked: boolean }) {
+    // Delivered needs the handover evidence (receipt + age check) — ask for it first.
+    if (to === 'delivered' && !proof) {
+      setDelivering(order);
+      return false;
     }
-    if (await patch(order, { status: to }, 'Could not update the order.')) {
+    if (await patch(order, { status: to, ...(proof ?? {}) }, 'Could not update the order.')) {
       notify(`${order.id.slice(0, 8).toUpperCase()} → ${ORDER_STATUS_LABELS[to]}`);
+      return true;
     }
+    return false;
   }
 
   return (
     <div>
+      {delivering && (
+        <DeliveredDialog
+          customerName={delivering.fullName}
+          busy={false}
+          onClose={() => setDelivering(null)}
+          onConfirm={async (proof) => {
+            if (await move(delivering, 'delivered', proof)) setDelivering(null);
+          }}
+        />
+      )}
       <div className="mb-4 flex flex-wrap items-center gap-2">
         {(['open', 'done', 'all'] as const).map((v) => (
           <button

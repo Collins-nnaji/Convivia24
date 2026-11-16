@@ -194,11 +194,11 @@ export default function TriviaDesk({ onChanged }: { onChanged?: () => void }) {
 
   return (
     <>
-      {error && <p className="mb-6 text-sm text-ember">{error}</p>}
+      {error && <p className="mb-3 text-sm text-ember">{error}</p>}
 
-      <div className="mb-12 bg-white p-6 shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)] sm:p-8 rounded-2xl">
+      <div className="mb-12 bg-white p-4 sm:p-8 rounded-lg">
         <h2 className="font-bold">Brand of the week</h2>
-        <p className="mb-5 mt-1 text-sm text-obsidian/50">
+        <p className="mb-5 mt-1 text-sm text-obsidian/65">
           One sponsoring house plays at a time. The week covering today is live on /discover; every other round stays
           open as practice with no draw.
         </p>
@@ -219,7 +219,7 @@ export default function TriviaDesk({ onChanged }: { onChanged?: () => void }) {
           <ul className="mt-6 space-y-2 border-t border-obsidian/10 pt-6">
             {weeks.map((week) => (
               <li key={week.id} className="flex flex-wrap items-center gap-3">
-                <span className="w-40 text-[11px] tabular-nums text-obsidian/45">
+                <span className="w-40 text-[11px] tabular-nums text-obsidian/60">
                   {week.weekStart} → {week.weekEnd}
                 </span>
                 <span className="text-sm font-medium">{rounds.find((r) => r.slug === week.roundSlug)?.brand || week.roundSlug}</span>
@@ -227,12 +227,12 @@ export default function TriviaDesk({ onChanged }: { onChanged?: () => void }) {
                   <span className="bg-ember px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.12em] text-white">Live</span>
                 )}
                 {!week.published && (
-                  <span className="bg-paper px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/45">Hidden</span>
+                  <span className="bg-paper px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/60">Hidden</span>
                 )}
                 <button
                   type="button"
                   onClick={() => removeWeek(week)}
-                  className="ml-auto text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/40 hover:text-ember"
+                  className="ml-auto text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/55 hover:text-ember"
                 >
                   Remove
                 </button>
@@ -244,19 +244,19 @@ export default function TriviaDesk({ onChanged }: { onChanged?: () => void }) {
 
       <div className="mb-12">
         <h2 className="mb-1 font-bold">Bottle draw</h2>
-        <p className="mb-4 text-sm text-obsidian/50">The raffle behind each round. Winners are emailed their claim code; mark the bottle claimed below once handed over.</p>
+        <p className="mb-4 text-sm text-obsidian/65">The raffle behind each round. Winners are emailed their claim code; mark the bottle claimed below once handed over.</p>
         <TriviaDrawDesk rounds={rounds} weeks={weeks} onDrawn={() => { load(); onChanged?.(); }} />
       </div>
 
-      <div className="mb-6">
+      <div className="mb-3">
         <TriviaAiDrafts roundSlug={questionRound} roundLabel={selectedRound ? `${selectedRound.brand} — ${selectedRound.prizeLabel}` : 'the selected round'} aiOk={aiOk} onAdd={addDraft} />
       </div>
 
       <div className="mb-12 grid gap-6 lg:grid-cols-[1fr_.9fr]">
-        <form onSubmit={addQuestion} className="space-y-4 bg-white p-6 shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)] rounded-2xl">
+        <form onSubmit={addQuestion} className="space-y-4 bg-white p-4 rounded-lg">
           <div>
             <h2 className="font-bold">Add trivia question</h2>
-            <p className="mt-1 text-sm text-obsidian/50">
+            <p className="mt-1 text-sm text-obsidian/65">
               Questions can only be attached to prize bottles already available with an image.
             </p>
           </div>
@@ -290,7 +290,7 @@ export default function TriviaDesk({ onChanged }: { onChanged?: () => void }) {
           )}
         </form>
 
-        <div className="bg-white p-6 shadow-sm rounded-2xl">
+        <div className="bg-white p-4 rounded-lg">
           <h2 className="font-bold">Added questions ({questions.length})</h2>
           <div className="mt-4 max-h-[32rem] divide-y divide-obsidian/8 overflow-y-auto">
             {questions.map((question) => (
@@ -299,7 +299,7 @@ export default function TriviaDesk({ onChanged }: { onChanged?: () => void }) {
                   {rounds.find((round) => round.slug === question.roundSlug)?.brand || question.roundSlug}
                 </p>
                 <p className="mt-1 text-sm font-semibold text-obsidian">{question.prompt}</p>
-                <p className="mt-1 text-xs text-obsidian/45">Correct: {question.options[question.answerIndex]}</p>
+                <p className="mt-1 text-xs text-obsidian/60">Correct: {question.options[question.answerIndex]}</p>
                 <button
                   type="button"
                   onClick={() => removeQuestion(question)}
@@ -309,7 +309,7 @@ export default function TriviaDesk({ onChanged }: { onChanged?: () => void }) {
                 </button>
               </div>
             ))}
-            {questions.length === 0 && <p className="py-6 text-sm text-obsidian/40">No extra questions yet.</p>}
+            {questions.length === 0 && <p className="py-6 text-sm text-obsidian/55">No extra questions yet.</p>}
           </div>
         </div>
       </div>
@@ -317,7 +317,7 @@ export default function TriviaDesk({ onChanged }: { onChanged?: () => void }) {
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="mb-1 font-bold">Draw entries</h2>
-          <p className="text-sm text-obsidian/50">
+          <p className="text-sm text-obsidian/65">
             Everyone who passed a brand round. Mark a winner, then mark the bottle claimed once collected.
             {unclaimed > 0 && <span className="text-ember"> {unclaimed} winner{unclaimed === 1 ? '' : 's'} yet to collect.</span>}
           </p>
@@ -336,24 +336,24 @@ export default function TriviaDesk({ onChanged }: { onChanged?: () => void }) {
       </div>
       <div className="space-y-3">
         {visibleEntries.map((entry) => (
-          <div key={entry.id} className="flex flex-col gap-4 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:p-5 rounded-2xl">
+          <div key={entry.id} className="flex flex-col gap-4 bg-white p-4 sm:flex-row sm:items-center sm:p-5 rounded-lg">
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="font-medium">{entry.name}</p>
-                <span className="bg-paper px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/50">{entry.brand}</span>
+                <span className="bg-paper px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/65">{entry.brand}</span>
                 <span
                   className={`px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.12em] ${
-                    ENTRY_TONE[entry.status] ?? 'bg-paper text-obsidian/45'
+                    ENTRY_TONE[entry.status] ?? 'bg-paper text-obsidian/60'
                   }`}
                 >
                   {entry.status}
                 </span>
               </div>
-              <p className="mt-1 truncate text-[12px] text-obsidian/50">
+              <p className="mt-1 truncate text-[12px] text-obsidian/65">
                 {entry.email}
                 {entry.phone ? ` · ${entry.phone}` : ''} · scored {entry.score}/{entry.total}
               </p>
-              <p className="mt-0.5 font-mono text-[11px] text-obsidian/40">{entry.code}</p>
+              <p className="mt-0.5 font-mono text-[11px] text-obsidian/55">{entry.code}</p>
             </div>
             <div className="flex shrink-0 items-center gap-2">
               {(['won', 'claimed', 'void'] as const).map((status) => (
@@ -378,7 +378,7 @@ export default function TriviaDesk({ onChanged }: { onChanged?: () => void }) {
           </div>
         ))}
         {visibleEntries.length === 0 && !error && (
-          <p className="text-sm text-obsidian/45">{entries.length === 0 ? 'No entries yet.' : 'Nothing matches that filter.'}</p>
+          <p className="text-sm text-obsidian/60">{entries.length === 0 ? 'No entries yet.' : 'Nothing matches that filter.'}</p>
         )}
       </div>
     </>

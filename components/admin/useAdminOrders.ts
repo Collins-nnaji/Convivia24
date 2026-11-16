@@ -4,7 +4,7 @@ import { useCallback, useRef, useState } from 'react';
 import type { OrderStatus } from '@/lib/commerce/status';
 import { readError, type AdminOrder } from './types';
 
-export type OrderFilters = { from?: string | null; to?: string | null; status?: OrderStatus | 'all'; q?: string };
+export type OrderFilters = { from?: string | null; to?: string | null; status?: OrderStatus | 'all' | 'open'; q?: string };
 
 const PAGE = 100;
 

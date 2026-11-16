@@ -3,18 +3,18 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { formatNgn } from '@/lib/drinks/catalog';
-import AdminShell, { type AdminTab } from '@/components/admin/AdminShell';
+import AdminShell, { type AdminGroup, type AdminTab } from '@/components/admin/AdminShell';
 import DialogProvider from '@/components/admin/ui/DialogProvider';
 import OverviewDesk from '@/components/admin/OverviewDesk';
 import DrinksDesk from '@/components/admin/DrinksDesk';
 import OrdersDesk from '@/components/admin/OrdersDesk';
-import SourcingDesk from '@/components/admin/SourcingDesk';
+import FulfilDesk from '@/components/admin/FulfilDesk';
 import SuppliersDesk from '@/components/admin/SuppliersDesk';
 import ReferralsDesk from '@/components/admin/ReferralsDesk';
 import GiftCardsDesk from '@/components/admin/GiftCardsDesk';
 import TriviaDesk from '@/components/admin/TriviaDesk';
 import ContentDesk from '@/components/admin/ContentDesk';
-import StorefrontDesk from '@/components/admin/StorefrontDesk';
+import MerchandisingDesk from '@/components/admin/MerchandisingDesk';
 import ReadinessDesk from '@/components/admin/ReadinessDesk';
 import RefundsDesk from '@/components/admin/RefundsDesk';
 import SupportDesk from '@/components/admin/SupportDesk';
@@ -24,15 +24,16 @@ import { hasAdminPermission, STAFF_ROLES, type StaffRole, type AdminPermission }
 import OperationsDesk from '@/components/admin/OperationsDesk';
 import DeliveryDesk from '@/components/admin/DeliveryDesk';
 import AccountingDesk from '@/components/admin/AccountingDesk';
+import FinanceDesk from '@/components/admin/FinanceDesk';
 import AnalyticsDesk from '@/components/admin/AnalyticsDesk';
 import { useAdminOrders } from '@/components/admin/useAdminOrders';
 import { EMPTY_SUMMARY, type AdminSummary } from '@/components/admin/types';
-import { BarChart3, CalendarDays, Gift, Landmark, LayoutDashboard, PackageSearch, Share2, ShoppingBag, Store, Trophy, Truck, Wine } from 'lucide-react';
+import { Landmark, LayoutDashboard, Megaphone, Settings2, ShoppingBag, Users, Wine } from 'lucide-react';
 
-const TAB_KEYS = ['overview', 'accounting', 'analytics', 'drinks', 'orders', 'sourcing', 'suppliers', 'referrals', 'giftcards', 'trivia', 'content', 'storefront', 'delivery', 'operations', 'staff', 'support', 'refunds', 'readiness', 'audit'] as const;
+const TAB_KEYS = ['overview', 'accounting', 'profitshare', 'expenses', 'payouts', 'analytics', 'drinks', 'fulfil', 'orders', 'suppliers', 'referrals', 'giftcards', 'trivia', 'content', 'storefront', 'delivery', 'operations', 'staff', 'support', 'refunds', 'readiness', 'audit'] as const;
 type TabKey = (typeof TAB_KEYS)[number];
 const TAB_PERMISSIONS: Record<TabKey, AdminPermission> = {
-  overview: 'read', analytics: 'read', accounting: 'finance', orders: 'orders', sourcing: 'orders',
+  overview: 'read', analytics: 'read', accounting: 'finance', profitshare: 'finance', expenses: 'finance', payouts: 'finance', orders: 'orders', fulfil: 'orders',
   drinks: 'inventory', suppliers: 'inventory', referrals: 'finance', giftcards: 'finance',
   trivia: 'content', content: 'content', storefront: 'content', delivery: 'operations', operations: 'read',
   audit: 'owner', staff: 'owner', support: 'operations', refunds: 'finance', readiness: 'owner',
@@ -46,6 +47,9 @@ function isTab(v: string): v is TabKey {
 function tabFromHash(fallback: TabKey): TabKey {
   if (typeof window === 'undefined') return fallback;
   const h = window.location.hash.replace(/^#/, '');
+  // Supplier costs now live inside each order on the Fulfil queue; analytics is on the dashboard.
+  if (h === 'sourcing') return 'fulfil';
+  if (h === 'analytics') return 'overview';
   return isTab(h) ? h : fallback;
 }
 
@@ -65,6 +69,8 @@ function AdminDesk({ initialTab }: { initialTab: TabKey }) {
   const [staffRole, setStaffRole] = useState<StaffRole>('owner');
   const [summary, setSummary] = useState<AdminSummary>(EMPTY_SUMMARY);
   const ordersStore = useAdminOrders();
+  // The fulfilment queue keeps its own list (open orders only) so ledger filters never hide work.
+  const fulfilStore = useAdminOrders();
 
   /** Counts for the sidebar + overview. The one call that runs on mount; every write re-runs it. */
   const loadSummary = useCallback(async () => {
@@ -87,13 +93,26 @@ function AdminDesk({ initialTab }: { initialTab: TabKey }) {
   }, [loadSummary, initialTab]);
 
   // Orders are shared by two tabs; fetch them the first time either is opened.
-  const needsOrders = tab === 'orders' || tab === 'sourcing';
+  const needsOrders = tab === 'orders';
   const { loaded: ordersLoaded, loading: ordersLoading, reload: reloadOrders } = ordersStore;
   useEffect(() => {
     if (authed && needsOrders && !ordersLoaded && !ordersLoading) reloadOrders();
   }, [authed, needsOrders, ordersLoaded, ordersLoading, reloadOrders]);
+  // Fulfil and All orders are two views of the same orders: changes made in one are mirrored into
+  // the other immediately, and opening a tab re-reads it from the server (new orders, supplier
+  // portal updates) so neither ever shows a stale status.
+  const { loaded: fulfilLoaded, reload: reloadFulfil } = fulfilStore;
+  useEffect(() => {
+    if (!authed) return;
+    if (tab === 'orders' && ordersLoaded) void reloadOrders();
+    if (tab === 'fulfil' && fulfilLoaded) void reloadFulfil();
+    // Only on switching tabs — not on every load-state change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, authed]);
 
-  function go(key: string) {
+  function go(raw: string) {
+    // Retired pages land on where their content lives now.
+    const key = raw === 'analytics' ? 'overview' : raw === 'sourcing' ? 'fulfil' : raw;
     if (!isTab(key)) return;
     setTab(key);
     window.history.replaceState(null, '', `#${key}`);
@@ -102,7 +121,7 @@ function AdminDesk({ initialTab }: { initialTab: TabKey }) {
   if (authed === null) {
     return (
       <section className="min-h-[70vh] bg-paper px-5 py-16">
-        {summaryError ? <div className="mx-auto max-w-lg space-y-4 rounded-xl bg-white p-6"><p role="alert" className="text-sm text-ember">{summaryError}</p><button className="btn-brand px-4 py-2" onClick={() => void loadSummary()}>Retry opening desk</button></div> : <p className="text-center text-sm text-obsidian/40">Opening the desk…</p>}
+        {summaryError ? <div className="mx-auto max-w-lg space-y-4 rounded-xl bg-white p-4"><p role="alert" className="text-sm text-ember">{summaryError}</p><button className="btn-brand px-4 py-2" onClick={() => void loadSummary()}>Retry opening desk</button></div> : <p className="text-center text-sm text-obsidian/55">Opening the desk…</p>}
       </section>
     );
   }
@@ -110,13 +129,13 @@ function AdminDesk({ initialTab }: { initialTab: TabKey }) {
   if (!authed) {
     return (
       <section className="min-h-[70vh] bg-paper px-5 py-16">
-        <div className="mx-auto max-w-md bg-white p-8 shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)] rounded-2xl">
+        <div className="mx-auto max-w-md bg-white p-5 rounded-lg">
           <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.28em] text-ember">Convivia24</p>
-          <h1 className="mb-4 text-2xl font-serif font-light tracking-tight">Desk</h1>
-          <p className="mb-6 text-sm text-obsidian/50">
+          <h1 className="mb-4 text-2xl font-bold tracking-tight">Desk</h1>
+          <p className="mb-3 text-sm text-obsidian/65">
             Sign in with your verified staff account to access the admin desk.
           </p>
-          <p className="mt-6 text-xs text-obsidian/40">
+          <p className="mt-6 text-xs text-obsidian/55">
             Or{' '}
             <Link href="/signin?next=/admin" className="text-ember">
               sign in with your account
@@ -130,32 +149,54 @@ function AdminDesk({ initialTab }: { initialTab: TabKey }) {
 
   // Counts are "needs attention", never "rows in the table" — a pill should mean there is work.
   const pill = (n: number) => (n > 0 ? n : undefined);
-  const tabs: AdminTab[] = [
-    { key: 'readiness', label: 'Launch readiness', icon: <LayoutDashboard size={17} /> },
-    { key: 'refunds', label: 'Refunds & exceptions', icon: <Landmark size={17} /> },
-    { key: 'support', label: 'Customer support', icon: <Gift size={17} /> },
-    { key: 'audit', label: 'Platform audit', icon: <LayoutDashboard size={17} /> },
-    { key: 'staff', label: 'Staff & audit', icon: <LayoutDashboard size={17} /> },
-    { key: 'operations', label: 'Partners & rewards', icon: <Gift size={17} /> },
-    { key: 'delivery', label: 'Delivery settings', icon: <Truck size={17} /> },
-    { key: 'overview', label: 'Overview', icon: <LayoutDashboard size={17} /> },
-    { key: 'accounting', label: 'Accounting', icon: <Landmark size={17} /> },
-    { key: 'analytics', label: 'Analytics', icon: <BarChart3 size={17} /> },
-    { key: 'orders', label: 'Orders', count: pill(summary.ordersToFulfil), icon: <ShoppingBag size={17} /> },
-    { key: 'sourcing', label: 'Order sourcing', count: pill(summary.ordersUnsourced), icon: <PackageSearch size={17} /> },
-    { key: 'drinks', label: 'Drinks', count: pill(summary.lowStock), icon: <Wine size={17} /> },
-    { key: 'suppliers', label: 'Supplier', count: pill(summary.bottleRequestsPending), icon: <Truck size={17} /> },
-    {
-      key: 'referrals',
-      label: 'Referrals',
-      count: pill(summary.brandEnquiriesNew + summary.partnersPending),
-      icon: <Share2 size={17} />,
-    },
-    { key: 'giftcards', label: 'Gift cards', icon: <Gift size={17} /> },
-    { key: 'trivia', label: 'Trivia', count: pill(summary.prizesUnclaimed), icon: <Trophy size={17} /> },
-    { key: 'storefront', label: 'Storefront', icon: <Store size={17} /> },
-    { key: 'content', label: 'Events & venues', count: pill(summary.contentPending), icon: <CalendarDays size={17} /> },
+  // Every page of the desk, by key. Labels are what staff see in the sidebar and sub-page bar.
+  const page: Record<TabKey, Omit<AdminTab, 'key' | 'icon'>> = {
+    overview: { label: 'Dashboard', hint: 'Today at a glance, what needs a hand, and how the business is performing.' },
+    analytics: { label: 'Analytics' },
+    orders: { label: 'All orders', hint: 'Full history with date and status filters, exports, refunds and edits.' },
+    fulfil: { label: 'Fulfil', count: pill(summary.ordersToFulfil), hint: 'Open orders, oldest first. Expand (+) an order to confirm payment, record the supplier cost, dispatch and mark delivered.' },
+    delivery: { label: 'Delivery areas', hint: 'Areas you deliver to, their fees and courier contacts.' },
+    drinks: { label: 'Drinks & stock', count: pill(summary.lowStock), hint: 'Your catalogue: stock, retail price, cost and margin per bottle.' },
+    suppliers: { label: 'Suppliers', count: pill(summary.bottleRequestsPending), hint: 'Who you buy from: contacts, portal access, wholesale price lists and requests.' },
+    accounting: { label: 'Accounts (P&L)', hint: 'Profit and loss, balance sheet and trends for any period.' },
+    profitshare: { label: 'Profit share', hint: `Net profit split equally between partners — 40% always stays in the business.` },
+    expenses: { label: 'Expenses', hint: 'Record rent, salaries, marketing and other costs — they reduce profit before the split.' },
+    payouts: { label: 'Payouts', hint: 'Everything owed or paid out: partner shares, supplier settlements, other payments.' },
+    refunds: { label: 'Refunds & payments', hint: 'Refunds to verify, payment exceptions and stuck payment holds.' },
+    giftcards: { label: 'Gift cards', hint: 'Issue, track and void gift cards.' },
+    support: { label: 'Customer support', hint: 'Customer requests and account deletion requests.' },
+    referrals: { label: 'Referrals & brands', count: pill(summary.brandEnquiriesNew + summary.partnersPending), hint: 'Referral partners, commissions to pay and brand enquiries.' },
+    operations: { label: 'Venues & rewards', hint: 'Partner venue approvals, wholesale orders and loyalty rewards to hand over.' },
+    storefront: { label: 'Shop picks', hint: 'Choose the featured bottles, best sellers, staff picks, new-in and offers the shop and home page show.' },
+    content: { label: 'Events & venues', count: pill(summary.contentPending), hint: 'Create and publish events — published upcoming events appear on Discover › What’s on within a minute.' },
+    trivia: { label: 'Trivia', count: pill(summary.prizesUnclaimed), hint: 'Questions, schedules, draws and prizes to hand over.' },
+    staff: { label: 'Staff & access', hint: 'Who can use the desk and what each role can do.' },
+    audit: { label: 'Platform audit', hint: 'Search every request and change made on the platform.' },
+    readiness: { label: 'Launch readiness', hint: 'Automated launch checks and operational rehearsals.' },
+  };
+
+
+  /** Departments, in the order a working day touches them. Each page appears exactly once. */
+  const layout: { key: string; label: string; icon: AdminGroup['icon']; pages: TabKey[] }[] = [
+    { key: 'home', label: 'Dashboard', icon: <LayoutDashboard size={17} />, pages: ['overview'] },
+    { key: 'orders', label: 'Orders', icon: <ShoppingBag size={17} />, pages: ['fulfil', 'orders', 'delivery'] },
+    { key: 'catalogue', label: 'Products & stock', icon: <Wine size={17} />, pages: ['drinks', 'suppliers'] },
+    { key: 'finance', label: 'Finance', icon: <Landmark size={17} />, pages: ['accounting', 'profitshare', 'expenses', 'payouts', 'refunds', 'giftcards'] },
+    { key: 'customers', label: 'Customers & partners', icon: <Users size={17} />, pages: ['support', 'referrals', 'operations'] },
+    { key: 'marketing', label: 'Storefront & content', icon: <Megaphone size={17} />, pages: ['storefront', 'content', 'trivia'] },
+    { key: 'system', label: 'Team & system', icon: <Settings2 size={17} />, pages: ['staff', 'audit', 'readiness'] },
   ];
+
+  // Only pages this role can open; a department with none left disappears.
+  const groups: AdminGroup[] = layout.map((g) => ({
+    key: g.key,
+    label: g.label,
+    icon: g.icon,
+    tabs: g.pages
+      .filter((k) => hasAdminPermission(staffRole, TAB_PERMISSIONS[k]))
+      .map((k) => ({ key: k, icon: g.icon, ...page[k] })),
+  }));
+
 
   const subtitle =
     summary.todayOrders > 0
@@ -163,9 +204,14 @@ function AdminDesk({ initialTab }: { initialTab: TabKey }) {
       : 'No orders yet today';
 
   return (
-    <AdminShell title="Desk" subtitle={subtitle} tabs={tabs.filter(t => hasAdminPermission(staffRole, TAB_PERMISSIONS[t.key as TabKey]))} active={tab} onSelect={go}>
+    <AdminShell title="Desk" subtitle={subtitle} groups={groups} active={tab} onSelect={go}>
       {hasAdminPermission(staffRole, TAB_PERMISSIONS[tab]) ? <>
-      {tab === 'overview' && <OverviewDesk summary={summary} onGo={go} />}
+      {tab === 'overview' && (
+        <div className="space-y-6">
+          <OverviewDesk summary={summary} onGo={go} />
+          <AnalyticsDesk />
+        </div>
+      )}
       {tab === 'readiness' && <ReadinessDesk />}
       {tab === 'refunds' && <RefundsDesk />}
       {tab === 'support' && <SupportDesk />}
@@ -174,25 +220,20 @@ function AdminDesk({ initialTab }: { initialTab: TabKey }) {
       {tab === 'operations' && <OperationsDesk role={staffRole} />}
       {tab === 'delivery' && <DeliveryDesk />}
       {tab === 'accounting' && <AccountingDesk />}
-      {tab === 'analytics' && <AnalyticsDesk />}
+      {tab === 'profitshare' && <FinanceDesk view="share" />}
+      {tab === 'expenses' && <FinanceDesk view="expenses" />}
+      {tab === 'payouts' && <FinanceDesk view="payouts" />}
       {tab === 'drinks' && <DrinksDesk onChanged={loadSummary} />}
-      {tab === 'orders' && <OrdersDesk store={ordersStore} onChanged={loadSummary} />}
-      {tab === 'sourcing' && (
-        <SourcingDesk
-          orders={ordersStore.orders}
-          onOrdersChanged={() => {
-            reloadOrders();
-            loadSummary();
-          }}
-        />
-      )}
+      {tab === 'orders' && <OrdersDesk store={ordersStore} mirror={fulfilStore} onChanged={loadSummary} />}
+      {tab === 'fulfil' && <FulfilDesk store={fulfilStore} mirror={ordersStore} onChanged={loadSummary} />}
+
       {tab === 'suppliers' && <SuppliersDesk onCatalogChanged={loadSummary} />}
       {tab === 'referrals' && <ReferralsDesk onChanged={loadSummary} />}
       {tab === 'giftcards' && <GiftCardsDesk onChanged={loadSummary} />}
       {tab === 'trivia' && <TriviaDesk onChanged={loadSummary} />}
       {tab === 'content' && <ContentDesk onChanged={loadSummary} />}
-      {tab === 'storefront' && <StorefrontDesk />}
-      </> : <div className="space-y-3 rounded-xl bg-white p-5"><p role="alert">Your staff role does not have access to this section.</p><button className="btn-brand px-4 py-2" onClick={() => go('overview')}>Open overview</button></div>}
+      {tab === 'storefront' && <MerchandisingDesk />}
+      </> : <div className="space-y-3 rounded-xl bg-white p-4"><p role="alert">Your staff role does not have access to this section.</p><button className="btn-brand px-4 py-2" onClick={() => go('overview')}>Open overview</button></div>}
     </AdminShell>
   );
 }

@@ -32,6 +32,10 @@ export type AdminOrder = {
   supplierId: string | null;
   supplierName: string | null;
   supplierCostNgn: number | null;
+  /** Cost estimate from automatic routing at checkout — a starting point for the real cost. */
+  routedCostNgn?: number | null;
+  /** Delivery fee the customer paid (part of totalNgn). */
+  deliveryFeeNgn?: number;
   sourcedAt: string | null;
   sourcingNote: string | null;
   /** Supplier auto-picked from the delivery city at checkout. */

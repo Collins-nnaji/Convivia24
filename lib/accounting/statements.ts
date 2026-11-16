@@ -218,6 +218,8 @@ export type OrderTotals = {
   /** Gross collected by transfer into the Access Bank account. Flutterwave is not taken on this. */
   bankChargedNgn: number;
   bankOrderCount: number;
+  /** What riders and couriers cost us (recorded per order at dispatch). */
+  deliveryCostNgn?: number;
 };
 
 export type ProfitAndLoss = OrderTotals & {
@@ -238,6 +240,8 @@ export type ProfitAndLoss = OrderTotals & {
   loyaltyPointsAwarded: number;
   flutterwaveNgn: number;
   accessNgn: number;
+  /** Manual operating expenses booked on the Finance desk (rent, salaries, marketing…). */
+  expensesNgn: number;
   netProfitNgn: number;
   netMarginPct: number;
   avgOrderNgn: number;
@@ -247,7 +251,8 @@ export function buildProfitAndLoss(
   orders: OrderTotals,
   commissions: { accruedNgn: number; paidNgn: number },
   rewards: { costNgn: number; releasedNgn: number },
-  loyalty: { accruedNgn: number; pointsAwarded: number }
+  loyalty: { accruedNgn: number; pointsAwarded: number },
+  overheads: { expensesNgn: number } = { expensesNgn: 0 }
 ): ProfitAndLoss {
   const explained = orders.grossSalesNgn - orders.loyaltyDiscountNgn - orders.giftCardDiscountNgn;
   const netRevenueNgn = orders.chargedNgn - orders.refundedNgn;
@@ -262,8 +267,16 @@ export function buildProfitAndLoss(
   // Accrue the promise when points are earned. On redeem, release that liability and only
   // expense any fulfilment cost above the points already booked.
   const rewardFulfillmentNgn = Math.max(0, rewards.costNgn - rewards.releasedNgn);
+  const expensesNgn = Math.max(0, overheads.expensesNgn);
+  const deliveryCostNgn = Math.max(0, orders.deliveryCostNgn ?? 0);
   const netProfitNgn =
-    grossProfitNgn - commissions.accruedNgn - loyalty.accruedNgn - rewardFulfillmentNgn - fees.totalNgn;
+    grossProfitNgn -
+    commissions.accruedNgn -
+    loyalty.accruedNgn -
+    rewardFulfillmentNgn -
+    fees.totalNgn -
+    deliveryCostNgn -
+    expensesNgn;
   return {
     ...orders,
     otherAdjustmentsNgn: orders.chargedNgn - explained,
@@ -279,6 +292,8 @@ export function buildProfitAndLoss(
     loyaltyPointsAwarded: loyalty.pointsAwarded,
     flutterwaveNgn: fees.flutterwaveNgn,
     accessNgn: fees.accessNgn,
+    expensesNgn,
+    deliveryCostNgn,
     netProfitNgn,
     netMarginPct: booksPct(netProfitNgn, netRevenueNgn),
     avgOrderNgn: orders.orderCount > 0 ? Math.round(netRevenueNgn / orders.orderCount) : 0,

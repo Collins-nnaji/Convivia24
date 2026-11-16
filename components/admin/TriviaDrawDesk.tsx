@@ -126,9 +126,9 @@ export default function TriviaDrawDesk({ rounds, weeks, onDrawn }: { rounds: Rou
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-      <div className="rounded-2xl border border-obsidian/10 bg-white p-5">
+      <div className="rounded-lg border border-obsidian/10 bg-white p-4">
         <h3 className="flex items-center gap-2 font-bold"><Trophy size={16} className="text-ember" /> Run the draw</h3>
-        <p className="text-sm text-obsidian/50">Everyone who passed the round is in the hat. One draw per brand week.</p>
+        <p className="text-sm text-obsidian/65">Everyone who passed the round is in the hat. One draw per brand week.</p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <AdminSelect
             label="Week"
@@ -150,8 +150,8 @@ export default function TriviaDrawDesk({ rounds, weeks, onDrawn }: { rounds: Rou
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-paper px-4 py-3">
           <div>
-            <p className="font-serif text-3xl font-light tabular-nums text-obsidian">{eligible.length}</p>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-obsidian/45">in the hat{round ? ` · ${round.prizeLabel}` : ''}</p>
+            <p className="text-2xl font-bold tabular-nums text-obsidian">{eligible.length}</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-obsidian/60">in the hat{round ? ` · ${round.prizeLabel}` : ''}</p>
           </div>
           {alreadyDrawn ? (
             <p className="text-sm text-obsidian/55">Drawn {formatWhen(alreadyDrawn.drawnAt)} — <strong>{alreadyDrawn.winner.name}</strong></p>
@@ -167,28 +167,28 @@ export default function TriviaDrawDesk({ rounds, weeks, onDrawn }: { rounds: Rou
             {eligible.map((e) => (
               <li key={e.id} className="flex items-center justify-between gap-3 py-1.5">
                 <span className="min-w-0 truncate">
-                  <span className="font-semibold">{e.name}</span> <span className="text-obsidian/45">{e.email}</span>
+                  <span className="font-semibold">{e.name}</span> <span className="text-obsidian/60">{e.email}</span>
                 </span>
-                <span className="shrink-0 text-xs tabular-nums text-obsidian/45">{e.score}/{e.total}</span>
+                <span className="shrink-0 text-xs tabular-nums text-obsidian/60">{e.score}/{e.total}</span>
               </li>
             ))}
           </ul>
         )}
       </div>
 
-      <div className="rounded-2xl border border-obsidian/10 bg-white p-5">
+      <div className="rounded-lg border border-obsidian/10 bg-white p-4">
         <h3 className="font-bold">Past draws</h3>
         {draws.length === 0 ? (
-          <p className="mt-2 text-sm text-obsidian/45">No draws yet.</p>
+          <p className="mt-2 text-sm text-obsidian/60">No draws yet.</p>
         ) : (
           <ul className="mt-3 divide-y divide-obsidian/6">
             {draws.map((d) => (
               <li key={d.id} className="py-3">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <p className="font-semibold">
-                    {d.brand} <span className="text-obsidian/45">· {d.weekStart ? `${d.weekStart} → ${d.weekEnd}` : 'whole round'}</span>
+                    {d.brand} <span className="text-obsidian/60">· {d.weekStart ? `${d.weekStart} → ${d.weekEnd}` : 'whole round'}</span>
                   </p>
-                  <span className="text-xs text-obsidian/45">{formatWhen(d.drawnAt)} · {d.eligibleCount} in hat</span>
+                  <span className="text-xs text-obsidian/60">{formatWhen(d.drawnAt)} · {d.eligibleCount} in hat</span>
                 </div>
                 <p className="mt-1 text-sm">
                   <span className="rounded bg-ember px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">{d.winner.status}</span>{' '}
@@ -199,15 +199,15 @@ export default function TriviaDrawDesk({ rounds, weeks, onDrawn }: { rounds: Rou
                     {d.winnerNotifiedAt ? `Winner emailed ${formatWhen(d.winnerNotifiedAt)}` : 'Winner not emailed'}
                   </span>
                   {mailOk && (
-                    <button type="button" disabled={busy === d.id + 'winner'} onClick={() => resend(d, 'winner')} className="inline-flex items-center gap-1 font-bold uppercase tracking-wider text-obsidian/50 hover:text-ember disabled:opacity-40">
+                    <button type="button" disabled={busy === d.id + 'winner'} onClick={() => resend(d, 'winner')} className="inline-flex items-center gap-1 font-bold uppercase tracking-wider text-obsidian/65 hover:text-ember disabled:opacity-40">
                       <Mail size={11} /> {d.winnerNotifiedAt ? 'Resend' : 'Send'}
                     </button>
                   )}
-                  <span className="text-obsidian/40">
+                  <span className="text-obsidian/55">
                     {d.othersNotifiedAt ? `${d.othersNotifiedCount} runners-up told` : 'Runners-up not told'}
                   </span>
                   {mailOk && !d.othersNotifiedAt && (
-                    <button type="button" disabled={busy === d.id + 'others'} onClick={() => resend(d, 'others')} className="font-bold uppercase tracking-wider text-obsidian/50 hover:text-ember disabled:opacity-40">
+                    <button type="button" disabled={busy === d.id + 'others'} onClick={() => resend(d, 'others')} className="font-bold uppercase tracking-wider text-obsidian/65 hover:text-ember disabled:opacity-40">
                       Tell them
                     </button>
                   )}

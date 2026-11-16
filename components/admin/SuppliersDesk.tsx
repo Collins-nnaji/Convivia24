@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
-import { Pencil, RefreshCw, Search } from 'lucide-react';
+import { Pencil, Plus, Power, RefreshCw, Search } from 'lucide-react';
 import { formatNgn } from '@/lib/drinks/catalog';
 import { skuMargin } from '@/lib/suppliers/margin';
 import type { Supplier, SupplierInput } from '@/lib/suppliers/repo';
@@ -30,7 +30,7 @@ type Pane = 'prices' | 'activity' | 'requests';
 
 function MarginBadge({ retail, cost }: { retail: number | null; cost: number | null }) {
   const margin = skuMargin(retail, cost);
-  if (!margin) return <span className="text-[11px] text-obsidian/35">—</span>;
+  if (!margin) return <span className="text-[11px] text-obsidian/65">—</span>;
   const tone = margin.negative ? 'text-red-600 bg-red-50' : margin.low ? 'text-amber-700 bg-amber-50' : 'text-emerald-700 bg-emerald-50';
   return (
     <span className={`inline-flex flex-col rounded px-2 py-1 text-[11px] font-semibold tabular-nums ${tone}`}>
@@ -43,16 +43,16 @@ function MarginBadge({ retail, cost }: { retail: number | null; cost: number | n
 const ACTOR_TONE: Record<SupplierAuditEntry['actor'], string> = {
   supplier: 'bg-ember/10 text-ember',
   admin: 'bg-obsidian text-white',
-  system: 'bg-paper text-obsidian/50',
+  system: 'bg-paper text-obsidian/65',
 };
 
 function ActivityList({ entries, showSupplier }: { entries: AuditRow[]; showSupplier?: boolean }) {
-  if (entries.length === 0) return <p className="text-sm text-obsidian/45">No activity yet.</p>;
+  if (entries.length === 0) return <p className="text-sm text-obsidian/60">No activity yet.</p>;
   return (
-    <ul className="divide-y divide-obsidian/8 rounded-2xl bg-white ring-1 ring-obsidian/[0.06]">
+    <ul className="divide-y divide-obsidian/8 rounded-lg bg-white ring-1 ring-obsidian/15">
       {entries.map((e) => (
         <li key={e.id} className="flex flex-wrap items-center gap-2.5 px-3 py-2.5 text-sm">
-          <span className="w-28 shrink-0 text-[11px] tabular-nums text-obsidian/40">
+          <span className="w-28 shrink-0 text-[11px] tabular-nums text-obsidian/55">
             {new Date(e.createdAt).toLocaleString('en-NG', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}
           </span>
           <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${ACTOR_TONE[e.actor]}`}>
@@ -60,7 +60,7 @@ function ActivityList({ entries, showSupplier }: { entries: AuditRow[]; showSupp
           </span>
           {showSupplier && <span className="font-semibold text-obsidian">{e.supplierName}</span>}
           <span className="text-obsidian/70">{e.text}</span>
-          {e.actorLabel && <span className="text-xs text-obsidian/35">({e.actorLabel})</span>}
+          {e.actorLabel && <span className="text-xs text-obsidian/65">({e.actorLabel})</span>}
         </li>
       ))}
     </ul>
@@ -76,7 +76,7 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [mode, setMode] = useState<'none' | 'edit'>('none');
+  const [mode, setMode] = useState<'none' | 'edit' | 'create'>('none');
   const [saving, setSaving] = useState(false);
   const [pane, setPane] = useState<Pane>('prices');
   const [draftCosts, setDraftCosts] = useState<Record<string, string>>({});
@@ -96,8 +96,10 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
       const catalogData = await catalogRes.json();
       if (!supplierRes.ok) throw new Error(supplierData.error || 'Unable to load suppliers.');
       if (!catalogRes.ok) throw new Error(catalogData.error || 'Unable to load SKU prices.');
-      // One active partner fills every order — inactive regionals stay out of the desk.
-      const rows: Supplier[] = ((supplierData.suppliers || []) as Supplier[]).filter((s) => s.active);
+      // Every supplier, active first — inactive ones stay listed so they can be switched back on.
+      const rows: Supplier[] = ((supplierData.suppliers || []) as Supplier[])
+        .slice()
+        .sort((a, b) => Number(b.active) - Number(a.active) || a.name.localeCompare(b.name));
       setSuppliers(rows);
       setCatalog(catalogData.catalog || []);
       if (feedRes.ok) setFeed((await feedRes.json()).entries || []);
@@ -161,21 +163,59 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
   }, [catalog, selected]);
 
   async function submitSupplier(input: SupplierInput) {
-    if (!selected) return;
+    const creating = mode === 'create';
+    if (!creating && !selected) return;
     setSaving(true);
     try {
       const res = await fetch('/api/admin/suppliers', {
-        method: 'PATCH',
+        method: creating ? 'POST' : 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: selected.id, ...input }),
+        body: JSON.stringify(creating ? input : { id: selected!.id, ...input }),
       });
       if (!res.ok) {
         setError(await readError(res, 'Unable to save supplier.'));
         return;
       }
+      if (creating) {
+        const data = await res.json().catch(() => null);
+        if (data?.supplier?.id) setSelectedId(data.supplier.id);
+      }
       setMode('none');
       setError('');
-      notify('supplier updated.');
+      notify(creating ? 'Supplier added.' : 'Supplier updated.');
+      await reloadAll();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  /** Switch a supplier on or off without touching the rest of its record. */
+  async function setActive(supplier: Supplier, active: boolean) {
+    setSaving(true);
+    try {
+      const res = await fetch('/api/admin/suppliers', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: supplier.id,
+          name: supplier.name,
+          contactName: supplier.contactName,
+          phone: supplier.phone,
+          email: supplier.email,
+          city: supplier.city,
+          areas: supplier.areas,
+          categories: supplier.categories,
+          sameDay: supplier.sameDay,
+          notes: supplier.notes,
+          active,
+        }),
+      });
+      if (!res.ok) {
+        setError(await readError(res, 'Unable to update supplier.'));
+        return;
+      }
+      setError('');
+      notify(active ? `${supplier.name} is active — it can be assigned orders.` : `${supplier.name} is paused.`);
       await reloadAll();
     } finally {
       setSaving(false);
@@ -216,29 +256,64 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
   }
 
   return (
-    <div className="space-y-6">
-      {error && <p className="text-sm text-ember">{error}</p>}
+    <div className="space-y-4">
+      {error && <p role="alert" className="rounded-md border border-ember/30 bg-ember/5 px-3 py-2 text-sm text-ember">{error}</p>}
 
-      <div className="grid gap-px overflow-hidden rounded-2xl border border-obsidian/10 bg-obsidian/10 sm:grid-cols-4">
+      {/* Supplier switcher — every supplier, plus adding a new one. */}
+      <div className="flex flex-wrap items-center gap-1.5">
+        {suppliers.map((sup) => {
+          const on = sup.id === selectedId && mode !== 'create';
+          return (
+            <button
+              key={sup.id}
+              type="button"
+              onClick={() => {
+                setSelectedId(sup.id);
+                setMode('none');
+              }}
+              className={`inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm font-semibold transition-colors ${
+                on ? 'border-obsidian bg-obsidian text-white' : 'border-obsidian/20 bg-white text-obsidian/80 hover:border-obsidian'
+              }`}
+            >
+              <span className={`h-2 w-2 rounded-full ${sup.active ? 'bg-emerald-500' : 'bg-obsidian/30'}`} aria-hidden />
+              {sup.name}
+              {!sup.active && <span className={`text-[11px] font-medium ${on ? 'text-white/70' : 'text-obsidian/65'}`}>paused</span>}
+            </button>
+          );
+        })}
+        <button
+          type="button"
+          onClick={() => setMode('create')}
+          className={`inline-flex items-center gap-1.5 rounded-md border border-dashed px-3 py-1.5 text-sm font-semibold ${
+            mode === 'create' ? 'border-ember bg-ember/5 text-ember' : 'border-obsidian/30 text-obsidian/70 hover:border-ember hover:text-ember'
+          }`}
+        >
+          <Plus size={14} /> Add supplier
+        </button>
+      </div>
+
+      <div className="grid gap-px overflow-hidden rounded-lg border border-obsidian/15 bg-obsidian/15 sm:grid-cols-4">
         {[
-          ['Partner', selected?.name || '—'],
+          ['Supplier', selected?.name || '—'],
           ['Portal', selected?.hasAccessKey && selected.portalEnabled ? 'Open' : 'Off'],
           ['SKUs priced', selected && summary ? `${summary.priced}/${summary.total}` : '—'],
           ['Avg margin', selected && summary ? `${summary.avgMarginPct}%` : '—'],
         ].map(([label, value]) => (
-          <div key={label} className="bg-white p-4">
-            <p className="text-[10px] uppercase tracking-wider text-obsidian/40">{label}</p>
-            <p className="mt-1 font-serif text-3xl font-light tabular-nums text-obsidian">{value}</p>
+          <div key={label} className="bg-white px-4 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-obsidian/60">{label}</p>
+            <p className="mt-0.5 truncate text-xl font-bold tabular-nums text-obsidian">{value}</p>
           </div>
         ))}
       </div>
 
       <section className="min-w-0 space-y-5">
-        {loading && !selected ? (
-          <p className="text-sm text-obsidian/45">Loading supplier…</p>
+        {mode === 'create' ? (
+          <SupplierForm saving={saving} onSubmit={submitSupplier} onCancel={() => setMode('none')} />
+        ) : loading && !selected ? (
+          <p className="text-sm text-obsidian/60">Loading supplier…</p>
         ) : !selected ? (
-          <div className="rounded-2xl border border-obsidian/10 bg-white p-8 text-center text-sm text-obsidian/50">
-            No active supplier. Add your supplier and opening stock before taking orders.
+          <div className="rounded-lg border border-obsidian/15 bg-white p-4 text-center text-sm text-obsidian/70">
+            No suppliers yet. Use <strong>Add supplier</strong> to set up who fills your orders.
           </div>
         ) : mode === 'edit' ? (
           <SupplierForm initial={selected} saving={saving} onSubmit={submitSupplier} onCancel={() => setMode('none')} />
@@ -247,27 +322,39 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-serif font-light text-obsidian">{selected.name}</h2>
-                  <button type="button" onClick={reloadAll} className="text-obsidian/40 hover:text-obsidian" title="Refresh">
+                  <h2 className="text-lg font-bold text-obsidian">{selected.name}</h2>
+                  <button type="button" onClick={reloadAll} className="text-obsidian/55 hover:text-obsidian" title="Refresh">
                     <RefreshCw size={14} />
                   </button>
                 </div>
-                <p className="mt-1 text-sm text-obsidian/50">
-                  Single fulfilment partner · {selected.city}
+                <p className="mt-1 text-sm text-obsidian/65">
+                  {selected.active ? 'Active — can be assigned orders' : 'Paused — not offered for new orders'} · {selected.city}
                   {selected.sameDay ? ' · same-day capable' : ''}
                   {summary ? ` · ${summary.priced} of ${summary.total} SKUs priced` : ''}
                 </p>
-                <p className="text-xs text-obsidian/45">
+                <p className="text-xs text-obsidian/60">
                   {[selected.contactName, selected.phone, selected.email].filter(Boolean).join(' · ') || 'No contact on file'}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => setMode('edit')}
-                className="inline-flex items-center gap-1.5 rounded-full border border-obsidian/15 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/70 hover:border-ember hover:text-ember"
-              >
-                <Pencil size={12} /> Edit partner
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={() => setActive(selected, !selected.active)}
+                  className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-40 ${
+                    selected.active ? 'border-obsidian/20 text-obsidian/80 hover:border-obsidian' : 'border-emerald-600 bg-emerald-50 text-emerald-800'
+                  }`}
+                >
+                  <Power size={13} /> {selected.active ? 'Pause supplier' : 'Activate supplier'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMode('edit')}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-obsidian/20 px-3 py-1.5 text-xs font-semibold text-obsidian/80 hover:border-obsidian"
+                >
+                  <Pencil size={13} /> Edit details
+                </button>
+              </div>
             </div>
 
             <SupplierPortalPanel supplier={selected} onChanged={reloadAll} />
@@ -279,7 +366,7 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
                   type="button"
                   onClick={() => setPane(p)}
                   className={`-mb-px border-b-2 px-3 py-2 text-xs font-bold ${
-                    pane === p ? 'border-ember text-ember' : 'border-transparent text-obsidian/50 hover:text-obsidian'
+                    pane === p ? 'border-ember text-ember' : 'border-transparent text-obsidian/65 hover:text-obsidian'
                   }`}
                 >
                   {p === 'prices' ? 'Wholesale costs' : p === 'activity' ? `Activity (${activity.length})` : 'Bottle requests'}
@@ -291,7 +378,7 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
               <BottleRequestsPanel onChanged={reloadAll} />
             ) : pane === 'activity' ? (
               <>
-                <p className="text-sm text-obsidian/50">
+                <p className="text-sm text-obsidian/65">
                   Shelf updates, orders and access — from the portal, the desk, or automatic routing.
                 </p>
                 <ActivityList entries={activity.length ? activity : feed} />
@@ -299,7 +386,7 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
             ) : (
               <>
                 <label className="relative block max-w-md">
-                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-obsidian/35" />
+                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-obsidian/65" />
                   <input
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
@@ -308,9 +395,9 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
                   />
                 </label>
 
-                <div className="overflow-x-auto rounded-2xl bg-white ring-1 ring-obsidian/[0.06]">
+                <div className="overflow-x-auto rounded-lg bg-white ring-1 ring-obsidian/15">
                   <table className="w-full min-w-[720px] text-sm">
-                    <thead className="bg-paper text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/45">
+                    <thead className="bg-paper text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/60">
                       <tr>
                         <th className="px-3 py-3 text-left">SKU</th>
                         <th className="px-3 py-3 text-right">Retail</th>
@@ -335,7 +422,7 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
                                 </span>
                                 <div className="min-w-0">
                                   <p className="truncate font-medium text-obsidian">{row.name}</p>
-                                  <p className="truncate font-mono text-[11px] text-obsidian/40">{row.slug}</p>
+                                  <p className="truncate font-mono text-[11px] text-obsidian/55">{row.slug}</p>
                                 </div>
                               </div>
                             </td>
@@ -344,7 +431,7 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
                               {row.derived ? (
                                 <span className="inline-block text-right" title="Summed from the bottles in the pack — quote those instead">
                                   <span className="block text-sm font-semibold tabular-nums text-obsidian/70">{savedCost != null ? formatNgn(savedCost) : '—'}</span>
-                                  <span className="block text-[10px] font-bold uppercase tracking-wider text-obsidian/35">from bottles</span>
+                                  <span className="block text-[10px] font-bold uppercase tracking-wider text-obsidian/65">from bottles</span>
                                 </span>
                               ) : (
                                 <input
@@ -377,8 +464,8 @@ export default function SuppliersDesk({ onCatalogChanged }: { onCatalogChanged?:
                     </tbody>
                   </table>
                 </div>
-                <p className="text-[11px] text-obsidian/45">
-                  Costs sync to the Drinks tab as the wholesale cost per SKU. The partner can also update these from their portal.
+                <p className="text-[11px] text-obsidian/60">
+                  Costs feed the margin in Products › Drinks &amp; stock. The supplier can also update them from their portal.
                 </p>
               </>
             )}

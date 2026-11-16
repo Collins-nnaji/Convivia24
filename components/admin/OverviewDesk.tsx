@@ -20,14 +20,14 @@ export default function OverviewDesk({
     {
       label: 'Orders to fulfil',
       value: summary.ordersToFulfil,
-      tab: 'orders',
+      tab: 'fulfil',
       hint: 'Paid and not yet delivered',
       hot: summary.ordersToFulfil > 0,
     },
     {
       label: 'Awaiting supplier cost',
       value: summary.ordersUnsourced,
-      tab: 'sourcing',
+      tab: 'fulfil',
       hint: 'Live orders with no margin recorded',
       hot: summary.ordersUnsourced > 0,
     },
@@ -70,29 +70,29 @@ export default function OverviewDesk({
 
   return (
     <div className="space-y-8">
-      <section className="grid gap-px overflow-hidden rounded-2xl border border-obsidian/10 bg-obsidian/10 sm:grid-cols-2">
+      <section className="grid gap-px overflow-hidden rounded-lg border border-obsidian/10 bg-obsidian/10 sm:grid-cols-2">
         <Stat label="Orders today">{summary.todayOrders}</Stat>
         <Stat label="Net revenue today">{formatNgn(summary.todayRevenueNgn)}</Stat>
       </section>
 
       <section>
-        <h2 className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/40">Needs a hand</h2>
+        <h2 className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/55">Needs a hand</h2>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {queue.map((q) => (
             <button
               key={q.label}
               type="button"
               onClick={() => onGo(q.tab)}
-              className={`group flex items-start justify-between gap-3 rounded-2xl border p-4 text-left transition-colors ${
+              className={`group flex items-start justify-between gap-3 rounded-lg border p-4 text-left transition-colors ${
                 q.hot ? 'border-ember/30 bg-white hover:border-ember' : 'border-obsidian/10 bg-white/60 hover:border-obsidian/25'
               }`}
             >
               <span className="min-w-0">
-                <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/45">{q.label}</span>
-                <span className={`mt-1 block font-serif text-3xl font-light tabular-nums ${q.hot ? 'text-ember' : 'text-obsidian/40'}`}>
+                <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/60">{q.label}</span>
+                <span className={`mt-1 block text-2xl font-bold tabular-nums ${q.hot ? 'text-ember' : 'text-obsidian/55'}`}>
                   {q.value}
                 </span>
-                <span className="mt-1 block text-xs text-obsidian/45">{q.hint}</span>
+                <span className="mt-1 block text-xs text-obsidian/60">{q.hint}</span>
               </span>
               <ArrowRight size={16} className="mt-1 shrink-0 text-obsidian/25 transition-transform group-hover:translate-x-0.5 group-hover:text-ember" />
             </button>
@@ -100,7 +100,7 @@ export default function OverviewDesk({
         </div>
       </section>
 
-      <p className="text-[11px] text-obsidian/40">
+      <p className="text-[11px] text-obsidian/55">
         Image upload {summary.blobConfigured ? 'ready' : 'not configured'} · AI copy {summary.aiConfigured ? 'ready' : 'off'}
       </p>
     </div>
@@ -109,9 +109,9 @@ export default function OverviewDesk({
 
 function Stat({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="bg-white p-5">
-      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/40">{label}</p>
-      <p className="mt-1 font-serif text-4xl font-light tabular-nums text-obsidian">{children}</p>
+    <div className="bg-white p-4">
+      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/55">{label}</p>
+      <p className="mt-1 text-3xl font-bold tabular-nums text-obsidian">{children}</p>
     </div>
   );
 }

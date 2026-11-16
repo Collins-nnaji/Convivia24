@@ -15,6 +15,15 @@ export function SectionIcon({ section, size = 40, className = '' }: { section: D
     'aria-hidden': true,
   };
   switch (section) {
+    case 'events':
+      // A calendar page with a star — a night worth going to.
+      return (
+        <svg {...common}>
+          <rect x="7" y="10" width="34" height="31" rx="4" />
+          <path d="M7 19h34M16 6v8M32 6v8" />
+          <path d="M24 24.5l1.9 3.9 4.3.6-3.1 3 .7 4.3-3.8-2-3.8 2 .7-4.3-3.1-3 4.3-.6z" />
+        </svg>
+      );
     case 'trivia':
       return (
         <svg {...common}>

@@ -88,7 +88,7 @@ export default function Modal({
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        className={`relative w-full ${maxW} max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white shadow-[0_24px_70px_-20px_rgba(10,10,10,0.45)] focus:outline-none`}
+        className={`relative w-full ${maxW} max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-lg bg-white shadow-[0_24px_70px_-20px_rgba(10,10,10,0.45)] focus:outline-none`}
       >
         <div className="flex items-start gap-4 px-5 sm:px-6 pt-5 pb-4 border-b border-obsidian/8">
           <div className="min-w-0 flex-1">
@@ -105,7 +105,7 @@ export default function Modal({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="shrink-0 -mr-1 -mt-1 grid h-8 w-8 place-items-center rounded-full text-obsidian/40 transition-colors hover:bg-obsidian/[0.06] hover:text-obsidian"
+            className="shrink-0 -mr-1 -mt-1 grid h-8 w-8 place-items-center rounded-full text-obsidian/55 transition-colors hover:bg-obsidian/[0.06] hover:text-obsidian"
           >
             <X size={17} />
           </button>

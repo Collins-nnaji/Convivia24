@@ -116,7 +116,7 @@ export async function applyOrderStatus(
     return { ok: false, httpStatus: 403, error: `You cannot set an order to ${ORDER_STATUS_LABELS[status].toLowerCase()}.` };
   }
 
-  const [current] = await sql`SELECT status FROM ritual_orders WHERE id = ${orderId} LIMIT 1`;
+  const [current] = await sql`SELECT status, delivery_proof, recipient_age_checked FROM ritual_orders WHERE id = ${orderId} LIMIT 1`;
   if (!current) return { ok: false, httpStatus: 404, error: 'Order not found.' };
   const from = current.status as OrderStatus;
   if (from === status) return { ok: true, orderId, status, changed: false };
@@ -130,6 +130,23 @@ export async function applyOrderStatus(
 
   if (status === 'cancelled' && !['pending', 'awaiting_payment'].includes(from)) {
     return { ok: false, httpStatus: 400, error: 'Use the refund action to return the payment before closing a paid order.' };
+  }
+  // Alcohol handover rule (enforced again in c24_transition_order): say what is missing up front
+  // rather than surfacing a database exception.
+  if (status === 'delivered' || status === 'fulfilled') {
+    const proof = (opts.tracking?.deliveryProof ?? current.delivery_proof ?? '').toString().trim();
+    const ageChecked = opts.tracking?.recipientAgeChecked ?? Boolean(current.recipient_age_checked);
+    if (!proof || !ageChecked) {
+      return {
+        ok: false,
+        httpStatus: 400,
+        error: !proof && !ageChecked
+          ? 'Add the delivery receipt and confirm the recipient’s age was checked before marking delivered.'
+          : !proof
+            ? 'Add the delivery receipt (who received it, or the courier’s proof) before marking delivered.'
+            : 'Confirm the recipient’s age (18+) was checked at handover before marking delivered.',
+      };
+    }
   }
   const note = opts.note?.trim() || null;
   const [result] = await sql`SELECT c24_transition_order(${orderId}::uuid, ${from}, ${status}, ${JSON.stringify({ ...opts.tracking, actor: opts.actor.label || opts.actor.kind })}::jsonb, ${note}) AS changed`;

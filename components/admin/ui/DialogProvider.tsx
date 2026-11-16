@@ -111,13 +111,13 @@ export default function DialogProvider({ children }: { children: ReactNode }) {
           >
             {t.kind === 'success' && <CheckCircle2 size={17} className="mt-0.5 shrink-0 text-emerald-600" />}
             {t.kind === 'error' && <AlertTriangle size={17} className="mt-0.5 shrink-0 text-ember" />}
-            {t.kind === 'info' && <Info size={17} className="mt-0.5 shrink-0 text-obsidian/45" />}
+            {t.kind === 'info' && <Info size={17} className="mt-0.5 shrink-0 text-obsidian/60" />}
             <p className="min-w-0 flex-1 text-sm leading-snug text-obsidian/80">{t.message}</p>
             <button
               type="button"
               onClick={() => setToasts((x) => x.filter((y) => y.id !== t.id))}
               aria-label="Dismiss"
-              className="shrink-0 text-obsidian/30 transition-colors hover:text-obsidian"
+              className="shrink-0 text-obsidian/65 transition-colors hover:text-obsidian"
             >
               <X size={15} />
             </button>

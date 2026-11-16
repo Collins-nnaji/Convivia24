@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { PlusMinus } from './ui/DeskContent';
 import { formatNgn } from '@/lib/drinks/catalog';
 import { PERIODS, type AccountingReport, type PeriodKey } from '@/lib/accounting/statements';
 import { readError } from './types';
@@ -64,7 +64,7 @@ export default function AccountingDesk() {
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3 print:hidden">
         <div className="flex flex-wrap items-end gap-3">
           <label className="block">
-            <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/45">Period</span>
+            <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/60">Period</span>
             <select
               value={period}
               onChange={(e) => setPeriod(e.target.value as PeriodKey)}
@@ -88,7 +88,7 @@ export default function AccountingDesk() {
                   aria-selected={on}
                   onClick={() => setBook(item.key)}
                   className={`rounded-full px-3 py-2 text-[11px] font-bold uppercase tracking-[0.12em] ${
-                    on ? 'bg-white text-obsidian shadow-sm' : 'text-obsidian/45 hover:text-obsidian'
+                    on ? 'bg-white text-obsidian' : 'text-obsidian/60 hover:text-obsidian'
                   }`}
                 >
                   {item.label}
@@ -100,14 +100,14 @@ export default function AccountingDesk() {
         <button
           type="button"
           onClick={() => window.print()}
-          className="rounded-full px-3 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/50 ring-1 ring-obsidian/10 hover:text-obsidian"
+          className="rounded-full px-3 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/65 ring-1 ring-obsidian/10 hover:text-obsidian"
         >
           Print
         </button>
       </div>
 
       {error && <p className="mb-4 text-sm text-ember">{error}</p>}
-      {loading && !report && <p className="text-sm text-obsidian/40">Opening the books…</p>}
+      {loading && !report && <p className="text-sm text-obsidian/55">Opening the books…</p>}
 
       {report && (
         <div className={loading ? 'opacity-60' : ''}>
@@ -159,15 +159,15 @@ function Headlines({ report }: { report: AccountingReport }) {
       {cards.map((card) => {
         const delta = change(card.value, card.prior);
         return (
-          <div key={card.label} className="rounded-2xl bg-white p-4 ring-1 ring-obsidian/8">
-            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/40">{card.label}</p>
-            <p className={`mt-1 font-serif text-3xl font-light tabular-nums ${card.value < 0 ? 'text-ember' : 'text-obsidian'}`}>
+          <div key={card.label} className="rounded-lg bg-white p-4 ring-1 ring-obsidian/8">
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/55">{card.label}</p>
+            <p className={`mt-1 text-2xl font-bold tabular-nums ${card.value < 0 ? 'text-ember' : 'text-obsidian'}`}>
               {money(card.value)}
             </p>
-            <p className="mt-1 text-xs text-obsidian/45">{card.hint}</p>
+            <p className="mt-1 text-xs text-obsidian/60">{card.hint}</p>
             {delta && comparisonLabel && (
               <p className={`mt-2 text-[11px] font-semibold tabular-nums ${card.neutral ? 'text-obsidian/55' : delta.up ? 'text-emerald-700' : 'text-ember'}`}>
-                {delta.text} <span className="font-normal text-obsidian/40">vs {comparisonLabel}</span>
+                {delta.text} <span className="font-normal text-obsidian/55">vs {comparisonLabel}</span>
               </p>
             )}
           </div>
@@ -185,7 +185,9 @@ function ProfitStatement({ report }: { report: AccountingReport }) {
     pnl.flutterwaveNgn +
     pnl.accessNgn +
     pnl.loyaltyAccruedNgn +
-    rewardFulfillment;
+    rewardFulfillment +
+    (pnl.deliveryCostNgn ?? 0) +
+    (pnl.expensesNgn ?? 0);
 
   return (
     <Ledger
@@ -245,6 +247,18 @@ function ProfitStatement({ report }: { report: AccountingReport }) {
           }
         />
         <Line
+          label="Delivery (riders & couriers)"
+          amount={-(pnl.deliveryCostNgn ?? 0)}
+          hide={!pnl.deliveryCostNgn}
+          hint="Recorded on each order when it is dispatched"
+        />
+        <Line
+          label="Expenses (Finance › Expenses)"
+          amount={-(pnl.expensesNgn ?? 0)}
+          hide={!pnl.expensesNgn}
+          hint="Rent, salaries, marketing and other costs entered by hand"
+        />
+        <Line
           label="Rewards fulfilled above points"
           amount={-rewardFulfillment}
           hide={rewardFulfillment === 0}
@@ -255,7 +269,7 @@ function ProfitStatement({ report }: { report: AccountingReport }) {
           }
         />
       </Fold>
-      <div className="flex items-center justify-between rounded-2xl bg-obsidian px-5 py-4 text-white">
+      <div className="flex items-center justify-between rounded-lg bg-obsidian px-5 py-4 text-white">
         <span>
           <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-white/50">Net profit</span>
           <span className="mt-0.5 block text-[11px] text-white/55">
@@ -290,7 +304,7 @@ function Trend({ report, activeOnly }: { report: AccountingReport; activeOnly: b
   const empty = rows.length === 0 || rows.every((p) => !moved(p));
   if (empty) {
     return (
-      <p className="px-4 py-6 text-sm text-obsidian/45">
+      <p className="px-4 py-6 text-sm text-obsidian/60">
         {activeOnly ? 'No period in this window had a transaction.' : 'Nothing recognized in this window.'}
       </p>
     );
@@ -299,7 +313,7 @@ function Trend({ report, activeOnly }: { report: AccountingReport; activeOnly: b
   return (
     <div className="max-h-[28rem] overflow-auto">
       <table className="w-full min-w-[720px] text-sm">
-        <thead className="sticky top-0 bg-paper text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/40">
+        <thead className="sticky top-0 bg-paper text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/55">
           <tr>
             <th className="px-4 py-3 text-left font-black">Period</th>
             <th className="px-3 py-3 text-right font-black">Orders</th>
@@ -383,13 +397,13 @@ function Balance({ report }: { report: AccountingReport }) {
         </Fold>
         <Fold title="Liabilities" total={b.liabilitiesNgn} defaultOpen>
           {liabilities.length === 0 ? (
-            <p className="px-4 py-3 text-sm text-obsidian/45">Nothing outstanding.</p>
+            <p className="px-4 py-3 text-sm text-obsidian/60">Nothing outstanding.</p>
           ) : (
             liabilities.map((row) => <Line key={row.label} label={row.label} amount={row.amount} hint={row.hint} />)
           )}
         </Fold>
       </div>
-      <div className="grid overflow-hidden rounded-2xl sm:grid-cols-2 sm:divide-x sm:divide-white/10 bg-obsidian text-white">
+      <div className="grid overflow-hidden rounded-lg sm:grid-cols-2 sm:divide-x sm:divide-white/10 bg-obsidian text-white">
         <div className="px-4 py-4">
           <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/50">Equity</p>
           <p className="mt-1 text-xl font-bold tabular-nums">{money(b.equityNgn)}</p>
@@ -413,11 +427,11 @@ function Payouts({ report }: { report: AccountingReport }) {
   return (
     <Ledger title="Referral payouts" note="Paid and referred sales follow the period. Still owed is everything approved and unpaid.">
       {report.payouts.length === 0 ? (
-        <p className="px-4 py-6 text-sm text-obsidian/45">No partner was paid or is owed in this view.</p>
+        <p className="px-4 py-6 text-sm text-obsidian/60">No partner was paid or is owed in this view.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-sm">
-            <thead className="bg-paper text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/40">
+            <thead className="bg-paper text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/55">
               <tr>
                 <th className="px-4 py-3 text-left font-black">Partner</th>
                 <th className="px-3 py-3 text-right font-black">Referred sales</th>
@@ -430,7 +444,7 @@ function Payouts({ report }: { report: AccountingReport }) {
                 <tr key={row.id} className="border-t border-obsidian/6">
                   <td className="px-4 py-2.5">
                     <span className="font-medium text-obsidian">{row.name}</span>
-                    <span className="ml-2 text-[11px] uppercase tracking-wider text-obsidian/35">{row.kind}</span>
+                    <span className="ml-2 text-[11px] uppercase tracking-wider text-obsidian/65">{row.kind}</span>
                   </td>
                   <td className="px-3 py-2.5 text-right tabular-nums">{money(row.referredNgn)}</td>
                   <td className="px-3 py-2.5 text-right tabular-nums">{money(row.paidNgn)}</td>
@@ -542,11 +556,11 @@ function MixTable({
   secondaryLabel?: string;
   empty: string;
 }) {
-  if (rows.length === 0) return <p className="px-4 py-6 text-sm text-obsidian/45">{empty}</p>;
+  if (rows.length === 0) return <p className="px-4 py-6 text-sm text-obsidian/60">{empty}</p>;
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
-        <thead className="bg-paper text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/40">
+        <thead className="bg-paper text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/55">
           <tr>
             <th className="px-4 py-3 text-left font-black"> </th>
             <th className="px-3 py-3 text-right font-black">Orders</th>
@@ -583,11 +597,11 @@ function Ledger({
   children: ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-obsidian/10 bg-white">
+    <section className="overflow-hidden rounded-lg border border-obsidian/10 bg-white">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-obsidian/8 px-4 py-3">
         <div>
-          <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/45">{title}</h2>
-          {note && <p className="mt-1 text-[11px] text-obsidian/45">{note}</p>}
+          <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/60">{title}</h2>
+          {note && <p className="mt-1 text-[11px] text-obsidian/60">{note}</p>}
         </div>
         {toolbar}
       </div>
@@ -616,7 +630,7 @@ function Fold({
         onClick={() => setOpen((v) => !v)}
         className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-paper/60"
       >
-        <ChevronDown size={16} className={`shrink-0 text-obsidian/35 transition-transform ${open ? 'rotate-180' : ''}`} />
+        <PlusMinus open={open} />
         <span className="flex-1 text-sm font-semibold text-obsidian">{title}</span>
         <span className={`text-sm font-semibold tabular-nums ${total < 0 ? 'text-ember' : 'text-obsidian'}`}>{money(total)}</span>
       </button>
@@ -643,7 +657,7 @@ function Line({
     <div className="flex items-start justify-between gap-4 px-4 py-2 pl-11">
       <span className={strong ? 'text-sm font-semibold text-obsidian' : 'text-sm text-obsidian/70'}>
         {label}
-        {hint && <span className="mt-0.5 block text-[11px] font-normal text-obsidian/40">{hint}</span>}
+        {hint && <span className="mt-0.5 block text-[11px] font-normal text-obsidian/55">{hint}</span>}
       </span>
       <span className={`shrink-0 text-sm tabular-nums ${strong ? 'font-semibold' : ''} ${amount < 0 ? 'text-ember' : 'text-obsidian'}`}>
         {money(amount)}
@@ -660,9 +674,9 @@ function About({ children }: { children: ReactNode }) {
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/40 hover:text-obsidian"
+        className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/55 hover:text-obsidian"
       >
-        <ChevronDown size={14} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+        <PlusMinus open={open} size="sm" />
         How this is built
       </button>
       {open && <p className="px-4 pb-4 text-[12px] leading-relaxed text-obsidian/55">{children}</p>}

@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { PlusMinus } from './ui/DeskContent';
 import Image from 'next/image';
-import { ChevronDown, FileText, Plus, Sparkles, X } from 'lucide-react';
+import { FileText, Minus, Plus, Sparkles, X } from 'lucide-react';
 import Modal from './ui/Modal';
 import { BADGE_LABELS, CATEGORIES, CATEGORY_LABELS, PRODUCT_BADGES, formatNgn } from '@/lib/drinks/catalog';
 import { skuMargin } from '@/lib/suppliers/margin';
@@ -321,15 +322,15 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
 
   return (
     <>
-      {msg && <p className="mb-6 text-sm text-ember">{msg}</p>}
+      {msg && <p className="mb-3 text-sm text-ember">{msg}</p>}
       {advice && (
-        <div className="relative mb-8 whitespace-pre-wrap bg-white p-5 pr-12 text-sm leading-relaxed text-obsidian/70 shadow-sm rounded-2xl">
+        <div className="relative mb-4 whitespace-pre-wrap bg-white p-4 pr-12 text-sm leading-relaxed text-obsidian/70 rounded-lg">
           {advice}
           <button
             type="button"
             onClick={() => setAdvice('')}
             aria-label="Dismiss advice"
-            className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full text-obsidian/35 hover:bg-obsidian/[0.05] hover:text-obsidian"
+            className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full text-obsidian/65 hover:bg-obsidian/[0.05] hover:text-obsidian"
           >
             <X size={15} />
           </button>
@@ -380,7 +381,7 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
             onChange={(e) => setField('tasteNote')(e.target.value)}
           />
           <div className="border-t border-obsidian/8 pt-4">
-            <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian/40">
+            <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian/55">
               Brand story (optional — shared across same brand)
             </p>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -416,7 +417,7 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
         title="Scan a supplier price list"
         hint="Paste the list or upload a photo — review every change before it applies."
       >
-        <div className="border-t border-obsidian/8 p-5 sm:p-6">
+        <div className="border-t border-obsidian/8 p-3 sm:p-4">
           <PriceListImport onApplied={changed} />
         </div>
       </Disclosure>
@@ -445,7 +446,7 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
         </button>
         </div>
       </div>
-      <p className="mb-3 text-sm text-obsidian/50">
+      <p className="mb-3 text-sm text-obsidian/65">
         Retail, wholesale cost and margin per SKU. Suggested prices follow the markup and the Flutterwave and Access Bank fees.
       </p>
       <PricePolicyBar onChange={setPolicy} />
@@ -479,39 +480,47 @@ export default function DrinksDesk({ onChanged }: { onChanged?: () => void }) {
         >
           Low stock{lowCount > 0 ? ` (${lowCount})` : ''}
         </button>
-        <span className="text-xs text-obsidian/45">
+        <span className="text-xs text-obsidian/60">
           {visibleItems.length} of {items.length}
-          {suppliers[0] ? ` · ${suppliers[0].name}` : ''}
+          {suppliers.length ? ` · ${suppliers.length} supplier${suppliers.length === 1 ? '' : 's'}` : ''}
         </span>
       </div>
-      <div className="hidden min-w-[980px] grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(0,.55fr))_auto] gap-3 border-x border-t border-obsidian/10 bg-paper px-4 py-3 text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/40 lg:grid">
-        <span>SKU</span>
-        <span className="text-right">On hand</span>
-        <span className="text-right">Cost</span>
-        <span className="text-right">Retail</span>
-        <span className="text-right">Margin</span>
-        <span className="text-right">Actions</span>
-      </div>
-      <div className="overflow-x-auto border-b border-obsidian/10">
-        {visibleItems.map((item) => (
-          <StockRow
-            key={item.slug}
-            item={item}
-            saving={savingSlug === item.slug}
-            onSave={(patch) => saveStock(item.slug, patch)}
-            onDelete={() => deleteStock(item)}
-            onEdit={() => editItem(item)}
-            suppliers={suppliers}
-            supplierRows={supplierStock[item.slug] || []}
-            supplierCosts={supplierCosts[item.slug] || {}}
-            onSetSupplierStock={setSupplierStockQty}
-            onSetSupplierCost={setSupplierCost}
-            defaultCostOf={(slug) => items.find((i) => i.slug === slug)?.cost_ngn ?? null}
-            policy={policy}
-          />
-        ))}
+      <div className="overflow-x-auto rounded-lg border border-obsidian/15 bg-white">
+        <table className="w-full min-w-[960px] border-collapse text-sm">
+          <thead className="bg-obsidian text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-white/85">
+            <tr>
+              <th className="w-11 py-2.5 pl-3 pr-1" aria-label="Expand" />
+              <th className="py-2.5 pr-3">Product</th>
+              <th className="px-2 py-2.5 text-right">On hand</th>
+              <th className="px-2 py-2.5 text-right">Cost</th>
+              <th className="px-2 py-2.5 text-right">Retail (₦)</th>
+              <th className="px-2 py-2.5 text-right">Margin</th>
+              <th className="px-2 py-2.5">Status</th>
+              <th className="py-2.5 pl-2 pr-3" aria-label="Save" />
+            </tr>
+          </thead>
+          <tbody>
+            {visibleItems.map((item) => (
+              <StockRow
+                key={item.slug}
+                item={item}
+                saving={savingSlug === item.slug}
+                onSave={(patch) => saveStock(item.slug, patch)}
+                onDelete={() => deleteStock(item)}
+                onEdit={() => editItem(item)}
+                suppliers={suppliers}
+                supplierRows={supplierStock[item.slug] || []}
+                supplierCosts={supplierCosts[item.slug] || {}}
+                onSetSupplierStock={setSupplierStockQty}
+                onSetSupplierCost={setSupplierCost}
+                defaultCostOf={(slug) => items.find((i) => i.slug === slug)?.cost_ngn ?? null}
+                policy={policy}
+              />
+            ))}
+          </tbody>
+        </table>
         {visibleItems.length === 0 && (
-          <p className="bg-white p-4 text-sm text-obsidian/45">
+          <p className="p-4 text-sm text-obsidian/60">
             {items.length === 0 ? 'No stock yet — add your first bottle above.' : 'No SKUs match that search.'}
           </p>
         )}
@@ -536,7 +545,7 @@ function Disclosure({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mb-8 overflow-hidden rounded-2xl border border-obsidian/10 bg-white shadow-[0_12px_40px_-18px_rgba(10,10,10,0.28)]">
+    <div className="mb-4 overflow-hidden rounded-lg border border-obsidian/10 bg-white">
       <button
         type="button"
         onClick={onToggle}
@@ -546,13 +555,9 @@ function Disclosure({
         <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-ember/10 text-ember">{icon}</span>
         <span className="min-w-0 flex-1">
           <span className="block text-sm font-bold text-obsidian">{title}</span>
-          <span className="block truncate text-xs text-obsidian/45">{hint}</span>
+          <span className="block truncate text-xs text-obsidian/60">{hint}</span>
         </span>
-        <ChevronDown
-          size={18}
-          aria-hidden
-          className={`shrink-0 text-obsidian/40 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
-        />
+        <PlusMinus open={open} />
       </button>
       {open && children}
     </div>
@@ -614,9 +619,9 @@ function SupplierQtyField({
 
   return (
     <div className="rounded-xl border border-obsidian/10 bg-paper/50 p-2.5">
-      <span className="block text-[10px] font-bold uppercase tracking-[0.1em] text-obsidian/45">{supplier.city}</span>
-      <span className="mb-1.5 block truncate text-[11px] text-obsidian/40">{supplier.name}</span>
-      <label className="block text-[10px] text-obsidian/40">
+      <span className="block text-[10px] font-bold uppercase tracking-[0.1em] text-obsidian/60">{supplier.city}</span>
+      <span className="mb-1.5 block truncate text-[11px] text-obsidian/55">{supplier.name}</span>
+      <label className="block text-[10px] text-obsidian/55">
         Stock
         <input
           type="number"
@@ -629,7 +634,7 @@ function SupplierQtyField({
           className={cell}
         />
       </label>
-      <label className="mt-1.5 block text-[10px] text-obsidian/40">
+      <label className="mt-1.5 block text-[10px] text-obsidian/55">
         Unit cost{derivedCost ? ' · from bottles' : ''}
         <input
           type="number"
@@ -644,7 +649,7 @@ function SupplierQtyField({
           className={cell}
         />
       </label>
-      <span className="mt-1 block text-[10px] text-obsidian/40">
+      <span className="mt-1 block text-[10px] text-obsidian/55">
         {row && row.reserved > 0 ? `${row.reserved} reserved · ${row.available} free` : 'none reserved'}
       </span>
       <span className={`mt-1 block text-[10px] font-semibold ${margin?.negative ? 'text-red-600' : 'text-emerald-700'}`}>
@@ -691,12 +696,12 @@ function StockHistory({ slug, saving, item }: { slug: string; saving: boolean; i
   }, [slug, saving, item]);
 
   if (error) return <p className="text-xs text-ember">{error}</p>;
-  if (rows === null) return <p className="text-xs text-obsidian/40">Loading…</p>;
-  if (rows.length === 0) return <p className="text-xs text-obsidian/40">No movements recorded for this SKU yet.</p>;
+  if (rows === null) return <p className="text-xs text-obsidian/55">Loading…</p>;
+  if (rows.length === 0) return <p className="text-xs text-obsidian/55">No movements recorded for this SKU yet.</p>;
   const delta = (n: number) => (n === 0 ? '·' : n > 0 ? `+${n}` : String(n));
   return (
     <table className="w-full text-xs">
-      <thead className="text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/40">
+      <thead className="text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/55">
         <tr>
           <th className="py-1 text-left">When</th>
           <th className="py-1 text-left">What</th>
@@ -709,16 +714,16 @@ function StockHistory({ slug, saving, item }: { slug: string; saving: boolean; i
       <tbody className="divide-y divide-obsidian/6">
         {rows.map((m) => (
           <tr key={m.id}>
-            <td className="py-1.5 tabular-nums text-obsidian/50">
+            <td className="py-1.5 tabular-nums text-obsidian/65">
               {new Date(m.createdAt).toLocaleString('en-NG', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit' })}
             </td>
             <td className="py-1.5 font-semibold text-obsidian/70">{REASON_LABEL[m.reason] ?? m.reason}</td>
             <td className="py-1.5 text-obsidian/55">{m.actor === 'supplier' ? m.supplierName || 'Supplier' : m.actor === 'admin' ? m.actorLabel || 'Desk' : 'System'}</td>
-            <td className={`py-1.5 text-right tabular-nums ${m.deltaOnHand < 0 ? 'text-red-600' : m.deltaOnHand > 0 ? 'text-emerald-700' : 'text-obsidian/30'}`}>{delta(m.deltaOnHand)}</td>
-            <td className={`py-1.5 text-right tabular-nums ${m.deltaReserved !== 0 ? 'text-obsidian/70' : 'text-obsidian/30'}`}>{delta(m.deltaReserved)}</td>
-            <td className="py-1.5 pl-3 text-obsidian/50">
+            <td className={`py-1.5 text-right tabular-nums ${m.deltaOnHand < 0 ? 'text-red-600' : m.deltaOnHand > 0 ? 'text-emerald-700' : 'text-obsidian/65'}`}>{delta(m.deltaOnHand)}</td>
+            <td className={`py-1.5 text-right tabular-nums ${m.deltaReserved !== 0 ? 'text-obsidian/70' : 'text-obsidian/65'}`}>{delta(m.deltaReserved)}</td>
+            <td className="py-1.5 pl-3 text-obsidian/65">
               {m.supplierName && <span>{m.supplierName}: </span>}{m.note || '—'}
-              {m.orderId && <span className="ml-1 font-mono text-[10px] text-obsidian/35">{m.orderId.slice(0, 8).toUpperCase()}</span>}
+              {m.orderId && <span className="ml-1 font-mono text-[10px] text-obsidian/65">{m.orderId.slice(0, 8).toUpperCase()}</span>}
             </td>
           </tr>
         ))}
@@ -761,10 +766,6 @@ function StockRow({
   const [threshold, setThreshold] = useState(String(item.low_stock_threshold));
   const [minOrder, setMinOrder] = useState(String(item.min_order_qty ?? 1));
   const [tasteNote, setTasteNote] = useState(item.taste_note || '');
-  const [guideOpen, setGuideOpen] = useState(false);
-  const [suppliersOpen, setSuppliersOpen] = useState(false);
-  const [historyOpen, setHistoryOpen] = useState(false);
-  const [merchOpen, setMerchOpen] = useState(false);
 
   useEffect(() => {
     setOnHand(String(item.on_hand));
@@ -786,7 +787,6 @@ function StockRow({
 
   // Once any supplier holds this bottle, on-hand is the sum of their shelves — editing the SKU
   // directly would only be overwritten by the next rollup, so the field goes read-only.
-  const heldBySuppliers = supplierRows.filter((r) => r.onHand > 0 || r.reserved > 0);
   const quotes = Object.entries(supplierCosts).map(([id, c]) => ({ id, cost: c })).sort((a, b) => a.cost - b.cost);
   const bestQuote = quotes[0];
   const bestSupplier = bestQuote ? supplierRows.find((r) => r.supplierId === bestQuote.id)?.supplierName : undefined;
@@ -813,214 +813,249 @@ function StockRow({
       : []),
     ...(item.badge && item.badge in BADGE_LABELS ? [{ label: BADGE_LABELS[item.badge as keyof typeof BADGE_LABELS] }] : []),
   ];
-  const cell = `${adminInputClass} py-2`;
-  const btn = 'px-3 py-2.5 border border-obsidian/15 text-[10px] font-bold uppercase tracking-[0.12em] disabled:opacity-40';
+  const cell = `${adminInputClass} h-9 w-full py-1.5 text-right tabular-nums`;
+  const btn = 'rounded-md border border-obsidian/20 bg-white px-2.5 py-1.5 text-xs font-semibold text-obsidian/80 hover:border-obsidian disabled:opacity-40';
+  const [open, setOpen] = useState(false);
+  const [panel, setPanel] = useState<DrawerPane>('settings');
+  // The drawer's old one-off toggles now open the matching pane.
+  const show = (pane: DrawerPane) => {
+    setPanel(pane);
+    setOpen(true);
+  };
+  const status: { label: string; tone: string }[] = [
+    item.active ? { label: 'Listed', tone: 'bg-emerald-50 text-emerald-800 ring-emerald-200' } : { label: 'Off shop', tone: 'bg-red-50 text-red-700 ring-red-200' },
+    ...(lowStock ? [{ label: 'Low stock', tone: 'bg-amber-50 text-amber-800 ring-amber-200' }] : []),
+    ...(item.featured ? [{ label: 'Featured', tone: 'bg-ember/10 text-ember ring-ember/20' }] : []),
+  ];
+  const save = () =>
+    onSave({
+      ...(derived ? {} : { onHand }),
+      priceNgn: price === '' ? undefined : price,
+      ...(isPack ? {} : { costNgn: cost === '' ? null : cost }),
+      lowStockThreshold: threshold,
+      minOrderQty: minOrder,
+      tasteNote,
+    });
+  const panes: { key: DrawerPane; label: string }[] = [
+    { key: 'settings', label: 'Stock rules' },
+    ...(suppliers.length > 0 ? [{ key: 'suppliers' as const, label: `Suppliers (${suppliers.length})` }] : []),
+    { key: 'merch', label: 'Merchandising' },
+    { key: 'guide', label: 'Taste guide' },
+    { key: 'history', label: 'History' },
+  ];
 
   return (
-    <div className="min-w-[980px] space-y-3 border-x border-t border-obsidian/10 bg-white p-4">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
-        <div className="flex min-w-0 items-center gap-3 lg:w-64">
-          {item.image_url ? (
-            <Image src={item.image_url} alt="" width={40} height={48} className="h-12 w-10 shrink-0 object-cover" />
-          ) : (
-            <div className="h-12 w-10 shrink-0 border border-obsidian/10 bg-paper" />
-          )}
-          <div className="min-w-0">
-            <p className="truncate font-medium">{item.name}</p>
-            <p className="truncate font-mono text-[11px] text-obsidian/40">{item.slug}</p>
-            <p className="mt-0.5 flex flex-wrap gap-x-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-obsidian/35">
-              {chips.map((c, i) => (
-                <span key={c.label} className={c.tone}>
-                  {i > 0 && <span className="text-obsidian/20">· </span>}
-                  {c.label}
-                </span>
-              ))}
-            </p>
+    <>
+      <tr className={`border-t border-obsidian/10 align-middle ${open ? 'bg-shell' : 'bg-white hover:bg-obsidian/[0.025]'}`}>
+        <td className="w-11 py-2 pl-3 pr-1">
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            aria-label={open ? `Collapse ${item.name}` : `Expand ${item.name}`}
+            className={`grid h-7 w-7 place-items-center rounded-md border transition-colors ${
+              open ? 'border-obsidian bg-obsidian text-white' : 'border-obsidian/20 text-obsidian/70 hover:border-obsidian hover:text-obsidian'
+            }`}
+          >
+            {open ? <Minus size={14} /> : <Plus size={14} />}
+          </button>
+        </td>
+        <td className="py-2 pr-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="grid h-14 w-11 shrink-0 place-items-center overflow-hidden rounded-md bg-shell ring-1 ring-obsidian/10">
+              {item.image_url ? (
+                <Image src={item.image_url} alt="" width={44} height={56} className="h-14 w-11 object-contain" />
+              ) : (
+                <span className="text-[9px] font-bold uppercase text-obsidian/55">No pic</span>
+              )}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-obsidian">{item.name}</p>
+              <p className="truncate text-xs text-obsidian/60">
+                {[item.brand, item.category ? CATEGORY_LABELS[item.category as keyof typeof CATEGORY_LABELS] ?? item.category : null, item.volume]
+                  .filter(Boolean)
+                  .join(' · ') || item.slug}
+              </p>
+              {chips.length > 0 && (
+                <p className="mt-0.5 truncate text-[11px] text-obsidian/55">
+                  {chips
+                    .filter((c) => c.label !== item.brand && c.label !== 'Low' && c.label !== 'Off shop' && c.label !== 'Featured')
+                    .map((c) => c.label)
+                    .join(' · ')}
+                </p>
+              )}
+            </div>
           </div>
-        </div>
-
-        <div className="grid flex-1 grid-cols-2 gap-3 sm:grid-cols-5">
+        </td>
+        <td className="w-28 px-2 py-2 text-right">
           {derived ? (
-            <div>
-              <AdminLabel hint={`${heldBySuppliers.length} supplier${heldBySuppliers.length === 1 ? '' : 's'}`}>On hand</AdminLabel>
-              <button
-                type="button"
-                onClick={() => setSuppliersOpen(true)}
-                title="Set per supplier"
-                className="w-full rounded-lg border border-dashed border-obsidian/15 bg-paper/60 px-3 py-2 text-left text-sm font-semibold tabular-nums text-obsidian hover:border-ember"
-              >
-                {item.on_hand} <span className="text-[11px] font-normal text-obsidian/45">· {item.available} free</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => show('suppliers')}
+              title="Held by suppliers — set per supplier"
+              className="w-full rounded-md border border-dashed border-obsidian/25 px-2 py-1.5 text-right text-sm font-semibold tabular-nums hover:border-ember"
+            >
+              {item.on_hand}
+            </button>
           ) : (
-            <AdminInput label="On hand" type="number" min={0} inputMode="numeric" value={onHand} onChange={(e) => setOnHand(e.target.value)} className={cell} />
+            <input aria-label="On hand" type="number" min={0} inputMode="numeric" value={onHand} onChange={(e) => setOnHand(e.target.value)} className={cell} />
           )}
+          <p className="mt-0.5 text-[11px] tabular-nums text-obsidian/55">{item.available} free</p>
+        </td>
+        <td className="w-32 px-2 py-2 text-right">
           {bestQuote ? (
-            <div>
-              <AdminLabel hint="best quote">Cost</AdminLabel>
-              <button
-                type="button"
-                onClick={() => setSuppliersOpen(true)}
-                title="Quotes per supplier"
-                className="w-full rounded-lg border border-dashed border-obsidian/15 bg-paper/60 px-3 py-2 text-left text-sm font-semibold tabular-nums text-obsidian hover:border-ember"
-              >
-                {formatNgn(bestQuote.cost)}
-                {bestSupplier && <span className="block truncate text-[11px] font-normal text-obsidian/45">{bestSupplier}</span>}
-              </button>
-            </div>
+            <button type="button" onClick={() => show('suppliers')} title="Quotes per supplier" className="w-full text-right">
+              <span className="block text-sm font-semibold tabular-nums text-obsidian">{formatNgn(bestQuote.cost)}</span>
+              <span className="block truncate text-[11px] text-obsidian/55">{bestSupplier || 'best quote'}</span>
+            </button>
           ) : isPack ? (
-            <div>
-              <AdminLabel hint="from bottles">Cost</AdminLabel>
-              <div className="w-full rounded-lg border border-dashed border-obsidian/15 bg-paper/60 px-3 py-2 text-sm font-semibold tabular-nums text-obsidian/70" title="Summed from the pack's bottles — set their costs">
-                {packDefault != null ? formatNgn(packDefault) : <span className="font-normal text-obsidian/40">cost the bottles</span>}
-              </div>
-            </div>
+            <span title="Summed from the pack's bottles">
+              <span className="block text-sm font-semibold tabular-nums text-obsidian/80">{packDefault != null ? formatNgn(packDefault) : '—'}</span>
+              <span className="block text-[11px] text-obsidian/55">from bottles</span>
+            </span>
           ) : (
-            <AdminInput label="Default cost" hint="until a supplier quotes" type="number" min={0} inputMode="numeric" value={cost} onChange={(e) => setCost(e.target.value)} placeholder="Wholesale" className={cell} />
+            <input aria-label="Default cost" type="number" min={0} inputMode="numeric" value={cost} onChange={(e) => setCost(e.target.value)} placeholder="Cost" className={cell} />
           )}
-          <div>
-            <AdminInput label="Retail (NGN)" type="number" min={0} inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value)} className={cell} />
-            {quote && String(quote.suggestedNgn) !== price && (
-              <button
-                type="button"
-                onClick={() => setPrice(String(quote.suggestedNgn))}
-                title={`Cost ${formatNgn(quote.costNgn)}, Access ${formatNgn(quote.nipNgn + quote.camfNgn + quote.smsNgn)}, markup ${formatNgn(quote.markupNgn)}, Flutterwave ${formatNgn(quote.flutterwaveNgn)}`}
-                className={`mt-1 text-left text-[11px] font-semibold ${belowQuote ? 'text-ember' : 'text-obsidian/55 hover:text-ember'}`}
-              >
-                Use {formatNgn(quote.suggestedNgn)}
-              </button>
-            )}
-          </div>
-          <AdminInput label="Low at" type="number" min={0} inputMode="numeric" value={threshold} onChange={(e) => setThreshold(e.target.value)} className={cell} />
-          <AdminInput
-            label="Min order"
-            hint="checkout floor"
-            type="number"
-            min={1}
-            max={24}
-            inputMode="numeric"
-            value={minOrder}
-            onChange={(e) => setMinOrder(e.target.value)}
-            className={cell}
-          />
-        </div>
-
-        <div className="min-w-[88px] shrink-0 text-right">
-          <AdminLabel>Margin</AdminLabel>
+        </td>
+        <td className="w-32 px-2 py-2 text-right">
+          <input aria-label="Retail price" type="number" min={0} inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value)} className={cell} />
+          {quote && String(quote.suggestedNgn) !== price && (
+            <button
+              type="button"
+              onClick={() => setPrice(String(quote.suggestedNgn))}
+              title={`Cost ${formatNgn(quote.costNgn)}, Access ${formatNgn(quote.nipNgn + quote.camfNgn + quote.smsNgn)}, markup ${formatNgn(quote.markupNgn)}, Flutterwave ${formatNgn(quote.flutterwaveNgn)}`}
+              className={`mt-0.5 text-[11px] font-semibold ${belowQuote ? 'text-ember' : 'text-obsidian/60 hover:text-ember'}`}
+            >
+              Use {formatNgn(quote.suggestedNgn)}
+            </button>
+          )}
+        </td>
+        <td className="w-24 px-2 py-2 text-right">
           {margin ? (
             <p className={`text-sm font-bold tabular-nums ${margin.negative ? 'text-red-600' : margin.low ? 'text-amber-700' : 'text-emerald-700'}`}>
               {formatNgn(margin.marginNgn)}
-              <span className="block text-[11px] font-normal">{margin.marginPct}%</span>
+              <span className="block text-[11px] font-semibold">{margin.marginPct}%</span>
             </p>
           ) : (
-            <p className="text-sm text-obsidian/35">—</p>
+            <p className="text-sm text-obsidian/55">—</p>
           )}
-        </div>
-
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
+        </td>
+        <td className="w-32 px-2 py-2">
+          <div className="flex flex-wrap gap-1">
+            {status.map((st) => (
+              <span key={st.label} className={`rounded px-1.5 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${st.tone}`}>
+                {st.label}
+              </span>
+            ))}
+          </div>
+        </td>
+        <td className="w-24 py-2 pl-2 pr-3 text-right">
           <button
             type="button"
             disabled={saving || !dirty}
-            onClick={() =>
-              onSave({
-                ...(derived ? {} : { onHand }),
-                priceNgn: price === '' ? undefined : price,
-                ...(isPack ? {} : { costNgn: cost === '' ? null : cost }),
-                lowStockThreshold: threshold,
-                minOrderQty: minOrder,
-                tasteNote,
-              })
-            }
-            className="btn-brand px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] disabled:opacity-35"
+            onClick={save}
+            className="btn-brand h-9 rounded-md px-3 text-xs font-bold disabled:opacity-30"
           >
-            {saving ? '…' : 'Save'}
+            {saving ? 'Saving…' : 'Save'}
           </button>
-          <button type="button" disabled={saving} onClick={() => onSave({ active: !item.active })} className={btn}>
-            {item.active ? 'Unlist' : 'List'}
-          </button>
-          {suppliers.length > 0 && (
-            <button type="button" onClick={() => setSuppliersOpen((v) => !v)} aria-expanded={suppliersOpen} className={btn}>
-              {suppliers[0]?.name || 'Stock'}
-            </button>
-          )}
-          <button type="button" onClick={() => setMerchOpen((v) => !v)} aria-expanded={merchOpen} className={btn}>
-            Merchandise
-          </button>
-          <button type="button" onClick={() => setGuideOpen((v) => !v)} aria-expanded={guideOpen} className={btn}>
-            Guide
-          </button>
-          <button type="button" onClick={() => setHistoryOpen((v) => !v)} aria-expanded={historyOpen} className={btn}>
-            History
-          </button>
-          <button type="button" onClick={onEdit} className={btn}>
-            Edit
-          </button>
-          <button
-            type="button"
-            disabled={saving}
-            onClick={onDelete}
-            className="border border-ember/40 px-3 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] text-ember disabled:opacity-40"
-          >
-            Delete
-          </button>
-        </div>
-      </div>
+        </td>
+      </tr>
 
-      {suppliersOpen && suppliers.length > 0 && (
-        <div className="mt-3 border-t border-obsidian/10 pt-3">
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/40">
-            {suppliers[0]?.name || 'Supplier'} stock &amp; cost
-          </p>
-          <div className="grid gap-2 sm:grid-cols-1 max-w-md">
-            {suppliers.map((sup) => (
-              <SupplierQtyField
-                key={sup.id}
-                supplier={sup}
-                row={supplierRows.find((r) => r.supplierId === sup.id)}
-                costNgn={supplierCosts[sup.id]}
-                retailNgn={item.price_ngn}
-                derivedCost={isPack}
-                onSave={(qty) => onSetSupplierStock(sup.id, item.slug, qty)}
-                onSaveCost={(costNgn) => onSetSupplierCost(sup.id, item.slug, costNgn)}
-              />
-            ))}
-          </div>
-          <p className="mt-2 text-[11px] text-obsidian/40">
-            On-hand and wholesale cost for the supplier. Quotes here also drive the margin column.
-          </p>
-        </div>
+      {open && (
+        <tr className="bg-shell">
+          <td />
+          <td colSpan={7} className="pb-4 pr-3">
+            <div className="overflow-hidden rounded-lg border border-obsidian/15 bg-white">
+              <div className="flex flex-wrap items-center gap-1 border-b border-obsidian/10 bg-obsidian/[0.03] px-2 py-1.5">
+                {panes.map((pn) => (
+                  <button
+                    key={pn.key}
+                    type="button"
+                    onClick={() => setPanel(pn.key)}
+                    className={`rounded-md px-2.5 py-1.5 text-xs font-semibold ${
+                      panel === pn.key ? 'bg-obsidian text-white' : 'text-obsidian/70 hover:bg-obsidian/[0.06] hover:text-obsidian'
+                    }`}
+                  >
+                    {pn.label}
+                  </button>
+                ))}
+                <span className="flex-1" />
+                <button type="button" disabled={saving} onClick={() => onSave({ active: !item.active })} className={btn}>
+                  {item.active ? 'Hide from shop' : 'List in shop'}
+                </button>
+                <button type="button" onClick={onEdit} className={btn}>
+                  Edit details &amp; photo
+                </button>
+                <button type="button" disabled={saving} onClick={onDelete} className={`${btn} border-red-300 text-red-700 hover:bg-red-50`}>
+                  Delete
+                </button>
+              </div>
+
+              <div className="p-3">
+                {panel === 'settings' && (
+                  <div className="grid max-w-xl gap-3 sm:grid-cols-2">
+                    <AdminInput label="Low-stock alert at" hint="flags the row amber" type="number" min={0} inputMode="numeric" value={threshold} onChange={(e) => setThreshold(e.target.value)} className={`${adminInputClass} h-9 py-1.5`} />
+                    <AdminInput label="Minimum order" hint="checkout floor" type="number" min={1} max={24} inputMode="numeric" value={minOrder} onChange={(e) => setMinOrder(e.target.value)} className={`${adminInputClass} h-9 py-1.5`} />
+                    <p className="text-xs text-obsidian/60 sm:col-span-2">
+                      {item.reserved > 0 ? `${item.reserved} reserved by open orders. ` : ''}Use the row&apos;s Save button to apply.
+                    </p>
+                  </div>
+                )}
+
+                {panel === 'suppliers' && (
+                  <div>
+                    <div className="grid max-w-2xl gap-2">
+                      {suppliers.map((sup) => (
+                        <SupplierQtyField
+                          key={sup.id}
+                          supplier={sup}
+                          row={supplierRows.find((r) => r.supplierId === sup.id)}
+                          costNgn={supplierCosts[sup.id]}
+                          retailNgn={item.price_ngn}
+                          derivedCost={isPack}
+                          onSave={(qty) => onSetSupplierStock(sup.id, item.slug, qty)}
+                          onSaveCost={(costNgn) => onSetSupplierCost(sup.id, item.slug, costNgn)}
+                        />
+                      ))}
+                    </div>
+                    <p className="mt-2 text-xs text-obsidian/60">
+                      Shelf count and wholesale price per supplier. The cheapest quote drives the margin column.
+                    </p>
+                  </div>
+                )}
+
+                {panel === 'merch' && <MerchPanel item={item} retailNgn={price === '' ? item.price_ngn : Number(price)} saving={saving} onSave={onSave} />}
+
+                {panel === 'history' && <StockHistory slug={item.slug} saving={saving} item={item} />}
+
+                {panel === 'guide' && (
+                  <div className="max-w-2xl space-y-2">
+                    <AdminTextArea
+                      label="Taste note (bottle guide ⓘ)"
+                      value={tasteNote}
+                      onChange={(e) => setTasteNote(e.target.value)}
+                      rows={2}
+                      placeholder="What it tastes like — one sentence"
+                    />
+                    <p className="text-xs text-obsidian/60">
+                      Saved with the row&apos;s Save button. For the full brand story use{' '}
+                      <button type="button" onClick={onEdit} className="font-semibold text-ember underline">
+                        Edit details
+                      </button>
+                      .
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </td>
+        </tr>
       )}
-
-      {merchOpen && <MerchPanel item={item} retailNgn={price === '' ? item.price_ngn : Number(price)} saving={saving} onSave={onSave} />}
-
-      {historyOpen && (
-        <div className="border-t border-obsidian/10 pt-3">
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/40">Stock &amp; price history</p>
-          <StockHistory slug={item.slug} saving={saving} item={item} />
-        </div>
-      )}
-
-      {guideOpen && (
-        <div className="space-y-3 border-t border-obsidian/10 pt-3">
-          <AdminTextArea
-            label="Taste note (bottle guide ⓘ)"
-            value={tasteNote}
-            onChange={(e) => setTasteNote(e.target.value)}
-            rows={2}
-            placeholder="What it tastes like — one sentence"
-          />
-          <p className="text-[11px] text-obsidian/45">
-            Save updates the taste note on this SKU. For the full brand story (origin, history, style), use{' '}
-            <button type="button" onClick={onEdit} className="text-ember underline">
-              Edit
-            </button>{' '}
-            then Generate / Save.
-          </p>
-        </div>
-      )}
-    </div>
+    </>
   );
 }
+
+type DrawerPane = 'settings' | 'suppliers' | 'merch' | 'guide' | 'history';
 
 /**
  * How the bottle is sold on the storefront: Handpicked, the SAVE badge, the ribbon and the Country
@@ -1054,7 +1089,7 @@ function MerchPanel({
 
   return (
     <div className="space-y-3 border-t border-obsidian/10 pt-3">
-      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/40">Storefront merchandising</p>
+      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/55">Storefront merchandising</p>
       <div className="grid gap-3 sm:grid-cols-5">
         <label className="flex items-center gap-2 self-end rounded-lg border border-obsidian/12 px-3 py-2.5 text-sm">
           <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} className="rounded text-ember focus:ring-ember" />
@@ -1071,7 +1106,7 @@ function MerchPanel({
             onChange={(e) => setCompareAt(e.target.value)}
             className={`${adminInputClass} py-2`}
           />
-          <p className={`mt-1 text-[11px] font-semibold ${saving_ ? 'text-emerald-700' : 'text-obsidian/40'}`}>
+          <p className={`mt-1 text-[11px] font-semibold ${saving_ ? 'text-emerald-700' : 'text-obsidian/55'}`}>
             {saving_ ? `Shows SAVE ${formatNgn(saving_)}` : was != null ? 'Must be above retail to show an offer' : 'Not on offer'}
           </p>
         </div>

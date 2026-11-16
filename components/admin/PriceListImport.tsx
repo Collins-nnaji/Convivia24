@@ -118,10 +118,10 @@ export default function PriceListImport({ onApplied }: { onApplied: () => void }
   return (
     <section className="space-y-4">
       <div>
-        <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/40 mb-1">
+        <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/55 mb-1">
           Price list import
         </h2>
-        <p className="text-[11px] text-obsidian/50 max-w-prose">
+        <p className="text-[11px] text-obsidian/65 max-w-prose">
           Photograph a supplier price list or paste it as text. We read it, match each row to a SKU,
           and show you what would change. Nothing is saved until you apply.
         </p>
@@ -149,7 +149,7 @@ export default function PriceListImport({ onApplied }: { onApplied: () => void }
         >
           <Upload size={13} /> Scan a price list
         </label>
-        <span className="text-[11px] text-obsidian/40">or paste it below</span>
+        <span className="text-[11px] text-obsidian/55">or paste it below</span>
       </div>
 
       <textarea
@@ -181,7 +181,7 @@ export default function PriceListImport({ onApplied }: { onApplied: () => void }
           <div className="overflow-x-auto border border-obsidian/10">
             <table className="w-full text-[12px] bg-white">
               <thead>
-                <tr className="text-left text-[10px] uppercase tracking-wider text-obsidian/40 border-b border-obsidian/10">
+                <tr className="text-left text-[10px] uppercase tracking-wider text-obsidian/55 border-b border-obsidian/10">
                   <th className="p-2 w-8" />
                   <th className="p-2">On the list</th>
                   <th className="p-2">Matched SKU</th>
@@ -216,13 +216,13 @@ export default function PriceListImport({ onApplied }: { onApplied: () => void }
                         {p.matchedName ? (
                           <span className="text-obsidian">
                             {p.matchedName}
-                            <span className="text-obsidian/35"> · {Math.round(p.confidence * 100)}%</span>
+                            <span className="text-obsidian/65"> · {Math.round(p.confidence * 100)}%</span>
                           </span>
                         ) : (
-                          <span className="text-obsidian/40">no match — skipped</span>
+                          <span className="text-obsidian/55">no match — skipped</span>
                         )}
                       </td>
-                      <td className="p-2 text-right tabular-nums text-obsidian/50">
+                      <td className="p-2 text-right tabular-nums text-obsidian/65">
                         {p.currentPriceNgn != null ? formatNgn(p.currentPriceNgn) : '—'}
                       </td>
                       <td className="p-2 text-right tabular-nums font-semibold">
@@ -230,7 +230,7 @@ export default function PriceListImport({ onApplied }: { onApplied: () => void }
                       </td>
                       <td className="p-2 text-right tabular-nums">
                         {p.status === 'unchanged' ? (
-                          <span className="text-obsidian/35">no change</span>
+                          <span className="text-obsidian/65">no change</span>
                         ) : p.changePct != null ? (
                           <span
                             className={`inline-flex items-center gap-1 ${
@@ -275,14 +275,14 @@ export default function PriceListImport({ onApplied }: { onApplied: () => void }
                 setSummary(null);
                 setChosen({});
               }}
-              className="text-[11px] text-obsidian/45 hover:text-obsidian"
+              className="text-[11px] text-obsidian/60 hover:text-obsidian"
             >
               Discard
             </button>
           </div>
 
           {transcript && (
-            <details className="text-[11px] text-obsidian/45">
+            <details className="text-[11px] text-obsidian/60">
               <summary className="cursor-pointer">What the scan read</summary>
               <pre className="mt-2 p-3 bg-paper border border-obsidian/10 overflow-x-auto whitespace-pre-wrap">
                 {transcript}

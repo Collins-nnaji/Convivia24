@@ -1,13 +1,13 @@
 /**
  * The Discover hub's sections. One list drives the rail and deep links.
  */
-export type DiscoverSectionKey = 'taste' | 'mix' | 'trivia' | 'rewards';
+export type DiscoverSectionKey = 'taste' | 'events' | 'mix' | 'trivia' | 'rewards';
 
 export type DiscoverSection = {
   key: DiscoverSectionKey;
   href: string;
   label: string;
-  /** Tab label for the phone segmented bar, where the full label won't fit four across. */
+  /** Tab label for the phone segmented bar, where the full label won't fit five across. */
   short: string;
   /** One neutral sentence — no brand names, no live data. */
   description: string;
@@ -22,6 +22,13 @@ export const DISCOVER_SECTIONS: DiscoverSection[] = [
     label: 'Your taste',
     short: 'Taste',
     description: 'Build your profile and see which houses fit you.',
+  },
+  {
+    key: 'events',
+    href: '/discover/events',
+    label: "What's on",
+    short: 'Events',
+    description: 'Nights and events coming up — and the drinks to bring.',
   },
   {
     key: 'mix',

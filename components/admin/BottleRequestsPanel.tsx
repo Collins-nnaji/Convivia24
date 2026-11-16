@@ -65,18 +65,18 @@ export default function BottleRequestsPanel({ onChanged }: { onChanged?: () => v
   return (
     <div className="space-y-4">
       {pending.length === 0 ? (
-        <p className="text-sm text-obsidian/45">No bottle requests waiting.</p>
+        <p className="text-sm text-obsidian/60">No bottle requests waiting.</p>
       ) : (
         <ul className="space-y-3">
           {pending.map((r) => {
             const suggestedMargin = r.costNgn != null && Number(prices[r.id]) > 0 ? Math.round(((Number(prices[r.id]) - r.costNgn) / Number(prices[r.id])) * 100) : null;
             return (
-              <li key={r.id} className="rounded-2xl border border-amber-200 bg-amber-50/40 p-4">
+              <li key={r.id} className="rounded-lg border border-amber-200 bg-amber-50/40 p-4">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <p className="font-bold text-obsidian">
-                    {r.name} <span className="font-normal text-obsidian/50">· {[r.brand, r.category, r.volume, r.abv != null ? `${r.abv}%` : null].filter(Boolean).join(' · ')}</span>
+                    {r.name} <span className="font-normal text-obsidian/65">· {[r.brand, r.category, r.volume, r.abv != null ? `${r.abv}%` : null].filter(Boolean).join(' · ')}</span>
                   </p>
-                  <span className="text-xs text-obsidian/45">{r.supplierName} · {formatWhen(r.createdAt)}</span>
+                  <span className="text-xs text-obsidian/60">{r.supplierName} · {formatWhen(r.createdAt)}</span>
                 </div>
                 <p className="mt-1 text-sm text-obsidian/60">
                   They hold <strong>{r.onHand}</strong>{r.costNgn != null ? <> and quote <strong>{formatNgn(r.costNgn)}</strong> per bottle</> : ' (no quote given)'}.
@@ -100,12 +100,12 @@ export default function BottleRequestsPanel({ onChanged }: { onChanged?: () => v
         </ul>
       )}
       {decided.length > 0 && (
-        <ul className="divide-y divide-obsidian/6 rounded-2xl bg-white ring-1 ring-obsidian/[0.06] text-sm">
+        <ul className="divide-y divide-obsidian/6 rounded-lg bg-white ring-1 ring-obsidian/15 text-sm">
           {decided.slice(0, 20).map((r) => (
             <li key={r.id} className="flex flex-wrap items-center gap-3 px-3 py-2">
               <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${r.status === 'approved' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>{r.status}</span>
               <span className="font-semibold">{r.name}</span>
-              <span className="text-xs text-obsidian/45">{r.supplierName}{r.createdSlug ? ` · ${r.createdSlug}` : ''}{r.decisionNote ? ` · ${r.decisionNote}` : ''}</span>
+              <span className="text-xs text-obsidian/60">{r.supplierName}{r.createdSlug ? ` · ${r.createdSlug}` : ''}{r.decisionNote ? ` · ${r.decisionNote}` : ''}</span>
             </li>
           ))}
         </ul>

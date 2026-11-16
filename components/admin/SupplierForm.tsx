@@ -67,7 +67,7 @@ export default function SupplierForm({
     }`;
 
   return (
-    <form onSubmit={submit} className="space-y-4 rounded-2xl border border-obsidian/10 bg-white p-5">
+    <form onSubmit={submit} className="space-y-4 rounded-lg border border-obsidian/10 bg-white p-4">
       <h3 className="font-bold">{initial ? `Edit ${initial.name}` : 'New supplier'}</h3>
       <div className="grid gap-3 sm:grid-cols-2">
         <AdminInput label="Business name" required value={form.name} onChange={(e) => set('name', e.target.value)} className="sm:col-span-2" />
@@ -77,8 +77,8 @@ export default function SupplierForm({
         <AdminInput label="City" value={form.city || ''} onChange={(e) => set('city', e.target.value)} />
       </div>
       <div>
-        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/45">
-          Delivery areas <span className="font-normal normal-case tracking-normal text-obsidian/35">— none selected = anywhere in the city</span>
+        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/60">
+          Delivery areas <span className="font-normal normal-case tracking-normal text-obsidian/65">— none selected = anywhere in the city</span>
         </p>
         <div className="flex flex-wrap gap-1.5">
           {AREA_NAMES.map((a) => (
@@ -89,7 +89,7 @@ export default function SupplierForm({
         </div>
       </div>
       <div>
-        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/45">Categories they can fill</p>
+        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/60">Categories they can fill</p>
         <div className="flex flex-wrap gap-1.5">
           {CATEGORIES.map((c) => (
             <button key={c} type="button" onClick={() => set('categories', toggle(form.categories, c))} className={chip(Boolean(form.categories?.includes(c)))}>
@@ -115,7 +115,7 @@ export default function SupplierForm({
         <button type="submit" disabled={saving} className="btn-brand px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] disabled:opacity-50">
           {saving ? 'Saving…' : initial ? 'Save changes' : 'Create supplier'}
         </button>
-        <button type="button" onClick={onCancel} className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/45 hover:text-obsidian">
+        <button type="button" onClick={onCancel} className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] text-obsidian/60 hover:text-obsidian">
           Cancel
         </button>
       </div>

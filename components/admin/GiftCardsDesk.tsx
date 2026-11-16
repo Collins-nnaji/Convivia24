@@ -166,7 +166,7 @@ export default function GiftCardsDesk({ onChanged }: { onChanged?: () => void })
       {error && <p className="mb-4 text-sm text-ember">{error}</p>}
 
       {stats && (
-        <div className="mb-6 grid gap-px overflow-hidden rounded-2xl border border-obsidian/10 bg-obsidian/10 sm:grid-cols-4">
+        <div className="mb-3 grid gap-px overflow-hidden rounded-lg border border-obsidian/10 bg-obsidian/10 sm:grid-cols-4">
           {[
             ['Outstanding', `${formatNgn(stats.activeNgn)}`, `${stats.activeCount} active card${stats.activeCount === 1 ? '' : 's'}`],
             ['Redeemed', `${formatNgn(stats.redeemedNgn)}`, `${stats.redeemedCount} used at checkout`],
@@ -174,21 +174,21 @@ export default function GiftCardsDesk({ onChanged }: { onChanged?: () => void })
             ['Voided', String(stats.voidCount), 'cancelled by the desk'],
           ].map(([label, value, hint]) => (
             <div key={label} className="bg-white p-4">
-              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/40">{label}</p>
-              <p className="mt-1 font-serif text-3xl font-light tabular-nums text-obsidian">{value}</p>
-              <p className="text-[11px] text-obsidian/45">{hint}</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/55">{label}</p>
+              <p className="mt-1 text-2xl font-bold tabular-nums text-obsidian">{value}</p>
+              <p className="text-[11px] text-obsidian/60">{hint}</p>
             </div>
           ))}
         </div>
       )}
 
-      <form onSubmit={issue} className="mb-8 space-y-4 rounded-2xl border border-obsidian/10 bg-white p-5 sm:p-6">
+      <form onSubmit={issue} className="mb-4 space-y-4 rounded-lg border border-obsidian/10 bg-white p-3 sm:p-4">
         <div>
           <h2 className="font-bold">Issue a gift card</h2>
-          <p className="text-sm text-obsidian/50">A single-use code backed by the database. Add a recipient to email it straight to them.</p>
+          <p className="text-sm text-obsidian/65">A single-use code backed by the database. Add a recipient to email it straight to them.</p>
         </div>
         <div>
-          <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/45">Value</p>
+          <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/60">Value</p>
           <div className="flex flex-wrap items-center gap-2">
             {PRESETS.map((v) => (
               <button
@@ -228,14 +228,14 @@ export default function GiftCardsDesk({ onChanged }: { onChanged?: () => void })
           </button>
           <label className="flex items-center gap-2 text-sm text-obsidian/70">
             <input type="checkbox" checked={form.sendEmail} disabled={!mailOk} onChange={(e) => set('sendEmail', e.target.checked)} className="rounded border-obsidian/30 text-ember focus:ring-ember" />
-            Email the code to the recipient{!mailOk && <span className="text-xs text-obsidian/40">(mail not configured)</span>}
+            Email the code to the recipient{!mailOk && <span className="text-xs text-obsidian/55">(mail not configured)</span>}
           </label>
         </div>
       </form>
 
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <label className="relative">
-          <Search size={14} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-obsidian/35" />
+          <Search size={14} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-obsidian/65" />
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Code, name, email, note…" aria-label="Search gift cards" className={`${adminInputClass} w-64 py-2 pl-8`} />
         </label>
         <AdminSelect
@@ -250,12 +250,12 @@ export default function GiftCardsDesk({ onChanged }: { onChanged?: () => void })
           ]}
           className="w-auto py-2"
         />
-        <span className="text-xs text-obsidian/45">{rows.length} shown</span>
+        <span className="text-xs text-obsidian/60">{rows.length} shown</span>
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-obsidian/10 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-obsidian/10 bg-white">
         <table className="w-full min-w-[900px] text-sm">
-          <thead className="bg-paper text-left text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/45">
+          <thead className="bg-paper text-left text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/60">
             <tr>
               <th className="px-3 py-3">Code</th>
               <th className="px-3 py-3 text-right">Value</th>
@@ -275,7 +275,7 @@ export default function GiftCardsDesk({ onChanged }: { onChanged?: () => void })
                   <td className="px-3 py-2.5">
                     <span className="inline-flex items-center gap-1.5 font-mono text-xs">
                       {c.code}
-                      <button type="button" onClick={() => copy(c.code)} title="Copy code" className="grid h-6 w-6 place-items-center rounded text-obsidian/35 hover:bg-obsidian/[0.06] hover:text-obsidian">
+                      <button type="button" onClick={() => copy(c.code)} title="Copy code" className="grid h-6 w-6 place-items-center rounded text-obsidian/65 hover:bg-obsidian/[0.06] hover:text-obsidian">
                         <Copy size={12} />
                       </button>
                     </span>
@@ -284,28 +284,28 @@ export default function GiftCardsDesk({ onChanged }: { onChanged?: () => void })
                   <td className="px-3 py-2.5">
                     <span className={`px-2 py-1 text-[10px] font-bold uppercase tracking-[0.1em] ${t.cls}`}>{t.label}</span>
                     {c.status === 'redeemed' && c.redeemedOrderId && (
-                      <span className="mt-1 block font-mono text-[10px] text-obsidian/40">order {c.redeemedOrderId.slice(0, 8).toUpperCase()}</span>
+                      <span className="mt-1 block font-mono text-[10px] text-obsidian/55">order {c.redeemedOrderId.slice(0, 8).toUpperCase()}</span>
                     )}
                   </td>
                   <td className="px-3 py-2.5 text-xs">
                     {c.recipientName || c.recipientEmail ? (
                       <>
                         <span className="block font-semibold text-obsidian">{c.recipientName || '—'}</span>
-                        <span className="block text-obsidian/50">{c.recipientEmail || ''}</span>
+                        <span className="block text-obsidian/65">{c.recipientEmail || ''}</span>
                         {c.sentAt && <span className="block text-[10px] text-emerald-700">emailed {formatWhen(c.sentAt)}</span>}
                       </>
                     ) : (
-                      <span className="text-obsidian/35">—</span>
+                      <span className="text-obsidian/65">—</span>
                     )}
                   </td>
                   <td className="max-w-[200px] truncate px-3 py-2.5 text-xs text-obsidian/55" title={c.note || ''}>{c.note || '—'}</td>
-                  <td className="whitespace-nowrap px-3 py-2.5 text-xs text-obsidian/45">{formatWhen(c.createdAt)}</td>
-                  <td className="whitespace-nowrap px-3 py-2.5 text-xs text-obsidian/45">
+                  <td className="whitespace-nowrap px-3 py-2.5 text-xs text-obsidian/60">{formatWhen(c.createdAt)}</td>
+                  <td className="whitespace-nowrap px-3 py-2.5 text-xs text-obsidian/60">
                     {c.expiresAt ? new Date(c.expiresAt).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2.5 text-right">
                     {c.status === 'active' && !c.expired && c.recipientEmail && mailOk && (
-                      <button type="button" disabled={busyId === c.id} onClick={() => send(c)} title={c.sentAt ? 'Resend email' : 'Send email'} className="mr-2 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-obsidian/50 hover:text-ember disabled:opacity-40">
+                      <button type="button" disabled={busyId === c.id} onClick={() => send(c)} title={c.sentAt ? 'Resend email' : 'Send email'} className="mr-2 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-obsidian/65 hover:text-ember disabled:opacity-40">
                         <Mail size={12} /> {c.sentAt ? 'Resend' : 'Send'}
                       </button>
                     )}
@@ -320,7 +320,7 @@ export default function GiftCardsDesk({ onChanged }: { onChanged?: () => void })
             })}
           </tbody>
         </table>
-        {rows.length === 0 && <p className="p-4 text-sm text-obsidian/45">{cards.length === 0 ? 'No gift cards issued yet.' : 'Nothing matches.'}</p>}
+        {rows.length === 0 && <p className="p-4 text-sm text-obsidian/60">{cards.length === 0 ? 'No gift cards issued yet.' : 'Nothing matches.'}</p>}
       </div>
     </>
   );

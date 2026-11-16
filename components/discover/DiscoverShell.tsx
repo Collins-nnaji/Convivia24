@@ -45,7 +45,7 @@ export default function DiscoverShell({ children }: { children: React.ReactNode 
             </Link>
           )}
         </div>
-        <ul className="grid grid-cols-4 gap-1 px-2 pb-2 pt-2.5">
+        <ul className="grid grid-cols-5 gap-0.5 px-1.5 pb-2 pt-2.5">
           {DISCOVER_SECTIONS.map((s) => {
             const on = s.key === active;
             return (
@@ -65,7 +65,7 @@ export default function DiscoverShell({ children }: { children: React.ReactNode 
                     />
                   )}
                   <SectionIcon section={s.key} size={24} className="relative" />
-                  <span className="relative text-[11px] font-bold uppercase tracking-[0.06em]">{s.short}</span>
+                  <span className="relative text-[10px] font-bold uppercase tracking-[0.04em]">{s.short}</span>
                 </Link>
               </li>
             );

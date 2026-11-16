@@ -38,6 +38,8 @@ async function handleGET(req: NextRequest) {
     const to = toRaw && !Number.isNaN(Date.parse(toRaw)) ? new Date(toRaw).toISOString() : null;
     const statusFilter = url.searchParams.get('status') || null;
     const status = statusFilter && (ORDER_STATUSES as readonly string[]).includes(statusFilter) ? statusFilter : null;
+    // "open" = everything still needing work, for the fulfilment queue.
+    const open = statusFilter === 'open';
     const q = (url.searchParams.get('q') || '').trim().toLowerCase() || null;
     const like = q ? `%${q}%` : null;
     const limit = Math.min(500, Math.max(1, Number(url.searchParams.get('limit')) || 100));
@@ -49,6 +51,7 @@ async function handleGET(req: NextRequest) {
         AND (${from}::timestamptz IS NULL OR o.created_at >= ${from}::timestamptz)
         AND (${to}::timestamptz IS NULL OR o.created_at < ${to}::timestamptz)
         AND (${status}::text IS NULL OR o.status = ${status})
+        AND (NOT ${open}::boolean OR o.status IN ('awaiting_payment','paid','processing','packed','out_for_delivery'))
         AND (${like}::text IS NULL OR LOWER(o.full_name) LIKE ${like} OR LOWER(o.email) LIKE ${like}
              OR COALESCE(o.phone, '') LIKE ${like} OR o.id::text LIKE ${like} OR LOWER(COALESCE(o.area, '')) LIKE ${like})
     `;
@@ -82,6 +85,8 @@ async function handleGET(req: NextRequest) {
         rs.name AS routed_supplier_name,
         o.supplier_id,
         o.supplier_cost_ngn,
+        o.routed_cost_ngn,
+        o.delivery_fee_ngn,
         o.sourced_at,
         o.sourcing_note,
         s.name AS supplier_name,
@@ -103,10 +108,11 @@ async function handleGET(req: NextRequest) {
         AND (${from}::timestamptz IS NULL OR o.created_at >= ${from}::timestamptz)
         AND (${to}::timestamptz IS NULL OR o.created_at < ${to}::timestamptz)
         AND (${status}::text IS NULL OR o.status = ${status})
+        AND (NOT ${open}::boolean OR o.status IN ('awaiting_payment','paid','processing','packed','out_for_delivery'))
         AND (${like}::text IS NULL OR LOWER(o.full_name) LIKE ${like} OR LOWER(o.email) LIKE ${like}
              OR COALESCE(o.phone, '') LIKE ${like} OR o.id::text LIKE ${like} OR LOWER(COALESCE(o.area, '')) LIKE ${like})
       GROUP BY o.id, s.name, rs.name
-      ORDER BY o.created_at DESC
+      ORDER BY CASE WHEN ${open}::boolean THEN o.created_at END ASC, o.created_at DESC
       LIMIT ${limit} OFFSET ${offset}
     `;
 
@@ -146,6 +152,8 @@ async function handleGET(req: NextRequest) {
         supplierId: o.supplier_id,
         supplierName: o.supplier_name,
         supplierCostNgn: o.supplier_cost_ngn == null ? null : Number(o.supplier_cost_ngn),
+        routedCostNgn: o.routed_cost_ngn == null ? null : Number(o.routed_cost_ngn),
+        deliveryFeeNgn: Number(o.delivery_fee_ngn ?? 0),
         sourcedAt: o.sourced_at,
         sourcingNote: o.sourcing_note,
         margin: orderMargin({

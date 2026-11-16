@@ -41,7 +41,7 @@ export default function ContentDesk({ onChanged }: { onChanged?: () => void }) {
     <div className="space-y-5">
       <div className="flex gap-1 border-b border-obsidian/10">
         {(['events', 'campaigns', 'venues'] as Pane[]).map((p) => (
-          <button key={p} type="button" onClick={() => setPane(p)} className={`-mb-px border-b-2 px-3 py-2 text-xs font-bold capitalize ${pane === p ? 'border-ember text-ember' : 'border-transparent text-obsidian/50 hover:text-obsidian'}`}>
+          <button key={p} type="button" onClick={() => setPane(p)} className={`-mb-px border-b-2 px-3 py-2 text-xs font-bold capitalize ${pane === p ? 'border-ember text-ember' : 'border-transparent text-obsidian/65 hover:text-obsidian'}`}>
             {p}
           </button>
         ))}
@@ -124,14 +124,14 @@ function EventsPane({ onChanged }: { onChanged?: () => void }) {
   return (
     <>
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-obsidian/50">{upcoming.length} upcoming · {past.length} past</p>
+        <p className="text-sm text-obsidian/65">{upcoming.length} upcoming · {past.length} past</p>
         <button type="button" onClick={() => setForm({ ...EMPTY_EVENT, venueSlug: venues[0]?.slug || '' })} className="btn-brand inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em]">
           <Plus size={13} /> New event
         </button>
       </div>
       <EventList rows={upcoming} busy={busy} onEdit={(ev) => setForm({ id: ev.id, title: ev.title, venueSlug: ev.venueSlug, tag: ev.tag, blurb: ev.blurb, expected: ev.expected, coverNgn: ev.coverNgn != null ? String(ev.coverNgn) : '', startsAt: toLocal(ev.startsAtIso), endsAt: toLocal(ev.endsAtIso), published: ev.published })} onToggle={togglePublished} onDelete={remove} />
       {past.length > 0 && (
-        <details className="rounded-2xl bg-white ring-1 ring-obsidian/[0.06]">
+        <details className="rounded-lg bg-white ring-1 ring-obsidian/15">
           <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-obsidian/60">Past events ({past.length})</summary>
           <div className="border-t border-obsidian/8">
             <EventList rows={past} busy={busy} onEdit={() => {}} onToggle={togglePublished} onDelete={remove} />
@@ -166,22 +166,22 @@ function EventsPane({ onChanged }: { onChanged?: () => void }) {
 }
 
 function EventList({ rows, busy, onEdit, onToggle, onDelete }: { rows: EventRow[]; busy: string; onEdit: (e: EventRow) => void; onToggle: (e: EventRow) => void; onDelete: (e: EventRow) => void }) {
-  if (rows.length === 0) return <p className="text-sm text-obsidian/45">No events.</p>;
+  if (rows.length === 0) return <p className="text-sm text-obsidian/60">No events.</p>;
   return (
-    <ul className="divide-y divide-obsidian/6 rounded-2xl bg-white ring-1 ring-obsidian/[0.06]">
+    <ul className="divide-y divide-obsidian/6 rounded-lg bg-white ring-1 ring-obsidian/15">
       {rows.map((ev) => (
         <li key={ev.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
           <div className="min-w-0 flex-1">
             <p className="flex items-center gap-2 text-sm font-semibold">
               <span className="truncate">{ev.title}</span>
-              <span className="rounded-full bg-paper px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-obsidian/50">{ev.tag}</span>
+              <span className="rounded-full bg-paper px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-obsidian/65">{ev.tag}</span>
               {!ev.published && <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700">hidden</span>}
             </p>
-            <p className="text-xs text-obsidian/50">{ev.venue?.name || ev.venueSlug} · {formatWhen(ev.startsAtIso)}{ev.coverNgn ? ` · ${formatNgn(ev.coverNgn)}` : ' · free'}</p>
+            <p className="text-xs text-obsidian/65">{ev.venue?.name || ev.venueSlug} · {formatWhen(ev.startsAtIso)}{ev.coverNgn ? ` · ${formatNgn(ev.coverNgn)}` : ' · free'}</p>
           </div>
           <button type="button" disabled={busy === ev.id} onClick={() => onToggle(ev)} className="rounded-full border border-obsidian/15 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-obsidian/60 hover:border-ember hover:text-ember disabled:opacity-40">{ev.published ? 'Unpublish' : 'Publish'}</button>
-          <button type="button" onClick={() => onEdit(ev)} className="grid h-8 w-8 place-items-center rounded text-obsidian/40 hover:bg-obsidian/[0.06] hover:text-obsidian"><Pencil size={14} /></button>
-          <button type="button" onClick={() => onDelete(ev)} className="grid h-8 w-8 place-items-center rounded text-obsidian/40 hover:bg-red-50 hover:text-red-600"><Trash2 size={14} /></button>
+          <button type="button" onClick={() => onEdit(ev)} className="grid h-8 w-8 place-items-center rounded text-obsidian/55 hover:bg-obsidian/[0.06] hover:text-obsidian"><Pencil size={14} /></button>
+          <button type="button" onClick={() => onDelete(ev)} className="grid h-8 w-8 place-items-center rounded text-obsidian/55 hover:bg-red-50 hover:text-red-600"><Trash2 size={14} /></button>
         </li>
       ))}
     </ul>
@@ -266,7 +266,7 @@ function CampaignsPane({ onChanged }: { onChanged?: () => void }) {
   return (
     <>
       {pendingClaims.length > 0 && (
-        <div className="rounded-2xl border border-amber-200 bg-amber-50/40 p-4">
+        <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4">
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-amber-800">Brand ownership claims ({pendingClaims.length})</p>
           <ul className="mt-2 divide-y divide-amber-200/60">
             {pendingClaims.map((c) => (
@@ -284,15 +284,15 @@ function CampaignsPane({ onChanged }: { onChanged?: () => void }) {
       )}
 
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-obsidian/50">{campaigns.filter((c) => c.live).length} live · {campaigns.length} total</p>
+        <p className="text-sm text-obsidian/65">{campaigns.filter((c) => c.live).length} live · {campaigns.length} total</p>
         <button type="button" onClick={() => setForm({ ...EMPTY_CAMPAIGN, brandSlug: brands[0]?.slug || '' })} className="btn-brand inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em]">
           <Plus size={13} /> New campaign
         </button>
       </div>
       {campaigns.length === 0 ? (
-        <p className="text-sm text-obsidian/45">No campaigns yet.</p>
+        <p className="text-sm text-obsidian/60">No campaigns yet.</p>
       ) : (
-        <ul className="divide-y divide-obsidian/6 rounded-2xl bg-white ring-1 ring-obsidian/[0.06]">
+        <ul className="divide-y divide-obsidian/6 rounded-lg bg-white ring-1 ring-obsidian/15">
           {campaigns.map((c) => (
             <li key={c.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
               <div className="min-w-0 flex-1">
@@ -300,10 +300,10 @@ function CampaignsPane({ onChanged }: { onChanged?: () => void }) {
                   <span className="truncate">{c.title}</span>
                   {c.live ? <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700">live</span> : !c.published ? <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700">draft</span> : null}
                 </p>
-                <p className="text-xs text-obsidian/50">{brands.find((b) => b.slug === c.brandSlug)?.name || c.brandSlug} · /campaigns/{c.slug} · {c.tasks.length} tasks · {c.rewardPoints} pts{c.daysLeft != null ? ` · ${c.daysLeft}d left` : ''}</p>
+                <p className="text-xs text-obsidian/65">{brands.find((b) => b.slug === c.brandSlug)?.name || c.brandSlug} · /campaigns/{c.slug} · {c.tasks.length} tasks · {c.rewardPoints} pts{c.daysLeft != null ? ` · ${c.daysLeft}d left` : ''}</p>
               </div>
-              <button type="button" onClick={() => edit(c)} className="grid h-8 w-8 place-items-center rounded text-obsidian/40 hover:bg-obsidian/[0.06] hover:text-obsidian"><Pencil size={14} /></button>
-              <button type="button" onClick={() => remove(c)} className="grid h-8 w-8 place-items-center rounded text-obsidian/40 hover:bg-red-50 hover:text-red-600"><Trash2 size={14} /></button>
+              <button type="button" onClick={() => edit(c)} className="grid h-8 w-8 place-items-center rounded text-obsidian/55 hover:bg-obsidian/[0.06] hover:text-obsidian"><Pencil size={14} /></button>
+              <button type="button" onClick={() => remove(c)} className="grid h-8 w-8 place-items-center rounded text-obsidian/55 hover:bg-red-50 hover:text-red-600"><Trash2 size={14} /></button>
             </li>
           ))}
         </ul>
@@ -413,29 +413,29 @@ function VenuesPane({ onChanged }: { onChanged?: () => void }) {
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-2 text-sm font-semibold">
           <span className="truncate">{v.name}</span>
-          <span className="rounded-full bg-paper px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-obsidian/50">{v.kind}</span>
+          <span className="rounded-full bg-paper px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-obsidian/65">{v.kind}</span>
           {v.status !== 'active' && <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${v.status === 'pending' ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-600'}`}>{v.status}</span>}
         </p>
-        <p className="text-xs text-obsidian/50">{v.area} · {v.followerCount} followers · {v.reviewCount} reviews{v.source === 'partner_submission' ? ' · submitted by partner' : ''}</p>
+        <p className="text-xs text-obsidian/65">{v.area} · {v.followerCount} followers · {v.reviewCount} reviews{v.source === 'partner_submission' ? ' · submitted by partner' : ''}</p>
       </div>
       {v.status === 'pending' && <button type="button" disabled={busy === v.id} onClick={() => setStatus(v, 'active')} className="btn-brand rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider disabled:opacity-40">Approve</button>}
       {v.status === 'active' && <button type="button" disabled={busy === v.id} onClick={() => setStatus(v, 'suspended')} className="rounded-full border border-obsidian/15 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-obsidian/60 hover:border-ember hover:text-ember disabled:opacity-40">Suspend</button>}
       {v.status === 'suspended' && <button type="button" disabled={busy === v.id} onClick={() => setStatus(v, 'active')} className="rounded-full border border-obsidian/15 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-obsidian/60 disabled:opacity-40">Reactivate</button>}
-      <button type="button" onClick={() => edit(v)} className="grid h-8 w-8 place-items-center rounded text-obsidian/40 hover:bg-obsidian/[0.06] hover:text-obsidian"><Pencil size={14} /></button>
-      <button type="button" onClick={() => remove(v)} className="grid h-8 w-8 place-items-center rounded text-obsidian/40 hover:bg-red-50 hover:text-red-600"><Trash2 size={14} /></button>
+      <button type="button" onClick={() => edit(v)} className="grid h-8 w-8 place-items-center rounded text-obsidian/55 hover:bg-obsidian/[0.06] hover:text-obsidian"><Pencil size={14} /></button>
+      <button type="button" onClick={() => remove(v)} className="grid h-8 w-8 place-items-center rounded text-obsidian/55 hover:bg-red-50 hover:text-red-600"><Trash2 size={14} /></button>
     </li>
   );
 
   return (
     <>
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-obsidian/50">{venues.filter((v) => v.status === 'active').length} active{pending.length ? ` · ${pending.length} awaiting approval` : ''}</p>
+        <p className="text-sm text-obsidian/65">{venues.filter((v) => v.status === 'active').length} active{pending.length ? ` · ${pending.length} awaiting approval` : ''}</p>
         <button type="button" onClick={() => setForm({ ...EMPTY_VENUE, areaId: areas[0]?.id || '' })} className="btn-brand inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em]">
           <Plus size={13} /> New venue
         </button>
       </div>
       {pending.length > 0 && <ul className="divide-y divide-amber-200/60 rounded-xl border border-amber-200 bg-amber-50/40">{pending.map(row)}</ul>}
-      {rest.length === 0 ? <p className="text-sm text-obsidian/45">No venues in the database yet (the seeded catalog still shows on the site).</p> : <ul className="divide-y divide-obsidian/6 rounded-2xl bg-white ring-1 ring-obsidian/[0.06]">{rest.map(row)}</ul>}
+      {rest.length === 0 ? <p className="text-sm text-obsidian/60">No venues in the database yet (the seeded catalog still shows on the site).</p> : <ul className="divide-y divide-obsidian/6 rounded-lg bg-white ring-1 ring-obsidian/15">{rest.map(row)}</ul>}
 
       {form && (
         <Modal open size="lg" title={form.id ? `Edit ${form.name}` : 'New venue'} onClose={() => setForm(null)} footer={

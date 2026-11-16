@@ -141,7 +141,7 @@ export default function ReferralsDesk({ onChanged }: { onChanged?: () => void })
   const owedNgn = owed.reduce((n, a) => n + a.commissionNgn, 0);
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-4">
       {error && <p className="text-sm text-ember">{error}</p>}
 
       <div className="flex items-center justify-between gap-4">
@@ -154,7 +154,7 @@ export default function ReferralsDesk({ onChanged }: { onChanged?: () => void })
         <button
           type="button"
           onClick={load}
-          className="inline-flex items-center gap-1.5 text-[11px] text-obsidian/50 hover:text-obsidian"
+          className="inline-flex items-center gap-1.5 text-[11px] text-obsidian/65 hover:text-obsidian"
         >
           <RefreshCw size={12} /> Refresh
         </button>
@@ -162,31 +162,31 @@ export default function ReferralsDesk({ onChanged }: { onChanged?: () => void })
 
       {/* ── Partners ─────────────────────────────────── */}
       <section>
-        <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/40 mb-3">
+        <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/55 mb-3">
           Partners
         </h2>
         {loading ? (
-          <p className="text-sm text-obsidian/45">Loading…</p>
+          <p className="text-sm text-obsidian/60">Loading…</p>
         ) : partners.length === 0 ? (
-          <p className="text-sm text-obsidian/45">
+          <p className="text-sm text-obsidian/60">
             No applications yet. The form is in the Refer &amp; Earn tab under Discover.
           </p>
         ) : (
           <ul className="space-y-3">
             {partners.map((p) => (
-              <li key={p.id} className="bg-white border border-obsidian/10 p-4 rounded-2xl">
+              <li key={p.id} className="bg-white border border-obsidian/10 p-4 rounded-lg">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-obsidian">
                       {p.code} · {p.company || p.name}
                     </p>
-                    <p className="text-[11px] text-obsidian/45">
+                    <p className="text-[11px] text-obsidian/60">
                       {KIND_LABELS[p.kind]} · {p.name} · {p.email}
                       {p.phone ? ` · ${p.phone}` : ''}
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 shrink-0">
-                    <label className="inline-flex items-center gap-1 text-[11px] text-obsidian/50">
+                    <label className="inline-flex items-center gap-1 text-[11px] text-obsidian/65">
                       <input
                         type="number"
                         min={0}
@@ -226,16 +226,16 @@ export default function ReferralsDesk({ onChanged }: { onChanged?: () => void })
 
       {/* ── Commissions ──────────────────────────────── */}
       <section>
-        <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/40 mb-3">
+        <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/55 mb-3">
           Referred orders
         </h2>
         {attributions.length === 0 ? (
-          <p className="text-sm text-obsidian/45">Nothing referred yet.</p>
+          <p className="text-sm text-obsidian/60">Nothing referred yet.</p>
         ) : (
           <div className="overflow-x-auto border border-obsidian/10">
             <table className="w-full text-[12px] bg-white">
               <thead>
-                <tr className="text-left text-[10px] uppercase tracking-wider text-obsidian/40 border-b border-obsidian/10">
+                <tr className="text-left text-[10px] uppercase tracking-wider text-obsidian/55 border-b border-obsidian/10">
                   <th className="p-2">Order</th>
                   <th className="p-2">Partner</th>
                   <th className="p-2 text-right">Order total</th>
@@ -250,14 +250,14 @@ export default function ReferralsDesk({ onChanged }: { onChanged?: () => void })
                     <td className="p-2 text-obsidian/70">{a.orderId.slice(0, 8)}</td>
                     <td className="p-2">
                       {a.partnerName}
-                      <span className="text-obsidian/35"> · {a.partnerCode}</span>
+                      <span className="text-obsidian/65"> · {a.partnerCode}</span>
                     </td>
                     <td className="p-2 text-right tabular-nums text-obsidian/60">
                       {a.orderTotalNgn > 0 ? formatNgn(a.orderTotalNgn) : '—'}
                     </td>
                     <td className="p-2 text-right tabular-nums font-semibold">
                       {a.status === 'pending' ? '—' : formatNgn(a.commissionNgn)}
-                      <span className="text-obsidian/30 font-normal"> ({a.commissionPct}%)</span>
+                      <span className="text-obsidian/65 font-normal"> ({a.commissionPct}%)</span>
                     </td>
                     <td className="p-2">
                       <span
@@ -265,7 +265,7 @@ export default function ReferralsDesk({ onChanged }: { onChanged?: () => void })
                           a.status === 'approved'
                             ? 'text-ember font-semibold'
                             : a.status === 'void'
-                              ? 'text-obsidian/30'
+                              ? 'text-obsidian/65'
                               : 'text-obsidian/55'
                         }
                       >
@@ -287,7 +287,7 @@ export default function ReferralsDesk({ onChanged }: { onChanged?: () => void })
                             type="button"
                             disabled={busy === a.id}
                             onClick={() => payCommission(a, true)}
-                            className="text-[11px] text-obsidian/50 hover:text-obsidian"
+                            className="text-[11px] text-obsidian/65 hover:text-obsidian"
                           >
                             Gift card
                           </button>
@@ -304,24 +304,24 @@ export default function ReferralsDesk({ onChanged }: { onChanged?: () => void })
 
       {/* ── Brand enquiries ──────────────────────────── */}
       <section>
-        <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/40 mb-3">
+        <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian/55 mb-3">
           Brand enquiries ({enquiries.filter((e) => e.status === 'new').length} new)
         </h2>
         {enquiries.length === 0 ? (
-          <p className="text-sm text-obsidian/45">
+          <p className="text-sm text-obsidian/60">
             None yet. The form is at the bottom of <code>/discover</code>.
           </p>
         ) : (
           <ul className="space-y-3">
             {enquiries.map((e) => (
-              <li key={e.id} className="bg-white border border-obsidian/10 p-4 rounded-2xl">
+              <li key={e.id} className="bg-white border border-obsidian/10 p-4 rounded-lg">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-obsidian">
                       {e.brand}
-                      <span className="text-obsidian/40 font-normal"> · {GOAL_LABELS[e.goal]}</span>
+                      <span className="text-obsidian/55 font-normal"> · {GOAL_LABELS[e.goal]}</span>
                     </p>
-                    <p className="text-[11px] text-obsidian/45">
+                    <p className="text-[11px] text-obsidian/60">
                       {e.contactName} · {e.email}
                       {e.phone ? ` · ${e.phone}` : ''}
                       {e.budgetBand ? ` · ${BUDGET_LABELS[e.budgetBand]}` : ''}

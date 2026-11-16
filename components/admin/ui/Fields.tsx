@@ -4,13 +4,13 @@ import { ChevronDown } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 export const adminInputClass =
-  'w-full rounded-lg border border-obsidian/12 bg-white px-3 py-2.5 text-sm text-obsidian placeholder:text-obsidian/30 focus:border-ember focus:ring-0 disabled:bg-obsidian/[0.03] disabled:text-obsidian/40';
+  'w-full rounded-lg border border-obsidian/12 bg-white px-3 py-2.5 text-sm text-obsidian placeholder:text-obsidian/65 focus:border-ember focus:ring-0 disabled:bg-obsidian/[0.03] disabled:text-obsidian/55';
 
 export function AdminLabel({ children, hint }: { children: ReactNode; hint?: string }) {
   return (
     <span className="mb-1.5 flex items-baseline gap-2">
-      <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/45">{children}</span>
-      {hint && <span className="text-[11px] font-normal normal-case tracking-normal text-obsidian/35">{hint}</span>}
+      <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian/60">{children}</span>
+      {hint && <span className="text-[11px] font-normal normal-case tracking-normal text-obsidian/65">{hint}</span>}
     </span>
   );
 }
@@ -98,7 +98,7 @@ export function AdminSelect({
       <ChevronDown
         size={15}
         aria-hidden
-        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-obsidian/40"
+        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-obsidian/55"
       />
     </span>
   );

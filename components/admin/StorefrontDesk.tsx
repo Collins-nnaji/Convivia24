@@ -84,7 +84,8 @@ export default function StorefrontDesk() {
       return;
     }
     const data = await res.json();
-    setBlocks(data.blocks || []);
+    const rows: StorefrontBlock[] = data.blocks || [];
+    setBlocks(rows);
     setBlobOk(Boolean(data.blobConfigured));
   }, []);
 
@@ -177,10 +178,10 @@ export default function StorefrontDesk() {
             key={k}
             type="button"
             onClick={() => setKind(k)}
-            className={`-mb-px shrink-0 border-b-2 px-3 py-2 text-xs font-bold ${kind === k ? 'border-ember text-ember' : 'border-transparent text-obsidian/50 hover:text-obsidian'}`}
+            className={`-mb-px shrink-0 border-b-2 px-3 py-2 text-xs font-bold ${kind === k ? 'border-ember text-ember' : 'border-transparent text-obsidian/65 hover:text-obsidian'}`}
           >
             {BLOCK_KIND_LABELS[k]}
-            <span className="ml-1.5 text-obsidian/35">{blocks.filter((b) => b.kind === k).length}</span>
+            <span className="ml-1.5 text-obsidian/65">{blocks.filter((b) => b.kind === k).length}</span>
           </button>
         ))}
       </div>
@@ -214,7 +215,7 @@ export default function StorefrontDesk() {
 
       {liveCount === 0 && (
         <div className="rounded-xl border border-dashed border-obsidian/15 bg-white p-4">
-          <p className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-obsidian/45">
+          <p className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-obsidian/60">
             Nothing live here — the storefront shows these defaults
           </p>
           <ul className="space-y-1.5 text-sm text-obsidian/70">
@@ -222,7 +223,7 @@ export default function StorefrontDesk() {
               <li key={d.id} className="flex items-center gap-2">
                 <span className={`h-3 w-3 shrink-0 rounded-full ${THEME_CLASSES[d.theme].bg}`} />
                 <span className="font-medium">{d.title}</span>
-                {d.href && <span className="font-mono text-[11px] text-obsidian/40">{d.href}</span>}
+                {d.href && <span className="font-mono text-[11px] text-obsidian/55">{d.href}</span>}
               </li>
             ))}
           </ul>
@@ -230,7 +231,7 @@ export default function StorefrontDesk() {
       )}
 
       {rows.length > 0 && (
-        <ul className="divide-y divide-obsidian/6 rounded-2xl bg-white ring-1 ring-obsidian/[0.06]">
+        <ul className="divide-y divide-obsidian/6 rounded-lg bg-white ring-1 ring-obsidian/15">
           {rows.map((b, i) => {
             const live = isLive(b);
             const scheduled = b.published && !live && b.startsAt && new Date(b.startsAt) > new Date();
@@ -254,17 +255,17 @@ export default function StorefrontDesk() {
                       </span>
                     )}
                   </p>
-                  <p className="truncate text-xs text-obsidian/50">
+                  <p className="truncate text-xs text-obsidian/65">
                     {b.href || 'no link'}
                     {b.startsAt && ` · from ${formatWhen(b.startsAt)}`}
                     {b.endsAt && ` · until ${formatWhen(b.endsAt)}`}
                   </p>
                 </div>
                 <div className="flex items-center gap-1">
-                  <button type="button" aria-label="Move up" disabled={i === 0 || busy === b.id} onClick={() => act(b, { action: 'move', direction: -1 }, 'Could not reorder.')} className="grid h-8 w-8 place-items-center rounded text-obsidian/40 hover:bg-obsidian/[0.06] hover:text-obsidian disabled:opacity-25">
+                  <button type="button" aria-label="Move up" disabled={i === 0 || busy === b.id} onClick={() => act(b, { action: 'move', direction: -1 }, 'Could not reorder.')} className="grid h-8 w-8 place-items-center rounded text-obsidian/55 hover:bg-obsidian/[0.06] hover:text-obsidian disabled:opacity-25">
                     <ArrowUp size={14} />
                   </button>
-                  <button type="button" aria-label="Move down" disabled={i === rows.length - 1 || busy === b.id} onClick={() => act(b, { action: 'move', direction: 1 }, 'Could not reorder.')} className="grid h-8 w-8 place-items-center rounded text-obsidian/40 hover:bg-obsidian/[0.06] hover:text-obsidian disabled:opacity-25">
+                  <button type="button" aria-label="Move down" disabled={i === rows.length - 1 || busy === b.id} onClick={() => act(b, { action: 'move', direction: 1 }, 'Could not reorder.')} className="grid h-8 w-8 place-items-center rounded text-obsidian/55 hover:bg-obsidian/[0.06] hover:text-obsidian disabled:opacity-25">
                     <ArrowDown size={14} />
                   </button>
                 </div>
@@ -294,11 +295,11 @@ export default function StorefrontDesk() {
                       endsAt: toLocal(b.endsAt),
                     })
                   }
-                  className="grid h-8 w-8 place-items-center rounded text-obsidian/40 hover:bg-obsidian/[0.06] hover:text-obsidian"
+                  className="grid h-8 w-8 place-items-center rounded text-obsidian/55 hover:bg-obsidian/[0.06] hover:text-obsidian"
                 >
                   <Pencil size={14} />
                 </button>
-                <button type="button" aria-label="Delete" onClick={() => remove(b)} className="grid h-8 w-8 place-items-center rounded text-obsidian/40 hover:bg-red-50 hover:text-red-600">
+                <button type="button" aria-label="Delete" onClick={() => remove(b)} className="grid h-8 w-8 place-items-center rounded text-obsidian/55 hover:bg-red-50 hover:text-red-600">
                   <Trash2 size={14} />
                 </button>
               </li>

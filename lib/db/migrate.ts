@@ -106,6 +106,8 @@ async function migrate() {
     'lib/db/platform-audit.sql',
     // Merchandising columns on inventory + admin-edited storefront blocks.
     'lib/db/storefront.sql',
+    // Manual expenses and payouts (partner profit share, supplier settlements).
+    'lib/db/finance-ledger.sql',
   ];
   const schema = schemaFiles
     .map(f => readFileSync(join(process.cwd(), f), 'utf-8'))
