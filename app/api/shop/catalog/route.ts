@@ -7,16 +7,19 @@ import { CATALOG_CACHE_KEY } from '@/lib/shop/catalog-cache';
 
 export async function GET(req: NextRequest) {
   try {
-    const rl = await rateLimit(`shop-catalog:${clientIp(req)}`, 60, 60);
+    // Public read: a Redis outage must not lock shoppers out of the catalog.
+    const rl = await rateLimit(`shop-catalog:${clientIp(req)}`, 60, 60, { fallback: 'local' });
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
 
+    // Short CDN cache so most shoppers never reach this function at all.
+    const headers = { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=300' };
     const cached = await cacheGet<{ products: unknown[] }>(CATALOG_CACHE_KEY);
-    if (cached) return NextResponse.json(cached);
+    if (cached) return NextResponse.json(cached, { headers });
 
     const products = await shopCatalog();
     const payload = { products };
-    await cacheSet(CATALOG_CACHE_KEY, payload, 30);
-    return NextResponse.json(payload);
+    void cacheSet(CATALOG_CACHE_KEY, payload, 30);
+    return NextResponse.json(payload, { headers });
   } catch (err) {
     captureApiError(err, { route: 'shop/catalog' });
     if (process.env.NODE_ENV === 'production') {

@@ -107,13 +107,56 @@ export function isNewIn(p: FacetProduct, now = Date.now()): boolean {
   return now - new Date(p.listedAt).getTime() < NEW_DAYS * 86_400_000;
 }
 
+type Ctx = {
+  bestSellers: Set<string>;
+  now: number;
+  /** Who counts as best seller / staff pick / new in, after fallbacks — see `buildCtx`. */
+  picks: { best: Set<string>; staff: Set<string>; fresh: Set<string> };
+};
+
+/** Below this many genuine matches, a merchandising shelf is topped up so it never reads empty. */
+const MIN_SHELF = 6;
+const FALLBACK_NEW = 12;
+
+/**
+ * Resolve the merchandising shelves once per search. Real signals win (desk badges, order
+ * volume, listing dates); when a young catalog has too few of them, the shelf is topped up from
+ * the desk's Featured picks, then ratings, so "Our top picks" or "New in" never lands empty.
+ */
+function buildCtx(products: FacetProduct[], opts: { bestSellers?: string[]; now?: number }): Ctx {
+  const now = opts.now ?? Date.now();
+  const bestSellers = new Set(opts.bestSellers ?? []);
+  const featured = products
+    .filter((p) => p.featured)
+    .sort((a, b) => (b.merchRank ?? 0) - (a.merchRank ?? 0))
+    .map((p) => p.slug);
+  const rated = products
+    .filter((p) => (p.ratingCount ?? 0) > 0)
+    .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0) || (b.ratingCount ?? 0) - (a.ratingCount ?? 0))
+    .map((p) => p.slug);
+  const topUp = (real: string[], extra: string[]) => {
+    const out = new Set(real);
+    for (const slug of extra) {
+      if (out.size >= MIN_SHELF) break;
+      out.add(slug);
+    }
+    return out;
+  };
+
+  const best = topUp(
+    products.filter((p) => p.badge === 'best-seller' || bestSellers.has(p.slug)).map((p) => p.slug),
+    [...featured, ...rated]
+  );
+  const staff = topUp(products.filter((p) => p.badge === 'staff-pick').map((p) => p.slug), featured);
+  // Seed bottles carry no listing date, so with nothing desk-listed recently fall back to the
+  // latest additions to the catalog (the end of the list), newest first.
+  const realNew = products.filter((p) => isNewIn(p, now)).map((p) => p.slug);
+  const fresh = new Set(realNew.length ? realNew : products.slice(-FALLBACK_NEW).map((p) => p.slug));
+  return { bestSellers, now, picks: { best, staff, fresh } };
+}
+
 /** Every predicate a facet option tests. `bestSellers` comes from real order data. */
-function optionMatches(
-  key: FacetKey,
-  value: string,
-  p: FacetProduct,
-  ctx: { bestSellers: Set<string>; now: number }
-): boolean {
+function optionMatches(key: FacetKey, value: string, p: FacetProduct, ctx: Ctx): boolean {
   switch (key) {
     case 'type':
       return p.category === value;
@@ -136,11 +179,11 @@ function optionMatches(
         case 'on-offer':
           return savingNgn(p) > 0 || !!p.deal;
         case 'new':
-          return isNewIn(p, ctx.now);
+          return ctx.picks.fresh.has(p.slug);
         case 'best-seller':
-          return p.badge === 'best-seller' || ctx.bestSellers.has(p.slug);
+          return ctx.picks.best.has(p.slug);
         case 'staff-pick':
-          return p.badge === 'staff-pick';
+          return ctx.picks.staff.has(p.slug);
         case 'in-stock':
           return p.available == null || p.available > 0;
         default:
@@ -174,7 +217,7 @@ export function matchesQuery(p: FacetProduct, raw: string): boolean {
 function passes(
   p: FacetProduct,
   f: FilterState,
-  ctx: { bestSellers: Set<string>; now: number },
+  ctx: Ctx,
   skip?: FacetKey
 ): boolean {
   if (!matchesQuery(p, f.q)) return false;
@@ -293,7 +336,7 @@ export function searchCatalog(
   f: FilterState,
   opts: { bestSellers?: string[]; now?: number } = {}
 ): SearchResult {
-  const ctx = { bestSellers: new Set(opts.bestSellers ?? []), now: opts.now ?? Date.now() };
+  const ctx = buildCtx(products, opts);
   const matched = products.filter((p) => passes(p, f, ctx));
   const sorted = sortProducts(matched, f.sort, opts.bestSellers ?? []);
 
@@ -324,7 +367,7 @@ export function searchCatalog(
 
 /** Rating "& up" counts, under every other filter. */
 export function ratingCounts(products: FacetProduct[], f: FilterState, opts: { bestSellers?: string[] } = {}) {
-  const ctx = { bestSellers: new Set(opts.bestSellers ?? []), now: Date.now() };
+  const ctx = buildCtx(products, opts);
   const pool = products.filter((p) => passes(p, { ...f, rating: 0 }, ctx));
   return RATING_STEPS.map((min) => ({ min, count: pool.filter((p) => (p.rating ?? 0) >= min).length }));
 }

@@ -514,22 +514,15 @@ export async function shopCatalog(): Promise<
     ratingCount?: number;
   })[]
 > {
+  // Both queries run in parallel. Ratings power the "Top rated" sort in the shop, so they ship
+  // with the catalog rather than being fetched per card; a reviews outage must not take the shop
+  // down with it.
+  const [stockResult, ratingsResult] = await Promise.allSettled([listInventory(false), allRatingAggregates()]);
   let stock: InventoryRow[] = [];
-  try {
-    stock = await listInventory(false);
-  } catch (error) {
-    if (process.env.NODE_ENV === 'production') throw error;
-    stock = [];
-  }
-
-  // Ratings power the "Top rated" sort in the shop, so they ship with the catalog rather than
-  // being fetched per card. A reviews outage must not take the shop down with it.
-  let ratings: Record<string, { average: number; count: number }> = {};
-  try {
-    ratings = await allRatingAggregates();
-  } catch {
-    ratings = {};
-  }
+  if (stockResult.status === 'fulfilled') stock = stockResult.value;
+  else if (process.env.NODE_ENV === 'production') throw stockResult.reason;
+  const ratings: Record<string, { average: number; count: number }> =
+    ratingsResult.status === 'fulfilled' ? ratingsResult.value : {};
   const bySlug = new Map(stock.map((s) => [s.slug, s]));
 
   const fromCatalog = DRINKS.filter((d) => bySlug.get(d.slug)?.active !== false).map((d) => {

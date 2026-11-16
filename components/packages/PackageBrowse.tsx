@@ -17,6 +17,8 @@ import {
   type PackageOccasion,
 } from '@/lib/packages/catalog';
 import { CATEGORY_LABELS } from '@/lib/drinks/catalog';
+import DrinkPhoto from '@/components/shop/DrinkPhoto';
+import { useCatalog } from '@/lib/shop/use-catalog';
 
 export const PACKAGE_OCCASION_ORDER: PackageOccasion[] = [
   'party',
@@ -78,6 +80,19 @@ export default function PackageBrowse({
 
   const items = useMemo(() => EVENT_PACKAGES.filter((p) => p.occasion === occasion), [occasion]);
 
+  // Bottle photos from the live catalog (desk edits win), falling back to the bundled seed shots.
+  const { products } = useCatalog();
+  const liveImages = useMemo(() => new Map(products.map((p) => [p.slug, p.image])), [products]);
+  const photoOf = (slug: string, seed?: string) => liveImages.get(slug) || seed;
+  /** Up to four distinct bottle shots per package, priciest bottle first — the collage on the card. */
+  const packPhotos = (pkg: (typeof EVENT_PACKAGES)[number]) => {
+    const shots = resolveComponents(pkg)
+      .sort((a, b) => b.product.priceNgn - a.product.priceNgn)
+      .map((c) => photoOf(c.slug, c.product.image))
+      .filter((src): src is string => Boolean(src));
+    return [...new Set(shots)].slice(0, 4);
+  };
+
   function pickOccasion(occ: PackageOccasion) {
     if (onOccasionChange) onOccasionChange(occ);
     else setInternalOccasion(occ);
@@ -118,6 +133,7 @@ export default function PackageBrowse({
             const savingPercent = savingsPct(pkg);
             const individualTotal = componentsTotalNgn(pkg);
             const components = resolveComponents(pkg);
+            const photos = packPhotos(pkg);
 
             return (
               <li
@@ -135,6 +151,16 @@ export default function PackageBrowse({
                   onClick={() => setExpanded(open ? null : pkg.slug)}
                   className="w-full p-4 sm:p-6 text-left flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-8 hover:bg-white/35 transition-colors"
                 >
+                  <DrinkPhoto
+                    product={{
+                      name: pkg.name,
+                      category: 'party-packs',
+                      image: photos[0],
+                      packImages: photos,
+                    }}
+                    watermark={false}
+                    className="h-44 w-full shrink-0 overflow-hidden rounded-xl ring-1 ring-obsidian/8 sm:h-32 sm:w-32 lg:h-36 lg:w-36"
+                  />
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                       <h3 className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -213,9 +239,14 @@ export default function PackageBrowse({
                       {components.map((c) => (
                         <li
                           key={c.slug}
-                          className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 px-4 py-3 text-sm sm:text-base"
+                          className="flex items-center gap-3 px-4 py-3 text-sm sm:gap-4 sm:text-base"
                         >
-                          <span className="text-obsidian/85">
+                          <DrinkPhoto
+                            product={{ ...c.product, image: photoOf(c.slug, c.product.image), packImages: undefined }}
+                            watermark={false}
+                            className="h-12 w-12 shrink-0 overflow-hidden rounded-lg ring-1 ring-obsidian/8 [&_img]:!p-1"
+                          />
+                          <span className="min-w-0 flex-1 text-obsidian/85">
                             <span className="font-semibold tabular-nums">{c.qty}×</span> {c.product.name}{' '}
                             <span className="text-obsidian/45">· {CATEGORY_LABELS[c.product.category]}</span>
                           </span>

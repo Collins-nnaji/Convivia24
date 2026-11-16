@@ -6,21 +6,60 @@ import { Redis } from '@upstash/redis';
 
 let _redis: Redis | null | undefined;
 
-export function redis(): Redis | null {
+/**
+ * Circuit breaker. The Upstash client's default retry policy waits ~4.3s before a network
+ * failure surfaces, and a cache is only worth having if it is faster than the database it
+ * fronts. After one failure Redis is skipped entirely for a short cool-down.
+ */
+const REDIS_TIMEOUT_MS = 800;
+const COOL_DOWN_MS = 30_000;
+let downUntil = 0;
+
+export function markRedisDown(): void {
+  downUntil = Date.now() + COOL_DOWN_MS;
+}
+
+function client(): Redis | null {
   if (_redis !== undefined) return _redis;
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) { _redis = null; return null; }
   try {
-    _redis = new Redis({ url, token });
+    _redis = new Redis({ url, token, retry: { retries: 1, backoff: () => 50 } });
   } catch {
     _redis = null;
   }
   return _redis;
 }
 
+/** The client, or null when unconfigured or inside the cool-down after a failure. */
+export function redis(): Redis | null {
+  if (Date.now() < downUntil) return null;
+  return client();
+}
+
 export function redisConfigured(): boolean {
-  return redis() !== null;
+  return client() !== null;
+}
+
+/** Run one Redis call with a hard time cap; any failure trips the breaker and rejects. */
+async function guarded<T>(op: (r: Redis) => Promise<T>, timeoutMs = REDIS_TIMEOUT_MS): Promise<T> {
+  const r = redis();
+  if (!r) throw new Error('redis unavailable');
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      op(r),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error('redis timeout')), timeoutMs);
+      }),
+    ]);
+  } catch (err) {
+    markRedisDown();
+    throw err;
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 }
 
 export interface RateLimit { ok: boolean; remaining: number; resetAt: number }
@@ -43,8 +82,12 @@ function localRateLimit(key: string, limit: number, windowSeconds: number): Rate
 }
 
 /**
- * Allow `limit` requests per `windowSeconds` for `key`. Returns ok=true when
- * Upstash isn't configured (so requests aren't accidentally blocked in dev).
+ * Allow `limit` requests per `windowSeconds` for `key`.
+ *
+ * - Redis deliberately not configured: production enforces the same limit per server instance in
+ *   memory (an operator choice to run without it must not lock every shopper out); dev allows all.
+ * - Redis configured but failing: sensitive callers fail closed in production; callers passing
+ *   `fallback: 'local'` (public reads, the age gate) use the in-memory limit instead.
  */
 export async function rateLimit(
   key: string,
@@ -52,27 +95,27 @@ export async function rateLimit(
   windowSeconds: number,
   options?: { fallback?: 'local'; timeoutMs?: number },
 ): Promise<RateLimit> {
-  const unavailable = () => options?.fallback === 'local'
-    ? localRateLimit(key, limit, windowSeconds)
-    : { ok: process.env.NODE_ENV !== 'production', remaining: 0, resetAt: Date.now() + windowSeconds * 1000 };
+  const prod = process.env.NODE_ENV === 'production';
+  if (!redisConfigured()) {
+    return options?.fallback === 'local' || prod
+      ? localRateLimit(key, limit, windowSeconds)
+      : { ok: true, remaining: limit, resetAt: Date.now() + windowSeconds * 1000 };
+  }
+  const unavailable = (): RateLimit =>
+    options?.fallback === 'local'
+      ? localRateLimit(key, limit, windowSeconds)
+      : { ok: !prod, remaining: 0, resetAt: Date.now() + windowSeconds * 1000 };
   const r = redis();
-  if (!r && options?.fallback === 'local') return unavailable();
-  if (!r) return { ok: process.env.NODE_ENV !== 'production', remaining: process.env.NODE_ENV === 'production' ? 0 : limit, resetAt: Date.now() + windowSeconds * 1000 };
+  if (!r) return unavailable();
   const window = Math.floor(Date.now() / 1000 / windowSeconds);
   const k = `rl:${key}:${window}`;
   try {
-    const counted = (async () => {
-      const n = await r.incr(k);
-      if (n === 1) await r.expire(k, windowSeconds);
-      return n;
-    })();
     // Latency-sensitive callers cap the Redis round trips and fall back rather than make a person wait.
-    const count = options?.timeoutMs
-      ? await Promise.race([
-          counted,
-          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('rate limit timeout')), options.timeoutMs)),
-        ])
-      : await counted;
+    const count = await guarded(async (c) => {
+      const n = await c.incr(k);
+      if (n === 1) await c.expire(k, windowSeconds);
+      return n;
+    }, Math.min(options?.timeoutMs ?? REDIS_TIMEOUT_MS, REDIS_TIMEOUT_MS));
     const ok = count <= limit;
     // Daily route counters for the admin analytics desk — never await so RL stays fast.
     void import('@/lib/analytics/api-usage')
@@ -97,10 +140,8 @@ export function clientIp(req: { headers: { get(name: string): string | null } })
 
 /** Tiny key-value cache with TTL. Safe to use unconditionally. */
 export async function cacheGet<T>(key: string): Promise<T | null> {
-  const r = redis(); if (!r) return null;
-  try { return (await r.get<T>(key)) ?? null; } catch { return null; }
+  try { return (await guarded((r) => r.get<T>(key))) ?? null; } catch { return null; }
 }
 export async function cacheSet<T>(key: string, value: T, ttlSeconds: number): Promise<void> {
-  const r = redis(); if (!r) return;
-  try { await r.set(key, value, { ex: ttlSeconds }); } catch { /* ignore */ }
+  try { await guarded((r) => r.set(key, value, { ex: ttlSeconds })); } catch { /* ignore */ }
 }
