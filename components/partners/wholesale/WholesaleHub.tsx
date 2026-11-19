@@ -5,14 +5,13 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import {
   ArrowRight,
-  Calculator,
   CircleHelp,
   ClipboardList,
   Crown,
   FileText,
   LayoutDashboard,
+  Lock,
   Store,
-  Tags,
 } from 'lucide-react';
 import WholesaleModal from './WholesaleModal';
 import {
@@ -20,9 +19,8 @@ import {
   DeskPanel,
   HelpPanel,
   HowPanel,
-  MarginPanel,
+  LockedPricesPanel,
   PerksPanel,
-  PricesPanel,
   TermsPanel,
 } from './panels';
 import { WHOLESALE_OFF_PCT } from '@/lib/partners/pricing';
@@ -30,8 +28,8 @@ import { WHOLESALE_OFF_PCT } from '@/lib/partners/pricing';
 /*
  * /partners — the wholesale hub. A short hero and a grid of cards; each card
  * opens a full-page panel with its own URL (/partners?open=prices, …) so links
- * can be shared and Back closes the panel. Approved outlets order from
- * /partners/portal.
+ * can be shared and Back closes the panel. The price list itself is only in the
+ * signed-in wholesale portal (/partners/portal).
  */
 
 type Panel = {
@@ -46,9 +44,8 @@ type Panel = {
 
 export const WHOLESALE_PANELS: Panel[] = [
   { id: 'apply', icon: Store, title: 'Open an account', sub: 'For bars, clubs, hotels & events', heading: 'Apply for a wholesale account', Body: ApplyPanel, wide: true },
-  { id: 'prices', icon: Tags, title: 'Partner price list', sub: `Every bottle, ${WHOLESALE_OFF_PCT}% below retail`, heading: 'Partner prices and restock estimate', Body: PricesPanel, wide: true },
-  { id: 'margin', icon: Calculator, title: 'Margin calculator', sub: 'Pour cost & profit per bottle', heading: 'What does each serve really earn?', Body: MarginPanel, wide: true },
-  { id: 'desk', icon: LayoutDashboard, title: 'Partner desk', sub: 'Order, stock & points — sign in', heading: 'Your partner desk', Body: DeskPanel },
+  { id: 'prices', icon: Lock, title: 'Partner price list', sub: 'Partners only — sign in to view', heading: 'Partner price list', Body: LockedPricesPanel },
+  { id: 'desk', icon: LayoutDashboard, title: 'Wholesale portal', sub: 'Prices, orders, stock & margins', heading: 'Your wholesale portal', Body: DeskPanel },
   { id: 'how', icon: ClipboardList, title: 'How it works', sub: 'From application to first delivery', heading: 'How wholesale works', Body: HowPanel, wide: true },
   { id: 'terms', icon: FileText, title: 'Credit, payment & delivery', sub: 'Two weeks’ credit once signed', heading: 'Credit, payment and delivery', Body: TermsPanel },
   { id: 'perks', icon: Crown, title: 'Premium card & perks', sub: '2 points per ₦100 spent', heading: 'Premium card and perks', Body: PerksPanel, wide: true },
@@ -148,13 +145,12 @@ export default function WholesaleHub() {
             >
               Apply for wholesale <ArrowRight size={14} />
             </a>
-            <a
-              href="/partners?open=prices"
-              onClick={onCard('prices')}
+            <Link
+              href="/partners/portal"
               className="inline-flex items-center gap-2 rounded-full border border-white/20 px-6 py-3.5 text-[11px] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:border-white/50"
             >
-              See partner prices
-            </a>
+              <Lock size={13} /> Partner sign in
+            </Link>
           </div>
           <dl className="mt-8 grid sm:mt-10 max-w-3xl grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10 sm:grid-cols-4">
             {PROOF.map(([v, l]) => (
@@ -209,10 +205,10 @@ export default function WholesaleHub() {
         <div className="mt-10 flex flex-col gap-4 rounded-3xl bg-shell px-6 py-7 sm:flex-row sm:items-center sm:justify-between sm:px-10">
           <div>
             <p className="font-serif text-2xl font-light text-obsidian">Already a partner?</p>
-            <p className="mt-1 text-sm text-obsidian/55">Restock, count stock and spend your points from the partner desk.</p>
+            <p className="mt-1 text-sm text-obsidian/55">Sign in to see the price list, restock, count stock and spend your points.</p>
           </div>
           <Link href="/partners/portal" className="btn-brand inline-flex shrink-0 items-center gap-2 self-start px-6 py-3.5 text-[11px] font-bold uppercase tracking-[0.14em] sm:self-auto">
-            Open partner desk <ArrowRight size={14} />
+            Open wholesale portal <ArrowRight size={14} />
           </Link>
         </div>
       </div>

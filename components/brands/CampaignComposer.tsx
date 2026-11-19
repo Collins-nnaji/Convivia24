@@ -26,10 +26,13 @@ const inputClass =
  */
 export default function CampaignComposer({
   brandName,
+  brandSlug,
   onClose,
   onSaved,
 }: {
   brandName: string;
+  /** Sent so an admin managing another brand saves to that brand; ignored for brand owners. */
+  brandSlug?: string;
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -70,6 +73,7 @@ export default function CampaignComposer({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           slug: slug || slugify(title),
+          brand: brandSlug,
           title,
           tagline,
           blurb,

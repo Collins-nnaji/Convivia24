@@ -188,6 +188,9 @@ CREATE TABLE IF NOT EXISTS night_events (
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_night_events_published ON night_events(published, starts_at);
+-- Events a brand posts from its brand portal carry the brand's slug; desk-created events leave it null.
+ALTER TABLE night_events ADD COLUMN IF NOT EXISTS brand_slug TEXT;
+CREATE INDEX IF NOT EXISTS idx_night_events_brand ON night_events(brand_slug, starts_at DESC) WHERE brand_slug IS NOT NULL;
 
 -- ═══════════════════════════════════════════════
 -- PARTY PLANS (saved from the shop-side planning tool)

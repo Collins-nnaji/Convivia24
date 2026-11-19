@@ -256,6 +256,10 @@ function AdminDesk({ initialTab }: { initialTab: TabKey }) {
               Also notify me when this tab is hidden
             </button>
           )}
+          <div className="flex gap-1.5 pt-1">
+            <Link href="/partners/portal" className="flex-1 rounded-md border border-obsidian/10 px-2 py-1.5 text-center font-semibold text-obsidian/65 hover:border-ember hover:text-ember">Wholesale portal</Link>
+            <Link href="/brands/portal" className="flex-1 rounded-md border border-obsidian/10 px-2 py-1.5 text-center font-semibold text-obsidian/65 hover:border-ember hover:text-ember">Brand portal</Link>
+          </div>
         </div>
       }
     >

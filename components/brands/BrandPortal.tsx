@@ -6,18 +6,22 @@ import { motion } from 'framer-motion';
 import {
   BadgeCheck,
   BarChart3,
+  CalendarDays,
   ChevronRight,
   Headset,
   LayoutDashboard,
   Megaphone,
   Package,
   Plus,
+  Search,
   Star,
   Target,
   Users,
 } from 'lucide-react';
 import { useUser } from '@/components/auth/AuthProvider';
 import CampaignComposer from '@/components/brands/CampaignComposer';
+import BrandClaimDialog from '@/components/brands/BrandClaimDialog';
+import BrandEvents from '@/components/brands/BrandEvents';
 import type { CampaignSummary, BrandCampaignStats, JoinPoint } from '@/lib/brands/campaigns';
 
 export type PortalData = {
@@ -28,34 +32,53 @@ export type PortalData = {
   joins: JoinPoint[];
   followers: number;
   products: number;
+  admin?: boolean;
+  brands?: { slug: string; name: string }[];
 };
 
-type Section = 'overview' | 'campaigns' | 'participants';
+type Section = 'overview' | 'campaigns' | 'events' | 'participants';
 
 const SECTIONS: { id: Section; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'campaigns', label: 'Campaigns', icon: Megaphone },
+  { id: 'events', label: 'Events', icon: CalendarDays },
   { id: 'participants', label: 'Participants', icon: Users },
 ];
 
-export default function BrandPortal() {
+export type DirectoryBrand = { slug: string; name: string; origin: string };
+type Claim = { brandSlug: string; brandName: string; status: string; createdAt: string };
+
+/**
+ * /brands/portal — the brand portal. Signed-out visitors see what it is; signed-in
+ * accounts without an approved claim pick their brand and claim it here; approved
+ * owners (and Convivia24 admins, for any brand) manage the page, campaigns and events.
+ */
+export default function BrandPortal({ directory }: { directory: DirectoryBrand[] }) {
   const { user, loading: authLoading } = useUser();
   const [portal, setPortal] = useState<PortalData | null>(null);
+  const [claims, setClaims] = useState<Claim[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [section, setSection] = useState<Section>('overview');
   const [composing, setComposing] = useState(false);
+  const [brandParam, setBrandParam] = useState<string | null>(null);
 
-  function load() {
+  function load(brand: string | null = brandParam) {
     setLoading(true);
-    fetch('/api/brands/portal')
+    fetch(`/api/brands/portal${brand ? `?brand=${encodeURIComponent(brand)}` : ''}`)
       .then(async (res) => {
         const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || 'Could not load your portal.');
+        if (!res.ok) {
+          setClaims(data.claims || []);
+          throw new Error(data.error || 'Could not load your portal.');
+        }
         setPortal(data);
         setError('');
       })
-      .catch((err) => setError(err.message))
+      .catch((err) => {
+        setPortal(null);
+        setError(err.message);
+      })
       .finally(() => setLoading(false));
   }
 
@@ -65,49 +88,33 @@ export default function BrandPortal() {
       setLoading(false);
       return;
     }
-    load();
+    const params = new URLSearchParams(window.location.search);
+    const brand = params.get('brand');
+    const want = params.get('section');
+    if (want && SECTIONS.some((s) => s.id === want)) setSection(want as Section);
+    setBrandParam(brand);
+    load(brand);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, authLoading]);
 
-  if (authLoading || loading) return <Shell>Loading your portal…</Shell>;
-
-  if (!user) {
-    return (
-      <Shell>
-        <p className="text-sm text-obsidian/60 mb-4">Sign in to open the brand portal.</p>
-        <Link
-          href="/signin?next=%2Fbrands%2Fportal"
-          className="inline-block px-5 py-3 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] rounded-full"
-        >
-          Sign in
-        </Link>
-      </Shell>
-    );
+  function switchBrand(slug: string) {
+    setBrandParam(slug);
+    window.history.replaceState(null, '', `/brands/portal?brand=${encodeURIComponent(slug)}`);
+    load(slug);
   }
 
-  if (error || !portal) {
-    return (
-      <Shell>
-        <p className="text-sm text-obsidian/60 mb-2 max-w-md leading-relaxed">{error}</p>
-        <p className="text-[12px] text-obsidian/45 mb-5 max-w-md leading-relaxed">
-          Brand pages are written and run by Convivia24. Claim yours from its page and we&apos;ll verify you
-          before opening the portal.
-        </p>
-        <Link
-          href="/brands"
-          className="inline-block px-5 py-3 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] rounded-full"
-        >
-          Find your brand
-        </Link>
-      </Shell>
-    );
-  }
+  if (authLoading || (loading && !portal)) return <Shell>Loading your portal…</Shell>;
+
+  if (!user) return <SignedOut />;
+
+  if (error || !portal) return <ClaimYourBrand directory={directory} claims={claims} email={user.email} />;
 
   return (
     <section className="bg-paper min-h-[70vh]">
       {composing && (
         <CampaignComposer
           brandName={portal.brand.name}
+          brandSlug={portal.admin ? portal.brand.slug : undefined}
           onClose={() => setComposing(false)}
           onSaved={() => {
             setComposing(false);
@@ -121,6 +128,20 @@ export default function BrandPortal() {
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian/35 mb-3 px-3">
             Brand portal
           </p>
+          {portal.admin && portal.brands && (
+            <label className="mb-3 block rounded-2xl border border-ember/20 bg-ember/[0.04] p-3">
+              <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.16em] text-ember">Admin · managing</span>
+              <select
+                value={portal.brand.slug}
+                onChange={(e) => switchBrand(e.target.value)}
+                className="w-full rounded-xl border border-obsidian/12 bg-white px-2 py-2 text-sm focus:border-ember focus:ring-0"
+              >
+                {portal.brands.map((b) => (
+                  <option key={b.slug} value={b.slug}>{b.name}</option>
+                ))}
+              </select>
+            </label>
+          )}
           <nav className="bg-white border border-obsidian/8 rounded-2xl">
             <ul className="divide-y divide-obsidian/6">
               {SECTIONS.map(({ id, label, icon: Icon }) => (
@@ -159,7 +180,7 @@ export default function BrandPortal() {
             <Headset size={18} className="text-white/70" />
             <p className="font-bold mt-2.5">Need help?</p>
             <p className="text-[12px] text-white/60 mt-1.5 leading-relaxed">
-              Your Convivia24 contact can set up campaigns with you.
+              Your Convivia24 contact can set up campaigns and events with you.
             </p>
             <Link
               href="/contact"
@@ -174,29 +195,142 @@ export default function BrandPortal() {
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <h1 className="font-serif font-light tracking-tight text-2xl sm:text-3xl">
-                <span className="brand-text">Welcome back, {portal.brand.name}</span>
+                <span className="brand-text">{portal.admin ? portal.brand.name : `Welcome back, ${portal.brand.name}`}</span>
               </h1>
               <p className="text-obsidian/50 mt-2 text-sm">
-                Here&apos;s what&apos;s happening with your brand on Convivia24.
+                {portal.admin
+                  ? 'Admin view — you can manage any brand from here.'
+                  : 'Here\u2019s what\u2019s happening with your brand on Convivia24.'}
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => setComposing(true)}
-              className="px-5 py-3 btn-brand text-[11px] font-bold uppercase tracking-[0.12em] inline-flex items-center gap-2 rounded-full"
-            >
-              <Plus size={14} /> New campaign
-            </button>
+            {section !== 'events' && (
+              <button
+                type="button"
+                onClick={() => setComposing(true)}
+                className="px-5 py-3 btn-brand text-[11px] font-bold uppercase tracking-[0.12em] inline-flex items-center gap-2 rounded-full"
+              >
+                <Plus size={14} /> New campaign
+              </button>
+            )}
           </div>
 
           {section === 'overview' && <PortalOverview portal={portal} onCompose={() => setComposing(true)} />}
           {section === 'campaigns' && (
             <CampaignsTable campaigns={portal.campaigns} onCompose={() => setComposing(true)} />
           )}
+          {section === 'events' && (
+            <BrandEvents key={portal.brand.slug} brandSlug={portal.brand.slug} brandName={portal.brand.name} admin={Boolean(portal.admin)} />
+          )}
           {section === 'participants' && <Participants portal={portal} />}
         </div>
       </div>
     </section>
+  );
+}
+
+const PORTAL_FEATURES: [string, string][] = [
+  ['Your brand page', 'Take over the story, house history and bottles on your Convivia24 page.'],
+  ['Campaigns', 'Run challenges that reward drinkers with points, with live participant numbers.'],
+  ['Events', 'Post tastings, launches and brand nights straight onto the events page.'],
+  ['Audience', 'Followers, joins and completion — real counts, never guessed.'],
+];
+
+function SignedOut() {
+  return (
+    <Shell>
+      <p className="max-w-xl text-sm leading-relaxed text-obsidian/60">
+        For spirit houses and importers. Claim your brand, then manage its page, campaigns and events from one place.
+      </p>
+      <ul className="mt-6 grid max-w-3xl gap-3 sm:grid-cols-2">
+        {PORTAL_FEATURES.map(([t, b]) => (
+          <li key={t} className="rounded-2xl border border-obsidian/8 bg-white p-5">
+            <p className="font-semibold">{t}</p>
+            <p className="mt-1 text-sm text-obsidian/55">{b}</p>
+          </li>
+        ))}
+      </ul>
+      <Link
+        href="/signin?next=%2Fbrands%2Fportal"
+        className="mt-6 inline-block px-5 py-3 btn-brand text-[11px] font-bold uppercase tracking-[0.14em] rounded-full"
+      >
+        Sign in to claim or manage your brand
+      </Link>
+    </Shell>
+  );
+}
+
+const CLAIM_STATUS: Record<string, string> = {
+  pending: 'Under review',
+  verified: 'Verified — awaiting approval',
+  approved: 'Approved',
+  rejected: 'Not approved',
+};
+
+function ClaimYourBrand({ directory, claims, email }: { directory: DirectoryBrand[]; claims: Claim[]; email: string }) {
+  const [q, setQ] = useState('');
+  const [claiming, setClaiming] = useState<DirectoryBrand | null>(null);
+  const filtered = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    return directory.filter((b) => !needle || `${b.name} ${b.origin}`.toLowerCase().includes(needle));
+  }, [directory, q]);
+
+  return (
+    <Shell>
+      {claiming && <BrandClaimDialog brand={claiming} onClose={() => setClaiming(null)} />}
+      <p className="max-w-xl text-sm leading-relaxed text-obsidian/60">
+        Signed in as <strong>{email}</strong>. Pick your brand and claim it — we verify every claim with the house, then
+        this portal opens with your page, campaigns and events.
+      </p>
+
+      {claims.length > 0 && (
+        <section className="mt-6 max-w-xl rounded-2xl border border-obsidian/8 bg-white">
+          <h2 className="border-b border-obsidian/8 px-5 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-obsidian/50">Your claims</h2>
+          <ul className="divide-y divide-obsidian/6">
+            {claims.map((c) => (
+              <li key={`${c.brandSlug}-${c.createdAt}`} className="flex items-center justify-between gap-4 px-5 py-3 text-sm">
+                <span className="font-semibold">{c.brandName}</span>
+                <span className="text-obsidian/55">{CLAIM_STATUS[c.status] ?? c.status}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <label className="relative mt-6 block max-w-xl">
+        <span className="sr-only">Find your brand</span>
+        <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-obsidian/35" />
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Find your brand"
+          className="w-full rounded-full border border-obsidian/12 bg-white py-2.5 pl-10 pr-4 text-base focus:border-ember focus:ring-0 sm:text-sm"
+        />
+      </label>
+      <ul className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {filtered.map((b) => (
+          <li key={b.slug}>
+            <button
+              type="button"
+              onClick={() => setClaiming(b)}
+              className="group flex w-full items-center justify-between gap-3 rounded-2xl border border-obsidian/8 bg-white px-4 py-3 text-left transition-colors hover:border-ember/40"
+            >
+              <span className="min-w-0">
+                <span className="block truncate font-semibold">{b.name}</span>
+                <span className="block truncate text-[12px] text-obsidian/45">{b.origin}</span>
+              </span>
+              <span className="inline-flex shrink-0 items-center gap-1 text-[10px] font-bold uppercase tracking-[0.12em] text-ember">
+                <BadgeCheck size={13} /> Claim
+              </span>
+            </button>
+          </li>
+        ))}
+        {filtered.length === 0 && (
+          <li className="text-sm text-obsidian/45">
+            Not listed? <Link href="/contact" className="font-semibold text-ember">Tell us about your brand</Link>.
+          </li>
+        )}
+      </ul>
+    </Shell>
   );
 }
 

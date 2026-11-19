@@ -16,7 +16,7 @@ import { readError, formatWhen } from './types';
 
 type Pane = 'events' | 'campaigns' | 'venues';
 
-type EventRow = { id: string; title: string; venueSlug: string; tag: string; blurb: string; expected: string; coverNgn?: number; startsAtIso: string; endsAtIso: string; published: boolean; venue?: { name: string } };
+type EventRow = { id: string; title: string; venueSlug: string; tag: string; blurb: string; expected: string; coverNgn?: number; startsAtIso: string; endsAtIso: string; published: boolean; brandSlug?: string | null; venue?: { name: string } };
 type VenueOption = { slug: string; name: string };
 type Task = { id: string; title: string; detail: string; points: number };
 type CampaignRow = { id: string; slug: string; brandSlug: string; title: string; tagline: string | null; blurb: string | null; entryPoints: number; rewardPoints: number; topReward: string | null; tasks: Task[]; rules: string[]; startsAt: string; endsAt: string | null; published: boolean; live: boolean; daysLeft: number | null };
@@ -176,6 +176,7 @@ function EventList({ rows, busy, onEdit, onToggle, onDelete }: { rows: EventRow[
               <span className="truncate">{ev.title}</span>
               <span className="rounded-full bg-paper px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-obsidian/65">{ev.tag}</span>
               {!ev.published && <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700">hidden</span>}
+              {ev.brandSlug && <span className="rounded-full bg-ember/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-ember">by {ev.brandSlug}</span>}
             </p>
             <p className="text-xs text-obsidian/65">{ev.venue?.name || ev.venueSlug} · {formatWhen(ev.startsAtIso)}{ev.coverNgn ? ` · ${formatNgn(ev.coverNgn)}` : ' · free'}</p>
           </div>

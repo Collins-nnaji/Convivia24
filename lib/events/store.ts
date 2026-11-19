@@ -28,6 +28,8 @@ export type StoredEvent = NightEvent & {
   endsAtIso: string;
   source: 'admin';
   published: boolean;
+  /** The brand that posted this event from its portal; null for events the desk created. */
+  brandSlug: string | null;
   venue?: VenueSnapshot;
 };
 
@@ -58,6 +60,7 @@ function mapRow(r: Record<string, unknown>): StoredEvent {
     endsAtIso: new Date(r.ends_at as string).toISOString(),
     source: 'admin',
     published: r.published !== false,
+    brandSlug: r.brand_slug ? String(r.brand_slug) : null,
   };
 
   if (r.venue_name) {
@@ -207,5 +210,59 @@ export async function setEventPublished(id: string, published: boolean): Promise
 export async function deleteEvent(id: string): Promise<boolean> {
   await ensureNightEventsTable();
   const rows = await sql`DELETE FROM night_events WHERE id = ${id} RETURNING id`;
+  return rows.length > 0;
+}
+
+/* ── Brand-posted events ─────────────────────────────────────────── */
+
+/** Every event a brand has posted, past and future, newest first. */
+export async function listBrandEvents(brandSlug: string): Promise<StoredEvent[]> {
+  const rows = await sql`
+    SELECT e.*, v.name AS venue_name, v.kind AS venue_kind, v.area_id AS venue_area_id,
+      v.area AS venue_area, v.address AS venue_address, v.lat AS venue_lat,
+      v.lng AS venue_lng, v.tagline AS venue_tagline, v.card_perk AS venue_card_perk,
+      v.photo_url AS venue_photo_url
+    FROM night_events e
+    LEFT JOIN venues v ON v.slug = e.venue_slug AND v.status = 'active'
+    WHERE e.brand_slug = ${brandSlug}
+    ORDER BY e.starts_at DESC
+  `;
+  return rows.map(mapRow);
+}
+
+/**
+ * Create or edit one of a brand's own events. An edit only touches a row that already
+ * belongs to this brand, so a brand can never overwrite the desk's or another brand's event.
+ */
+export async function saveBrandEvent(brandSlug: string, input: EventInput): Promise<StoredEvent | null> {
+  const tag = EVENT_TAGS.includes(input.tag as EventTag) ? input.tag : 'Lounge';
+  const cover = input.coverNgn != null && input.coverNgn > 0 ? Math.floor(input.coverNgn) : null;
+  const starts = new Date(input.startsAtIso).toISOString();
+  const ends = new Date(input.endsAtIso).toISOString();
+  if (input.id) {
+    const rows = await sql`
+      UPDATE night_events SET
+        title = ${input.title.trim()}, venue_slug = ${input.venueSlug.trim()}, tag = ${tag},
+        blurb = ${input.blurb || ''}, expected = ${input.expected || ''}, cover_ngn = ${cover},
+        starts_at = ${starts}, ends_at = ${ends}, published = ${input.published !== false}, updated_at = NOW()
+      WHERE id = ${input.id} AND brand_slug = ${brandSlug}
+      RETURNING *
+    `;
+    return rows[0] ? mapRow(rows[0]) : null;
+  }
+  const rows = await sql`
+    INSERT INTO night_events (
+      id, title, venue_slug, tag, blurb, expected, cover_ngn, starts_at, ends_at, published, brand_slug, updated_at
+    ) VALUES (
+      ${makeId(input.title)}, ${input.title.trim()}, ${input.venueSlug.trim()}, ${tag}, ${input.blurb || ''},
+      ${input.expected || ''}, ${cover}, ${starts}, ${ends}, ${input.published !== false}, ${brandSlug}, NOW()
+    )
+    RETURNING *
+  `;
+  return mapRow(rows[0]);
+}
+
+export async function deleteBrandEvent(brandSlug: string, id: string): Promise<boolean> {
+  const rows = await sql`DELETE FROM night_events WHERE id = ${id} AND brand_slug = ${brandSlug} RETURNING id`;
   return rows.length > 0;
 }

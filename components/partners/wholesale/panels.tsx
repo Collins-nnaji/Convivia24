@@ -1,43 +1,26 @@
 'use client';
 
-import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import { useState, type FormEvent, type ReactNode } from 'react';
 import Link from 'next/link';
 import {
   ArrowRight,
   CheckCircle2,
   ChevronDown,
-  Minus,
-  Plus,
-  Search,
+  Lock,
 } from 'lucide-react';
 import ConviviumCard from '@/components/ConviviumCard';
-import DrinkPhoto from '@/components/shop/DrinkPhoto';
 import { useUser } from '@/components/auth/AuthProvider';
-import {
-  CATEGORIES,
-  CATEGORY_LABELS,
-  DRINKS,
-  formatNgn,
-  getDrinkBySlug,
-  type DrinkCategory,
-} from '@/lib/drinks/catalog';
+import { formatNgn } from '@/lib/drinks/catalog';
 import {
   PREMIUM_CONVERSIONS,
   VENUE_KINDS,
   WHOLESALE_OFF_PCT,
-  analyseItem,
-  defaultServings,
-  itemFromCatalogSlug,
-  wholesalePriceNgn,
 } from '@/lib/partners/pricing';
 import { SUPPORT_EMAIL, SUPPORT_MAILTO } from '@/lib/site';
 
 /** Points rule mirrors lib/partners/outlets.ts → placeWholesaleOrder (floor(total / 50)). */
 const pointsFor = (totalNgn: number) => Math.floor(totalNgn / 50);
-const CASE_SIZE = 6;
 const MAX_PER_SKU = 48;
-
-const WHOLESALE_DRINKS = DRINKS.filter((d) => !d.sample);
 
 /* ── Building blocks ─────────────────────────────────────────────── */
 
@@ -78,23 +61,6 @@ function Accordion({ items }: { items: readonly (readonly [string, string])[] })
           <p className="px-5 pb-5 text-sm leading-relaxed text-obsidian/60 sm:px-6">{a}</p>
         </details>
       ))}
-    </div>
-  );
-}
-
-function Stat({ label, value, tone = 'default' }: { label: string; value: string; tone?: 'default' | 'ember' | 'dark' }) {
-  const cls =
-    tone === 'dark'
-      ? 'bg-obsidian text-white border-obsidian'
-      : tone === 'ember'
-        ? 'bg-ember/[0.06] border-ember/20 text-obsidian'
-        : 'bg-white border-obsidian/8 text-obsidian';
-  return (
-    <div className={`rounded-2xl border p-4 ${cls}`}>
-      <p className={`text-[10px] font-bold uppercase tracking-[0.16em] ${tone === 'dark' ? 'text-white/50' : 'text-obsidian/45'}`}>
-        {label}
-      </p>
-      <p className="mt-1.5 font-serif text-2xl font-light tabular-nums tracking-tight">{value}</p>
     </div>
   );
 }
@@ -311,315 +277,39 @@ function Field({
   );
 }
 
-/* ── Price list + order estimator ────────────────────────────────── */
+/* ── Price list (locked until signed in) ──────────────────────────── */
 
-export function PricesPanel() {
-  const [cat, setCat] = useState<DrinkCategory | 'all'>('all');
-  const [q, setQ] = useState('');
-  const [cart, setCart] = useState<Record<string, number>>({});
-
-  const rows = useMemo(() => {
-    const needle = q.trim().toLowerCase();
-    return WHOLESALE_DRINKS.filter((d) => (cat === 'all' || d.category === cat))
-      .filter((d) => !needle || `${d.name} ${d.brand ?? ''}`.toLowerCase().includes(needle))
-      .sort((a, b) => CATEGORIES.indexOf(a.category) - CATEGORIES.indexOf(b.category) || b.priceNgn - a.priceNgn);
-  }, [cat, q]);
-
-  const lines = Object.entries(cart)
-    .map(([slug, qty]) => ({ drink: getDrinkBySlug(slug), qty }))
-    .filter((l): l is { drink: NonNullable<typeof l.drink>; qty: number } => Boolean(l.drink) && l.qty > 0);
-  const total = lines.reduce((n, l) => n + wholesalePriceNgn(l.drink.priceNgn) * l.qty, 0);
-  const retail = lines.reduce((n, l) => n + l.drink.priceNgn * l.qty, 0);
-  const bottles = lines.reduce((n, l) => n + l.qty, 0);
-
-  const bump = (slug: string, delta: number) =>
-    setCart((prev) => {
-      const next = Math.max(0, Math.min(MAX_PER_SKU, (prev[slug] || 0) + delta));
-      const copy = { ...prev };
-      if (next) copy[slug] = next;
-      else delete copy[slug];
-      return copy;
-    });
-
-  const cats = CATEGORIES.filter((c) => WHOLESALE_DRINKS.some((d) => d.category === c));
-
+export function LockedPricesPanel() {
+  const { user, loading } = useUser();
   return (
-    <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
-      <div className="min-w-0 space-y-5">
-        <p className="text-sm leading-relaxed text-obsidian/60">
-          Every bottle we carry, at partner rates. Add cases to estimate a restock — this doesn’t place an order. Live
-          prices are confirmed in your partner desk when you order.
-        </p>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <label className="relative flex-1">
-            <span className="sr-only">Search bottles</span>
-            <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-obsidian/35" />
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search a bottle or brand"
-              className="w-full rounded-full border border-obsidian/12 bg-white py-2.5 pl-10 pr-4 text-base focus:border-ember focus:ring-0 sm:text-sm"
-            />
-          </label>
-        </div>
-        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0">
-          {(['all', ...cats] as const).map((c) => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => setCat(c)}
-              className={`shrink-0 rounded-full px-4 py-2 text-[11px] font-bold uppercase tracking-[0.12em] transition-colors ${
-                cat === c ? 'bg-obsidian text-white' : 'border border-obsidian/10 bg-white text-obsidian/55 hover:border-obsidian/25'
-              }`}
-            >
-              {c === 'all' ? 'Everything' : CATEGORY_LABELS[c]}
-            </button>
-          ))}
-        </div>
-
-        <ul className="overflow-hidden rounded-2xl border border-obsidian/8 bg-white">
-          {rows.map((d, i) => {
-            const unit = wholesalePriceNgn(d.priceNgn);
-            const qty = cart[d.slug] || 0;
-            return (
-              <li key={d.slug} className={`flex items-center gap-3 px-3 py-3 sm:gap-4 sm:px-4 ${i ? 'border-t border-obsidian/6' : ''}`}>
-                <div className="relative h-14 w-11 shrink-0 overflow-hidden rounded-lg bg-paper">
-                  <DrinkPhoto product={d} watermark={false} className="absolute inset-0 h-full w-full" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="line-clamp-2 text-sm font-semibold leading-snug text-obsidian sm:line-clamp-1">{d.name}</p>
-                  <p className="text-xs text-obsidian/45">
-                    {CATEGORY_LABELS[d.category]} · {d.volume}
-                  </p>
-                </div>
-                <div className="hidden text-right sm:block">
-                  <p className="text-[11px] text-obsidian/35 line-through tabular-nums">{formatNgn(d.priceNgn)}</p>
-                  <p className="text-sm font-bold tabular-nums text-obsidian">{formatNgn(unit)}</p>
-                </div>
-                <div className="hidden w-28 text-right md:block">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-obsidian/35">Case of {CASE_SIZE}</p>
-                  <p className="text-sm tabular-nums text-obsidian/70">{formatNgn(unit * CASE_SIZE)}</p>
-                </div>
-                <div className="text-right sm:hidden">
-                  <p className="text-sm font-bold tabular-nums">{formatNgn(unit)}</p>
-                </div>
-                <div className="flex shrink-0 items-center gap-1 rounded-full border border-obsidian/10 p-0.5">
-                  <button type="button" aria-label={`One case less of ${d.name}`} onClick={() => bump(d.slug, -CASE_SIZE)} disabled={!qty} className="grid h-7 w-7 place-items-center rounded-full text-obsidian/60 hover:bg-paper disabled:opacity-30">
-                    <Minus size={14} />
-                  </button>
-                  <span className="w-7 text-center text-sm font-semibold tabular-nums">{qty}</span>
-                  <button type="button" aria-label={`One case more of ${d.name}`} onClick={() => bump(d.slug, CASE_SIZE)} disabled={qty >= MAX_PER_SKU} className="grid h-7 w-7 place-items-center rounded-full text-obsidian/60 hover:bg-paper disabled:opacity-30">
-                    <Plus size={14} />
-                  </button>
-                </div>
-              </li>
-            );
-          })}
-          {rows.length === 0 && <li className="px-4 py-8 text-center text-sm text-obsidian/45">No bottles match that search.</li>}
-        </ul>
-        {lines.length > 0 && (
-          <div className="sticky bottom-3 z-10 flex items-center justify-between gap-3 rounded-2xl bg-obsidian px-4 py-3 text-white shadow-lg lg:hidden">
-            <div>
-              <p className="font-serif text-xl font-light tabular-nums">{formatNgn(total)}</p>
-              <p className="text-[11px] text-white/55">
-                Save {formatNgn(retail - total)} · {pointsFor(total).toLocaleString()} pts
-              </p>
-            </div>
-            <OpenLink to="apply" className="shrink-0 rounded-full bg-white px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-obsidian">
-              Apply
-            </OpenLink>
-          </div>
-        )}
-      </div>
-
-      <aside className="space-y-4 lg:sticky lg:top-2">
-        <div className="rounded-3xl bg-obsidian p-6 text-white">
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/45">Restock estimate</p>
-          <p className="mt-2 font-serif text-4xl font-light tabular-nums tracking-tight">{formatNgn(total)}</p>
-          <p className="mt-1 text-sm text-white/55">
-            {bottles} bottle{bottles === 1 ? '' : 's'} · {lines.length} line{lines.length === 1 ? '' : 's'}
-          </p>
-          <dl className="mt-5 space-y-2.5 border-t border-white/10 pt-5 text-sm">
-            <div className="flex justify-between">
-              <dt className="text-white/55">At retail</dt>
-              <dd className="tabular-nums text-white/70 line-through">{formatNgn(retail)}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-white/55">You save</dt>
-              <dd className="font-semibold tabular-nums text-saffron">{formatNgn(retail - total)}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-white/55">Premium points</dt>
-              <dd className="font-semibold tabular-nums">{pointsFor(total).toLocaleString()} pts</dd>
-            </div>
-          </dl>
-          {lines.length > 0 && (
-            <button type="button" onClick={() => setCart({})} className="mt-4 text-xs font-semibold text-white/50 hover:text-white">
-              Clear estimate
-            </button>
-          )}
-        </div>
-        <OpenLink
-          to="apply"
-          className="btn-brand flex w-full items-center justify-center gap-2 px-5 py-3.5 text-[11px] font-bold uppercase tracking-[0.14em]"
-        >
-          Apply to order at these prices <ArrowRight size={14} />
-        </OpenLink>
-        <p className="px-1 text-xs leading-relaxed text-obsidian/45">
-          Up to {MAX_PER_SKU} bottles per product on one order. Already a partner?{' '}
-          <Link href="/partners/portal" className="font-semibold text-ember">Order from your desk</Link>.
-        </p>
-      </aside>
-    </div>
-  );
-}
-
-/* ── Margin calculator ───────────────────────────────────────────── */
-
-const MARGIN_DRINKS = WHOLESALE_DRINKS.filter((d) => d.category !== 'party-packs');
-
-export function MarginPanel() {
-  const first = MARGIN_DRINKS.find((d) => d.category === 'cognac') ?? MARGIN_DRINKS[0];
-  const [slug, setSlug] = useState(first?.slug ?? '');
-  const seed = itemFromCatalogSlug(slug);
-  const [retailCost, setRetailCost] = useState<number | null>(null);
-  const [sell, setSell] = useState(seed?.sellPriceNgn ?? 0);
-  const [servings, setServings] = useState(seed?.servingsPerBottle ?? 16);
-  const [perMonth, setPerMonth] = useState(12);
-  const [target, setTarget] = useState(72);
-
-  const drink = getDrinkBySlug(slug);
-  const wholesale = drink ? wholesalePriceNgn(drink.priceNgn) : 0;
-  const nowPaying = retailCost ?? drink?.priceNgn ?? 0;
-
-  function pick(next: string) {
-    setSlug(next);
-    const s = itemFromCatalogSlug(next);
-    if (s) {
-      setSell(s.sellPriceNgn);
-      setServings(s.servingsPerBottle);
-    }
-    setRetailCost(null);
-  }
-
-  const base = { id: 'x', slug, name: drink?.name ?? '', category: drink?.category ?? null, sellPriceNgn: sell, servingsPerBottle: servings, bottlesPerMonth: perMonth };
-  const atWholesale = analyseItem({ ...base, bottleCostNgn: wholesale }, target);
-  const atCurrent = analyseItem({ ...base, bottleCostNgn: nowPaying }, target);
-  const monthlyGain = atWholesale.monthlyProfitNgn - atCurrent.monthlyProfitNgn;
-
-  const verdict =
-    atWholesale.verdict === 'under'
-      ? { text: `Under your ${target}% target — try ${formatNgn(atWholesale.suggestedPriceNgn)} a serve.`, cls: 'bg-ember text-white' }
-      : atWholesale.verdict === 'premium'
-        ? { text: 'Priced at a premium — strong margin, watch the volume.', cls: 'bg-obsidian text-white' }
-        : { text: 'On target for a healthy bar margin.', cls: 'bg-palm text-white' };
-
-  const num = (v: string) => Math.max(0, Number(v) || 0);
-
-  return (
-    <div className="space-y-8">
-      <p className="max-w-2xl text-sm leading-relaxed text-obsidian/60">
-        Pick a bottle, set your menu price, and see what it earns at partner rates against what you pay now. Bar
-        managers aim for a pour cost around 20–30% (a 70–80% margin) on spirits.
-      </p>
-      <div className="grid items-start gap-8 lg:grid-cols-12">
-        <div className="space-y-5 rounded-3xl border border-obsidian/8 bg-white p-6 sm:p-7 lg:col-span-5">
+    <div className="space-y-6">
+      <div className="flex flex-col gap-5 rounded-3xl bg-obsidian p-6 text-white sm:flex-row sm:items-center sm:justify-between sm:p-8">
+        <div className="flex gap-4">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white/10">
+            <Lock size={19} />
+          </span>
           <div>
-            <label className={labelCls} htmlFor="mg-drink">Bottle</label>
-            <select id="mg-drink" value={slug} onChange={(e) => pick(e.target.value)} className={inputCls}>
-              {CATEGORIES.filter((c) => c !== 'party-packs').map((c) => {
-                const ds = MARGIN_DRINKS.filter((d) => d.category === c);
-                if (!ds.length) return null;
-                return (
-                  <optgroup key={c} label={CATEGORY_LABELS[c]}>
-                    {ds.map((d) => (
-                      <option key={d.slug} value={d.slug}>{d.name}</option>
-                    ))}
-                  </optgroup>
-                );
-              })}
-            </select>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <NumField id="mg-now" label="You pay now / bottle" value={nowPaying} onChange={(v) => setRetailCost(num(v))} />
-            <div>
-              <span className={labelCls}>Partner price</span>
-              <p className="rounded-xl border border-ember/20 bg-ember/[0.05] px-3 py-2.5 text-base font-semibold tabular-nums text-ember">
-                {formatNgn(wholesale)}
-              </p>
-            </div>
-            <NumField id="mg-sell" label="Menu price / serve" value={sell} onChange={(v) => setSell(num(v))} />
-            <NumField
-              id="mg-serves"
-              label="Serves / bottle"
-              value={servings}
-              onChange={(v) => setServings(Math.max(1, num(v)))}
-              hint={`Typical: ${defaultServings(drink?.category ?? null)}`}
-            />
-            <NumField id="mg-month" label="Bottles / month" value={perMonth} onChange={(v) => setPerMonth(num(v))} />
-            <div>
-              <label className={labelCls} htmlFor="mg-target">Target margin · {target}%</label>
-              <input
-                id="mg-target"
-                type="range"
-                min={50}
-                max={85}
-                value={target}
-                onChange={(e) => setTarget(Number(e.target.value))}
-                className="mt-3 w-full accent-ember"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-4 lg:col-span-7">
-          <div className={`rounded-2xl px-5 py-4 text-sm font-semibold ${verdict.cls}`}>{verdict.text}</div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <Stat label="Gross margin" value={`${atWholesale.grossMarginPct}%`} tone="ember" />
-            <Stat label="Pour cost" value={`${atWholesale.pourCostPct}%`} />
-            <Stat label="Cost per serve" value={formatNgn(atWholesale.costPerServingNgn)} />
-            <Stat label="Profit / bottle" value={formatNgn(atWholesale.profitPerBottleNgn)} />
-            <Stat label="Break-even" value={`${atWholesale.breakevenServings} serves`} />
-            <Stat label="Profit / month" value={formatNgn(atWholesale.monthlyProfitNgn)} tone="dark" />
-          </div>
-          <div className="rounded-2xl border border-obsidian/8 bg-white p-5">
-            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-obsidian/45">Switching to partner rates</p>
-            <p className="mt-2 text-sm leading-relaxed text-obsidian/65">
-              At {formatNgn(nowPaying)} a bottle your margin is <strong className="text-obsidian">{atCurrent.grossMarginPct}%</strong>.
-              At partner price it’s <strong className="text-obsidian">{atWholesale.grossMarginPct}%</strong>
-              {monthlyGain > 0 ? (
-                <>
-                  {' '}— <strong className="text-ember">{formatNgn(monthlyGain)} more profit a month</strong> on this bottle
-                  alone, {formatNgn(monthlyGain * 12)} a year.
-                </>
-              ) : (
-                '.'
-              )}
+            <p className="font-serif text-2xl font-light">The price list is for partners.</p>
+            <p className="mt-1 max-w-md text-sm leading-relaxed text-white/60">
+              Bottle-by-bottle partner prices, case totals and the restock basket open in your wholesale portal once
+              your account is approved.
             </p>
           </div>
-          <p className="text-xs text-obsidian/45">
-            Partners get the full margin desk — every bottle on your menu, saved, with under-priced lines flagged.
-          </p>
         </div>
+        <Link
+          href={user ? '/partners/portal' : '/signin?next=/partners/portal'}
+          className="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-white px-6 py-3.5 text-[11px] font-bold uppercase tracking-[0.14em] text-obsidian hover:bg-saffron sm:self-auto"
+        >
+          {loading ? 'Checking…' : user ? 'Open wholesale portal' : 'Sign in to see prices'} <ArrowRight size={14} />
+        </Link>
       </div>
-    </div>
-  );
-}
-
-function NumField({ id, label, value, onChange, hint }: { id: string; label: string; value: number; onChange: (v: string) => void; hint?: string }) {
-  return (
-    <div>
-      <label className={labelCls} htmlFor={id}>{label}</label>
-      <input
-        id={id}
-        type="number"
-        inputMode="numeric"
-        min={0}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={`${inputCls} tabular-nums`}
-      />
-      {hint && <p className="mt-1 text-[11px] text-obsidian/40">{hint}</p>}
+      <p className="text-sm text-obsidian/55">
+        Not a partner yet?{' '}
+        <OpenLink to="apply" className="font-semibold text-ember">
+          Apply for a wholesale account
+        </OpenLink>{' '}
+        — we review every venue, then your portal opens with the full list.
+      </p>
     </div>
   );
 }
@@ -742,7 +432,7 @@ export function PerksPanel() {
 /* ── Partner desk ────────────────────────────────────────────────── */
 
 const DESK: [string, string][] = [
-  ['Restock', 'The full range at partner rates, with your basket and order history in one place.'],
+  ['Price list & restock', 'The full range at partner rates — only visible here, once you’re approved.'],
   ['Inventory', 'Keep on-hand counts per bottle; low lines are flagged and one tap adds a case.'],
   ['Margin desk', 'Your whole menu priced against target, with under-priced serves called out.'],
   ['Premium card', 'Points balance, conversions and every gift-card code you’ve issued.'],
@@ -766,7 +456,7 @@ export function DeskPanel() {
             {loading ? 'Checking your account…' : user ? 'You’re signed in.' : 'Already approved?'}
           </p>
           <p className="mt-1 text-sm text-obsidian/55">
-            {user ? 'Open your desk to order, count stock and use your points.' : 'Sign in with the email on your application.'}
+            {user ? 'Open your portal to see prices, order, count stock and use your points.' : 'Sign in with the email on your application.'}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -774,7 +464,7 @@ export function DeskPanel() {
             href={user ? '/partners/portal' : '/signin?next=/partners/portal'}
             className="btn-brand inline-flex items-center gap-2 px-6 py-3.5 text-[11px] font-bold uppercase tracking-[0.14em]"
           >
-            {user ? 'Open partner desk' : 'Sign in'} <ArrowRight size={14} />
+            {user ? 'Open wholesale portal' : 'Sign in'} <ArrowRight size={14} />
           </Link>
           {!user && (
             <OpenLink to="apply" className="px-2 text-sm font-semibold text-ember">

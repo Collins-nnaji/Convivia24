@@ -12,7 +12,7 @@ import type { Brand } from '@/lib/brands/catalog';
  * because a claim that looks like instant access would be a promise the
  * verification step does not keep.
  */
-export default function BrandClaimDialog({ brand, onClose }: { brand: Brand; onClose: () => void }) {
+export default function BrandClaimDialog({ brand, onClose }: { brand: Pick<Brand, 'slug' | 'name'>; onClose: () => void }) {
   const [contactName, setContactName] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('');

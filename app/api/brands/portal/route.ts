@@ -1,8 +1,8 @@
 import { withAudit } from '@/lib/audit/route';
 import { NextRequest, NextResponse } from 'next/server';
-import sql, { apiErrorResponse, DatabaseUnavailableError } from '@/lib/db';
-import { getCurrentUser } from '@/lib/auth/session';
-import { getBrand } from '@/lib/brands/catalog';
+import { apiErrorResponse, DatabaseUnavailableError } from '@/lib/db';
+import { BRANDS, getBrand } from '@/lib/brands/catalog';
+import { claimsForCurrentUser, resolveManagedBrand } from '@/lib/brands/portal-access';
 import { followerCount } from '@/lib/brands/store';
 import {
   brandCampaignStats,
@@ -19,41 +19,16 @@ import { captureApiError } from '@/lib/sentry';
 /**
  * The brand's own portal.
  *
- * Access is the approved ownership claim and nothing else — a brand sees its
- * page's numbers only after Convivia24 has verified who they are.
+ * Access is the approved ownership claim — a brand sees its page's numbers only after
+ * Convivia24 has verified who they are. Admins can open any brand (?brand=slug).
  */
-async function resolveManagedBrand(): Promise<
-  { ok: true; brandSlug: string; ownerId: string; contactName: string } | { ok: false; status: number; error: string }
-> {
-  const user = await getCurrentUser();
-  if (!user) return { ok: false, status: 401, error: 'Sign in to open the brand portal.' };
-
-  const ownerId = `user:${user.id}`;
-  const rows = await sql`
-    SELECT brand_slug, contact_name FROM brand_claims
-    WHERE status = 'approved' AND (owner_id = ${ownerId} OR LOWER(email) = ${user.email.trim().toLowerCase()})
-    ORDER BY updated_at DESC
-    LIMIT 1
-  `;
-  if (!rows[0]) {
-    return {
-      ok: false,
-      status: 403,
-      error: 'No approved brand claim on this account. Claim your brand page first.',
-    };
-  }
-  return {
-    ok: true,
-    brandSlug: String(rows[0].brand_slug),
-    ownerId,
-    contactName: String(rows[0].contact_name || user.name || user.email),
-  };
-}
-
-async function handleGET() {
+async function handleGET(req: NextRequest) {
   try {
-    const gate = await resolveManagedBrand();
-    if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
+    const gate = await resolveManagedBrand(req.nextUrl.searchParams.get('brand'));
+    if (gate.ok === false) {
+      const claims = gate.status === 403 ? await claimsForCurrentUser() : [];
+      return NextResponse.json({ error: gate.error, claims }, { status: gate.status });
+    }
 
     const brand = getBrand(gate.brandSlug);
     if (!brand) return NextResponse.json({ error: 'Brand not found.' }, { status: 404 });
@@ -73,6 +48,8 @@ async function handleGET() {
       joins,
       followers,
       products: brand.products.length,
+      admin: gate.admin,
+      brands: gate.admin ? BRANDS.map((b) => ({ slug: b.slug, name: b.name })) : undefined,
     });
   } catch (err) {
     if (err instanceof DatabaseUnavailableError) {
@@ -103,10 +80,10 @@ async function handlePOST(req: NextRequest) {
     const rl = await rateLimit(`brand-portal:${clientIp(req)}`, 20, 60);
     if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
 
-    const gate = await resolveManagedBrand();
+    const body = await req.json().catch(() => ({}));
+    const gate = await resolveManagedBrand(body.brand ? String(body.brand) : null);
     if (gate.ok === false) return NextResponse.json({ error: gate.error }, { status: gate.status });
 
-    const body = await req.json().catch(() => ({}));
     const input: CampaignInput = {
       slug: String(body.slug || '').trim().toLowerCase(),
       // A brand may only ever author campaigns for the brand it manages.

@@ -2,13 +2,13 @@ import type { Metadata } from 'next';
 import { absoluteUrl } from '@/lib/seo';
 
 export const metadata: Metadata = {
-  title: 'Partner portal',
+  title: 'Wholesale portal',
   description:
-    'Convivia24 partner portal — wholesale ordering, menu margin desk, and perks for approved outlets.',
+    'Convivia24 wholesale portal — the partner price list, ordering, menu margin desk and perks for approved outlets.',
   alternates: { canonical: absoluteUrl('/partners/portal') },
   robots: { index: false },
   openGraph: {
-    title: 'Partner portal | Convivia24',
+    title: 'Wholesale portal | Convivia24',
     description: 'Wholesale desk and margin tools for approved partner outlets.',
     url: absoluteUrl('/partners/portal'),
   },
