@@ -15,18 +15,17 @@ afterEach(() => {
 
 describe('adminNotifyEmail', () => {
   it('includes admin accounts in the notification recipients', () => {
-    process.env.CONVIVIA_ADMIN_EMAILS = 'owner@example.com, collinsenofe@gmail.com';
+    process.env.CONVIVIA_ADMIN_EMAILS = 'owner@example.com, second@example.com';
     delete process.env.ADMIN_NOTIFY_EMAIL;
-    expect(adminNotifyEmail()).toEqual(['owner@example.com', 'collinsenofe@gmail.com', 'bobbynathus@yahoo.com']);
+    expect(adminNotifyEmail()).toEqual(['owner@example.com', 'second@example.com']);
   });
 
   it('combines, normalises and deduplicates both recipient lists', () => {
-    process.env.CONVIVIA_ADMIN_EMAILS = 'OWNER@example.com; collinsenofe\\@gmail.com';
+    process.env.CONVIVIA_ADMIN_EMAILS = 'OWNER@example.com; second\\@example.com';
     process.env.ADMIN_NOTIFY_EMAIL = 'owner@example.com extra@example.com';
     expect(adminNotifyEmail()).toEqual([
       'owner@example.com',
-      'collinsenofe@gmail.com',
-      'bobbynathus@yahoo.com',
+      'second@example.com',
       'extra@example.com',
     ]);
   });
@@ -34,10 +33,10 @@ describe('adminNotifyEmail', () => {
 
 
 describe('grouped admin delivery', () => {
-  it('includes both required accounts even when deployment lists omit them', () => {
+  it('has no recipients when the deployment lists are empty', () => {
     process.env.CONVIVIA_ADMIN_EMAILS = '';
     process.env.ADMIN_NOTIFY_EMAIL = '';
-    expect(adminNotifyEmail()).toEqual(['bobbynathus@yahoo.com', 'collinsenofe@gmail.com']);
+    expect(adminNotifyEmail()).toBeNull();
   });
 
   it('sends one provider request addressed to every admin and notification recipient', async () => {
@@ -50,7 +49,7 @@ describe('grouped admin delivery', () => {
     expect(await sendEmail({ to: adminNotifyEmail()!, subject: 'Admin notification', html: '<p>New order</p>' })).toEqual({ sent: true, id: 'mail-id' });
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(JSON.parse(fetchMock.mock.calls[0][1].body).to).toEqual([
-      'owner@example.com', 'bobbynathus@yahoo.com', 'collinsenofe@gmail.com', 'notify@example.com',
+      'owner@example.com', 'notify@example.com',
     ]);
   });
 });

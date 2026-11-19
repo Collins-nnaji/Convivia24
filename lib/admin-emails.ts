@@ -1,6 +1,4 @@
-// Notification recipients are separate from the environment-only admin access policy.
-const REQUIRED_ADMIN_EMAILS = ['bobbynathus@yahoo.com', 'collinsenofe@gmail.com'];
-
+// Admin emails come only from the deployment environment (CONVIVIA_ADMIN_EMAILS).
 export function normaliseEmails(...lists: (string | undefined)[]): string[] {
   return [...new Set(lists.filter(Boolean)
     .flatMap(value => String(value).split(/[;,\s]+/))
@@ -10,8 +8,4 @@ export function normaliseEmails(...lists: (string | undefined)[]): string[] {
 
 export function adminEmails(): string[] {
   return normaliseEmails(process.env.CONVIVIA_ADMIN_EMAILS);
-}
-
-export function adminNotificationEmails(): string[] {
-  return normaliseEmails(process.env.CONVIVIA_ADMIN_EMAILS, ...REQUIRED_ADMIN_EMAILS);
 }

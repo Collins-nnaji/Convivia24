@@ -28,7 +28,7 @@ describe('staff admin access', () => {
     mocks.user.mockResolvedValue({ id: 'owner', email: 'owner@example.com', emailVerified: false });
     expect(await requireAdmin('owner')).toMatchObject({ ok: true, actor: 'owner', actorLabel: 'owner@example.com', role: 'owner' });
   });
-  it.each(['bobbynathus@yahoo.com', 'collinsenofe@gmail.com'])('allows owner %s when configured in env', async email => {
+  it.each(['first@example.com', 'second@example.com'])('allows owner %s when configured in env', async email => {
     vi.stubEnv('CONVIVIA_ADMIN_EMAILS', email);
     mocks.user.mockResolvedValue({ id: 'owner', email, emailVerified: true });
     expect(await requireAdmin('owner')).toMatchObject({ ok: true, role: 'owner' });
@@ -54,10 +54,6 @@ describe('staff admin access', () => {
   it('rejects invalid database roles', async () => {
     mocks.user.mockResolvedValue({ id: 'staff', email: 'staff@example.com', emailVerified: true });
     mocks.sql.mockResolvedValue([{ role: 'invalid' }]);
-    expect(await adminIdentity()).toBeNull();
-  });
-  it('does not use built-in notification recipients to grant admin access', async () => {
-    mocks.user.mockResolvedValue({ id: 'owner', email: 'collinsenofe@gmail.com', emailVerified: true });
     expect(await adminIdentity()).toBeNull();
   });
   it('fails closed if the environment allowlist is empty', async () => {
