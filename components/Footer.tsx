@@ -40,7 +40,8 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: 'Business',
     links: [
-      { label: 'Venues & wholesale', href: '/partners' },
+      { label: 'Wholesale for venues', href: '/partners' },
+      { label: 'Partner desk', href: '/partners/portal' },
       { label: 'Brand partnerships', href: '/brands/portal' },
       { label: 'Supplier portal', href: '/supplier' },
     ],

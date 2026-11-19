@@ -232,3 +232,10 @@ input[type='range'].plan-slider::-moz-range-thumb {
   outline: none;
   --tw-ring-shadow: 0 0 #0000;
 }
+
+/* Wholesale hub modal (components/partners/wholesale) */
+@keyframes wsFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes wsRise { from { opacity: 0; transform: translateY(16px) scale(0.99); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  [class*="animate-[wsFade"], [class*="animate-[wsRise"] { animation: none !important; }
+}

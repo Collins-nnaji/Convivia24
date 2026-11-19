@@ -1,6 +1,5 @@
-import { redirect } from 'next/navigation';
+import WholesaleHub from '@/components/partners/wholesale/WholesaleHub';
 
-/** Legacy URL — contact page holds outlet + brand enquiry forms. */
 export default function PartnersPage() {
-  redirect('/contact');
+  return <WholesaleHub />;
 }

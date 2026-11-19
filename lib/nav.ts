@@ -51,7 +51,7 @@ export function isNavActive(pathname: string, href: string): boolean {
   // Campaign pages belong to the brand that sponsors them.
   if (href === '/brands') return pathname === '/brands' || pathname.startsWith('/brands/') || pathname.startsWith('/campaigns/');
   if (href === '/contact') return pathname === '/contact';
-  if (href === '/partners') return pathname.startsWith('/partners/');
+  if (href === '/partners') return pathname === '/partners' || pathname.startsWith('/partners/');
   if (href === '/cart') return pathname === '/cart' || pathname.startsWith('/checkout');
   return pathname === href || pathname.startsWith(`${href}/`);
 }
